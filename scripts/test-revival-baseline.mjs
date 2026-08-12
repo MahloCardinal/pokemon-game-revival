@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const config = read("app/api/supabase-config.js");
@@ -7,6 +7,12 @@ const supabaseConfig = read("supabase/config.toml");
 const edge = read("supabase/functions/battle-command/index.ts");
 const schema = read("supabase/migrations/20260812000000_revival_baseline.sql");
 const engine = read("app/engine/battle-runtime.js");
+const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
+const migrationSql = readdirSync(migrationDirectory)
+  .filter((name) => name.endsWith(".sql"))
+  .sort()
+  .map((name) => readFileSync(new URL(name, migrationDirectory), "utf8"))
+  .join("\n");
 
 assert.match(config, /https:\/\/etotvaneppzkxunezqrl\.supabase\.co/);
 assert.doesNotMatch(config, /ompjckjbvauemoxwggdi|viliofosdnmfnfboqnwu|web-gdr-staging/);
@@ -37,5 +43,59 @@ const versionedFunctionNames = Array.from(schema.matchAll(/CREATE (?:OR REPLACE 
   .map((match) => match[1])
   .filter((name) => /_v\d+$/.test(name));
 assert.deepEqual(versionedFunctionNames, []);
+
+const canonicalPrepareFunctions = [
+  "prepare_edge_battle_command",
+  "prepare_edge_battle_command_with_inventory",
+  "prepare_edge_battle_command_with_contract_items",
+  "prepare_edge_battle_command_with_roster",
+  "prepare_edge_battle_command_core"
+];
+
+function regexpEscape(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function finalFunctionBody(schemaName, functionName) {
+  const schema = regexpEscape(schemaName);
+  const name = regexpEscape(functionName);
+  const pattern = new RegExp(
+    `create(?: or replace)? function\\s+(?:"${schema}"|${schema})\\.(?:"${name}"|${name})\\s*\\([\\s\\S]*?\\)\\s*returns\\s+[\\s\\S]*?\\bas\\s+(\\$[A-Za-z0-9_]*\\$)([\\s\\S]*?)\\1\\s*;`,
+    "gi"
+  );
+  const matches = Array.from(migrationSql.matchAll(pattern));
+  assert.ok(matches.length > 0, `Missing ${schemaName}.${functionName}`);
+  return matches.at(-1)[2];
+}
+
+const prepareDependencies = new Map(canonicalPrepareFunctions.map((functionName) => {
+  const body = finalFunctionBody("server_authority_private", functionName);
+  const dependencies = canonicalPrepareFunctions.filter((candidate) => {
+    const callPattern = new RegExp(
+      `server_authority_private\\.(?:"${regexpEscape(candidate)}"|${regexpEscape(candidate)})\\s*\\(`,
+      "i"
+    );
+    return callPattern.test(body);
+  });
+  return [functionName, dependencies];
+}));
+
+assert.deepEqual(prepareDependencies.get("prepare_edge_battle_command"), ["prepare_edge_battle_command_with_inventory"]);
+assert.deepEqual(prepareDependencies.get("prepare_edge_battle_command_with_inventory"), ["prepare_edge_battle_command_with_contract_items"]);
+assert.deepEqual(prepareDependencies.get("prepare_edge_battle_command_with_contract_items"), ["prepare_edge_battle_command_with_roster"]);
+assert.deepEqual(prepareDependencies.get("prepare_edge_battle_command_with_roster"), ["prepare_edge_battle_command_core"]);
+assert.deepEqual(prepareDependencies.get("prepare_edge_battle_command_core"), []);
+
+const completed = new Set();
+const active = new Set();
+function assertAcyclic(functionName) {
+  if (completed.has(functionName)) return;
+  assert.ok(!active.has(functionName), `Recursive canonical prepare pipeline at ${functionName}`);
+  active.add(functionName);
+  for (const dependency of prepareDependencies.get(functionName) || []) assertAcyclic(dependency);
+  active.delete(functionName);
+  completed.add(functionName);
+}
+for (const functionName of canonicalPrepareFunctions) assertAcyclic(functionName);
 
 console.log("Revival baseline contract checks passed.");

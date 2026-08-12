@@ -1,0 +1,20 @@
+export var TYPE_CHART = {
+  Normale: { Roccia: 0.5, Spettro: 0.5, Acciaio: 0.5 },
+  Fuoco: { Fuoco: 0.5, Acqua: 0.5, Erba: 2.0, Ghiaccio: 2.0, Coleottero: 2.0, Roccia: 0.5, Drago: 0.5, Acciaio: 2.0 },
+  Acqua: { Fuoco: 2.0, Acqua: 0.5, Erba: 0.5, Terra: 2.0, Roccia: 2.0, Drago: 0.5 },
+  Elettro: { Acqua: 2.0, Elettro: 0.5, Erba: 0.5, Terra: 0.5, Volante: 2.0, Drago: 0.5 },
+  Erba: { Fuoco: 0.5, Acqua: 2.0, Erba: 0.5, Veleno: 0.5, Terra: 2.0, Volante: 0.5, Coleottero: 0.5, Roccia: 2.0, Drago: 0.5, Acciaio: 0.5 },
+  Ghiaccio: { Fuoco: 0.5, Acqua: 0.5, Erba: 2.0, Ghiaccio: 0.5, Terra: 2.0, Volante: 2.0, Drago: 2.0, Acciaio: 0.5 },
+  Lotta: { Normale: 2.0, Ghiaccio: 2.0, Roccia: 2.0, Buio: 2.0, Acciaio: 2.0, Veleno: 0.5, Volante: 0.5, Psico: 0.5, Coleottero: 0.5, Spettro: 0.5, Folletto: 0.5 },
+  Veleno: { Erba: 2.0, Folletto: 2.0, Veleno: 0.5, Terra: 0.5, Roccia: 0.5, Spettro: 0.5, Acciaio: 0.5 },
+  Terra: { Fuoco: 2.0, Elettro: 2.0, Erba: 0.5, Veleno: 2.0, Volante: 0.5, Coleottero: 0.5, Roccia: 2.0, Acciaio: 2.0 },
+  Volante: { Elettro: 0.5, Erba: 2.0, Lotta: 2.0, Coleottero: 2.0, Roccia: 0.5, Acciaio: 0.5 },
+  Psico: { Lotta: 2.0, Veleno: 2.0, Psico: 0.5, Buio: 0.5, Acciaio: 0.5 },
+  Coleottero: { Fuoco: 0.5, Erba: 2.0, Lotta: 0.5, Veleno: 0.5, Volante: 0.5, Psico: 2.0, Spettro: 0.5, Buio: 2.0, Acciaio: 0.5, Folletto: 0.5 },
+  Roccia: { Fuoco: 2.0, Ghiaccio: 2.0, Lotta: 0.5, Terra: 0.5, Volante: 2.0, Coleottero: 2.0, Acciaio: 0.5 },
+  Spettro: { Normale: 0.5, Psico: 2.0, Spettro: 2.0, Buio: 0.5 },
+  Drago: { Drago: 2.0, Acciaio: 0.5, Folletto: 0.5 },
+  Buio: { Lotta: 0.5, Psico: 2.0, Spettro: 2.0, Buio: 0.5, Folletto: 0.5 },
+  Acciaio: { Fuoco: 0.5, Acqua: 0.5, Elettro: 0.5, Ghiaccio: 2.0, Roccia: 2.0, Folletto: 2.0, Acciaio: 0.5 },
+  Folletto: { Fuoco: 0.5, Lotta: 2.0, Veleno: 0.5, Drago: 2.0, Buio: 2.0, Acciaio: 0.5 }
+};

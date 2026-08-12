@@ -1,0 +1,38 @@
+import "./box-handler.js";
+import "./team-handler.js";
+import "./item-handler.js";
+import "./navigation-handler.js";
+import "./starter-handler.js";
+import "./pokemon-center-handler.js";
+import "./capture-handler.js";
+import "./battle-handler.js";
+import "./training-zone-handler.js";
+import "./battle-tower-handler.js";
+import "./battle-shop-handler.js";
+import "./daycare-handler.js";
+import "./gyms-handler.js";
+import "./auth-handler.js";
+import "./shopping-center-handler.js";
+import "./garden-handler.js";
+import "./pokefan-handler.js";
+import "./admin-battle-handler.js";
+import "./debug-tools.js";
+import "./audio-handler.js";
+import "./activity-feed-handler.js";
+import { closeProgressionMoveConfirmPanel, continueAfterEvolutionResult, continueAfterLevelUp, continueAfterMoveResult, replaceProgressionMove, resolveProgressionEvolution, showProgressionMoveConfirmPanel, skipProgressionMove } from "./level-up.js";
+import { registerAction } from "./action-registry.js";
+
+registerAction("progression-replace-move", function(element) {
+  showProgressionMoveConfirmPanel(Number(element.dataset.index), element);
+});
+registerAction("progression-replace-move-confirm", function(element) {
+  closeProgressionMoveConfirmPanel();
+  replaceProgressionMove(Number(element.dataset.index));
+});
+registerAction("progression-replace-move-cancel", function() { closeProgressionMoveConfirmPanel(); });
+registerAction("progression-skip-move", function() { skipProgressionMove(); });
+registerAction("progression-move-result-continue", function() { continueAfterMoveResult(); });
+registerAction("progression-level-up-continue", function() { continueAfterLevelUp(); });
+registerAction("progression-evolve-confirm", function() { resolveProgressionEvolution(true); });
+registerAction("progression-evolve-cancel", function() { resolveProgressionEvolution(false); });
+registerAction("progression-evolution-result-continue", function() { continueAfterEvolutionResult(); });

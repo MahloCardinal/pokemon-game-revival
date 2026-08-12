@@ -1,0 +1,388 @@
+﻿.scene-content-home {
+  width: min(var(--section-width), 100%);
+}
+.scene-content-home > .style-proposals {
+  display: none;
+}
+.home-activity-dashboards {
+  display: flex;
+  gap: 16px;
+  width: min(var(--section-width), 100%);
+  margin: 0 auto var(--zone-card-gap);
+}
+.home-activity-dashboard-tabs {
+  display: none;
+}
+.home-activity-panel {
+  flex: 3;
+  min-width: 0;
+  overflow: hidden;
+  height: 120px;
+  margin: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface-raised);
+}
+.home-activity-panel.is-admin-panel {
+  flex: 2;
+  border-color: rgba(126, 70, 70, 0.55);
+  background: #fffafa;
+}
+.home-activity-header {
+  margin: 0;
+  padding: 5px 14px;
+  background: linear-gradient(135deg, #244b63, #2f7180);
+  color: #ffffff;
+  font-size: 14px;
+  text-align: center;
+}
+.home-activity-panel.is-admin-panel .home-activity-header {
+  background: linear-gradient(135deg, #673b3b, #895151);
+}
+.home-activity-scroll {
+  height: calc(100% - 25px);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+.home-activity-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-activity-item,
+.home-activity-empty {
+  margin: 0;
+  padding: 4px 10px;
+  color: var(--text);
+  font-size: 13px;
+}
+.home-activity-item + .home-activity-item {
+  border-top: 1px solid rgba(87, 130, 154, 0.18);
+}
+.home-activity-empty {
+  color: var(--text-soft);
+}
+.home-activity-service-label {
+  color: #7f1d1d;
+  font-weight: 700;
+}
+.zone-grid,
+.city-grid,
+.home-grid {
+  display: grid;
+  gap: var(--zone-card-gap);
+  grid-template-columns: repeat(3, var(--zone-card-width));
+  justify-content: center;
+  align-items: start;
+}
+.home-zone-card,
+.city-zone-card {
+  grid-template-rows: auto 1fr auto;
+}
+.home-zone-card-text-only {
+  grid-template-rows: 1fr;
+  align-content: center;
+}
+.home-zone-card-text-only .zone-card-title {
+  align-self: center;
+  white-space: normal;
+}
+.city-card-pokemon-center {
+  --zone-card-glow: rgba(197, 80, 68, 0.24);
+  --zone-card-accent: rgba(217, 101, 59, 0.26);
+  --zone-card-top: rgba(238, 220, 211, 0.94);
+  --zone-card-bottom: rgba(221, 188, 177, 0.92);
+  --zone-card-title-color: #97483e;
+}
+.city-card-shopping-center {
+  --zone-card-glow: rgba(47, 138, 69, 0.22);
+  --zone-card-accent: rgba(47, 138, 69, 0.22);
+  --zone-card-top: rgba(220, 234, 218, 0.94);
+  --zone-card-bottom: rgba(181, 213, 176, 0.92);
+  --zone-card-title-color: #2f713c;
+}
+.city-card-fanclub {
+  --zone-card-glow: rgba(93, 107, 194, 0.24);
+  --zone-card-accent: rgba(93, 107, 194, 0.24);
+  --zone-card-top: rgba(221, 222, 240, 0.94);
+  --zone-card-bottom: rgba(185, 190, 226, 0.92);
+  --zone-card-title-color: #4f5ca8;
+}
+.city-card-garden {
+  --zone-card-glow: rgba(47, 138, 69, 0.24);
+  --zone-card-accent: rgba(97, 159, 90, 0.26);
+  --zone-card-top: rgba(218, 235, 207, 0.94);
+  --zone-card-bottom: rgba(171, 211, 151, 0.92);
+  --zone-card-title-color: #34743a;
+}
+.zone-card {
+  --zone-card-glow: rgba(25, 125, 115, 0.18);
+  --zone-card-accent: rgba(25, 125, 115, 0.24);
+  --zone-card-top: rgba(255, 255, 255, 0.58);
+  --zone-card-bottom: rgba(232, 244, 250, 0.48);
+  --zone-card-title-color: #28514b;
+  container-type: inline-size;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 15.5px 12.5px;
+  width: 100%;
+  min-height: 188px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background:
+    linear-gradient(160deg, var(--zone-card-top), var(--zone-card-bottom)),
+    linear-gradient(135deg, var(--zone-card-accent), transparent 72%);
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  transition: var(--interactive-transition);
+}
+.zone-card::before,
+.capture-starter-slot::before,
+.move-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 140ms ease;
+  pointer-events: none;
+}
+.zone-card::before {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08) 48%, transparent 72%);
+}
+.zone-card:hover::before,
+.zone-card:focus-visible::before,
+.capture-starter-slot:hover:not(:disabled)::before,
+.capture-starter-slot:focus-visible:not(:disabled)::before,
+button.move-button:hover:not(:disabled)::before,
+button.move-button:focus-visible:not(:disabled)::before {
+  opacity: 1;
+}
+.zone-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -30px -50px auto;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, var(--zone-card-glow), transparent 70%);
+  pointer-events: none;
+}
+.zone-card:hover,
+.zone-card:focus-visible {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.64),
+    var(--shadow-soft-hover),
+    0 6.5px 12px rgba(61, 96, 128, 0.12);
+  filter: var(--interactive-hover-filter);
+}
+.zone-card:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.92);
+  outline-offset: 2px;
+}
+
+.zone-card-title,
+.zone-card-media,
+.zone-card-types {
+  position: relative;
+  z-index: 1;
+}
+.zone-card-title {
+  margin: 0;
+  width: 100%;
+  color: var(--zone-card-title-color);
+  font-size: 20px;
+  font-family: var(--game-font);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.05;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4),
+    1px 0 0 rgba(255, 255, 255, 0.35),
+    -1px 0 0 rgba(255, 255, 255, 0.35),
+    0 0 6px rgba(255, 255, 255, 0.16),
+    0 2px 4px rgba(31, 37, 40, 0.18);
+}
+.zone-card-media {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 100%;
+  margin-top: -2px;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(139, 176, 210, 0.2);
+  background: rgba(255, 255, 255, 0.4);
+}
+.zone-card-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.zone-card p {
+  margin: 0;
+  color: var(--text-soft);
+}
+.zone-card-types {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: -2px;
+}
+.zone-card-description {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  background: rgba(255, 251, 244, 0.7);
+  border-radius: 0;
+  padding: 5px 10px 6px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-soft);
+  margin-top: -2px;
+  white-space: pre-line;
+}
+.zone-card-theme-bosco-smeraldo {
+  --zone-card-glow: rgba(79, 143, 74, 0.28);
+  --zone-card-accent: rgba(97, 159, 90, 0.32);
+  --zone-card-top: rgba(204, 225, 198, 0.94);
+  --zone-card-bottom: rgba(151, 196, 139, 0.92);
+  --zone-card-title-color: #2d6f2e;
+}
+.zone-card-theme-monte-luna {
+  --zone-card-glow: rgba(119, 123, 170, 0.28);
+  --zone-card-accent: rgba(169, 173, 214, 0.3);
+  --zone-card-top: rgba(207, 207, 229, 0.94);
+  --zone-card-bottom: rgba(163, 167, 204, 0.92);
+  --zone-card-title-color: #50589f;
+}
+.zone-card-theme-mare {
+  --zone-card-glow: rgba(67, 143, 206, 0.28);
+  --zone-card-accent: rgba(89, 176, 229, 0.28);
+  --zone-card-top: rgba(197, 225, 240, 0.94);
+  --zone-card-bottom: rgba(135, 190, 223, 0.92);
+  --zone-card-title-color: #17679d;
+}
+.zone-card-theme-torre-fantasma {
+  --zone-card-glow: rgba(112, 86, 152, 0.32);
+  --zone-card-accent: rgba(154, 120, 199, 0.28);
+  --zone-card-top: rgba(212, 199, 229, 0.94);
+  --zone-card-bottom: rgba(166, 143, 200, 0.92);
+  --zone-card-title-color: #6c4494;
+}
+.zone-card-theme-safari {
+  --zone-card-glow: rgba(173, 135, 66, 0.28);
+  --zone-card-accent: rgba(215, 173, 96, 0.28);
+  --zone-card-top: rgba(226, 211, 181, 0.94);
+  --zone-card-bottom: rgba(199, 171, 111, 0.92);
+  --zone-card-title-color: #8a6024;
+}
+.zone-card-theme-palude {
+  --zone-card-glow: rgba(109, 120, 64, 0.28);
+  --zone-card-accent: rgba(156, 137, 69, 0.28);
+  --zone-card-top: rgba(210, 216, 190, 0.94);
+  --zone-card-bottom: rgba(174, 167, 104, 0.92);
+  --zone-card-title-color: #646d2f;
+}
+.zone-card-theme-deserto {
+  --zone-card-glow: rgba(196, 135, 59, 0.28);
+  --zone-card-accent: rgba(221, 171, 95, 0.3);
+  --zone-card-top: rgba(228, 211, 181, 0.94);
+  --zone-card-bottom: rgba(207, 168, 101, 0.92);
+  --zone-card-title-color: #996129;
+}
+@media (max-width: 1150px) {
+  .zone-grid,
+  .city-grid,
+  .home-grid {
+    grid-template-columns: repeat(2, var(--zone-card-width));
+  }
+
+  .zone-card {
+    padding: clamp(12px, 1.4vw, 16px) clamp(13px, 1.56vw, 18px) clamp(11px, 1.22vw, 14px);
+  }
+}
+@media (max-width: 680px) {
+  .home-activity-dashboards {
+    display: block;
+  }
+
+  .home-activity-dashboard-tabs {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .home-activity-dashboard-tab.button {
+    min-width: 0;
+    min-height: 34px;
+    padding: 5px 7px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: normal;
+  }
+
+  .home-activity-dashboard-tab.is-player-tab {
+    border-color: #244b63;
+    background: #587887;
+  }
+
+  .home-activity-dashboard-tab.is-player-tab.is-active {
+    background: linear-gradient(135deg, #244b63, #2f7180);
+  }
+
+  .home-activity-dashboard-tab.is-admin-tab {
+    border-color: #673b3b;
+    background: #9a7777;
+  }
+
+  .home-activity-dashboard-tab.is-admin-tab.is-active {
+    background: linear-gradient(135deg, #673b3b, #895151);
+  }
+
+  .home-activity-panel {
+    display: none;
+    width: 100%;
+  }
+
+  .home-activity-panel.is-active {
+    display: block;
+  }
+
+  .home-activity-header {
+    display: none;
+  }
+
+  .home-activity-scroll {
+    height: 100%;
+  }
+
+  .zone-card {
+    aspect-ratio: auto;
+  }
+
+  .zone-grid,
+  .city-grid,
+  .home-grid {
+    grid-template-columns: minmax(0, min(var(--pokemon-card-width), 100%));
+    justify-content: center;
+  }
+}

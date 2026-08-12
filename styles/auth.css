@@ -1,0 +1,104 @@
+﻿.auth-panel {
+  margin: 0 auto;
+  width: 100%;
+  border-radius: 18px;
+  box-shadow: none;
+}
+.auth-panel > .panel-inner {
+  padding: 38px 34px 34px;
+  gap: 26px;
+}
+.auth-form {
+  display: grid;
+  gap: 22px;
+}
+.auth-form .button-row {
+  justify-content: stretch;
+}
+.auth-form .button-row .button {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 16px;
+}
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.auth-tabs .button {
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 16px;
+}
+.auth-tab-active {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35) inset;
+}
+.auth-description {
+  text-align: justify;
+  line-height: 1.6;
+  margin: 8px 0 0;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.auth-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(197, 80, 68, 0.12);
+  color: var(--danger);
+  font-size: 12px;
+}
+.auth-message {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(76, 149, 92, 0.14);
+  color: #2f7d48;
+  font-size: 12px;
+}
+.auth-loading-message {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(200, 132, 95, 0.52);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 228, 208, 0.72);
+}
+.auth-inline-note {
+  margin: -8px 0 -2px;
+  color: var(--text-soft);
+  font-size: 12px;
+  text-align: left;
+}
+.auth-inline-note button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+}
+.scene-content-auth {
+  width: min(462px, 100%);
+}
+.scene-content-auth .field {
+  gap: 10px;
+}
+.scene-content-auth .field input {
+  height: 50px;
+  border-radius: 10px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.68);
+  font-size: 16px;
+}
+@media (max-width: 680px) {
+  .auth-panel > .panel-inner {
+    padding: 26px 20px 24px;
+    gap: 22px;
+  }
+
+  .auth-tabs .button {
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,166 @@
+import { getItemByIndex } from "../data/items.js";
+import {
+  MISSION_CATEGORY_ADVENTURE,
+  MISSION_CATEGORY_CAPTURE,
+  MISSION_CATEGORY_DAILY,
+  MISSION_CATEGORY_REPEATABLE,
+  MISSION_STATUS_CLAIMED,
+  MISSION_STATUS_SKIPPED
+} from "../data/pokefan-missions.js";
+import { state } from "../client/game-state.js";
+import { isDebugUser } from "../client/debug-tools.js";
+import { missionCategories, missionIsActive, missionRowsByCategory } from "../client/mission-runtime.js";
+import { isBattleRuntimeActive } from "../client/battle-scene-lock.js";
+import { escapeHtml, getItemImage, renderImage } from "../client/asset-helpers.js";
+import { button, formatInteger, moneyMarkup, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
+
+var SECTION_LABELS = {};
+SECTION_LABELS[MISSION_CATEGORY_ADVENTURE] = "Missioni avventura";
+SECTION_LABELS[MISSION_CATEGORY_CAPTURE] = "Missioni cattura";
+SECTION_LABELS[MISSION_CATEGORY_REPEATABLE] = "Missioni ripetibili";
+SECTION_LABELS[MISSION_CATEGORY_DAILY] = "Missioni giornaliere";
+
+function renderMoneyReward(quantity) {
+  return '<span class="pokefan-mission-reward">' + moneyMarkup(quantity) + "</span>";
+}
+
+function renderItemReward(reward) {
+  var item = getItemByIndex(reward && reward.itemIndex);
+  var quantity = Number(reward && reward.quantity) || 1;
+  return [
+    '<span class="pokefan-mission-reward">',
+    item && item.image ? renderImage(getItemImage(item.image), item.name, "pokefan-mission-item-image") : "",
+    '  <span>' + escapeHtml(quantity > 1 ? formatInteger(quantity) + "x " + (item ? item.name : "Ricompensa") : item ? item.name : "Ricompensa") + "</span>",
+    "</span>"
+  ].join("");
+}
+
+function rewardBadgeCount(mission) {
+  var frozen = (mission && mission.trackedKeys || []).find(function (key) { return /^reward-badges:[0-8]$/.test(String(key)); });
+  return frozen ? Number(String(frozen).split(":")[1]) : Math.max(0, Math.min(8, Number(state.trainerInfo && state.trainerInfo[2]) || 0));
+}
+
+function renderReward(reward, mission) {
+  var badges = rewardBadgeCount(mission);
+  if (reward && reward.kind === "dynamic-money") {
+    return renderMoneyReward((Number(reward.baseQuantity) || 0) + badges * (Number(reward.perBadge) || 0));
+  }
+  if (reward && reward.kind === "dynamic-item") {
+    return renderItemReward({
+      kind: "item",
+      itemIndex: reward.itemIndex,
+      quantity: (Number(reward.baseQuantity) || 0) + badges * (Number(reward.perBadge) || 0)
+    });
+  }
+  if (reward && reward.kind === "money") {
+    return renderMoneyReward(reward.quantity);
+  }
+  if (reward && (reward.kind === "choice" || reward.kind === "pokemon-choice")) {
+    return '<span class="pokefan-mission-reward"><span>' + escapeHtml(reward.choiceLabel) + "</span></span>";
+  }
+  return renderItemReward(reward);
+}
+
+function renderMissionStatus(mission) {
+  var missionState = state.missions || {};
+  var progress = Math.min(Number(mission.counter) || 0, Number(mission.target) || 0) + "/" + escapeHtml(mission.target);
+  if (Number(missionState.claimedNoticeMissionIndex) === Number(mission.missionIndex)) {
+    return '<span class="pokefan-mission-status is-claimed-now">Riscossa!</span>';
+  }
+  if (mission.claimStatus === MISSION_STATUS_SKIPPED) {
+    return '<span class="pokefan-mission-status">Saltata — migrazione debug</span>';
+  }
+  if (mission.claimStatus === MISSION_STATUS_CLAIMED) {
+    return '<span class="pokefan-mission-status">Riscossa</span>';
+  }
+  if (!missionIsActive(mission)) {
+    return '<span class="pokefan-mission-status">Non attiva</span>';
+  }
+  if (Number(mission.counter) >= Number(mission.target)) {
+    return button(
+      "Ritira",
+      "pokefan-claim-mission",
+      'data-mission-index="' + escapeHtml(mission.missionIndex) + '"' + (Number(missionState.claimingMissionIndex) === Number(mission.missionIndex) || isBattleRuntimeActive() ? " disabled" : ""),
+      "button-accent button-slim pokefan-claim-button"
+    );
+  }
+  if (isDebugUser()) {
+    return button(
+      "Completa (debug)",
+      "pokefan-debug-complete-mission",
+      'data-mission-index="' + escapeHtml(mission.missionIndex) + '"' + (missionState.debugCompletingMissionIndex != null || isBattleRuntimeActive() ? " disabled" : ""),
+      "button-ghost button-slim pokefan-debug-complete-button"
+    );
+  }
+  return '<span class="pokefan-mission-progress">' + progress + "</span>";
+}
+
+function renderMissionRow(mission) {
+  var phase = mission.category === MISSION_CATEGORY_ADVENTURE ? '<span class="pokefan-mission-phase">' + escapeHtml(Math.max(0, Number(mission.phase) - 1)) + " Medaglie</span>" : "";
+  return [
+    '<div class="pokefan-mission-row">',
+    '  <div class="pokefan-mission-cell pokefan-mission-requirement">' + phase + escapeHtml(mission.requirement) + "</div>",
+    '  <div class="pokefan-mission-cell">' + renderReward(mission.reward, mission) + "</div>",
+    '  <div class="pokefan-mission-cell pokefan-mission-completion">' + renderMissionStatus(mission) + "</div>",
+    "</div>"
+  ].join("");
+}
+
+function renderMissionTable(title, missions, emptyText) {
+  var body = missions.length ? missions.map(renderMissionRow).join("") : '<div class="pokefan-mission-row pokefan-empty-row"><div class="pokefan-empty-state">' + escapeHtml(emptyText) + "</div></div>";
+  return [
+    '  <div class="pokefan-data-table">',
+    '    <div class="pokefan-mission-header"><span>' + escapeHtml(title) + '</span><span>Ricompensa</span><span>Stato</span></div>',
+    body,
+    "  </div>"
+  ].join("");
+}
+
+function renderSectionTabs(activeSection) {
+  var categories = missionCategories().slice().sort(function (left, right) {
+    var order = {};
+    order[MISSION_CATEGORY_DAILY] = 0;
+    order[MISSION_CATEGORY_ADVENTURE] = 1;
+    order[MISSION_CATEGORY_CAPTURE] = 2;
+    order[MISSION_CATEGORY_REPEATABLE] = 3;
+    return (order[left] ?? 99) - (order[right] ?? 99);
+  });
+  return '<section class="panel pokefan-sections-panel"><div class="panel-inner"><nav class="pokemon-center-action-row rules-section-row" aria-label="Categorie missioni">' + categories.map(function (section) {
+    return button(
+      SECTION_LABELS[section],
+      "pokefan-section",
+      'data-section="' + section + '" aria-pressed="' + (section === activeSection ? "true" : "false") + '"',
+      "button-slim" + (section === activeSection ? " button-primary" : " button-ghost")
+    );
+  }).join("") + "</nav></div></section>";
+}
+
+export function renderPokefanScene() {
+  var missionState = state.missions || {};
+  var activeSection = state.scene.pokefanSection || MISSION_CATEGORY_DAILY;
+  if (activeSection === MISSION_CATEGORY_REPEATABLE && missionCategories().indexOf(MISSION_CATEGORY_REPEATABLE) === -1) {
+    activeSection = MISSION_CATEGORY_DAILY;
+  }
+  var missions = missionRowsByCategory(activeSection);
+  var activeMissions = missions.filter(function (mission) {
+    return (mission.claimStatus !== MISSION_STATUS_CLAIMED && mission.claimStatus !== MISSION_STATUS_SKIPPED)
+      || Number(missionState.claimedNoticeMissionIndex) === Number(mission.missionIndex);
+  });
+  var completedMissions = missions.filter(function (mission) {
+    return (mission.claimStatus === MISSION_STATUS_CLAIMED || mission.claimStatus === MISSION_STATUS_SKIPPED)
+      && Number(missionState.claimedNoticeMissionIndex) !== Number(mission.missionIndex);
+  });
+  var error = missionState.error ? '<p class="auth-error pokefan-error">' + escapeHtml(missionState.error) + "</p>" : "";
+  var body = [
+    '<section class="pokefan-layout">',
+    renderScenePresentationPanel("Club Pokefan", "pokefan-info-panel"),
+    renderSectionTabs(activeSection),
+    error,
+    '<section class="panel pokefan-missions-panel"><div class="panel-inner">',
+    renderMissionTable("Missioni attive", activeMissions, "Nessuna missione disponibile."),
+    activeSection === MISSION_CATEGORY_REPEATABLE ? "" : renderMissionTable("Missioni concluse", completedMissions, "Non hai ancora concluso missioni in questa sezione."),
+    "</div></section>",
+    "</section>"
+  ].join("");
+  return sceneShell("Club Pokéfan", "", body, "", "scene-content-pokefan", "parent-back");
+}

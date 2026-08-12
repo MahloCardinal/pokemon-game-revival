@@ -1,0 +1,142 @@
+﻿:root {
+  --app-min-width: 360px;
+  --app-viewport-width: max(100vw, var(--app-min-width));
+  --content-width: var(--section-width);
+  --section-width: calc(
+    var(--pokemon-card-width) + var(--pokemon-card-width) + var(--pokemon-card-width) + var(--zone-card-gap) +
+      var(--zone-card-gap) + 150px
+  );
+  --box-layout-width: var(--section-width);
+  --zone-card-width: var(--pokemon-card-width);
+  --zone-card-gap: 25px;
+  --trainer-sprite-width: 200px;
+  --trainer-sprite-height: 300px;
+  --pokemon-card-max-width: 340px;
+  --pokemon-card-min-width: 300px;
+  --pokemon-card-width: clamp(var(--pokemon-card-min-width), 26.1vw, var(--pokemon-card-max-width));
+  --pokemon-visual-size: clamp(126px, 10.962vw, 168px);
+  --box-scrollbar-safe-space: 8px;
+  --move-button-width: calc(var(--pokemon-card-width) - 24px);
+  --bg-1: #dcecf0;
+  --bg-2: #b6d4d7;
+  --text: #15272f;
+  --text-soft: #1c292e;
+  --accent: #3f8f99;
+  --accent-2: #c8845f;
+  --danger: #b95b65;
+  --success: #3e8b6d;
+  --warning: #b87935;
+  --surface-page: rgba(255, 255, 255, 0.42);
+  --surface-panel: rgba(255, 255, 255, 0.76);
+  --surface-raised: rgba(255, 255, 255, 0.86);
+  --border: rgba(87, 130, 154, 0.26);
+  --radius-md: 8px;
+  --radius-sm: 5px;
+  --radius-card: 4px;
+  --radius-panel: 12px;
+  --radius-control: 7px;
+  --surface-glass: rgba(255, 255, 255, 0.9);
+  --surface-glass-soft: rgba(232, 244, 250, 0.46);
+  --border-soft: rgba(139, 176, 210, 0.28);
+  --border-strong: rgba(98, 142, 174, 0.42);
+  --shadow-soft: 4px 4px 0 rgba(61, 96, 128, 0.12);
+  --shadow-soft-hover: 2.5px 2.5px 0 rgba(61, 96, 128, 0.16);
+  --focus-ring: 0 0 0 3px rgba(63, 143, 153, 0.24);
+  --interactive-transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+  --interactive-hover-filter: brightness(1.035) saturate(1.03);
+  --game-font: Consolas, "Courier New", monospace;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--game-font);
+}
+html {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.52), transparent 34%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  overflow-y: scroll;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+}
+body {
+  position: relative;
+  isolation: isolate;
+  min-width: var(--app-min-width);
+  background: transparent;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: -200px 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.52), transparent 34%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  background-attachment: fixed;
+  pointer-events: none;
+}
+html::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+}
+html::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  border-radius: var(--radius-card);
+}
+html::-webkit-scrollbar-thumb {
+  background: rgba(87, 130, 154, 0.40);
+  border-radius: var(--radius-card);
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: rgba(87, 130, 154, 0.58);
+}
+:where(*):not(html) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(87, 130, 154, 0.34) transparent;
+}
+:where(*):not(html)::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+:where(*):not(html)::-webkit-scrollbar-track {
+  background: transparent;
+}
+:where(*):not(html)::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(87, 130, 154, 0.34);
+}
+:where(*):not(html)::-webkit-scrollbar-thumb:hover {
+  background: rgba(87, 130, 154, 0.52);
+}
+.money-symbol {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe7a6, #e2a534);
+  color: #6a4317;
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 5px 9px rgba(31, 37, 40, 0.16);
+  flex: 0 0 auto;
+}
+@media (max-width: 1150px) {
+  :root {
+    --pokemon-card-width: clamp(var(--pokemon-card-min-width), calc(50vw - 43px), var(--pokemon-card-max-width));
+    --pokemon-visual-size: clamp(126px, calc(21vw - 18.06px), 168px);
+  }
+}
+@media (max-width: 680px) {
+  :root {
+    --pokemon-card-width: 341px;
+    --pokemon-visual-size: 147px;
+    --content-width: 100%;
+  }
+}

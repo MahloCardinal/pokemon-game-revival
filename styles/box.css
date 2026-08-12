@@ -1,0 +1,200 @@
+﻿.box-pokemon-grid > .pokemon-card-frame {
+  height: 100%;
+}
+.box-storage-panel .box-pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--pokemon-card-min-width), 100%), 1fr));
+  justify-items: center;
+  gap: var(--zone-card-gap);
+  width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+}
+.box-scene-stack {
+  display: grid;
+  gap: 16px;
+  width: min(var(--box-layout-width), 100%);
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  justify-content: stretch;
+}
+.box-filter-row {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 10px;
+  column-gap: 20px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 12px 12px;
+  border-radius: var(--radius-panel);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-soft), 0 14px 28px rgba(61, 96, 128, 0.08);
+  position: relative;
+  z-index: 5;
+}
+.box-filter-label {
+  color: var(--text);
+  font-weight: 700;
+}
+.box-filter-row .choice-menu-summary {
+  min-width: 102px;
+  width: 102px;
+}
+.box-filter-row .choice-menu-list {
+  grid-template-columns: repeat(3, 94px);
+}
+.box-filter-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+.box-filter-field input {
+  width: 58px;
+}
+.box-filter-name-field input {
+  width: 64px;
+}
+.box-filter-held-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  font-weight: 700;
+  color: var(--text);
+}
+.box-filter-held-field input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #197d73;
+}
+.box-filter-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+.box-filter-submit,
+.box-filter-reset {
+  min-height: 36px;
+  padding: 7px 14px;
+}
+.box-filter-reset {
+  border-color: rgba(185, 91, 101, 0.52);
+  color: var(--danger);
+}
+.box-storage-panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 645px;
+  margin: 0 auto;
+  overflow-y: scroll;
+  overflow-x: auto;
+  padding: 22px 16px 22px 22px;
+  border-radius: var(--radius-panel);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-page);
+}
+@media (max-width: 1150px) {
+  .box-pokemon-grid .pokemon-card {
+    width: min(var(--pokemon-card-width), 100%);
+  }
+
+  .box-pokemon-grid .pokemon-card-moves {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .box-pokemon-grid .pokemon-card .move-button {
+    width: 100%;
+  }
+}
+@media (max-width: 680px) {
+  .box-filter-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: end;
+    justify-content: stretch;
+    width: min(540px, 100%);
+    padding: 14px;
+  }
+
+  .box-filter-label,
+  .box-filter-type-field,
+  .box-filter-name-field,
+  .box-filter-held-field,
+  .box-filter-actions,
+  .box-filter-submit {
+    grid-column: 1 / -1;
+  }
+
+  .box-filter-label {
+    justify-self: center;
+    color: var(--text-soft);
+  }
+
+  .box-filter-field {
+    display: grid;
+    gap: 6px;
+    justify-items: stretch;
+  }
+
+  .box-filter-held-field {
+    justify-self: center;
+  }
+
+  .box-filter-field span {
+    text-align: center;
+  }
+
+  .box-filter-type-field,
+  .box-filter-name-field {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .box-filter-type-field span,
+  .box-filter-name-field span {
+    text-align: right;
+  }
+
+  .box-filter-row .choice-menu,
+  .box-filter-field input,
+  .box-filter-name-field input,
+  .box-filter-row .choice-menu-summary {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .box-filter-actions {
+    justify-self: center;
+    justify-content: center;
+  }
+
+  .box-filter-submit,
+  .box-filter-reset {
+    min-width: 112px;
+    width: auto;
+    padding-inline: 18px;
+  }
+
+  .box-filter-field input,
+  .box-filter-row .choice-menu-summary {
+    height: 40px;
+  }
+
+  .box-filter-row .choice-menu-list {
+    left: 50%;
+    grid-template-columns: repeat(2, minmax(86px, 1fr));
+    width: min(220px, calc(var(--app-viewport-width) - 48px));
+    min-width: 0;
+    transform: translateX(-50%);
+  }
+}

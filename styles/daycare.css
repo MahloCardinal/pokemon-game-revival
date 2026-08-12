@@ -1,0 +1,166 @@
+.daycare-layout {
+  --daycare-slot-width: var(--pokemon-card-width);
+  --daycare-slot-aspect-ratio: 5 / 6;
+  --daycare-card-width: 269px;
+  --daycare-panel-gap: 8px;
+  --daycare-list-padding-inline: 6px;
+}
+.daycare-team-inner {
+  display: grid;
+  grid-template-rows: auto minmax(0, max-content);
+  align-content: start;
+  gap: 14px;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding-left: 10px;
+  padding-right: 10px;
+  container-type: inline-size;
+}
+.daycare-team-panel .stack-title {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.daycare-team-row {
+  display: grid;
+  grid-template-rows: auto;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--daycare-card-width);
+  row-gap: var(--daycare-panel-gap);
+  column-gap: 12px;
+  padding: 0px 12px;
+  justify-content: flex-start;
+  align-content: start;
+  max-height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  align-items: stretch;
+}
+.daycare-card-frame {
+  width: var(--daycare-card-width);
+  padding-bottom: 20px;
+}
+.daycare-card-frame,
+.daycare-card-frame > .pokemon-card {
+  width: var(--daycare-card-width);
+  max-width: none;
+}
+.daycare-card-frame > .pokemon-card {
+  overflow: visible;
+}
+.daycare-team-row > .daycare-card-frame:first-child {
+  margin-left: 0;
+}
+.daycare-team-row > .daycare-card-frame:last-child {
+  margin-right: 0;
+}
+.daycare-card-frame > .pokemon-card.daycare-target-clickable {
+  cursor: pointer;
+}
+.daycare-card-frame .pokemon-card-summary {
+  gap: 5.5px;
+}
+.daycare-card-frame .pokemon-card-name {
+  font-size: 11.4px;
+  font-weight: 700;
+}
+.daycare-card-frame .pokemon-visual {
+  width: 76px;
+}
+.daycare-card-frame .pokemon-card-name-row .gender-icon {
+  position: static;
+  align-self: center;
+}
+.daycare-card-frame > .pokemon-card.daycare-target-clickable:hover,
+.daycare-card-frame > .pokemon-card.daycare-target-clickable:focus-visible {
+  filter: var(--interactive-hover-filter);
+}
+.daycare-card-frame > .pokemon-card[data-daycare-deposit-pending="true"] {
+  pointer-events: none;
+  filter: grayscale(0.55) saturate(0.75);
+}
+.battle-switch-choice[data-daycare-deposit-pending="true"] {
+  pointer-events: none;
+  filter: grayscale(0.55) saturate(0.75);
+}
+.daycare-card-frame > .pokemon-card.daycare-target-muted {
+  isolation: isolate;
+  filter: grayscale(0.85) saturate(0.55);
+}
+.daycare-card-frame > .pokemon-card.daycare-target-muted::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  background: rgba(84, 88, 91, 0.58);
+  pointer-events: none;
+}
+.daycare-slots-row {
+  display: grid;
+  gap: 18px;
+}
+.daycare-slots-row {
+  grid-template-columns: repeat(2, minmax(0, min(var(--daycare-slot-width), calc((100% - 18px) / 2))));
+  justify-content: center;
+  align-items: start;
+}
+.daycare-slot {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.daycare-slot-action {
+  display: flex;
+  justify-content: center;
+}
+.daycare-slot-card {
+  display: grid;
+  width: min(var(--daycare-slot-width), 100%);
+  max-width: 100%;
+  aspect-ratio: var(--daycare-slot-aspect-ratio);
+  justify-self: center;
+}
+.daycare-slot-card > .pokemon-card {
+  align-self: stretch;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  overflow: visible;
+}
+.daycare-placeholder-card {
+  display: grid;
+  align-content: center;
+  justify-self: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: var(--daycare-slot-aspect-ratio);
+  padding: 0 30px;
+  background: rgb(207 224 232 / 72%);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+  border: 2px dashed rgba(128, 128, 128, 0.5);
+  border-radius: var(--radius-panel);
+}
+@media (max-width: 680px) {
+  .daycare-layout {
+    --daycare-card-width: 257px;
+  }
+  .daycare-team-row {
+    height: 100%;
+    max-height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .daycare-team-inner {
+    overflow: hidden;
+  }
+  .daycare-slots-row {
+    grid-template-columns: minmax(0, min(var(--daycare-slot-width), 100%));
+  }
+}

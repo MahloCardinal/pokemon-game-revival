@@ -1,0 +1,137 @@
+.scene-content-admin {
+  width: min(var(--section-width), 100%);
+}
+.scene-content-admin-home {
+  display: grid;
+  justify-items: center;
+}
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: 220px;
+  justify-content: start;
+  width: 100%;
+}
+.admin-dashboard-card {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 14px;
+  min-height: 130px;
+  border: 3px outset #d9a24f;
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(160deg, rgba(244, 230, 199, 0.96), rgba(207, 170, 105, 0.92)),
+    linear-gradient(135deg, rgba(217, 101, 59, 0.2), transparent 72%);
+  color: #3a2a1c;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(31, 37, 40, 0.18);
+  transition: var(--interactive-transition);
+}
+.admin-dashboard-card:hover,
+.admin-dashboard-card:focus-visible {
+  transform: translateY(-2px);
+  filter: var(--interactive-hover-filter);
+}
+.admin-dashboard-card-media {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.44);
+}
+.admin-dashboard-card-image {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+.admin-dashboard-card-title {
+  color: #704415;
+  font-size: 18px;
+  font-weight: 700;
+}
+.admin-dashboard-message-panel {
+  display: grid;
+  gap: 10px;
+  width: min(520px, 100%);
+  margin-top: 22px;
+  padding: 16px;
+  border: 2px solid rgba(53, 93, 115, 0.42);
+  border-radius: var(--radius-card);
+  background: rgba(247, 250, 252, 0.88);
+  box-shadow: 3px 3px 0 rgba(61, 96, 128, 0.12);
+}
+.admin-dashboard-section-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.2;
+}
+.admin-dashboard-message-label {
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 700;
+}
+.admin-dashboard-message-input {
+  width: 100%;
+  min-height: 82px;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid rgba(53, 93, 115, 0.42);
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  font-family: var(--game-font);
+  font-size: 15px;
+  line-height: 1.35;
+}
+.admin-dashboard-message-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.admin-dashboard-message-feedback {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.admin-dashboard-message-feedback.is-error {
+  color: var(--danger);
+}
+.admin-dashboard-message-feedback.is-notice {
+  color: #2f713c;
+}
+.admin-battles-list {
+  display: grid;
+  gap: 16px;
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+.admin-battles-list.is-empty {
+  display: block;
+}
+.admin-battles-empty {
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 72px;
+  background: rgba(255, 255, 255, 0.94);
+}
+.admin-battle-row {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 2px solid rgba(33, 46, 52, 0.22);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.36);
+}
+.admin-battle-row p,
+.admin-battle-row h3 {
+  margin: 0;
+}
+@media (max-width: 680px) {
+  .admin-dashboard-card {
+    padding: 12px;
+  }
+}

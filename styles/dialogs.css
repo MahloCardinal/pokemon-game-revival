@@ -1,0 +1,506 @@
+.team-choice-grid {
+  display: grid;
+  gap: var(--zone-card-gap);
+  justify-content: center;
+  align-items: stretch;
+}
+.team-choice-grid > .pokemon-card-frame {
+  height: 100%;
+}
+.dialog-copy p {
+  margin: 0;
+  color: var(--text-soft);
+  white-space: normal;
+  overflow-wrap: break-word;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.evolution-preview-image,
+.evolution-result-image,
+.level-up-arrow-image {
+  display: block;
+  object-fit: contain;
+}
+.dialog.starter-confirm-dialog {
+  --starter-confirm-padding-x: clamp(14px, 10vw, 50px);
+  --starter-confirm-box-width: clamp(
+    74px,
+    calc((var(--app-viewport-width) / 2) - var(--starter-confirm-padding-x) - 17px),
+    var(--trainer-sprite-width)
+  );
+  --starter-confirm-gap: clamp(3px, 1.5vw, 6px);
+  width: fit-content;
+  max-width: min(860px, calc(var(--app-viewport-width) - 32px));
+  padding: clamp(10px, 4vw, 20px) var(--starter-confirm-padding-x);
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+    0 18px 46px rgba(25, 59, 78, 0.14);
+}
+.starter-confirm-dialog .dialog-copy {
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.58);
+}
+.dialog-backdrop {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  padding: 20px;
+  overflow: auto;
+  background: rgba(18, 34, 44, 0.42);
+  background-attachment: fixed;
+  backdrop-filter: blur(10px);
+}
+.dialog {
+  box-sizing: border-box;
+  position: relative;
+  width: fit-content;
+  min-width: min(360px, calc(var(--app-viewport-width) - 32px));
+  max-height: min(86vh, 920px);
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.58),
+    var(--shadow-soft),
+    0 22px 58px rgba(25, 59, 78, 0.22);
+  text-align: center;
+}
+.message-dialog {
+  width: fit-content;
+  max-width: min(520px, calc(var(--app-viewport-width) - 32px));
+}
+.message-dialog .dialog-copy {
+  width: fit-content;
+  max-width: 100%;
+}
+.evolution-result-dialog {
+  width: fit-content;
+}
+.evolution-preview-wrap {
+  display: grid;
+  place-items: end center;
+  min-height: 150px;
+  margin: 4px 0 18px;
+}
+.evolution-preview-image,
+.evolution-result-image {
+  width: auto;
+  height: auto;
+  max-width: 180px;
+  max-height: 180px;
+  image-rendering: auto;
+}
+.progression-dialog .dialog-actions.evolution-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+.level-up-dialog {
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.level-up-dialog .dialog-title,
+.level-up-dialog .dialog-copy {
+  flex: 0 0 auto;
+}
+.level-up-dialog .dialog-copy {
+  width: fit-content;
+  max-width: 100%;
+}
+.level-up-comparison {
+  display: grid;
+  grid-template-columns: minmax(0, var(--pokemon-card-width)) 56px minmax(0, var(--pokemon-card-width));
+  align-items: stretch;
+  justify-content: center;
+  gap: 18px;
+  margin: 14px 0 4px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+.level-up-card-slot {
+  display: grid;
+  grid-template-rows: auto minmax(max-content, 1fr);
+  gap: 8px;
+  align-items: stretch;
+  align-self: stretch;
+  justify-items: center;
+  min-width: 0;
+  container-type: inline-size;
+}
+.level-up-card-label {
+  display: inline-block;
+  padding: 0 4px 3px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid rgba(33, 46, 52, 0.32);
+}
+.level-up-card-slot .pokemon-card {
+  width: min(269px, 100%);
+  height: 100%;
+}
+.battle-shop-reward-card {
+  margin: 12px auto;
+}
+.experience-dialog {
+  width: min(320px, calc(var(--app-viewport-width) - 32px));
+}
+.experience-copy {
+  text-align: center;
+}
+.experience-points {
+  font: inherit;
+  font-weight: 900;
+}
+.experience-card-slot {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 4px;
+}
+.experience-card-slot .pokemon-card {
+  width: min(269px, 100%);
+}
+.level-up-arrow-slot {
+  align-self: center;
+}
+.level-up-arrow-image {
+  width: 56px;
+  max-width: 100%;
+  height: auto;
+}
+.training-level-dialog {
+  width: min(1100px, calc(var(--app-viewport-width) - 32px));
+}
+.training-level-summary {
+  display: inline-block;
+  margin: 0 auto 10px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.training-level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(238px, 100%), 1fr));
+  gap: 25px;
+  align-items: stretch;
+  justify-items: center;
+  width: 100%;
+  margin-top: 2px;
+}
+.training-level-grid > .pokemon-card,
+.training-level-grid > .pokemon-card-frame {
+  width: min(260px, 100%);
+  height: 100%;
+}
+.training-level-grid .pokemon-card {
+  width: 100%;
+  height: 100%;
+}
+.training-level-grid .pokemon-card-frame.is-disabled .pokemon-card {
+  opacity: 0.72;
+}
+.training-level-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.training-level-step {
+  min-width: 42px;
+  padding: 7px 10px;
+  font-size: 18px;
+  line-height: 1;
+}
+.training-level-assigned {
+  min-width: 46px;
+  padding: 6px 9px;
+  border: 2px solid rgba(33, 46, 52, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.56);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+}
+.training-level-status {
+  margin: 2px 8px 0;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.training-level-grid .pokemon-card-frame:has(.pokemon-card-external) {
+  padding-bottom: 40px;
+}
+.evolution-result-image-wrap {
+  display: grid;
+  place-items: end center;
+  min-height: 150px;
+  margin: 8px 0 18px;
+}
+.dialog-title {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 8px;
+  font-size: 20px;
+  line-height: 1.25;
+}
+.dialog-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 7px;
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto;
+  padding: 10px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    inset 0 2px 10px rgba(85, 66, 38, 0.12),
+    0 2px 0 rgba(255, 255, 255, 0.36);
+  font-size: 17px;
+}
+@media (max-width: 360px) {
+  .dialog-copy p {
+    font-size: 11px;
+  }
+}
+.dialog-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.progression-dialog .dialog-actions {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: center;
+}
+.move-learn-dialog,
+.move-learn-result-dialog {
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+.move-learn-result-dialog {
+  gap: 18px;
+}
+.move-learn-dialog {
+  overflow: auto;
+}
+.move-learn-dialog .progression-card-slot {
+  flex: 0 0 auto;
+  width: min(269px, 100%);
+  overflow: visible;
+}
+.move-learn-dialog .progression-card-slot .pokemon-card.mini-card {
+  width: 100%;
+}
+.progression-card-slot {
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  container-type: inline-size;
+}
+.progression-card-slot .pokemon-card {
+  width: min(269px, 100%);
+}
+.progression-card-slot .pokemon-card.mini-card {
+  width: min(269px, 100%);
+}
+.move-learn-result-dialog .progression-card-slot {
+  width: min(var(--pokemon-card-width), 100%);
+}
+.move-learn-result-dialog .progression-card-slot .pokemon-card.mini-card {
+  width: min(269px, 100%);
+}
+.progression-new-move-preview .move-button,
+.progression-replace-move-button {
+  width: 100%;
+  min-height: 40px;
+}
+.progression-new-move-preview {
+  display: grid;
+  justify-items: center;
+  width: min(var(--move-button-width), 100%);
+  margin: 0 auto 14px;
+}
+.progression-replace-move-list {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+}
+
+.kanto-league-entry-dialog {
+  width: fit-content;
+  max-width: min(700px, calc(var(--app-viewport-width) - 32px));
+  text-align: center;
+}
+
+.kanto-league-entry-content {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.kanto-league-entry-trainer {
+  width: auto;
+  height: auto;
+  max-width: 140px;
+  max-height: 140px;
+}
+
+.kanto-league-entry-text {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.kanto-league-entry-subtitle {
+  margin: 12px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-soft);
+}
+
+.kanto-league-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(96px, 120px));
+  gap: 8px;
+  width: max-content;
+  max-width: 520px;
+  margin: 10px auto 0;
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.kanto-league-entry-grid.floating-panel-grid-count-1 {
+  grid-template-columns: minmax(96px, 120px);
+}
+.kanto-league-entry-grid.floating-panel-grid-count-2 {
+  grid-template-columns: repeat(2, minmax(96px, 120px));
+}
+@media (max-width: 680px) {
+  .dialog-backdrop {
+    padding: 16px 22px;
+  }
+
+  .dialog {
+    min-width: min(360px, calc(var(--app-viewport-width) - 44px));
+    max-width: calc(var(--app-viewport-width) - 44px);
+    padding: 8px 22px;
+  }
+
+  .dialog-copy {
+    width: 100%;
+  }
+
+  .level-up-dialog {
+    width: min(100%, calc(var(--app-viewport-width) - 32px));
+    overflow: hidden;
+  }
+
+  .level-up-comparison {
+    grid-template-columns: minmax(0, min(260px, 100%));
+    align-items: center;
+    justify-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: min(260px, 100%);
+    align-self: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .level-up-card-slot {
+    width: min(260px, 100%);
+    gap: 6px;
+  }
+
+  .level-up-card-label {
+    font-size: 12px;
+  }
+
+  .level-up-card-slot .pokemon-card {
+    width: min(260px, 100%);
+  }
+
+  .level-up-arrow-slot {
+    width: 28px;
+  }
+
+  .level-up-arrow-image {
+    width: 28px;
+    transform: rotate(90deg);
+  }
+}
+
+:where(
+  .starter-card,
+  .team-description-panel,
+  .trainer-profile,
+  .shopping-center-item,
+  .training-zone-panel,
+  .admin-dashboard-card
+) {
+  background-color: var(--surface-glass);
+  border: 1px solid var(--border-soft);
+}
+
+:where(input, select, textarea) {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background-color: rgba(255, 255, 255, 0.62);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42);
+}
+
+:where(input, select, textarea):focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.92);
+  outline-offset: 2px;
+  border-color: var(--border-strong);
+}
+
+:where(.button, .move-button, .zone-card, .dialog, .panel, .summary-group, .empty-state) {
+  backdrop-filter: blur(8px);
+}

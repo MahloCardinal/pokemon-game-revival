@@ -64,7 +64,7 @@ function renderActivityPanelBody(feed, rows, emptyText, renderEntry) {
 }
 
 function renderUserActivityFeedPanel(feed, rows, selectedDashboard) {
-  var body = renderActivityPanelBody(feed, rows, "Nessuna attività; recente.", renderActivityText);
+  var body = renderActivityPanelBody(feed, rows, "Nessuna attività recente.", renderActivityText);
   return [
     '<section id="home-player-activity-panel" class="home-activity-panel is-player-panel' + (selectedDashboard === "players" ? " is-active" : "") + '" aria-label="Eventi GdR">',
     '  <h2 class="home-activity-header">Eventi GdR</h2>',

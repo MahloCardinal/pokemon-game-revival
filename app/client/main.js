@@ -14,7 +14,7 @@ import { getResolvedInventoryItem } from "../data/items.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
 import { openAdminBattle, refreshAdminBattles } from "./admin-battle-handler.js";
 import { initializeHeldItemTooltip } from "./held-item-tooltip.js";
-import { initializeAppVersionWatcher, setupAppVersionWatch } from "./app-version.js";
+import { initializeDeploymentWatcher, setupDeploymentWatch } from "./deployment-version.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { PLAYER_REVISION_SYNC_EVENT } from "../api/player-command.js";
 
@@ -464,12 +464,12 @@ bindHistoryNavigation(function (scene) {
   return null;
 });
 
-initializeAppVersionWatcher().then(function (reloading) {
+initializeDeploymentWatcher().then(function (reloading) {
   if (reloading) {
     return;
   }
 
-  setupAppVersionWatch();
+  setupDeploymentWatch();
   onBattleRuntimeChange(handleBattleRuntimeChange);
   initializeBattleRuntime();
   initializeTeamBoxRuntime(handleTeamBoxRuntimeChange, handleCaptureEncounterRuntimeInvalidation);

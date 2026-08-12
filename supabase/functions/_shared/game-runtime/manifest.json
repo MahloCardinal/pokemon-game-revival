@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "7261d3eee08c04e4cf65693c9c3843443258a1cbd202e2c25c41d475ee708480",
+  "bundleChecksum": "51ebd82cd1373b029f5b7e54aa8c3e5ee08732c7e05ce11b5ce3db12e048367f",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -24,8 +24,8 @@
     },
     {
       "source": "app/data/gyms.js",
-      "sha256": "fca0a9367750e6cb9692df1f5f80044c1dc34dfce1e919dab7d0c216f3346b5f",
-      "bytes": 15733
+      "sha256": "fa17e4c5a6b369edaa7ab580a94b5cec6e5cea3393156de38d715bf9c48e1f79",
+      "bytes": 15917
     },
     {
       "source": "app/data/index.js",
@@ -49,8 +49,8 @@
     },
     {
       "source": "app/data/progression.js",
-      "sha256": "be8172838e3b43d352d9c8ca63d3a1192a8ed4a499d73fb7c60e2af8354a9884",
-      "bytes": 10460
+      "sha256": "6da83f1138fb614817b6cd265c34c1f233d0bd2a03ef447e811c58cedda2646a",
+      "bytes": 10452
     },
     {
       "source": "app/data/pve-move-categories.js",

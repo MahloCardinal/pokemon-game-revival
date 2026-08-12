@@ -3989,6 +3989,7 @@ function finishGymBattle(scene, lines) {
   var rewardMoney = gymReward ? Number(gymReward.money) || 0 : 0;
   var rewardMt = gymReward && gymReward.mt ? getItemByIndex(gymReward.mt) : null;
   var rewardItem = gymReward && gymReward.item ? getItemByIndex(gymReward.item) : null;
+  var rewardItemQuantity = Math.max(1, Number(gymReward && gymReward.itemQuantity) || 1);
   var rewardLines = (lines && lines.length ? lines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
   if (!scene.gymRewardHandled && city && badgeCount === city.badgeIndex) {
     updateTrainerProfile(function (trainerInfo) {
@@ -3998,7 +3999,7 @@ function finishGymBattle(scene, lines) {
       adjustInventoryItemQuantity(rewardMt.index, 1);
     }
     if (rewardItem) {
-      adjustInventoryItemQuantity(rewardItem.index, 1);
+      adjustInventoryItemQuantity(rewardItem.index, rewardItemQuantity);
     }
     scene.gymRewardHandled = true;
     rewardLines.push("Ottieni " + moneyText(rewardMoney) + ".");
@@ -4006,7 +4007,7 @@ function finishGymBattle(scene, lines) {
       rewardLines.push("Ottieni " + rewardMt.name + ".");
     }
     if (rewardItem) {
-      rewardLines.push("Ottieni " + rewardItem.name + ".");
+      rewardLines.push("Ottieni " + (rewardItemQuantity > 1 ? String(rewardItemQuantity) + " " : "") + rewardItem.name + ".");
     }
     rewardLines.push("Ottieni la " + (KANTO_GYM_BADGE_NAMES[city.badgeIndex] || "") + ".");
     queueGlobalActivityEvent({ eventType: "badge", subjectName: badgeActivitySubjectName(KANTO_GYM_BADGE_NAMES[city.badgeIndex] || "") });

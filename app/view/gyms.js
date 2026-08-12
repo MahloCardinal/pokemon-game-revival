@@ -51,7 +51,7 @@ function renderGymRewards(rewards) {
         label = "";
       } else if (item) {
         image = renderImage(getItemDisplayImage(item), item.name, "gym-badge-image");
-        label = item.name;
+        label = reward.quantity > 1 ? String(reward.quantity) + " " + item.name : item.name;
       }
       return '<div class="gym-badge-row">' + image + (label ? '<span>' + escapeHtml(label) + "</span>" : "") + "</div>";
     }).join(""),

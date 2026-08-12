@@ -72,14 +72,14 @@ export var MT_TIER_RULES = {
 };
 
 export var GYM_REWARDS = [
-  { money: 2000, mt: i.mt48.index, item: i.ps_su.index },
-  { money: 3000, mt: i.mt18.index, item: i.puroaroma.index },
-  { money: 4500, mt: i.mt25.index, item: i.pp_su.index },
-  { money: 6000, mt: i.mt22.index, item: i.flauto_nero.index },
-  { money: 8500, mt: i.mt43.index, item: i.bizzoaroma.index },
-  { money: 11000, mt: i.mt49.index, item: i.pp_max.index },
-  { money: 15000, mt: i.mt52.index, item: i.flauto_bianco.index },
-  { money: 20000, mt: i.mt51.index, item: i.bandana.index }
+  { money: 3000, item: i.ps_su.index, itemQuantity: 3 },
+  { money: 5000, item: i.puroaroma.index, itemQuantity: 1 },
+  { money: 7000, item: i.pp_su.index, itemQuantity: 3 },
+  { money: 10000, item: i.flauto_nero.index, itemQuantity: 1 },
+  { money: 20000, item: i.bizzoaroma.index, itemQuantity: 1 },
+  { money: 30000, item: i.pp_max.index, itemQuantity: 3 },
+  { money: 50000, item: i.flauto_bianco.index, itemQuantity: 1 },
+  { money: 70000, item: i.roccia_di_re.index, itemQuantity: 1 }
 ];
 
 export var KANTO_LEAGUE_REWARDS = {

@@ -7,6 +7,10 @@ const supabaseConfig = read("supabase/config.toml");
 const edge = read("supabase/functions/battle-command/index.ts");
 const schema = read("supabase/migrations/20260812000000_revival_baseline.sql");
 const engine = read("app/engine/battle-runtime.js");
+const main = read("app/client/main.js");
+const deploymentWatcher = read("app/client/deployment-version.js");
+const deploymentEndpoint = read("api/deployment-version.js");
+const vercel = read("vercel.json");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
   .filter((name) => name.endsWith(".sql"))
@@ -19,6 +23,12 @@ assert.doesNotMatch(config, /ompjckjbvauemoxwggdi|viliofosdnmfnfboqnwu|web-gdr-s
 assert.match(engine, /BATTLE_ENGINE_VERSION = "pokemon-game-revival"/);
 assert.match(edge, /requireServerRole\(clients\.serviceClient, clients\.userId, "debug"\)/);
 assert.match(edge, /requireRevivalProject\(\)/);
+assert.doesNotMatch(main, /app-version|AppVersion/);
+assert.doesNotMatch(vercel, /app-version\.json/);
+assert.match(main, /initializeDeploymentWatcher/);
+assert.match(deploymentWatcher, /\/api\/deployment-version/);
+assert.match(deploymentWatcher, /shouldDeferReloadForActiveBattle/);
+assert.match(deploymentEndpoint, /VERCEL_GIT_COMMIT_SHA/);
 
 for (const functionName of [
   "register-with-username",
@@ -97,5 +107,11 @@ function assertAcyclic(functionName) {
   completed.add(functionName);
 }
 for (const functionName of canonicalPrepareFunctions) assertAcyclic(functionName);
+
+const gymRewardCore = finalFunctionBody("server_authority_private", "award_terminal_gym_victory_core");
+assert.match(gymRewardCore, /reward_kind\s*=\s*'item'\s+and quantity\s*>\s*0\s+and item_index is not null\)\s*<>\s*1/i);
+assert.match(migrationSql, /revival-gym-rewards-20260812/);
+assert.match(migrationSql, /51ebd82cd1373b029f5b7e54aa8c3e5ee08732c7e05ce11b5ce3db12e048367f/);
+assert.match(migrationSql, /lower\(account\.email\) = 'aaa@pokemon-game-revival\.local'/);
 
 console.log("Revival baseline contract checks passed.");

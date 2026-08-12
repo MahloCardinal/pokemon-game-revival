@@ -180,13 +180,14 @@ export function kantoGymLeaderByCity(cityKey) {
   var rewardConfig = GYM_REWARDS[city.badgeIndex];
   var rewardMt = rewardConfig.mt ? getItemByIndex(rewardConfig.mt) : null;
   var rewardItem = rewardConfig.item ? getItemByIndex(rewardConfig.item) : null;
+  var rewardItemQuantity = Math.max(1, Number(rewardConfig.itemQuantity) || 1);
   return {
     name: leader.name,
     sprite: leader.sprite,
     rewards: [
       { kind: "money", quantity: rewardConfig.money, label: String(rewardConfig.money) },
       rewardMt ? { kind: "item", itemIndex: rewardMt.index, label: rewardMt.name } : null,
-      rewardItem ? { kind: "item", itemIndex: rewardItem.index, label: rewardItem.name } : null,
+      rewardItem ? { kind: "item", itemIndex: rewardItem.index, quantity: rewardItemQuantity, label: rewardItemQuantity > 1 ? String(rewardItemQuantity) + " " + rewardItem.name : rewardItem.name } : null,
       { kind: "badge", label: KANTO_GYM_BADGE_NAMES[city.badgeIndex] || "Medaglia " + city.title, image: KANTO_GYM_BADGE_IMAGES[city.badgeIndex] || "" }
     ].filter(Boolean),
     challengeLimits: [

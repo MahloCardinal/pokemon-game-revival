@@ -1,4 +1,1 @@
-.build/
-.env*
-.vercel/
 supabase/.temp/

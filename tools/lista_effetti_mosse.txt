@@ -1,0 +1,265 @@
+[Non implementate: Baratto, Giocodiruolo, Sonoqui]
+
+Abisso, Ghigliottina, Perforcorno, Purogelo: 50% l'avversario va KO
+
+Capocciata, Pazienza: 1° turno aumenta la Difesa di chi lo usa, 2° danni
+Colpo, Oltraggio, Petalodanza: Danni, il Pokémon è obbligato ad usare Petalodanza anche il turno successivo, poi confonde chi l'ha usato
+Idrocannone, Incendio, Iper Raggio, Radicalbero: 1° turno 2xDanni, 2° ricarica
+Solarraggio: 1° turno carica, 2° 2xDanni. Colpisce subito se attivo Giornodisole
+Ventagliente: 1° turno carica, 2° danni, ignora gli aumenti di Difesa
+
+Fossa, Volo, Sub: 1° turno non può essere colpito normalmente, 2° danni
+Rimbalzo: 1° turno non può essere colpito normalmente, 2° danni e paralizza
+Comete, Pugnodombra: Danni, colpisce anche avversari semi-invulnerabili
+Magnitudo: Danni, x2 se l'avversario è nel turno di semi-invulnerabilità di Fossa
+Raffica, Stramontante, Tornado: Danni, x2 se l'avversario è nel turno di semi-invulnerabilità di Volo
+
+Avvolgibotta, Legatutto, Mulinello, Sabbiotomba, Tenaglia, Turbofuoco: Danni, il nemico non può scappare x4 turni
+Parassiseme: Danni, fino al cambio o ko l'avversario alla fine del suo turno perde 1/8 dei PS max, che vengono recuperati dal Pokémon attivo del giocatore
+Punte: I Pokémon avversari che entrano in campo ricevono danni pari al Livello dell'utilizzatore
+Rapigiro: Danni, annulla l'effetto di Parassiseme, Punte e mosse a più turni
+
+Divinazione, Obbliderio: Infligge danni subito dopo la 3° mossa, inclusa Divinazione, di chi la usa. Non usabile nuovamente finché non colpisce
+Accumulo: Aumenta la Difesa di chi lo usa [ha bisogno di una proprietà in battaglia per interagire con Introenergia e Sfoghenergia]
+Introenergia: Recupera tutti i PS solo se precedentemente è stato usato Accumulo
+Sfoghenergia: 2xDanni solo se precedentemente è stato usato Accumulo
+
+Protezione, Individua: 50% protegge la squadra di chi lo usa dai moltiplicatori delle mosse avversarie x5 turni
+Salvaguardia: 50% protegge la squadra di chi lo usa dai problemi di stato inflitti dall'avversario x5 turni
+
+
+
+Affilatore, Agilità, Gridodilotta, Meditazione: Aumenta l'Attacco di chi la usa
+Amnesia, Barriera, Cosmoforza, Doppioteam, Ferroscudo, Minimizzato, Rafforzatore, Ricciolscudo, Ritirata, Scudo Acido: Aumenta la Difesa di chi la usa
+Ricciolscudo: Aumenta la Difesa di chi la usa [ha bisogno di una proprietà in battaglia per interagire con Rotolamento]
+Attrazione, Cinési, Cottonspora, Danzadipiume, Fangata, Fascino, Millebave, Muro di Fumo, Ruggito, Turbosabbia, Visotruce: Abbassa l'Attacco avversario
+Colpocoda, Falselacrime, Ferrostrido, Fulmisguardo, Profumino, Stridio: Abbassa la Difesa avversaria
+Codadiluce, Danzaspada: Aumenta di molto l'Attacco di chi la usa
+Panciamburo, Maledizione: Diminuisce la Difesa di chi la usa, ma aumenta di molto l'Attacco [due volte 'stats' della mossa]
+Calmamente, Crescita, Dragodanza, Granfisico: Aumenta l'Attacco e la Difesa di chi la usa
+Memento, Solletico: Diminuisce l'Attacco e la Difesa dell'avversario
+
+Docciascudo: Aumenta la Difesa di chi lo usa e ne previene la Scottatura
+Leggimente, Localizza, Sottocarica: Aumenta la Difesa di chi lo usa di +Liv, nel prossimo turno i danni inflitti vengono moltiplicati x2
+
+Altruismo, Focalenergia: Aumenta l'Attacco della squadra di chi lo usa x5 turni
+Riflesso, Schermoluce: Aumenta la Difesa della squadra di chi lo usa x5 turni
+Nebbia: Previene la riduzione delle Statistiche di tutta la squadra da parte dell'avversario x5 turni
+Nube: Annulla ogni modifica delle Statistiche proprie ed avversarie
+Preveggenza, Segugio: L'avversario bersaglio non può aumentare la propria Difesa finché chi ha usato questa mossa è in campo
+Psicamisù: Copia le modifiche di Statistiche del nemico [si escludono quelle multiturno]
+Staffetta: Chi lo usa è sostituito e le alterazioni di statistiche e di Status vengono passate al Pokémon entrante
+
+Ferrartigli, Meteorpugno, Tritartigli: Danni, 50% aumenta l'Attacco dell'utilizzatore
+Alacciaio, Rocciotomba: Danni, 50% aumenta la Difesa dell'utilizzatore
+Octazooka, Raggiaurora, Ventogelato: Danni, 50% riduce l'Attacco avversario
+Acido, Codacciaio, Psichico, Sgranocchio, Palla Ombra: Danni, 50% riduce la Difesa avversaria
+Forzantica, Ventargenteo: Danni, 50% aumenta Attacco e Difesa dell'utilizzatore
+Scippo: Danni, 50% Se l'avversario ha dei buff alle statistiche, li perde e vengono guadagnati dal Pokémon che ha usato Scippo [non vale su buff multiturno]
+Abbagliante: Danni, aumenta l'Attacco
+Foschisfera: Danni, aumenta la Difesa
+Aerocolpo, Ossoclava: Danni, ignora gli aumenti di Difesa avversari
+Troppoforte, Vampata: Danni, x2 se chi la usa ha l'attacco alzato, ma poi perde l'aumento di Attacco
+
+
+
+Canto, Demonbacio, Ipnosi, Meloderba, Sonnifero, Spora: Addormenta
+Velenogas, Velenpolvere: Avvelena
+Dolcebacio, Stordiraggio, Strampadanza, Supersuono: Confonde
+Paralizzante, Sguardo Feroce, Tuononda: Paralizza
+Fuocofatuo: Scotta
+
+Adulazione, Bullo: Confonde, aumenta l'Attacco avversario
+Aromaterapia, Rintoccasana: Risolve tutti i problemi di stato della squadra
+Rinfrescata: Risolve tutti i problemi di stato di chi lo usa
+Incubo: Se il Pokémon avversario è Addormentato perde 1/3 sei suo PS max ad ogni fine turno, l'effetto termina se il Pokémon si sveglia
+Sbadiglio: Addormenta l'avversario alla fine del turno successivo
+Sonnolalia: Usabile solo se l'utilizzatore è addormentato, usa una mossa a caso tra quelle conosciute
+
+Doppio Ago, Fango, Smog, Velenodenti: Danni, 50% Avvelena
+Idropulsar, Segnoraggio, Stordipugno: Danni, 50% Confonde
+Bora, Geloraggio: Danni, 50% Congela
+Corposcontro, Dragospiro, Fulmine, Leccata, Scintilla: Danni, 50% Paralizza
+Fuocobomba, Lanciafiamme: Danni, 50% Scotta
+Tuono: Danni, 50% Paralizza, se piove Paralizza senza modificare la %
+Tossina: Danni, Avvelena
+Dinamipugno: Danni, Confonde
+Falcecannone: Danni, Paralizza
+Magifuoco: Danni, scongela l'utilizzatore e Scotta l'avversario
+Ruotafuoco: Danni, scongela chi la usa
+
+Baraonda: Danni, i Pokémon di chi la usa non possono essere Addormentati x5 turni
+Facciata: Danni, x2 se chi la usa è affetto da status
+Maniereforti: Danni, x2 se l'avversario è Paralizzato ma ne cura la Paralisi
+
+
+
+Buonlatte, Covauova, Lucelunare, Pigro, Ripresa: Chi la usa recupera 1/2 dei PS max
+Desiderio: Alla fine del prossimo turno il Pokémon in campo recupera 1/2 dei PS max di chi ha usato Desiderio
+Mattindoro, Sintesi: Recupera 1/2 dei PS max; 1/4 durante una tempesta di sabbia, grandine o pioggia; tutti con il sole
+Radicamento: Chi lo usa recupera 1/2 dei propri PS max dopo ogni propria mossa, ma non può essere ritirato
+Riposo: Chi la usa si Addormenta (anche se affetto da Status) e recupera tutti i PS
+
+Assorbimento: Danni, l'utilizzatore recupera 1/8 PS del danno inflitto
+Gigassorbimento: Danni, l'utilizzatore recupera 1/2 PS del danno inflitto
+Mangiasogni: Solo se l'avversario è addormentato, danni e l'utilizzatore recupera 1/2 PS del danno inflitto
+Megassorbimento, Sanguisuga: Danni, l'utilizzatore recupera 1/4 PS del danno inflitto
+
+
+
+Fuocopugno: Danni, x2 contro Pokémon Acciaio
+Tuonopugno: Danni, x2 contro Pokémon Acqua
+Colpokarate: Danni, x2 contro Pokémon Buio
+Frana: Danni, x2 contro Pokémon Coleottero
+Gelopugno: Danni, x2 contro Pokémon Drago
+Fangosberla: Danni, x2 contro Pokémon Elettro
+Taglio: Danni, x2 contro Pokémon Erba
+Fangobomba: Danni, x2 contro Pokémon Folletto
+Terremoto: Danni, x2 contro Pokémon Fuoco
+Sassata: Danni, x2 contro Pokémon Ghiaccio
+Aeroassalto: Danni, x2 contro Pokémon Lotta
+Colpo Basso: Danni, x2 contro Pokémon Normale
+Megacorno: Danni, x2 contro Pokémon Psico
+Finta: Danni, x2 contro Pokémon Spettro
+Spaccaroccia: Danni, x2 contro Pokémon Roccia
+Surf: Danni, x2 contro Pokémon Terra
+Psicoraggio: Danni, x2 contro Pokémon Veleno
+Cascata: Danni, x2 contro Pokémon Volante
+
+
+
+Giornodisole: Intensifica i raggi solari per 5 turni.
+Grandine: Genera una grandinata per 5 turni.
+Pioggiadanza: Provoca un acquazzone per 5 turni.
+Terrempesta: Genera una tempesta di sabbia per 5 turni.
+Palla Clima, Naturforza: Danni, x2 se è attivo un cambiamento climatico
+Forzasegreta: Danni, con effetto aggiuntivo in base al meteo (sole: scotta, pioggia: paralizza, sabbia: confonde, grandine: congela)
+
+
+
+Attaccalite, Inibitore, Provocazione: Disattiva l'ultima mossa usata dall'avversario fino al suo cambio o KO
+Blocco, Malosguardo, Ragnatela: L'avversario non può essere sostituito
+Boato, Turbine: Sostituisce il Pokémon avversario con un altro a caso della sua squadra
+Camuffamento, Conversione: Chi la usa diventa dello stesso tipo/i dell'avversario per tutto lo scontro
+Conversione2: Chi la usa diventa di un tipo resistente all'avversario per il resto dello scontro
+Destinobbligato: Se chi la usa va KO entro il prossimo turno, il nemico va KO
+Esclusiva: Blocca le mosse avversarie che conosce anche chi usa Esclusiva (fino al cambio o KO dell'avversario)
+Flash, Dispetto: La percentuale avversaria diventa negativa
+Magivelo: Per i prossimi 2 turni avversari, ogni status che il Pokémon subirebbe viene invece inflitto all'attaccante
+Malcomune: Distribuisce in parti uguali i PS di chi la usa e del bersaglio
+Mimica: La mossa diventa l'ultima usata dall'avversario fino al KO di chi la usa
+Raggiro: Chi lo usa scambia il proprio Oggetto con quello dell'avversario [se uno dei due non ha uno strumento, fallisce. Contro allenatori e capipalestra gli oggetti vengono restituiti a fine scontro]
+Resistenza, Sostituto: Chi lo usa resiste per il turno successivo con almeno 1 PS
+Riciclo: Chi la usa ricrea lo strumento che aveva assegnato a inizio battaglia [fallisce se ha già uno strumento assegnato]
+Ripeti: Il nemico ripete l'ultima mossa usata x3 turni
+Schizzo: Copia permanentemente l'ultima mossa usata dal nemico
+Teletrasporto: Fa fuggire dalla lotta [fallisce nelle sfide tra allenatori]
+Trasformazione: Chi la usa assume tipi e Mosse del nemico finché resta in campo ma i PS non cambiano ['power' e 'stats' delle mosse sono quelli di Trasformazione, non è copiabile]
+Ultimocanto: Ogni Pokemon in campo andrà KO alla fine di 3 turni se non viene sostituito
+
+
+
+Assistente: Il Pokémon che la usa attacca utilizzando una mossa a caso della Squadra ['power' e 'stats' sono quelli di Assistente]
+Autodistruzione, Esplosione: Infligge danno pari al doppio dei PS max di chi la usa, l'utilizzatore va KO
+Breccia: Distrugge schermi difensivi come Riflesso/Schermoluce e poi fa danni
+Centripugno: Danni, x2 se l'utilizzatore non ha subito un attacco nel turno precedente
+Contrattacco, Specchiovelo: Il danno inflitto è pari al doppio dell'ultimo danno subito
+Contropiede, Flagello: Danno base pari alla differenza tra PS max e PS attuali di chi lo usa
+Doppiocalcio, Furia, Missilspillo, Sparalance, Tagliofuria: Danni, x1.5 se già usata nell'ultimo turno
+Eruzione, Zampillo: Danni, x2 se chi la usa ha più di metà PS
+Falsofinale: Danni, lascia l'avversario ad almeno 1 PS
+Furto, Supplica: Danni, 50% se chi la usa non ha un oggetto, ruba quello dell'avversario [Contro allenatori e capipalestra gli oggetti vengono restituiti a fine scontro]
+Inseguimento: Danni, se nel turno precedente il Pokémon avversario è stato sostituito, questo attacco colpisce il Pokémon ritirato col danno base moltiplicato x1.5
+Introforza: Danni, annulla i moltiplicatori delle mosse avversarie del prossimo turno [valgono comunque poco efficace e superefficace per il Tipo]
+Ira, Vendetta: Danni, x2 se il Pokémon non ha tutti i PS
+Metronomo: Usa una mossa a caso ['power' e 'stats' sono quelli di Metronomo, non possono essere usate le mosse non copiabili]
+Movimento Sismico, Ombra Notturna: Infligge danno pari ai PS attuali di chi lo usa
+Picchiaduro: Danni, x2 se un compagno è appena andato KO
+Privazione: Danni, l'avversario non può usare l'oggetto tenuto fino al KO
+Psiconda: Il danno è pari a 1.5xLv di chi lo usa
+Regalino: Danni, 50% l'avversario recupera 1/4 dei PS max
+Locomovolt, Riduttore, Sdoppiatore, Sottomissione: Danni, chi la usa perde 1/4 PS del danno inflitto
+Rimonta: Riduce i PS dell'avversario pari a quelli di chi lo usa
+Rotolamento: Danni, x2 se chi lo usa ha attivo l'effetto di Ricciolscudo
+Scontro: Danni, chi la usa perde 1/4 PS del danno inflitto [non è copiabile]
+Speculmossa: Risponde all'attacco avversario utilizzando la sua stessa mossa ['power' e 'stats' sono quelli di Speculmossa, non è copiabile]
+Superzanna: Dimezza i PS avversari (almeno 1 danno)
+
+
+
+Splash: Non fa nulla
+Aerasoio: Danni
+Aeroattacco: Danni
+Attacco Pioggia: Danni
+Attacco Rapido: Danni
+Attacco d'Ala: Danni
+Azione: Danni
+Beccata: Danni
+Bolla: Danni
+Bollaraggio: Danni
+Botta: Danni
+Bottintesta: Danni
+Braciere: Danni
+Bruciapelo: Danni
+Cadutamassi: Danni
+Calciardente: Danni
+Calcinvolo: Danni
+Calciorullo: Danni
+Calciosalto: Danni
+Colpodifango: Danni
+Cometapugno: Danni
+Confusione: Danni
+Doppiasberla: Danni
+Dragartigli: Danni
+Extrarapido: Danni
+Extrasenso: Danni
+Fanghiglia: Danni
+Fendifoglia: Danni
+Fogliamagica: Danni
+Foglielama: Danni
+Forza: Danni
+Frustata: Danni
+Frustrazione: Danni
+Gelolancia: Danni
+Giornopaga: Danni
+Graffio: Danni
+Granvoce: Danni
+Idropompa: Danni
+Incornata: Danni
+Incrocolpo: Danni
+Iperzanna: Danni
+Ira di drago: Danni
+Lacerazione: Danni
+Limitazione: Danni
+Martellata: Danni
+Megacalcio: Danni
+Megapugno: Danni
+Morso: Danni
+Ondacalda: Danni
+Ondashock: Danni
+Ossomerang: Danni
+Ossoraffica: Danni
+Palla Gelo: Danni
+Perforbecco: Danni
+Pestone: Danni
+Pistolacqua: Danni
+Polneve: Danni
+Presa: Danni
+Psicoslancio: Danni
+Pugnorapido: Danni
+Pugnospine: Danni
+Ritorno: Danni
+Russare: Danni
+Sberletese: Danni
+Schianto: Danni
+Semitraglia: Danni
+Sfuriate: Danni
+Sgomento: Danni
+Sonicboom: Danni
+Tripletta: Danni
+Triplocalcio: Danni
+Tuonoshock: Danni
+Uovobomba: Danni
+Velenocoda: Danni
+Velenospina: Danni
+Vitaltiro: Danni

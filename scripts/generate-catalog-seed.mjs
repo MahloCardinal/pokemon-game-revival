@@ -453,7 +453,7 @@ async function opponentStatements(release) {
     opponentRewardRows(release, key, [
       { kind: "money", quantity: reward.money },
       reward.mt ? { kind: "item", itemIndex: reward.mt, quantity: 1 } : null,
-      reward.item ? { kind: "item", itemIndex: reward.item, quantity: 1 } : null,
+      reward.item ? { kind: "item", itemIndex: reward.item, quantity: Math.max(1, Number(reward.itemQuantity) || 1) } : null,
       { kind: "badge", quantity: 1, badgeIndex: city.badgeIndex }
     ].filter(Boolean), rows, counts);
   });

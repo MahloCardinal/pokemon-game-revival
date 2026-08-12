@@ -1,0 +1,33 @@
+#--------------------------------------------------------------------
+# TODO
+#--------------------------------------------------------------------
+- verifica prezzo vendita degli item acquistabili in PL (e cambiarlo in 100 pokedollari)
+- re-implementare il reset-password (vedi txt con chat OpenCode)
+- inserire nelle palestre le date di vittoria da parte degli altri giocatori
+- correggere Bizzoaroma/Gonfioaroma
+- bilanciamento team palestre e contenuto delle MT
+- re-implementare web-hook Discord per sfide admin
+- inserire possibilità di vedere squadre altri giocatori
+- verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
+- implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)
+- mettere versione inglese
+
+
+
+#--------------------------------------------------------------------
+# INFO GENERALI
+#--------------------------------------------------------------------
+- Caricare il progetto aggiornato da GitHub
+git pull
+
+- Effettuare il push su GitHub
+git add .
+git commit -m "Update"
+git push
+
+- Evitare che il terminale metta in cronologia lo stesso comando più di una volta
+Set-PSReadlineOption -HistoryNoDuplicates
+
+- Pulire la cronologia del terminale
+Remove-Item (Get-PSReadlineOption).HistorySavePath
+(Poi premere Alt+F7 per pulire anche la cronologia attuale)

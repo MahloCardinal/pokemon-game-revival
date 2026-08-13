@@ -1,6 +1,7 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
+- correggere diciture delle Missioni cattura, dicitura Missioni richieste nelle Palestre, titolo schermata di accesso
 - verifica prezzo vendita degli item acquistabili in PL (e cambiarlo in 100 pokedollari)
 - re-implementare il reset-password (vedi txt con chat OpenCode)
 - inserire nelle palestre le date di vittoria da parte degli altri giocatori

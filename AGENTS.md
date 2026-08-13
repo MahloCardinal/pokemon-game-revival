@@ -134,7 +134,7 @@ Il superamento dei test locali dimostra coerenza del repository, ma non dimostra
 
 I cataloghi SQL vengono generati dalle sorgenti in `app/data/` e `app/engine/`. Non committare i dump risultanti.
 
-Il contenuto di una release `published` o `retired` è immutabile. Per cambiare un catalogo pubblicato:
+Il contenuto di una release `published` o `retired` è immutabile. Quando esistono utenti o dati di gioco da preservare, per cambiare un catalogo pubblicato:
 
 - generare e importare una nuova release `draft` completa;
 - verificare le righe interessate prima della pubblicazione;
@@ -145,9 +145,26 @@ Il contenuto di una release `published` o `retired` è immutabile. Per cambiare 
 - distribuire `battle-command` in un ordine che non lasci catalogo e runtime incompatibili;
 - verificare infine release pubblicata, profili, binding abilitati e checksum della Edge Function.
 
+### Modalità di sviluppo senza utenti
+
+Finché il progetto non contiene utenti né dati giocatore, mantenere nel database esattamente una release chiamata `revival-baseline`, senza release `retired` o cloni completi. In questa fase non creare una nuova release per un piccolo aggiornamento.
+
+Procedura per una modifica limitata:
+
+- verificare che `auth.users`, profili, Pokémon, incontri, battaglie e run siano vuoti;
+- in una nuova migrazione atomica portare temporaneamente `revival-baseline` da `published` a `draft`;
+- eliminare e rigenerare soltanto la famiglia o le righe coinvolte, evitando che gli upsert lascino righe non più previste;
+- ripubblicare la stessa `revival-baseline` con `publish_catalog_release('revival-baseline')` nella medesima transazione;
+- aggiornare soltanto binding runtime ed Edge Function realmente coinvolti;
+- verificare al termine che esistano una release pubblicata, un binding runtime abilitato e nessuna release duplicata.
+
+Riservare l'import completo generato dalla macchina locale alla creazione iniziale della baseline o a modifiche che coinvolgono molte famiglie. Quando verranno introdotti utenti reali da conservare, tornare al flusso a release immutabili descritto sopra.
+
+Quando si cambia `player_profile_state.catalog_release_id`, non assumere che ogni tabella segua automaticamente il profilo. Verificare tutte le colonne `catalog_release_id`, incluse almeno `player_mission_state`, `player_encounter`, progressioni, run, battaglie e `server_authority_private.runtime_catalog_config`. Le sole foreign key con `ON UPDATE CASCADE` non coprono tutte le tabelle operative.
+
 Se serve compatibilità durante il deploy, usare temporaneamente binding additivi; rimuovere o disabilitare il binding di transizione soltanto dopo aver distribuito la nuova Edge Function e verificato che non esistano battaglie che lo usano.
 
-Verifica deterministica:
+Verifica deterministica della baseline corrente:
 
 ```powershell
 node scripts/generate-all-catalog-seeds.mjs --release revival-baseline --checksum draft:revival-baseline --species-chunks 4 --check

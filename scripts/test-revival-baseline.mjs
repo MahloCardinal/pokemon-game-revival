@@ -113,5 +113,9 @@ assert.match(gymRewardCore, /reward_kind\s*=\s*'item'\s+and quantity\s*>\s*0\s+a
 assert.match(migrationSql, /revival-gym-rewards-20260812/);
 assert.match(migrationSql, /51ebd82cd1373b029f5b7e54aa8c3e5ee08732c7e05ce11b5ce3db12e048367f/);
 assert.match(migrationSql, /lower\(account\.email\) = 'aaa@pokemon-game-revival\.local'/);
+assert.match(migrationSql, /catalog repair did not converge on the active release/i);
+assert.match(migrationSql, /update public\.player_mission_state[\s\S]*set catalog_release_id = active_catalog_id/i);
+assert.match(migrationSql, /update server_authority_private\.runtime_catalog_config[\s\S]*set catalog_release_id = active_catalog_id/i);
+assert.match(migrationSql, /development catalog consolidation did not converge on one baseline/i);
 
 console.log("Revival baseline contract checks passed.");

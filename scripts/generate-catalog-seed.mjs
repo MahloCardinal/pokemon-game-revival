@@ -325,13 +325,13 @@ async function shopStatements(release) {
   const rows = items.ITEM_LIBRARY.map((item, order) => {
     const entry = explicit.get(item.index);
     const isMt = item.category === items.ItemCategory.Mt;
-    const unpurchasable = data.SHOPPING_CENTER_UNPURCHASABLE_ITEMS.indexOf(item) !== -1 || gymRewardMt.has(item.index);
+    const purchasePrice = data.shoppingCenterItemPrice(item);
+    const unpurchasable = purchasePrice === null || data.SHOPPING_CENTER_UNPURCHASABLE_ITEMS.indexOf(item) !== -1 || gymRewardMt.has(item.index);
     const unsellable = data.SHOPPING_CENTER_UNSELLABLE_ITEMS.indexOf(item) !== -1;
     const singlePurchase = data.shoppingCenterItemIsSinglePurchase(item);
     const initialStock = data.shoppingCenterRemainingCartQuantity(item, { inventory: [], shopPurchases: {}, trainerInfo: [null, null, 8] }, {});
     const stockRules = singlePurchase ? { kind: "single-owned", limit: 1 } : Number.isFinite(initialStock) ? { kind: "fixed", limit: initialStock } : {};
     const requirement = isMt ? { kind: "badges", value: progression.mtUnlockBadges(item) } : (unlocks.get(item.index) || {});
-    const purchasePrice = data.shoppingCenterItemPrice(item);
     const salePrice = data.shoppingCenterSalePrice(item);
     return upsertJson("catalog_shop_offer", ["catalog_release_id", "offer_key", "item_index", "section_key", "category_key", "price", "stock_rules", "sort_order", "purchase_enabled", "sale_enabled", "single_purchase", "unlock_rules", "sale_rules"], [releaseId(release), itemKeys.get(item), item.index, entry ? sections.get(entry.section) : isMt ? "MT" : "NONE", entry ? categories.get(entry.category) : isMt ? "MT" : "NONE", purchasePrice, stockRules, order, Boolean((entry || isMt) && !unpurchasable), !unsellable, singlePurchase, requirement, { price: salePrice }], new Set([6, 11, 12]), ["catalog_release_id", "offer_key"], ["item_index", "section_key", "category_key", "price", "stock_rules", "sort_order", "purchase_enabled", "sale_enabled", "single_purchase", "unlock_rules", "sale_rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release));
   });
@@ -394,9 +394,9 @@ async function missionStatements(release) {
   const primary = "app/data/pokefan-missions.js";
   const data = await loadSourceModule(primary);
   const rows = data.POKEFAN_MISSIONS.map((mission) => {
-    const rules = rulesWithout(mission, new Set(["missionIndex", "category", "type", "target", "repeatable", "phase", "sequence", "reward", "requirement"]), "mission " + mission.missionIndex, null);
+    const rules = rulesWithout(mission, new Set(["missionIndex", "category", "type", "target", "phase", "sequence", "reward", "requirement"]), "mission " + mission.missionIndex, null);
     const reward = plainValue(mission.reward, "mission " + mission.missionIndex + ".reward", null);
-    return upsertJson("catalog_mission", ["catalog_release_id", "mission_index", "category_key", "mission_type", "target", "repeatable", "phase", "sequence", "rules", "reward_rules", "presentation"], [releaseId(release), mission.missionIndex, mission.category, mission.type, mission.target, Boolean(mission.repeatable), mission.phase, mission.sequence, rules, withoutPresentationFields(reward), {}], new Set([8, 9, 10]), ["catalog_release_id", "mission_index"], ["category_key", "mission_type", "target", "repeatable", "phase", "sequence", "rules", "reward_rules", "presentation"]).replace(sqlLiteral(releaseId(release)), releaseId(release));
+    return upsertJson("catalog_mission", ["catalog_release_id", "mission_index", "category_key", "mission_type", "target", "phase", "sequence", "rules", "reward_rules", "presentation"], [releaseId(release), mission.missionIndex, mission.category, mission.type, mission.target, mission.phase, mission.sequence, rules, withoutPresentationFields(reward), {}], new Set([7, 8, 9]), ["catalog_release_id", "mission_index"], ["category_key", "mission_type", "target", "phase", "sequence", "rules", "reward_rules", "presentation"]).replace(sqlLiteral(releaseId(release)), releaseId(release));
   });
   return familyResult(primary, rows, { catalog_mission: rows.length }, rows.length);
 }

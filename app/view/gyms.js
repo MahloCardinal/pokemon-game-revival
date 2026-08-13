@@ -83,7 +83,7 @@ function renderGymChallengeAction(city, leader) {
     return '<div class="gym-challenge-row"><p class="gym-challenge-requirement">' + escapeHtml(status.message) + "</p></div>";
   }
   if (!adventurePhaseIsCompleted(adventurePhaseForGym(city.key))) {
-    return '<div class="gym-challenge-row"><p class="gym-challenge-requirement">' + escapeHtml("Completa le Missioni avventura " + adventurePhaseForGym(city.key)) + "</p></div>";
+    return '<div class="gym-challenge-row"><p class="gym-challenge-requirement">' + escapeHtml("Completa le Missioni avventura per sbloccare questa Palestra") + "</p></div>";
   }
   return [
     '<div class="gym-challenge-row">',

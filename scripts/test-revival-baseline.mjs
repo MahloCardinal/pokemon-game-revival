@@ -11,6 +11,12 @@ const main = read("app/client/main.js");
 const deploymentWatcher = read("app/client/deployment-version.js");
 const deploymentEndpoint = read("api/deployment-version.js");
 const vercel = read("vercel.json");
+const missionCatalog = read("app/data/pokefan-missions.js");
+const missionRuntime = read("app/client/mission-runtime.js");
+const missionReset = read("app/client/mission-reset.js");
+const missionView = read("app/view/pokefan.js");
+const shoppingCenter = read("app/data/shopping-center.js");
+const catalogGenerator = read("scripts/generate-catalog-seed.mjs");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
   .filter((name) => name.endsWith(".sql"))
@@ -29,6 +35,11 @@ assert.match(main, /initializeDeploymentWatcher/);
 assert.match(deploymentWatcher, /\/api\/deployment-version/);
 assert.match(deploymentWatcher, /shouldDeferReloadForActiveBattle/);
 assert.match(deploymentEndpoint, /VERCEL_GIT_COMMIT_SHA/);
+for (const missionSource of [missionCatalog, missionRuntime, missionReset, missionView, catalogGenerator]) {
+  assert.doesNotMatch(missionSource, /repeatable|ripetibil/i);
+}
+assert.match(shoppingCenter, /entry\.price === null/);
+assert.match(catalogGenerator, /purchasePrice === null/);
 
 for (const functionName of [
   "register-with-username",
@@ -117,5 +128,10 @@ assert.match(migrationSql, /catalog repair did not converge on the active releas
 assert.match(migrationSql, /update public\.player_mission_state[\s\S]*set catalog_release_id = active_catalog_id/i);
 assert.match(migrationSql, /update server_authority_private\.runtime_catalog_config[\s\S]*set catalog_release_id = active_catalog_id/i);
 assert.match(migrationSql, /development catalog consolidation did not converge on one baseline/i);
+const missionActive = finalFunctionBody("server_authority_private", "mission_is_active");
+assert.doesNotMatch(missionActive, /repeatable/i);
+assert.match(migrationSql, /drop column repeatable/);
+assert.match(migrationSql, /catalog_mission_category_key_check/);
+assert.match(migrationSql, /set claim_status = 'claimed',\s*claim_count = claim_count \+ 1/i);
 
 console.log("Revival baseline contract checks passed.");

@@ -16,7 +16,7 @@ Il progetto è esclusivamente Revival. Non reintrodurre codice legacy, modalità
 
 - Controllare `git status` prima e dopo ogni intervento.
 - Preservare modifiche locali dell'utente non pertinenti al compito.
-- Non modificare `tools/` se non richiesto esplicitamente: contiene strumenti personali del proprietario.
+- `tools/` fa parte del repository e le sue modifiche devono essere incluse nei commit. Non modificarne autonomamente il contenuto se il compito non lo richiede.
 - Non creare o committare dump SQL generati, segreti, token, password, service-role key o webhook.
 - Non usare comandi `npm`: il repository non contiene `package.json`, lockfile o pipeline npm.
 - Preferire modifiche piccole e additive. Non riscrivere migrazioni già applicate.
@@ -76,6 +76,8 @@ Il browser non è fonte autoritativa e non deve concedere ricompense. Le battagl
 - Le modifiche che richiedono persistenza devono attraversare i comandi autoritativi o il flusso di salvataggio già previsto.
 - Le regole di progressione restano centralizzate in `app/data/progression.js`.
 - Importare l'API pubblica del motore tramite `import * as Engine from "../engine/index.js"` quando possibile.
+- Revival supporta soltanto missioni avventura, cattura e giornaliere. Non reintrodurre categorie o reset per missioni ripetibili.
+- Nel Centro Commerciale `price: null` significa sempre “non acquistabile”; non mantenere elenchi separati di disponibilità che possano divergere dal prezzo.
 
 La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono strumenti intenzionali dell'utente debug; non eliminarli come presunto codice di sviluppo inutilizzato.
 
@@ -269,7 +271,7 @@ git commit -m "Descrizione chiara"
 git push
 ```
 
-Preferire file selezionati a `git add .`, soprattutto perché `tools/` può contenere materiale personale non destinato al repository.
+Preferire file selezionati a `git add .` per controllare con precisione il contenuto del commit. Le modifiche già presenti in `tools/` appartengono al progetto e devono essere incluse, pur senza alterarne autonomamente il contenuto se non richiesto.
 
 ## File locali e rigenerabili
 
@@ -279,7 +281,7 @@ Preferire file selezionati a `git add .`, soprattutto perché `tools/` può cont
 - `.env.local`: configurazione locale; non committare.
 - `supabase/.temp/`: collegamento e metadati locali della CLI; rigenerabile ma utile.
 - `.build/`: artefatti temporanei; eliminabile e non versionare.
-- `tools/`: materiale personale; non modificare senza richiesta esplicita.
+- `tools/`: strumenti e informazioni personali versionati; includere le modifiche nei commit, ma non modificarne il contenuto senza richiesta esplicita.
 
 La connessione remota GitHub–Vercel deve restare attiva per i deploy automatici.
 

@@ -3,7 +3,6 @@ import {
   MISSION_CATEGORY_ADVENTURE,
   MISSION_CATEGORY_CAPTURE,
   MISSION_CATEGORY_DAILY,
-  MISSION_CATEGORY_REPEATABLE,
   MISSION_STATUS_CLAIMED,
   MISSION_STATUS_SKIPPED,
   MISSION_STATUS_UNCLAIMED,
@@ -161,9 +160,6 @@ export function missionIsActive(mission, rows, badges) {
   var row = rowByIndex(mission && mission.missionIndex, runtimeRows);
   if (!mission || !row || row.claimStatus === MISSION_STATUS_CLAIMED || row.claimStatus === MISSION_STATUS_SKIPPED) {
     return false;
-  }
-  if (mission.category === MISSION_CATEGORY_REPEATABLE) {
-    return true;
   }
   if (mission.category === MISSION_CATEGORY_DAILY) {
     return row.claimStatus === MISSION_STATUS_UNCLAIMED;

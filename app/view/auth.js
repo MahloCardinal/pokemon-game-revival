@@ -142,5 +142,5 @@ export function renderLoginScene() {
     "</div></section>"
   ].join("");
 
-  return sceneShell("Accesso PokéProject-32", "", form, "", "scene-content-auth");
+  return sceneShell("Accesso Pokémon Game", "", form, "", "scene-content-auth");
 }

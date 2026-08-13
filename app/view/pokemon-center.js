@@ -129,7 +129,7 @@ export function renderPokemonCenterScene() {
   itemPanelClass += pokemonNotice ? " has-item-notice" : "";
   var body = [
     '<section class="pokemon-center-layout">',
-    renderScenePresentationPanel("Centro Pokemon", "pokemon-center-info-panel"),
+    renderScenePresentationPanel("Centro Pokémon", "pokemon-center-info-panel"),
     '  <div class="pokemon-center-top-row">',
     '    <section class="panel pokemon-center-sections-panel"><div class="panel-inner">',
     '      <h2 class="stack-title">Sezioni</h2>',
@@ -148,7 +148,7 @@ export function renderPokemonCenterScene() {
   ].join("");
 
   return sceneShell(
-    "Centro Pokemon", "", body, "",
+    "Centro Pokémon", "", body, "",
     "scene-content-pokemon-center", "parent-back"
   );
 }

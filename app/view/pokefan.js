@@ -3,7 +3,6 @@ import {
   MISSION_CATEGORY_ADVENTURE,
   MISSION_CATEGORY_CAPTURE,
   MISSION_CATEGORY_DAILY,
-  MISSION_CATEGORY_REPEATABLE,
   MISSION_STATUS_CLAIMED,
   MISSION_STATUS_SKIPPED
 } from "../data/pokefan-missions.js";
@@ -17,7 +16,6 @@ import { button, formatInteger, moneyMarkup, renderScenePresentationPanel, scene
 var SECTION_LABELS = {};
 SECTION_LABELS[MISSION_CATEGORY_ADVENTURE] = "Missioni avventura";
 SECTION_LABELS[MISSION_CATEGORY_CAPTURE] = "Missioni cattura";
-SECTION_LABELS[MISSION_CATEGORY_REPEATABLE] = "Missioni ripetibili";
 SECTION_LABELS[MISSION_CATEGORY_DAILY] = "Missioni giornaliere";
 
 function renderMoneyReward(quantity) {
@@ -122,7 +120,6 @@ function renderSectionTabs(activeSection) {
     order[MISSION_CATEGORY_DAILY] = 0;
     order[MISSION_CATEGORY_ADVENTURE] = 1;
     order[MISSION_CATEGORY_CAPTURE] = 2;
-    order[MISSION_CATEGORY_REPEATABLE] = 3;
     return (order[left] ?? 99) - (order[right] ?? 99);
   });
   return '<section class="panel pokefan-sections-panel"><div class="panel-inner"><nav class="pokemon-center-action-row rules-section-row" aria-label="Categorie missioni">' + categories.map(function (section) {
@@ -138,7 +135,7 @@ function renderSectionTabs(activeSection) {
 export function renderPokefanScene() {
   var missionState = state.missions || {};
   var activeSection = state.scene.pokefanSection || MISSION_CATEGORY_DAILY;
-  if (activeSection === MISSION_CATEGORY_REPEATABLE && missionCategories().indexOf(MISSION_CATEGORY_REPEATABLE) === -1) {
+  if (missionCategories().indexOf(activeSection) === -1) {
     activeSection = MISSION_CATEGORY_DAILY;
   }
   var missions = missionRowsByCategory(activeSection);
@@ -153,12 +150,12 @@ export function renderPokefanScene() {
   var error = missionState.error ? '<p class="auth-error pokefan-error">' + escapeHtml(missionState.error) + "</p>" : "";
   var body = [
     '<section class="pokefan-layout">',
-    renderScenePresentationPanel("Club Pokefan", "pokefan-info-panel"),
+    renderScenePresentationPanel("Club Pokéfan", "pokefan-info-panel"),
     renderSectionTabs(activeSection),
     error,
     '<section class="panel pokefan-missions-panel"><div class="panel-inner">',
     renderMissionTable("Missioni attive", activeMissions, "Nessuna missione disponibile."),
-    activeSection === MISSION_CATEGORY_REPEATABLE ? "" : renderMissionTable("Missioni concluse", completedMissions, "Non hai ancora concluso missioni in questa sezione."),
+    renderMissionTable("Missioni concluse", completedMissions, "Non hai ancora concluso missioni in questa sezione."),
     "</div></section>",
     "</section>"
   ].join("");

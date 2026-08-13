@@ -43,10 +43,10 @@ export var BATTLE_SHOP_CHOICE_LABELS = Object.freeze({
   "choice-mt": "MT acquistabile a scelta",
   "choice-evolution": "Strumento evolutivo a scelta",
   "choice-aroma": "Aroma a scelta",
-  "choice-type-booster": "Strumento potenzia Tipo a scelta"
+  "choice-type-booster": "Strumento potenziatore del Tipo a scelta"
 });
 
 export var BATTLE_SHOP_POKEMON_LABELS = Object.freeze({
-  "pokemon-100": "Pokémon max Lv allenabile, no Fossili o Leggendari",
-  "pokemon-500": "Pokémon max Lv allenabile, no Leggendari"
+  "pokemon-100": "Pokémon a scelta max Lv allenabile (no Fossile, no Legend)",
+  "pokemon-500": "Pokémon a scelta max Lv allenabile (no Legend)"
 });

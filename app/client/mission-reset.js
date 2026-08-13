@@ -2,7 +2,6 @@ import {
   MISSION_CATEGORY_ADVENTURE,
   MISSION_CATEGORY_CAPTURE,
   MISSION_CATEGORY_DAILY,
-  MISSION_CATEGORY_REPEATABLE,
   MISSION_STATUS_CLAIMED,
   MISSION_STATUS_SKIPPED,
   MISSION_STATUS_UNCLAIMED,
@@ -61,7 +60,6 @@ export function missionRowsHaveClaimable(rows, badges) {
       return adventureMissionIsActive(mission, rows, badges);
     }
     return mission.category === MISSION_CATEGORY_CAPTURE
-      || mission.category === MISSION_CATEGORY_REPEATABLE
       || mission.category === MISSION_CATEGORY_DAILY;
   });
 }

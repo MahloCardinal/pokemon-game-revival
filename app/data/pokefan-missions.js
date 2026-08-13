@@ -5,7 +5,6 @@ import { SHOPPING_CENTER_CATEGORIES, SHOPPING_CENTER_ITEMS, SHOPPING_CENTER_SECT
 
 export var MISSION_CATEGORY_ADVENTURE = "adventure";
 export var MISSION_CATEGORY_CAPTURE = "capture";
-export var MISSION_CATEGORY_REPEATABLE = "repeatable";
 export var MISSION_CATEGORY_DAILY = "daily";
 
 export var MISSION_STATUS_UNCLAIMED = "unclaimed";
@@ -51,31 +50,28 @@ function pokemonChoiceReward(choiceLabel, levelMode, excludeFossils) {
 function defineMission(config) {
   return Object.freeze(Object.assign({
     category: MISSION_CATEGORY_CAPTURE,
-    target: 1,
-    repeatable: false
+    target: 1
   }, config));
 }
 
-function totalCaptureMission(missionIndex, count, reward, repeatable) {
+function totalCaptureMission(missionIndex, count, reward) {
   return defineMission({
     missionIndex: missionIndex,
-    category: repeatable ? MISSION_CATEGORY_REPEATABLE : MISSION_CATEGORY_CAPTURE,
+    category: MISSION_CATEGORY_CAPTURE,
     type: "total-captures",
     target: count,
     requirement: count + " catture totali",
-    repeatable: Boolean(repeatable),
     reward: reward
   });
 }
 
-function differentSpeciesMission(missionIndex, count, reward, repeatable) {
+function differentSpeciesMission(missionIndex, count, reward) {
   return defineMission({
     missionIndex: missionIndex,
-    category: repeatable ? MISSION_CATEGORY_REPEATABLE : MISSION_CATEGORY_CAPTURE,
+    category: MISSION_CATEGORY_CAPTURE,
     type: "species-different",
     target: count,
     requirement: count + " specie diverse",
-    repeatable: Boolean(repeatable),
     reward: reward
   });
 }
@@ -105,15 +101,15 @@ export var AUTHORITATIVE_CAPTURE_MISSIONS = [
   totalCaptureMission(3000, 50, { kind: "money", quantity: 20000 }),
   totalCaptureMission(3001, 100, { kind: "item", itemIndex: i.ps_su.index, quantity: 10 }),
   totalCaptureMission(3002, 150, Object.assign(itemChoiceReward("MT acquistabile a scelta", ALL_PURCHASABLE_MT_ITEMS), { purchasableNow: true })),
-  totalCaptureMission(3003, 200, pokemonChoiceReward("Pokémon a scelta, Livello 5", "fixed-5", true)),
+  totalCaptureMission(3003, 200, pokemonChoiceReward("Pokémon a scelta Lv5 (no Fossile, no Legend)", "fixed-5", true)),
   totalCaptureMission(3004, 250, { kind: "item", itemIndex: i.pp_max.index, quantity: 10 }),
-  totalCaptureMission(3005, 300, pokemonChoiceReward("Pokémon a scelta al massimo livello gestibile", "badge-cap", true)),
-  differentSpeciesMission(3006, 50, itemChoiceReward("Strumento potenzia-Tipo a scelta", TYPE_BOOSTER_ITEMS.map(function (item) { return item.index; }))),
+  totalCaptureMission(3005, 300, pokemonChoiceReward("Pokémon a scelta max Lv allenabile (no Fossile, no Legend)", "badge-cap", true)),
+  differentSpeciesMission(3006, 50, itemChoiceReward("Strumento potenziatore del Tipo a scelta", TYPE_BOOSTER_ITEMS.map(function (item) { return item.index; }))),
   differentSpeciesMission(3007, 100, { kind: "item", itemIndex: i.ultra_ball.index, quantity: 30 }),
   differentSpeciesMission(3008, 150, itemChoiceReward("Aroma a scelta", AROMA_ITEM_INDEXES)),
   differentSpeciesMission(3009, 200, { kind: "item", itemIndex: i.squama_cuore.index, quantity: 3 }),
   differentSpeciesMission(3010, 250, { kind: "item", itemIndex: i.master_ball.index, quantity: 1 }),
-  differentSpeciesMission(3011, 300, pokemonChoiceReward("Pokémon a scelta, Livello 5 (Fossili consentiti)", "fixed-5", false))
+  differentSpeciesMission(3011, 300, pokemonChoiceReward("Pokémon a scelta Lv5 (no Fossile)", "fixed-5", false))
 ].map(function (mission) {
   if (mission.type === "total-captures") {
     return Object.freeze(Object.assign({}, mission, { type: "zone-captures", requirement: mission.target + " catture nelle Zone Cattura" }));

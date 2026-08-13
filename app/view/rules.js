@@ -5,7 +5,7 @@ import { assetPath, escapeHtml, getItemImage, getPokemonStaticImage, getTypeImag
 import { button, sceneShell } from "../client/render-utils.js";
 
 var RULES_SECTIONS = [
-  { key: "about", label: "PokéProject-32" },
+  { key: "about", label: "Pokémon Game Revival" },
   { key: "gdr", label: "Info GdR" },
   { key: "battle", label: "Info sulle lotte" },
   { key: "moves", label: "Info sulle mosse" },
@@ -263,17 +263,18 @@ function renderRulesArticle(section) {
   var contentMap = {
     about: [
       "<h3>Cos'è?</h3>",
-      "<p>Benvenuti/e! PokéProject-32 è un gioco di ruolo ('GdR') incentrato su un'avventura nel mondo Pokémon.</p>",
+      "<p>Benvenuti/e! Pokémon Game Revival è un gioco di ruolo ('GdR') incentrato su un'avventura nel mondo Pokémon.</p>",
       "<p>La sua creazione nasce dalla nostalgia di un vecchio gdr Pokémon nato nei forum di internet ormai più di vent'anni fa, e altro non è che il tentativo di crearne una versione nuova e automatizzata.</p>",
       "<p>Per giocare vi basterà muovervi tra le varie sezioni con dei semplici click per compiere azioni con il vostro personaggio. Al momento la modalità è principalmente single-player, ma in futuro spero di riuscire a implementare anche sfide e interazioni tra i vari giocatori.</p>",
       "<h3>Come potete aiutarmi?</h3>",
        "<p>Il gioco è ancora in fase di sviluppo, per cui è possibile ci siano errori o malfunzionamenti. Inoltre anche struttura, regole, e logiche di gioco potrebbero non essere ottimali.</p>",
-       "<p>Per questo in caso di consigli, osservazioni, rilevazioni di bug (e più in generale tutto quello che avete da dirmi) vi chiedo di scrivermi tramite email all'indirizzo: <strong>pokeproject32@gmail.com</strong></p>",
-       "<p>Eventualmente potete scrivere in DM al seguente account Instagram: <a href=\"https://www.instagram.com/pokeproject32?igsh=MTF1d2RyazE4eXcwMg==\"><strong>PokeProject-32</strong></a></p>",
+       "<p>Per questo in caso di consigli, osservazioni, rilevazioni di bug (e più in generale tutto quello che avete da dirmi) vi chiedo di scrivermi tramite email all'indirizzo: <strong>guerrieri.tals@gmail.com</strong></p>",
+       "<p>Eventualmente potete scrivere in DM al seguente account Instagram: <a href=\"https://www.instagram.com/pokemongamerevival\"><strong>Pokémon Game Revival</strong></a></p>",
        "<h3>Aggiornamenti previsti</h3>",
       "<p>Di seguito i bug conosciuti e gli aggiornamenti di gioco che sono in programma, intanto vi invito a testare così com'è.</p>",
       "<p class='rules-note'><strong>Battaglia</strong><span>Verificare corretto funzionamento e interazione di mosse e Strumenti in battaglia</span></p>",
       "<p class='rules-note'><strong>Battaglia</strong><span>Implementare sfide PvP tra giocatori</span></p>",
+      "<p class='rules-note'><strong>Battaglia</strong><span>Inserire modalità in inglese</span></p>",
     ],
     gdr: [
       "<h3>Scopo del gioco</h3>",

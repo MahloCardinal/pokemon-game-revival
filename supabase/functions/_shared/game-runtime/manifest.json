@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "51ebd82cd1373b029f5b7e54aa8c3e5ee08732c7e05ce11b5ce3db12e048367f",
+  "bundleChecksum": "266b785e9c16976bd776016b9d93ebe5aa6e366bdc11fbffaa1c8f5038130b3e",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -59,8 +59,8 @@
     },
     {
       "source": "app/data/shopping-center.js",
-      "sha256": "1d15912bc9de5baf98631f970739a364ea0d8e7c482fc8c9be8ebfb5936f87c4",
-      "bytes": 22269
+      "sha256": "418e64b4ca76f4328219c872d6e85742b8864f1cd3f224170e8deed230c9fe21",
+      "bytes": 21808
     },
     {
       "source": "app/data/species_I.js",

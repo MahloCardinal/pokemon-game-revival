@@ -2,4 +2,4 @@
 
 Do not edit this directory manually. Canonical gameplay source is under `app/`.
 Regenerate with `node scripts/sync-game-runtime.mjs`.
-Bundle SHA-256: `821256ca024278d58dbda68b668d2d04fb886220ea800546836073eb2bcac8e2`
+Bundle SHA-256: `72747d8b8088f03145795e897487e758effaae494328d854be94d1823b453f88`

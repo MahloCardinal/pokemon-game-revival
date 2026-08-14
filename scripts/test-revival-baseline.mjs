@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const config = read("app/api/supabase-config.js");
@@ -227,5 +230,76 @@ const competitiveIndexes = competitiveItemNames.map((itemName) => {
 const configuredCompetitiveIndexes = teamRuleItems.match(/PORT_COMPETITIVE_ITEM_INDEXES = \[([^\]]+)\]/)[1]
   .split(",").map((value) => Number(value.trim())).sort((left, right) => left - right);
 assert.deepEqual(configuredCompetitiveIndexes, competitiveIndexes);
+
+const esModuleCache = new Map();
+function sourceEsModule(path) {
+  const absolutePath = resolve(path);
+  if (esModuleCache.has(absolutePath)) return esModuleCache.get(absolutePath);
+  const module = new vm.SourceTextModule(readFileSync(absolutePath, "utf8"), { identifier: absolutePath });
+  esModuleCache.set(absolutePath, module);
+  return module;
+}
+
+async function loadEsModule(path) {
+  const module = sourceEsModule(path);
+  if (module.status === "unlinked") await module.link((specifier, referencingModule) => {
+    assert.ok(specifier.startsWith("."), `Unexpected non-relative import in ${referencingModule.identifier}: ${specifier}`);
+    return sourceEsModule(resolve(dirname(referencingModule.identifier), specifier));
+  });
+  return module;
+}
+
+const engineIndexModule = await loadEsModule(fileURLToPath(new URL("../app/engine/index.js", import.meta.url)));
+await engineIndexModule.evaluate();
+const engineExports = engineIndexModule.namespace;
+const moveDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/moves.js", import.meta.url)));
+const MoveDefinitions = moveDefinitionsModule.namespace;
+const { BattleManager, createMove, Pokemon, Team } = engineExports;
+
+function pursuitTestPokemon(name, moves) {
+  return new Pokemon({
+    name,
+    speciesKey: name.toLowerCase(),
+    ndex: 1,
+    level: 10,
+    type: ["Normale"],
+    maxHp: 200,
+    moves,
+    expCurrent: 0,
+    expCap: 100
+  });
+}
+
+function pursuitTestManager() {
+  const playerTeam = new Team("Giocatore", [
+    pursuitTestPokemon("Caterpie", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })]),
+    pursuitTestPokemon("Butterfree", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })])
+  ], 0);
+  const enemyTeam = new Team("Giovanni", [
+    pursuitTestPokemon("Dugtrio", [createMove(MoveDefinitions.Inseguimento, { power: 20, stats: 0 })])
+  ], 0);
+  return new BattleManager(playerTeam, enemyTeam);
+}
+
+{
+  const manager = pursuitTestManager();
+  const caterpie = manager.playerTeam.combatantList[0];
+  const butterfree = manager.playerTeam.combatantList[1];
+  assert.equal(manager.resolvePlayerSwitchAction(1), true);
+  assert.equal(manager.resolveMoveAction("npc", manager.enemyTeam.getActive().pokemon.moves[0]), true);
+  assert.equal(caterpie.hp, 170, "Inseguimento must hit the Pokemon switched out by the immediately preceding action with x1.5 damage");
+  assert.equal(butterfree.hp, 200);
+}
+
+{
+  const manager = pursuitTestManager();
+  const caterpie = manager.playerTeam.combatantList[0];
+  const butterfree = manager.playerTeam.combatantList[1];
+  assert.equal(manager.resolvePlayerSwitchAction(1), true);
+  assert.equal(manager.resolveMoveAction("player", butterfree.pokemon.moves[0]), true);
+  assert.equal(manager.resolveMoveAction("npc", manager.enemyTeam.getActive().pokemon.moves[0]), true);
+  assert.equal(caterpie.hp, 200, "A stale switch target must not remain eligible for Inseguimento");
+  assert.equal(butterfree.hp, 180, "Inseguimento must hit the current Pokemon normally after it has already acted");
+}
 
 console.log("Revival baseline contract checks passed.");

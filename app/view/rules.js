@@ -397,6 +397,7 @@ function renderRulesArticle(section) {
       "<p>Riguardo i livelli intermedi, bisogna considerare l'ultimo limite raggiunto e aggiungere 3 per i PS e 2 per le mosse. Per esempio per il limite PS del livello 15 prendiamo il limite del livello 10 e aggiungiamo 3 per ogni livello di differenza: quindi il limite PS del livello 15 sarà (5x3)+60=75.</p>",
       "<h3>Effetti meteorologici</h3>",
       "<p>Il meteo indotto da una mossa dura finché non viene usata una mossa meteorologica differente, e in tal caso il vecchio viene sostituito dal nuovo. Oppure si può annullare il meteo attivo tramite l'oggetto Elisir Chiarocielo.</p>",
+      '<p class="rules-note"><strong>Importante</strong><span>Non si può usare una mossa Meteo per due turni di fila, anche se diversa e/o usata da Pokémon differenti.</span></p>',
       "<p><strong>Giornodisole</strong></p>",
       "<ul>",
       "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("Fuoco") + " è aumentato di metà del livello di chi attacca</li>",

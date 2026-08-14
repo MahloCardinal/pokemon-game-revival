@@ -225,8 +225,10 @@ BattleManager.prototype.resolveMoveAction = function (actor, move) {
     this.emit({ log: attacker.pokemon.name + " non può usare " + move.name + " per due turni consecutivi." });
     return false;
   }
+  this.clearRecentSwitchTarget(attackerTeam);
   this.startTurn(attacker, defender);
   if (attacker.isFainted()) {
+    this.clearRecentSwitchTarget(defenderTeam);
     return true;
   }
   this.executeMove(attacker, defender, move);
@@ -241,6 +243,7 @@ BattleManager.prototype.resolveMoveAction = function (actor, move) {
 
 BattleManager.prototype.resolveNpcItemAction = function (item, target) {
   var effectResult;
+  this.clearRecentSwitchTarget(this.enemyTeam);
   this.startTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
   this.recordWeatherMoveAction("npc", false);
   this.consumeChargeDamageMultiplier(this.enemyTeam.getActive());
@@ -350,6 +353,7 @@ BattleManager.prototype.resolveNpcSwitchAction = function (index) {
   this.emit({ log: result.message });
   this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
   this.endTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
+  this.clearRecentSwitchTarget(this.playerTeam);
   return true;
 };
 
@@ -692,6 +696,7 @@ BattleManager.prototype.playerUseItem = function (item, target) {
 
   return this.resolvePlayerRound(function () {
     var effectResult;
+    manager.clearRecentSwitchTarget(manager.playerTeam);
     manager.startTurn(manager.playerTeam.getActive(), manager.enemyTeam.getActive());
     manager.recordWeatherMoveAction("player", false);
     manager.consumeChargeDamageMultiplier(manager.playerTeam.getActive());
@@ -712,6 +717,7 @@ BattleManager.prototype.playerUseItem = function (item, target) {
 BattleManager.prototype.playerUseBall = function (item) {
   var manager = this;
   return this.resolvePlayerRound(function () {
+    manager.clearRecentSwitchTarget(manager.playerTeam);
     manager.startTurn(manager.playerTeam.getActive(), manager.enemyTeam.getActive());
     manager.recordWeatherMoveAction("player", false);
     manager.consumeChargeDamageMultiplier(manager.playerTeam.getActive());
@@ -857,7 +863,7 @@ BattleManager.prototype.combatants = function () {
 
 BattleManager.prototype.recentSwitchTargetForMove = function (defender, move) {
   var team = defender && defender.team;
-  var index = team ? Number(team.lastSwitchedOutIndex) : NaN;
+  var index = team && Number.isInteger(team.lastSwitchedOutIndex) ? team.lastSwitchedOutIndex : NaN;
   var target = Number.isInteger(index) ? team.combatantList[index] : null;
   if (!move || move.name !== "Inseguimento" || !target || target === defender || target.isFainted()) {
     return null;
@@ -1042,6 +1048,7 @@ BattleManager.prototype.calculateMoveDamage = function (attacker, defender, move
 
 BattleManager.prototype.executeMove = function (attacker, defender, move) {
   var defenderTeamForSwitch = defender && defender.team;
+  var defenderActiveIndexBefore = defenderTeamForSwitch ? defenderTeamForSwitch.activeIndex : null;
   var pursuitTarget;
   this._assorbisferaCost = 0;
   this.lastResolvedMoveIndex = null;
@@ -1210,7 +1217,9 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   if (effectiveMove !== move) {
     effectiveMove.forcedResolvedType = null;
   }
-  this.clearRecentSwitchTarget(defenderTeamForSwitch);
+  if (!defenderTeamForSwitch || defenderTeamForSwitch.activeIndex === defenderActiveIndexBefore) {
+    this.clearRecentSwitchTarget(defenderTeamForSwitch);
+  }
   this.clearActiveChargeDamageMultiplier(attacker);
 };
 
@@ -1866,6 +1875,7 @@ BattleManager.prototype.resolvePlayerSwitchAction = function (index, entryChoice
     this.applyEntryHeldItemChoice(this.playerTeam.getActive(), entryChoice);
   }
   this.endTurn(this.playerTeam.getActive(), this.enemyTeam.getActive());
+  this.clearRecentSwitchTarget(this.enemyTeam);
   return true;
 };
 

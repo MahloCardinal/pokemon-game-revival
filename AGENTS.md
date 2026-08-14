@@ -237,7 +237,7 @@ node scripts/sync-game-runtime.mjs --check
 
 ### Notifiche Discord delle battaglie admin
 
-`battle-command` invia una notifica Discord soltanto dopo l'inizializzazione riuscita delle battaglie `admin_gym` e `league`. La sfida `debug_training` della Zona Allenamento e tutte le sfide dell'utente `aaa` devono restare escluse.
+`battle-command` invia una notifica Discord soltanto dopo l'inizializzazione riuscita delle battaglie `admin_gym` e `league`, per qualsiasi giocatore incluso `aaa`. La sfida `debug_training` della Zona Allenamento deve restare esclusa.
 
 Il webhook è il segreto Supabase `DISCORD_ADMIN_BATTLE_WEBHOOK_URL`: non inserirne mai il valore nel repository, nelle migrazioni o nei log. La consegna è best effort e non deve mai impedire l'avvio della battaglia. La ricevuta privata `server_authority_private.discord_admin_battle_notification` impedisce invii duplicati in caso di retry; non aggirarla con chiamate Discord dal frontend.
 

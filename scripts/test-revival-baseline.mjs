@@ -24,6 +24,7 @@ const itemCatalog = read("app/data/items.js");
 const teamRuleItems = read("app/data/team-rule-items.js");
 const catalogGenerator = read("scripts/generate-catalog-seed.mjs");
 const gameDataChangeGenerator = read("scripts/create-game-data-change.mjs");
+const discordAudienceMigration = read("supabase/migrations/20260814131000_notify_all_admin_battle_players.sql");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
   .filter((name) => name.endsWith(".sql"))
@@ -177,9 +178,10 @@ assert.match(migrationSql, /create or replace function server_authority_private\
 assert.match(migrationSql, /game_data_revision/i);
 assert.match(migrationSql, /create table server_authority_private\.discord_admin_battle_notification/i);
 assert.match(migrationSql, /contract_key not in \('admin_gym', 'league'\)/i);
-assert.match(migrationSql, /v_username_normalized = 'aaa'/i);
-assert.match(migrationSql, /values \(p_battle_id, 'skipped', 0, clock_timestamp\(\)\)/i);
 assert.match(migrationSql, /grant execute on function public\.claim_discord_admin_battle_notification\(uuid\) to service_role/i);
+assert.match(discordAudienceMigration, /contract_key not in \('admin_gym', 'league'\)/i);
+assert.doesNotMatch(discordAudienceMigration, /username_normalized|debug_user|= 'aaa'/i);
+assert.match(discordAudienceMigration, /where status = 'skipped'/i);
 
 const competitiveItemNames = Array.from(shoppingCenter.matchAll(
   /shopItem\(i\.([a-z0-9_]+), SHOPPING_CENTER_SECTIONS\.PORT, SHOPPING_CENTER_CATEGORIES\.COMPETITIVE,/g

@@ -14,6 +14,7 @@ const supabaseApi = read("app/api/supabase.js");
 const session = read("app/client/session.js");
 const deploymentWatcher = read("app/client/deployment-version.js");
 const deploymentEndpoint = read("api/deployment-version.js");
+const renderer = read("app/client/renderer.js");
 const vercel = read("vercel.json");
 const missionCatalog = read("app/data/pokefan-missions.js");
 const missionRuntime = read("app/client/mission-runtime.js");
@@ -67,6 +68,9 @@ assert.match(discordBattleEdge, /notifyDiscordAdminBattleTurnReady/);
 assert.doesNotMatch(discordBattleEdge, /debug_training/);
 assert.match(edge, /projectionForDatabase\(projection\)/);
 assert.match(edge, /notifyAdminTurnBestEffort\(clients\.serviceClient, result/);
+assert.match(renderer, /export function renderRegions\(regionNames, options\)/);
+assert.match(renderer, /data-render-region/);
+assert.match(renderer, /export function renderDialogLayer\(options\)/);
 assert.match(renderUtils, /\.normalize\("NFD"\)/);
 assert.match(zoneTexts, /"Centro Pokémon"/);
 assert.match(zoneTexts, /"Club Pokéfan"/);
@@ -201,6 +205,11 @@ assert.match(discordTurnMigration, /primary key \(battle_id, battle_version\)/i)
 assert.match(discordTurnMigration, /contract_key not in \('admin_gym', 'league'\)/i);
 assert.match(discordTurnMigration, /waiting_for <> 'admin'/i);
 assert.match(discordTurnMigration, /grant execute on function public\.claim_discord_admin_battle_turn_notification\(uuid, bigint\) to service_role/i);
+assert.match(migrationSql, /alter publication supabase_realtime add table public\.authoritative_battle/i);
+
+const ordinaryBattleCommit = finalFunctionBody("server_authority_private", "commit_edge_battle_command_before_snapshot");
+assert.match(ordinaryBattleCommit, /contract_key in \('gym', 'capture', 'league'\)/i);
+assert.match(ordinaryBattleCommit, /create_terminal_ordinary_progression[\s\S]*p_projection\s*->\s*'ordinary_exp_awards'/i);
 
 const adminBattleCommit = finalFunctionBody("public", "commit_edge_admin_gym_command");
 assert.match(adminBattleCommit, /edge_jsonb_bigint\(p_next_snapshot\s*->\s*'snapshotVersion'\)\s*=\s*2/i);

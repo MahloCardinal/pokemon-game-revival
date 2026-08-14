@@ -74,6 +74,7 @@ Il browser non è fonte autoritativa e non deve concedere ricompense. Le battagl
 - Usare `escapeHtml()` per i valori dinamici inseriti nel markup.
 - Usare gli helper di `app/client/asset-helpers.js`; non costruire manualmente i percorsi degli asset.
 - Le modifiche che richiedono persistenza devono attraversare i comandi autoritativi o il flusso di salvataggio già previsto.
+- Le micro-azioni che restano nella stessa schermata devono preferire regioni DOM nominate con `data-render-region` e `renderRegions()`; usare `render()` completo soltanto quando cambia la struttura generale della scena. I popup usano `renderDialogLayer()` e non devono ricostruire la pagina sottostante.
 - Le regole di progressione restano centralizzate in `app/data/progression.js`.
 - Importare l'API pubblica del motore tramite `import * as Engine from "../engine/index.js"` quando possibile.
 - Revival supporta soltanto missioni avventura, cattura e giornaliere. Non reintrodurre categorie o reset per missioni ripetibili.

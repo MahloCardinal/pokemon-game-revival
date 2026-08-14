@@ -110,7 +110,7 @@ export function renderTeamScene() {
     return renderImage(assetPath("img_miscellaneous", badge.image), badge.name, badgeClass);
   }).join("");
   var trainerProfile = [
-    '<section class="team-description-panel trainer-profile-panel">',
+    '<section class="team-description-panel trainer-profile-panel" data-render-region="trainer-profile">',
     '  <div class="trainer-profile-media">',
     renderImage(getTrainerImage(trainerSprite), "Allenatore", withTrainerSpriteClass("trainer-profile-image", trainerSprite), withTrainerSpriteAttrs(trainerSprite, 'loading="eager" decoding="async"')),
     "  </div>",
@@ -132,7 +132,7 @@ export function renderTeamScene() {
   var selectedMoveIndex = state.scene && state.scene.teamMoveIndex !== null && state.scene.teamMoveIndex !== undefined ? Number(state.scene.teamMoveIndex) : NaN;
   var hasMoveSelection = Number.isInteger(selectedMoveIndex) && selectedMoveIndex >= 0 && selectedMoveIndex < state.team.length;
   var teamSection = state.team.length
-    ? '<section class="pokemon-grid team-pokemon-grid team-pokemon-count-' + escapeHtml(teamCount) + '">' + state.team.map(function (pokemon, index) {
+    ? '<section class="pokemon-grid team-pokemon-grid team-pokemon-count-' + escapeHtml(teamCount) + '" data-render-region="trainer-team">' + state.team.map(function (pokemon, index) {
       var moveAction;
       var cardClass = hasMoveSelection && selectedMoveIndex === index ? "is-team-move-selected" : "";
       if (hasMoveSelection && selectedMoveIndex === index) {
@@ -145,7 +145,7 @@ export function renderTeamScene() {
       var actions = button("Deposita nel Box", "team-to-box", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-primary team-to-box-button") + moveAction;
       return renderPokemonCardFrame(renderPokemonCard(pokemon, { className: cardClass }), { actions: actions });
     }).join("") + "</section>"
-    : '<section class="pokemon-grid team-pokemon-grid team-pokemon-count-1"><div class="empty-state">La squadra e\' vuota.</div></section>';
+    : '<section class="pokemon-grid team-pokemon-grid team-pokemon-count-1" data-render-region="trainer-team"><div class="empty-state">La squadra e\' vuota.</div></section>';
 
   function getInventorySectionKey(item) {
     var category = item.category || "";
@@ -208,7 +208,7 @@ export function renderTeamScene() {
   var inventoryItems = resolveInventoryItems(state.inventory);
 
   var debugPokemonCreator = renderDebugPokemonCreator();
-  var zainoContent = '<section class="trainer-inventory-panel style-zaino-panel"><div class="trainer-inventory-stack style-zaino-stack">' +
+  var zainoContent = '<section class="trainer-inventory-panel style-zaino-panel" data-render-region="trainer-inventory"><div class="trainer-inventory-stack style-zaino-stack">' +
     inventorySections.map(function (section) {
       return renderInventorySection(section, inventoryItems);
     }).join("") +
@@ -218,7 +218,7 @@ export function renderTeamScene() {
     var activeClass = f.gen === pokedexGenFilter ? ' active' : '';
     return button(f.label, "pokedex-set-filter", 'data-gen="' + f.gen + '"', "button-ghost button-slim pokedex-filter-btn" + activeClass);
   }).join('');
-  var pokedexContent = '<section class="team-description-panel trainer-pokedex-panel">' +
+  var pokedexContent = '<section class="team-description-panel trainer-pokedex-panel" data-render-region="trainer-pokedex">' +
     '<div class="trainer-pokedex-heading">' +
     '<h2 class="stack-title trainer-pokedex-title">Pok&eacute;dex <span class="trainer-pokedex-count">' + escapeHtml(pokedexCountLabel(gridResult.counts, pokedexGenFilter)) + "</span></h2>" +
     '</div>' +

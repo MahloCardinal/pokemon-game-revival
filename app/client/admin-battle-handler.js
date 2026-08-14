@@ -271,7 +271,11 @@ function syncAdminBattleRealtime(playerAuthUserId, battleId) {
   activeAdminBattleRealtimeChannel = client.channel("admin-authoritative-battle-" + normalizedBattleId)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "authoritative_battle",
       filter: "id=eq." + normalizedBattleId }, refreshBattle)
-    .subscribe();
+    .subscribe(function (status) {
+      if (status === "SUBSCRIBED") {
+        refreshBattle();
+      }
+    });
 }
 
 export function openAdminBattle(playerAuthUserId, battleId) {

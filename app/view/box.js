@@ -67,7 +67,7 @@ export function renderBoxScene() {
     "</details>"
   ].join("");
   var filterControls = [
-    '<section class="box-filter-row" aria-label="Filtra Box">',
+    '<section class="box-filter-row" aria-label="Filtra Box" data-render-region="box-filter">',
     '  <span class="box-filter-label">Filtra per:</span>',
     '  <label class="box-filter-field box-filter-type-field"><span>Tipo</span>' + typeMenu + "</label>",
     '  <label class="box-filter-field"><span>Lv min</span><input data-field="box-filter-min-level" type="text" inputmode="numeric" maxlength="3" pattern="[0-9]*" value="' + escapeHtml(filter.minLevel || "") + '"></label>',
@@ -94,7 +94,7 @@ export function renderBoxScene() {
   var content = [
     '<div class="box-scene-stack">',
     filterControls,
-    '<section class="box-storage-panel">',
+    '<section class="box-storage-panel" data-render-region="box-storage">',
     boxContent,
     "</section>",
     "</div>"

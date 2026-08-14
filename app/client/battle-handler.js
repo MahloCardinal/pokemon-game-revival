@@ -1840,7 +1840,11 @@ function syncActiveBattleRealtime(scene) {
     }
     activeBattleRealtimeChannel = client.channel("authoritative-battle-" + battleId).on("postgres_changes", {
       event: "UPDATE", schema: "public", table: "authoritative_battle", filter: "id=eq." + battleId
-    }, refreshFromAuthoritativeNotification).subscribe();
+    }, refreshFromAuthoritativeNotification).subscribe(function (status) {
+      if (status === "SUBSCRIBED") {
+        refreshFromAuthoritativeNotification();
+      }
+    });
     return;
   }
 }

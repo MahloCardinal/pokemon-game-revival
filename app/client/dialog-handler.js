@@ -1,6 +1,6 @@
 import { root, state } from "./game-state.js";
 import { renderConfirmDialog, renderMessageDialog } from "../view/dialogs.js";
-import { render } from "./renderer.js";
+import { renderDialogLayer } from "./renderer.js";
 import { registerAction } from "./action-registry.js";
 
 export function openMessage(lines, options) {
@@ -16,7 +16,7 @@ export function openMessage(lines, options) {
     battleLockScene: options.battleLockScene || "",
     requireButtonClose: !!options.requireButtonClose
   };
-  render({ scrollBattleLogToBottom: !!options.scrollBattleLogToBottom });
+  renderDialogLayer({ scrollBattleLogToBottom: !!options.scrollBattleLogToBottom });
 }
 
 export function openConfirm(title, lines, onConfirm, options) {
@@ -30,7 +30,7 @@ export function openConfirm(title, lines, onConfirm, options) {
     onConfirm: onConfirm,
     requireButtonClose: !!options.requireButtonClose
   };
-  render();
+  renderDialogLayer();
 }
 
 function closeInlineDialog() {
@@ -77,7 +77,7 @@ function dismissDialog(runCallback) {
     dialog.onClose();
     return;
   }
-  render();
+  renderDialogLayer();
 }
 
 export function openTeamChoiceDialog(options) {
@@ -90,7 +90,7 @@ export function openTeamChoiceDialog(options) {
     activeIndex: options.activeIndex,
     onPick: options.onPick
   };
-  render();
+  renderDialogLayer();
 }
 
 registerAction("dialog-close", function(element) {
@@ -112,11 +112,11 @@ registerAction("dialog-confirm", function(element) {
     }
     if (dialog && typeof dialog.onConfirm === "function") {
       if (!dialog.inline) {
-        render();
+        renderDialogLayer();
       }
       dialog.onConfirm();
     } else {
-      render();
+      renderDialogLayer();
     }
     return;
 
@@ -137,7 +137,7 @@ registerAction("kanto-league-entry-start", function() {
     if (entryDialog && typeof entryDialog.onStart === "function") {
       entryDialog.onStart();
     } else {
-      render();
+      renderDialogLayer();
     }
 
 });
@@ -149,7 +149,7 @@ registerAction("kanto-league-entry-pick", function(element) {
     if (entryDialog && typeof entryDialog.onPick === "function") {
       entryDialog.onPick(isNaN(index) ? 0 : index);
     } else {
-      render();
+      renderDialogLayer();
     }
 
 });

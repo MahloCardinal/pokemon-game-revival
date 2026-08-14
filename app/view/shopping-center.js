@@ -178,7 +178,7 @@ export function renderShoppingCenterCartPanelContent(pokedollars, entries, total
 
 function renderShoppingCenterCartPanel(pokedollars, entries, total, isSale) {
   return [
-    '<section class="panel shopping-center-cart-panel"><div class="panel-inner shopping-center-cart-panel-inner" data-shopping-center-cart-panel>',
+    '<section class="panel shopping-center-cart-panel" data-render-region="shopping-center-cart"><div class="panel-inner shopping-center-cart-panel-inner" data-shopping-center-cart-panel>',
     renderShoppingCenterCartPanelContent(pokedollars, entries, total, isSale),
     "</div></section>"
   ].join("");
@@ -198,7 +198,7 @@ export function renderShoppingCenterScene() {
     renderShoppingCenterSectionPanel(activeSection),
     renderShoppingCenterCartPanel(pokedollars, entries, total, isSell),
     "  </div>",
-    '<div class="shopping-center-grid market-grid" data-shopping-center-item-grid>' + renderShoppingCenterItemGridContent(activeSection) + "</div>",
+    '<div class="shopping-center-grid market-grid" data-shopping-center-item-grid data-render-region="shopping-center-items">' + renderShoppingCenterItemGridContent(activeSection) + "</div>",
     "</section>"
   ].join(""), "", "scene-content-shopping-center", "parent-back");
 }

@@ -401,6 +401,82 @@ export function render(options) {
   });
 }
 
+function syncRegionAttributes(current, next) {
+  Array.prototype.slice.call(current.attributes).forEach(function (attribute) {
+    if (!next.hasAttribute(attribute.name)) {
+      current.removeAttribute(attribute.name);
+    }
+  });
+  Array.prototype.slice.call(next.attributes).forEach(function (attribute) {
+    current.setAttribute(attribute.name, attribute.value);
+  });
+}
+
+export function renderRegions(regionNames, options) {
+  options = options || {};
+  var names = Array.isArray(regionNames) ? regionNames.filter(function (name, index, entries) {
+    return /^[a-z0-9-]+$/.test(String(name || "")) && entries.indexOf(name) === index;
+  }) : [];
+  var scene = state.scene;
+  var template;
+  var markup;
+  var regions;
+  var internalScrollPositions;
+  if (!scene || !names.length) {
+    return render(options);
+  }
+  state.scene = normalizeRenderableScene(scene);
+  if (state.scene !== scene) {
+    return render(options);
+  }
+  markup = currentSceneMarkup();
+  template = document.createElement("template");
+  template.innerHTML = markup;
+  regions = names.map(function (name) {
+    var selector = '[data-render-region="' + name + '"]';
+    return { current: root.querySelector(selector), next: template.content.querySelector(selector) };
+  });
+  if (regions.some(function (entry) { return !entry.current || !entry.next; })) {
+    return render(options);
+  }
+  internalScrollPositions = options.preserveScroll === false ? {} : captureScrollPositions();
+  regions.forEach(function (entry) {
+    syncRegionAttributes(entry.current, entry.next);
+    entry.current.innerHTML = entry.next.innerHTML;
+  });
+  if (options.preserveScroll !== false) {
+    restoreScrollPositions(internalScrollPositions);
+  }
+  if (options.scrollBattleLogToBottom) {
+    scheduleBattleLogScroll();
+  }
+  return Promise.resolve(true);
+}
+
+export function renderDialogLayer(options) {
+  options = options || {};
+  var regionNames = Array.prototype.slice.call(root.querySelectorAll("[data-render-region]"))
+    .map(function (element) { return String(element.dataset.renderRegion || ""); })
+    .filter(function (name, index, entries) { return name && entries.indexOf(name) === index; });
+  if (!regionNames.length) {
+    return render(options);
+  }
+  renderRegions(regionNames, options);
+  Array.prototype.slice.call(root.children).forEach(function (element) {
+    if (element.classList && element.classList.contains("dialog-backdrop")) {
+      element.remove();
+    }
+  });
+  var markup = renderDialog(state.dialog);
+  if (markup) {
+    root.insertAdjacentHTML("beforeend", markup);
+  }
+  if (options.scrollBattleLogToBottom) {
+    scheduleBattleLogScroll();
+  }
+  return Promise.resolve(true);
+}
+
 export function setScene(scene, options) {
   options = options || {};
   var previousSceneName = state.scene && state.scene.name;

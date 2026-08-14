@@ -1,6 +1,6 @@
 import { registerAction } from "./action-registry.js";
 import { openMessage } from "./dialog-handler.js";
-import { render, setHtml } from "./renderer.js";
+import { renderRegions, setHtml } from "./renderer.js";
 import { saveAfterStateChange } from "./save-runtime.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
 import { requireNotInBattle } from "./battle-scene-lock.js";
@@ -173,16 +173,17 @@ async function runAuthoritativeCart(entries, command, cartKey) {
           }, {});
         }
         openMessage([result.message || "Comando negozio non riuscito."], { title: "Centro commerciale" });
-        render();
+        renderRegions(["shopping-center-cart", "shopping-center-items"]);
         return false;
       }
       projection = result.projection;
       revision = Number(projection && projection.revision);
     }
     applyPlayerSave(saveFromAuthoritativeProjection(projection));
+    state[cartKey] = {};
     state.dialog = null;
     state.saveStatus = { state: "saved", message: "" };
-    render();
+    renderRegions(["shopping-center-cart", "shopping-center-items"]);
     return true;
   } finally {
     authoritativeShopCommandPending = false;

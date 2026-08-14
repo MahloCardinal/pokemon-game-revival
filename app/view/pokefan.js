@@ -151,12 +151,14 @@ export function renderPokefanScene() {
   var body = [
     '<section class="pokefan-layout">',
     renderScenePresentationPanel("Club Pokéfan", "pokefan-info-panel"),
+    '<div data-render-region="pokefan-content">',
     renderSectionTabs(activeSection),
     error,
     '<section class="panel pokefan-missions-panel"><div class="panel-inner">',
     renderMissionTable("Missioni attive", activeMissions, "Nessuna missione disponibile."),
     renderMissionTable("Missioni concluse", completedMissions, "Non hai ancora concluso missioni in questa sezione."),
     "</div></section>",
+    "</div>",
     "</section>"
   ].join("");
   return sceneShell("Club Pokéfan", "", body, "", "scene-content-pokefan", "parent-back");

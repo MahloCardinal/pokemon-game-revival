@@ -6,7 +6,7 @@ import { requireNotInBattle } from "./battle-scene-lock.js";
 import { registerAction } from "./action-registry.js";
 import { openMessage } from "./dialog-handler.js";
 import { claimMission, missionByIndex, missionCatalogByIndex, missionCategories, missionIsActive, setMissionError } from "./mission-runtime.js";
-import { render, setScene } from "./renderer.js";
+import { renderRegions, setScene } from "./renderer.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
 import { completeAuthoritativeDebugMission } from "../api/debug.js";
 import { authoritativeDebugPlayerState } from "../api/debug-contract.js";
@@ -145,12 +145,12 @@ function openMissionChoiceMenu(anchorElement, mission) {
 function showClaimError(message) {
   setMissionError(message || "Riscossione non riuscita.");
   openMessage([message || "Riscossione non riuscita. Riprova."], { title: "Club Pokéfan" });
-  render();
+  renderRegions(["pokefan-content"]);
 }
 
 function commitMissionClaim(mission, selectedReward) {
   var claimPromise = claimMission(mission.missionIndex, selectedReward);
-  render();
+  renderRegions(["pokefan-content"]);
   claimPromise.then(function (result) {
     if (!result.ok) {
       showClaimError(result.message);
@@ -161,7 +161,7 @@ function commitMissionClaim(mission, selectedReward) {
       state.missions.claimedNoticeMissionIndex = mission.missionIndex;
       broadcastTeamBoxRuntimeState();
     }
-    render();
+    renderRegions(["pokefan-content"]);
   });
 }
 
@@ -172,7 +172,7 @@ registerAction("pokefan-section", function (element) {
   }
   state.scene.pokefanSection = section;
   state.missions.claimedNoticeMissionIndex = null;
-  render();
+  renderRegions(["pokefan-content"]);
 });
 
 registerAction("open-completed-mission", function () {
@@ -220,7 +220,7 @@ registerAction("pokefan-debug-complete-mission", async function (element) {
   }
   state.missions.debugCompletingMissionIndex = missionIndex;
   state.missions.error = "";
-  render();
+  renderRegions(["pokefan-content"]);
   try {
     result = await completeAuthoritativeDebugMission({
       expectedPlayerRevision: state.authoritativeRevision,
@@ -248,7 +248,7 @@ registerAction("pokefan-debug-complete-mission", async function (element) {
     return;
   }
   applyPlayerSave(saveFromAuthoritativeProjection(playerState));
-  render();
+  renderRegions(["pokefan-content"]);
 });
 
 registerAction("pokefan-choice-close", function () {

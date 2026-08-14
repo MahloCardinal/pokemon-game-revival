@@ -2,7 +2,7 @@ import { registerAction } from "./action-registry.js";
 import { blockActionDuringBattle } from "./battle-handler.js";
 import { openInlineMessage } from "./dialog-handler.js";
 import { reindexActionButtons } from "./action-dom.js";
-import { markDirty, render } from "./renderer.js";
+import { markDirty, render, renderRegions } from "./renderer.js";
 import { saveAfterStateChange } from "./save-runtime.js";
 import { applyPlayerSave, state } from "./game-state.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
@@ -42,7 +42,7 @@ registerAction("team-to-box", async function(element) {
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
     if (state.scene) state.scene.teamMoveIndex = null;
     broadcastTeamBoxRuntimeState();
-    render();
+    renderRegions(["trainer-team"]);
   } finally {
     authoritativeTeamCommandPending = false;
   }
@@ -58,7 +58,7 @@ registerAction("team-move-start", function(element) {
       return;
     }
     state.scene.teamMoveIndex = teamIndex;
-    render();
+    renderRegions(["trainer-team"]);
     return;
 
 });
@@ -67,7 +67,7 @@ registerAction("team-move-cancel", function() {
     if (state.scene) {
       state.scene.teamMoveIndex = null;
     }
-    render();
+    renderRegions(["trainer-team"]);
     return;
 
 });
@@ -84,7 +84,7 @@ registerAction("team-move-place", async function(element) {
     if (state.scene) {
       state.scene.teamMoveIndex = null;
     }
-    render();
+    renderRegions(["trainer-team"]);
     return;
   }
   if (authoritativeTeamCommandPending || !state.team[sourceIndex].instanceId || !state.team[targetIndex].instanceId) {
@@ -104,7 +104,7 @@ registerAction("team-move-place", async function(element) {
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
     if (state.scene) state.scene.teamMoveIndex = null;
     broadcastTeamBoxRuntimeState();
-    render();
+    renderRegions(["trainer-team"]);
   } finally {
     authoritativeTeamCommandPending = false;
   }
@@ -116,7 +116,7 @@ registerAction("pokedex-set-filter", function(element) {
       return;
     }
     state.scene.pokedexGenFilter = Number(element.dataset.gen) || 0;
-    render();
+    renderRegions(["trainer-pokedex"]);
     return;
 
 });
@@ -128,7 +128,15 @@ export function handleTeamBoxRuntimeChange(domains) {
       authoritativeRuntimeRefreshInFlight = getCurrentPlayerState().then(function (result) {
         if (result.ok && result.projection && result.projection.has_player) {
           applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
-          render();
+          if (state.scene && state.scene.name === "team") {
+            renderRegions(["trainer-profile", "trainer-team", "trainer-inventory", "trainer-pokedex"]);
+          } else if (state.scene && state.scene.name === "box") {
+            renderRegions(["box-filter", "box-storage"]);
+          } else if (state.scene && state.scene.name === "pokemon-center") {
+            renderRegions(["pokemon-center-items", "pokemon-center-team"]);
+          } else {
+            render();
+          }
         }
       }).finally(function () {
         authoritativeRuntimeRefreshInFlight = null;
@@ -151,15 +159,15 @@ export function handleTeamBoxRuntimeChange(domains) {
     return;
   }
   if (state.scene.name === "team" && hasTrainerSheetChange) {
-    render();
+    renderRegions(["trainer-profile", "trainer-team", "trainer-inventory", "trainer-pokedex"]);
     return;
   }
   if (state.scene.name === "box" && hasTeamBoxChange) {
-    render();
+    renderRegions(["box-storage"]);
     return;
   }
   if (state.scene.name === "pokemon-center" && (hasTeamBoxChange || domainList.indexOf("inventory") !== -1)) {
-    render();
+    renderRegions(["pokemon-center-items", "pokemon-center-team"]);
     return;
   }
   if (state.scene.name === "garden" && domainList.indexOf("inventory") !== -1) {

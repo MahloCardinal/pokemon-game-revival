@@ -5,7 +5,7 @@ import { registerAction } from "./action-registry.js";
 import { requireNotInBattle } from "./battle-scene-lock.js";
 import { openMessage } from "./dialog-handler.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
-import { render } from "./renderer.js";
+import { renderRegions } from "./renderer.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { battleShopChoiceName, battleShopOfferName, hydrateBattleShopOffers } from "./battle-shop-presentation.js";
 
@@ -123,6 +123,7 @@ async function buyBattleShopOffer(offerKey, element) {
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
     broadcastTeamBoxRuntimeState();
+    await refreshBattleShopOffers();
     var pokemonInstanceId = String(result.projection && result.projection.pokemon_instance_id || "");
     var pokemon = pokemonInstanceId ? (state.box || []).find(function(entry) {
       return String(entry && entry.instanceId || "") === pokemonInstanceId;
@@ -136,6 +137,9 @@ async function buyBattleShopOffer(offerKey, element) {
     });
   } finally {
     state.battleShopPurchasePending = false;
+    if (state.scene && state.scene.name === "battle-shop") {
+      renderRegions(["battle-shop-offers"]);
+    }
   }
 }
 
@@ -181,7 +185,9 @@ export async function refreshBattleShopOffers() {
   if (state.battleShopOffersLoading) return { ok: false, pending: true };
   state.battleShopOffersLoading = true;
   state.battleShopOffersError = "";
-  render();
+  if (state.scene && state.scene.name === "battle-shop") {
+    renderRegions(["battle-shop-offers"]);
+  }
   var result = await getBattleShopOffers();
   if (result.ok && Array.isArray(result.projection)) {
     state.battleShopOffers = hydrateBattleShopOffers(result.projection);
@@ -192,6 +198,6 @@ export async function refreshBattleShopOffers() {
     state.battleShopOffersError = result.message || "Impossibile caricare i premi del Negozio Lotta.";
   }
   state.battleShopOffersLoading = false;
-  if (state.scene && state.scene.name === "battle-shop") render();
+  if (state.scene && state.scene.name === "battle-shop") renderRegions(["battle-shop-offers"]);
   return result;
 }

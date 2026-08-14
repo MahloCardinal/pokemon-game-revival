@@ -1,6 +1,7 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
+- diminuire catch-rate delle pokeball
 - bilanciamento team palestre e contenuto delle MT
 - inserire nelle palestre le date di vittoria da parte degli altri giocatori
 - correggere Bizzoaroma/Gonfioaroma

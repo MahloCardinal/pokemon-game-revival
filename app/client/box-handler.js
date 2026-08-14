@@ -6,7 +6,7 @@ var TEAM_MAX = Engine.TEAM_MAX;
 import { openInlineConfirm, openInlineMessage, openMessage } from "./dialog-handler.js";
 import { reindexActionButtons } from "./action-dom.js";
 import { removeElement } from "./renderer.js";
-import { markDirty, render } from "./renderer.js";
+import { markDirty, renderRegions } from "./renderer.js";
 import { saveAfterStateChange } from "./save-runtime.js";
 import { applyPlayerSave, resetBoxFilter, root, state } from "./game-state.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
@@ -48,7 +48,7 @@ registerAction("box-to-team", async function(element) {
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
     broadcastTeamBoxRuntimeState();
-    render();
+    renderRegions(["box-storage"]);
   } finally {
     authoritativeBoxCommandPending = false;
   }
@@ -75,7 +75,7 @@ registerAction("box-release", function(element) {
         applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
         state.dialog = null;
         broadcastTeamBoxRuntimeState();
-        render();
+        renderRegions(["box-storage"]);
       } finally {
         authoritativeBoxCommandPending = false;
       }
@@ -98,14 +98,14 @@ registerAction("box-filter-apply", function(element) {
       name: nameInput ? String(nameInput.value || "").replace(/[^A-Za-z0-9-]/g, "").slice(0, 3).toLocaleLowerCase("it-IT") : "",
       heldItemOnly: heldItemInput ? heldItemInput.checked : false
     };
-    render();
+    renderRegions(["box-filter", "box-storage"]);
     return;
 
 });
 
 registerAction("box-filter-reset", function(element) {
     resetBoxFilter();
-    render();
+    renderRegions(["box-filter", "box-storage"]);
     return;
 
 });

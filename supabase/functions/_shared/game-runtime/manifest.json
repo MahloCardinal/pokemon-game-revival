@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "266b785e9c16976bd776016b9d93ebe5aa6e366bdc11fbffaa1c8f5038130b3e",
+  "bundleChecksum": "821256ca024278d58dbda68b668d2d04fb886220ea800546836073eb2bcac8e2",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -58,11 +58,6 @@
       "bytes": 8811
     },
     {
-      "source": "app/data/shopping-center.js",
-      "sha256": "418e64b4ca76f4328219c872d6e85742b8864f1cd3f224170e8deed230c9fe21",
-      "bytes": 21808
-    },
-    {
       "source": "app/data/species_I.js",
       "sha256": "efb53c58f9d1a6d4a65d5758125d4c1b69936e6a948909da917687f804372f81",
       "bytes": 180850
@@ -81,6 +76,11 @@
       "source": "app/data/stat-tables.js",
       "sha256": "cd133ed12a327ddee306db1bfa64a0d97ca01f05c4b88fd2a576aeff9c14622e",
       "bytes": 3670
+    },
+    {
+      "source": "app/data/team-rule-items.js",
+      "sha256": "0a5e55e580ee74f28a7f803337fa1e377108ca1ab713c4c31ce4b4421a718878",
+      "bytes": 229
     },
     {
       "source": "app/data/trainers.js",
@@ -159,8 +159,8 @@
     },
     {
       "source": "app/engine/team-composition-rules.js",
-      "sha256": "994f219e7de269b573c37c46c85901f4c1882825a31f033d3c24333a3da0e4c1",
-      "bytes": 10365
+      "sha256": "ed9703c42016b0f81486041847219f7db7e83f3ef6cf8bb733f6d43eeffb6e3a",
+      "bytes": 9989
     },
     {
       "source": "app/engine/team.js",

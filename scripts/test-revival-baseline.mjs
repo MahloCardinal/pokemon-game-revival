@@ -16,7 +16,10 @@ const missionRuntime = read("app/client/mission-runtime.js");
 const missionReset = read("app/client/mission-reset.js");
 const missionView = read("app/view/pokefan.js");
 const shoppingCenter = read("app/data/shopping-center.js");
+const itemCatalog = read("app/data/items.js");
+const teamRuleItems = read("app/data/team-rule-items.js");
 const catalogGenerator = read("scripts/generate-catalog-seed.mjs");
+const gameDataChangeGenerator = read("scripts/create-game-data-change.mjs");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
   .filter((name) => name.endsWith(".sql"))
@@ -40,6 +43,8 @@ for (const missionSource of [missionCatalog, missionRuntime, missionReset, missi
 }
 assert.match(shoppingCenter, /entry\.price === null/);
 assert.match(catalogGenerator, /purchasePrice === null/);
+assert.match(gameDataChangeGenerator, /begin_game_data_change/);
+assert.match(gameDataChangeGenerator, /finish_game_data_change/);
 
 for (const functionName of [
   "register-with-username",
@@ -133,5 +138,22 @@ assert.doesNotMatch(missionActive, /repeatable/i);
 assert.match(migrationSql, /drop column repeatable/);
 assert.match(migrationSql, /catalog_mission_category_key_check/);
 assert.match(migrationSql, /set claim_status = 'claimed',\s*claim_count = claim_count \+ 1/i);
+assert.match(migrationSql, /create table public\.game_data_change_set/i);
+assert.match(migrationSql, /create table public\.game_data_change/i);
+assert.match(migrationSql, /create constraint trigger ensure_game_data_change_completed/i);
+assert.match(migrationSql, /create or replace function server_authority_private\.compute_game_data_checksum/i);
+assert.match(migrationSql, /game_data_revision/i);
+
+const competitiveItemNames = Array.from(shoppingCenter.matchAll(
+  /shopItem\(i\.([a-z0-9_]+), SHOPPING_CENTER_SECTIONS\.PORT, SHOPPING_CENTER_CATEGORIES\.COMPETITIVE,/g
+)).map((match) => match[1]).sort();
+const competitiveIndexes = competitiveItemNames.map((itemName) => {
+  const definition = itemCatalog.match(new RegExp(`export const ${itemName} = normalizeItemDefinition\\(\\{[\\s\\S]*?index: (\\d+),`));
+  assert.ok(definition, `Missing competitive item definition: ${itemName}`);
+  return Number(definition[1]);
+}).sort((left, right) => left - right);
+const configuredCompetitiveIndexes = teamRuleItems.match(/PORT_COMPETITIVE_ITEM_INDEXES = \[([^\]]+)\]/)[1]
+  .split(",").map((value) => Number(value.trim())).sort((left, right) => left - right);
+assert.deepEqual(configuredCompetitiveIndexes, competitiveIndexes);
 
 console.log("Revival baseline contract checks passed.");

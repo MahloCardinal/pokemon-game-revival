@@ -136,35 +136,46 @@ Il superamento dei test locali dimostra coerenza del repository, ma non dimostra
 
 I cataloghi SQL vengono generati dalle sorgenti in `app/data/` e `app/engine/`. Non committare i dump risultanti.
 
-Il contenuto di una release `published` o `retired` è immutabile. Quando esistono utenti o dati di gioco da preservare, per cambiare un catalogo pubblicato:
+Revival mantiene una sola release stabile chiamata `revival-baseline`, anche quando esistono utenti reali. Non clonare l'intero catalogo per una modifica puntuale e non cambiare `catalog_release_id` dei profili. Ogni aggiornamento dei dati usa una nuova migrazione e il change set atomico introdotto da `20260814120000_granular_game_data_changes.sql`:
 
-- generare e importare una nuova release `draft` completa;
-- verificare le righe interessate prima della pubblicazione;
-- creare il binding additivo per il checksum runtime corretto;
-- verificare che non esistano battaglie attive o pending incompatibili;
-- pubblicare la nuova release e gestire esplicitamente i profili già esistenti, perché `player_profile_state.catalog_release_id` non cambia automaticamente;
-- preservare l'utente `aaa` e il suo ruolo `debug` durante qualunque migrazione dei profili;
-- distribuire `battle-command` in un ordine che non lasci catalogo e runtime incompatibili;
-- verificare infine release pubblicata, profili, binding abilitati e checksum della Edge Function.
+```sql
+begin;
 
-### Modalità di sviluppo senza utenti
+select server_authority_private.begin_game_data_change(
+  p_label => 'Descrizione leggibile',
+  p_affected_families => array['shop']::text[],
+  p_source_checksums => jsonb_build_object(
+    'app/data/shopping-center.js', '<sha256 del file canonico>'
+  ),
+  p_requires_battle_idle => false
+);
 
-Finché il progetto non contiene utenti né dati giocatore, mantenere nel database esattamente una release chiamata `revival-baseline`, senza release `retired` o cloni completi. In questa fase non creare una nuova release per un piccolo aggiornamento.
+-- Modificare soltanto le righe necessarie, sempre limitandole alla baseline.
 
-Procedura per una modifica limitata:
+select server_authority_private.finish_game_data_change();
+commit;
+```
 
-- verificare che `auth.users`, profili, Pokémon, incontri, battaglie e run siano vuoti;
-- in una nuova migrazione atomica portare temporaneamente `revival-baseline` da `published` a `draft`;
-- eliminare e rigenerare soltanto la famiglia o le righe coinvolte, evitando che gli upsert lascino righe non più previste;
-- ripubblicare la stessa `revival-baseline` con `publish_catalog_release('revival-baseline')` nella medesima transazione;
-- aggiornare soltanto binding runtime ed Edge Function realmente coinvolti;
-- verificare al termine che esistano una release pubblicata, un binding runtime abilitato e nessuna release duplicata.
+Per creare lo scheletro corretto e calcolare automaticamente gli SHA-256 delle sorgenti:
 
-Riservare l'import completo generato dalla macchina locale alla creazione iniziale della baseline o a modifiche che coinvolgono molte famiglie. Quando verranno introdotti utenti reali da conservare, tornare al flusso a release immutabili descritto sopra.
+```powershell
+node scripts/create-game-data-change.mjs --slug aggiorna_prezzo --label "Aggiorna un prezzo" --families shop --source app/data/shopping-center.js
+```
 
-Quando si cambia `player_profile_state.catalog_release_id`, non assumere che ogni tabella segua automaticamente il profilo. Verificare tutte le colonne `catalog_release_id`, incluse almeno `player_mission_state`, `player_encounter`, progressioni, run, battaglie e `server_authority_private.runtime_catalog_config`. Le sole foreign key con `ON UPDATE CASCADE` non coprono tutte le tabelle operative.
+Il change set:
 
-Se serve compatibilità durante il deploy, usare temporaneamente binding additivi; rimuovere o disabilitare il binding di transizione soltanto dopo aver distribuito la nuova Edge Function e verificato che non esistano battaglie che lo usano.
+- porta la baseline in `draft` soltanto all'interno della transazione;
+- impedisce modifiche al catalogo fuori dal change set;
+- registra tabella, operazione e valori precedenti/successivi di ogni riga toccata;
+- aggiorna conteggi, manifest e checksum delle sole famiglie dichiarate;
+- ripubblica lo stesso `catalog_release_id` e incrementa `game_data_revision`;
+- annulla l'intera transazione se non viene completato correttamente.
+
+Usare `p_requires_battle_idle => true` per dati che possono influenzare una battaglia, un incontro o una risoluzione già aperti: roster e premi avversari, mosse, specie, learnset, evoluzioni, regole di combattimento, cattura o progressione. Prezzi di acquisto, etichette e altri valori consumati soltanto da una nuova azione possono normalmente usare `false`.
+
+Una modifica ai dati non richiede automaticamente un nuovo runtime. Controllare però il grafo del mirror: se il file canonico è importato da `app/engine/battle-runtime.js`, il contenuto eseguibile Edge cambia davvero e servono sync, binding additivo e deploy di `battle-command`. Oggi, per esempio, i learnset delle specie sono usati anche per generare squadre di Allenamento e Torre Lotta e appartengono quindi al runtime; i premi Pokéfan e i prezzi commerciali non dovrebbero richiedere un nuovo runtime salvo dipendenze indirette da rimuovere o giustificare.
+
+Se serve compatibilità durante un deploy del runtime, aggiungere il nuovo binding senza rimuovere quello precedente. Disabilitare il binding di transizione soltanto dopo il deploy della Edge Function e dopo aver verificato che non esistano battaglie o snapshot che lo usano. Preservare sempre l'utente `aaa` e il ruolo `debug`; la baseline stabile evita migrazioni dei profili.
 
 Verifica deterministica della baseline corrente:
 

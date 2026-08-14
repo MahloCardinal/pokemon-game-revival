@@ -1,5 +1,5 @@
 import { getItemByIndex } from "../data/items.js";
-import { SHOPPING_CENTER_CATEGORIES, SHOPPING_CENTER_ITEMS, SHOPPING_CENTER_SECTIONS } from "../data/shopping-center.js";
+import { PORT_COMPETITIVE_ITEM_INDEXES } from "../data/team-rule-items.js";
 import { TYPE_CHART } from "../data/type-chart.js";
 
 export var TEAM_MAX = 6;
@@ -11,14 +11,6 @@ var OHKO_MOVE_INDEXES = [2, 132, 211, 234];
 var OHKO_MOVE_NAMES = ["Abisso", "Ghigliottina", "Perforcorno", "Purogelo"];
 
 export var KANTO_LEAGUE_PORT_ITEM_RULE = { max: 2, requireDistinct: true };
-
-var PORT_COMPETITIVE_ITEM_INDEXES = SHOPPING_CENTER_ITEMS.filter(function (entry) {
-  return entry
-    && entry.section === SHOPPING_CENTER_SECTIONS.PORT
-    && entry.category === SHOPPING_CENTER_CATEGORIES.COMPETITIVE;
-}).map(function (entry) {
-  return Number(entry.item && entry.item.index) || 0;
-}).filter(Boolean);
 
 function normalizedTeam(team) {
   return Array.isArray(team) ? team.filter(Boolean) : [];

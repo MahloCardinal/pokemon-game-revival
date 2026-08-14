@@ -4,7 +4,6 @@
 - bilanciamento team palestre e contenuto delle MT
 - inserire nelle palestre le date di vittoria da parte degli altri giocatori
 - correggere Bizzoaroma/Gonfioaroma
-- re-implementare web-hook Discord per sfide admin
 - inserire possibilità di vedere squadre altri giocatori
 - verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
 - implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)

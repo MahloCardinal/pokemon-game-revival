@@ -27,6 +27,7 @@ import {
   uuid
 } from "../_shared/battle-edge.ts";
 import { enforceEdgeRateLimit } from "../_shared/edge-rate-limit.ts";
+import { notifyDiscordAdminBattleStarted } from "../_shared/discord-admin-battle.ts";
 
 const unchangedTerminalEffects = { reward: "none", inventory: "unchanged", team: "unchanged" };
 const commonKeys = ["action", "battleId", "commandId", "expectedPlayerRevision", "expectedBattleVersion", "runtimeOwnerId"];
@@ -212,6 +213,22 @@ async function initializeIfNeeded(
     events: initializationEvents,
     projection
   });
+}
+
+async function initializeAndNotifyAdminBattle(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  userId: string,
+  body: Record<string, unknown>,
+  prepared: Record<string, unknown>
+) {
+  const initialized = await initializeIfNeeded(serviceClient, userId, body, prepared) as Record<string, unknown>;
+  const battle = initialized.battle as Record<string, unknown> | null;
+  try {
+    await notifyDiscordAdminBattleStarted(serviceClient, String(battle?.battle_id || ""));
+  } catch (error) {
+    console.error("Unexpected Discord battle notification error", error);
+  }
+  return initialized;
 }
 
 Deno.serve(async (request) => {
@@ -576,7 +593,7 @@ Deno.serve(async (request) => {
       if (startResult.error) throw databaseError(startResult.error);
       const startedBattle = startResult.data?.battle;
       const prepared = await prepareBattle(clients.serviceClient, clients.userId, String(startedBattle?.battle_id || ""));
-      return jsonResponse(await initializeIfNeeded(clients.serviceClient, clients.userId, body, prepared) as Record<string, unknown>);
+      return jsonResponse(await initializeAndNotifyAdminBattle(clients.serviceClient, clients.userId, body, prepared));
     }
 
     if (action === "start_league") {
@@ -595,7 +612,7 @@ Deno.serve(async (request) => {
       if (startResult.error) throw databaseError(startResult.error);
       const startedBattle = startResult.data?.battle;
       const prepared = await prepareBattle(clients.serviceClient, clients.userId, String(startedBattle?.battle_id || ""));
-      return jsonResponse(await initializeIfNeeded(clients.serviceClient, clients.userId, body, prepared) as Record<string, unknown>);
+      return jsonResponse(await initializeAndNotifyAdminBattle(clients.serviceClient, clients.userId, body, prepared));
     }
 
     if (action === "start_tower") {

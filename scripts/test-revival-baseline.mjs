@@ -5,6 +5,7 @@ const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf
 const config = read("app/api/supabase-config.js");
 const supabaseConfig = read("supabase/config.toml");
 const edge = read("supabase/functions/battle-command/index.ts");
+const discordBattleEdge = read("supabase/functions/_shared/discord-admin-battle.ts");
 const recoveryEdge = read("supabase/functions/request-password-recovery/index.ts");
 const schema = read("supabase/migrations/20260812000000_revival_baseline.sql");
 const engine = read("app/engine/battle-runtime.js");
@@ -37,6 +38,25 @@ assert.match(supabaseConfig, /additional_redirect_urls = \[[^\]]*"https:\/\/poke
 assert.match(engine, /BATTLE_ENGINE_VERSION = "pokemon-game-revival"/);
 assert.match(edge, /requireServerRole\(clients\.serviceClient, clients\.userId, "debug"\)/);
 assert.match(edge, /requireRevivalProject\(\)/);
+const debugTrainingAction = edge.slice(
+  edge.indexOf('if (action === "start_debug_training")'),
+  edge.indexOf('if (action === "start_capture")')
+);
+const adminGymAction = edge.slice(
+  edge.indexOf('if (action === "start_admin_gym")'),
+  edge.indexOf('if (action === "start_league")')
+);
+const leagueAction = edge.slice(
+  edge.indexOf('if (action === "start_league")'),
+  edge.indexOf('if (action === "start_tower")')
+);
+assert.match(adminGymAction, /initializeAndNotifyAdminBattle/);
+assert.match(leagueAction, /initializeAndNotifyAdminBattle/);
+assert.doesNotMatch(debugTrainingAction, /notifyDiscord|initializeAndNotifyAdminBattle/);
+assert.match(discordBattleEdge, /DISCORD_ADMIN_BATTLE_WEBHOOK_URL/);
+assert.match(discordBattleEdge, /\["discord\.com", "discordapp\.com"\]/);
+assert.match(discordBattleEdge, /allowed_mentions:\s*\{ parse: \[\] \}/);
+assert.doesNotMatch(discordBattleEdge, /debug_training/);
 assert.match(recoveryEdge, /https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery/);
 assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RECOVERY_REDIRECT_URL/);
 assert.doesNotMatch(recoveryEdge, /Deno\.env\.get\("APP_URL"\)|localhost|web-gdr-staging/);
@@ -155,6 +175,11 @@ assert.match(migrationSql, /create table public\.game_data_change/i);
 assert.match(migrationSql, /create constraint trigger ensure_game_data_change_completed/i);
 assert.match(migrationSql, /create or replace function server_authority_private\.compute_game_data_checksum/i);
 assert.match(migrationSql, /game_data_revision/i);
+assert.match(migrationSql, /create table server_authority_private\.discord_admin_battle_notification/i);
+assert.match(migrationSql, /contract_key not in \('admin_gym', 'league'\)/i);
+assert.match(migrationSql, /v_username_normalized = 'aaa'/i);
+assert.match(migrationSql, /values \(p_battle_id, 'skipped', 0, clock_timestamp\(\)\)/i);
+assert.match(migrationSql, /grant execute on function public\.claim_discord_admin_battle_notification\(uuid\) to service_role/i);
 
 const competitiveItemNames = Array.from(shoppingCenter.matchAll(
   /shopItem\(i\.([a-z0-9_]+), SHOPPING_CENTER_SECTIONS\.PORT, SHOPPING_CENTER_CATEGORIES\.COMPETITIVE,/g

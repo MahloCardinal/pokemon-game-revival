@@ -27,16 +27,33 @@ export function battlePointsMarkup(value) {
   return '<span class="battle-points-symbol">PL</span><span>' + escapeHtml(formatInteger(value)) + "</span>";
 }
 
-function scenePresentationImageName(sceneName) {
+function normalizedScenePresentationName(sceneName) {
   return String(sceneName || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "") + "_presentazione";
+    .replace(/^_+|_+$/g, "");
+}
+
+function scenePresentationImageName(sceneName) {
+  return normalizedScenePresentationName(sceneName) + "_presentazione";
+}
+
+function scenePresentationText(sceneName) {
+  if (SCENE_PRESENTATION_TEXT[sceneName]) {
+    return SCENE_PRESENTATION_TEXT[sceneName];
+  }
+  var normalizedName = normalizedScenePresentationName(sceneName);
+  var matchingKey = Object.keys(SCENE_PRESENTATION_TEXT).find(function(key) {
+    return normalizedScenePresentationName(key) === normalizedName;
+  });
+  return matchingKey ? SCENE_PRESENTATION_TEXT[matchingKey] : "Benvenuto in " + sceneName;
 }
 
 export function renderScenePresentationPanel(sceneName, className) {
   var presentationClass = className ? " " + className : "";
-  var text = SCENE_PRESENTATION_TEXT[sceneName] || ("Benvenuto in " + sceneName);
+  var text = scenePresentationText(sceneName);
   var paragraphs = text.split("\n").filter(Boolean).map(function(para) {
     return "    <p>" + escapeHtml(para) + "</p>";
   }).join("\n");

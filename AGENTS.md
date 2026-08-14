@@ -237,9 +237,11 @@ node scripts/sync-game-runtime.mjs --check
 
 ### Notifiche Discord delle battaglie admin
 
-`battle-command` invia una notifica Discord soltanto dopo l'inizializzazione riuscita delle battaglie `admin_gym` e `league`, per qualsiasi giocatore incluso `aaa`. La sfida `debug_training` della Zona Allenamento deve restare esclusa.
+`battle-command` invia una notifica Discord dopo l'inizializzazione riuscita delle battaglie `admin_gym` e `league` e ogni volta che una mossa del giocatore restituisce il turno all'amministratore, per qualsiasi giocatore incluso `aaa`. La sfida `debug_training` della Zona Allenamento deve restare esclusa.
 
-Il webhook è il segreto Supabase `DISCORD_ADMIN_BATTLE_WEBHOOK_URL`: non inserirne mai il valore nel repository, nelle migrazioni o nei log. La consegna è best effort e non deve mai impedire l'avvio della battaglia. La ricevuta privata `server_authority_private.discord_admin_battle_notification` impedisce invii duplicati in caso di retry; non aggirarla con chiamate Discord dal frontend.
+Il webhook è il segreto Supabase `DISCORD_ADMIN_BATTLE_WEBHOOK_URL`: non inserirne mai il valore nel repository, nelle migrazioni o nei log. I messaggi devono avere un campo `content` testuale non vuoto e il link diretto al pannello admin. La consegna è best effort e non deve mai impedire l'avvio o l'avanzamento della battaglia. Le ricevute private `server_authority_private.discord_admin_battle_notification` e `server_authority_private.discord_admin_battle_turn_notification` impediscono invii duplicati in caso di retry; non aggirarle con chiamate Discord dal frontend.
+
+Le proiezioni complete restano nella risposta Edge, ma gli RPC di commit ricevono la variante ridotta tramite `projectionForDatabase()`: non reinviare `battle_state`, scelte di presentazione o stato grafico dei partecipanti, perché duplicano lo snapshot e possono superare il limite SQL nelle squadre numerose.
 
 ## Utenti speciali
 

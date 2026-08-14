@@ -19,6 +19,7 @@ import { adventurePhaseIsCompleted } from "./mission-runtime.js";
 import { authoritativeBattleRuntimeOwnerId, getAuthoritativeBattle, startAuthoritativeGymBattle, startAuthoritativeLeagueBattle } from "../api/battle.js";
 import { isAdminControlledBattleType } from "../data/admin-battles.js";
 
+var ADVENTURE_MISSION_REQUIREMENT = "Completa le Missioni avventura necessarie";
 var gymBattleStartPending = false;
 
 function officialChallengeOverCapPokemon(team) {
@@ -133,7 +134,7 @@ registerAction("gym-leader-start", function (element) {
       return;
     }
     if (!adventurePhaseIsCompleted(adventurePhaseForGym(resolvedCityKey))) {
-      openMessage(["Completa le Missioni avventura " + adventurePhaseForGym(resolvedCityKey) + " prima di affrontare questa palestra."], { title: "Palestra" });
+      openMessage([ADVENTURE_MISSION_REQUIREMENT + " prima di affrontare questa palestra."], { title: "Palestra" });
       return;
     }
     if (blockGymChallengeIfSuperEffectivePokemonInvalid(playerPokemon, resolvedCityKey, leader, "Palestra")) {
@@ -208,7 +209,7 @@ function buildGymLeaderBattleScene(gymScene, cityKey, activeIndex) {
     return Promise.resolve(false);
   }
   if (!adventurePhaseIsCompleted(adventurePhaseForGym(resolvedCityKey))) {
-    openMessage(["Completa le Missioni avventura " + adventurePhaseForGym(resolvedCityKey) + " prima di affrontare questa palestra."], { title: "Palestra" });
+    openMessage([ADVENTURE_MISSION_REQUIREMENT + " prima di affrontare questa palestra."], { title: "Palestra" });
     return Promise.resolve(false);
   }
   if (blockGymChallengeIfSuperEffectivePokemonInvalid(playerPokemon, resolvedCityKey, leader, "Palestra")) {

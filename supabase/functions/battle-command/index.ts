@@ -27,7 +27,7 @@ import {
   uuid
 } from "../_shared/battle-edge.ts";
 import { enforceEdgeRateLimit } from "../_shared/edge-rate-limit.ts";
-import { notifyDiscordAdminBattleStarted } from "../_shared/discord-admin-battle.ts";
+import { notifyDiscordAdminBattleStarted, notifyDiscordAdminBattleTurnReady } from "../_shared/discord-admin-battle.ts";
 
 const unchangedTerminalEffects = { reward: "none", inventory: "unchanged", team: "unchanged" };
 const commonKeys = ["action", "battleId", "commandId", "expectedPlayerRevision", "expectedBattleVersion", "runtimeOwnerId"];
@@ -82,6 +82,40 @@ function projectionFromPrepared(prepared: Record<string, unknown>) {
   };
 }
 
+function projectionForDatabase(
+  projection: Record<string, unknown>,
+  rewardStatus?: string
+) {
+  const databaseProjection: Record<string, unknown> = { ...projection };
+  if (rewardStatus) databaseProjection.reward_status = rewardStatus;
+  delete databaseProjection.battle_state;
+  delete databaseProjection.entry_choice;
+  delete databaseProjection.admin_entry_choice;
+  if (Array.isArray(databaseProjection.participants)) {
+    databaseProjection.participants = databaseProjection.participants.map((entry) => {
+      const participant = { ...(entry as Record<string, unknown>) };
+      delete participant.presentation_state;
+      delete participant.seed_target_side;
+      return participant;
+    });
+  }
+  return databaseProjection;
+}
+
+async function notifyAdminTurnBestEffort(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  result: Record<string, unknown>
+) {
+  try {
+    await notifyDiscordAdminBattleTurnReady(
+      serviceClient,
+      result?.battle as Record<string, unknown> | null | undefined
+    );
+  } catch (error) {
+    console.error("Unable to notify Discord that the admin turn is ready", error);
+  }
+}
+
 async function commit(
   serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
   userId: string,
@@ -106,21 +140,9 @@ async function commit(
   };
   // PostgreSQL validates canonical battle facts, not browser-only presentation.
   // Keep its payload narrow; the Edge response restores the presentation block.
-  const databaseProjection: Record<string, unknown> = { ...projection };
   // The database commit uses an internal discriminator; the response restores
   // the contract-specific presentation value.
-  databaseProjection.reward_status = "disabled_edge_first_slice";
-  delete databaseProjection.battle_state;
-  delete databaseProjection.entry_choice;
-  delete databaseProjection.admin_entry_choice;
-  if (Array.isArray(databaseProjection.participants)) {
-    databaseProjection.participants = databaseProjection.participants.map((entry) => {
-      const participant = { ...(entry as Record<string, unknown>) };
-      delete participant.presentation_state;
-      delete participant.seed_target_side;
-      return participant;
-    });
-  }
+  const databaseProjection = projectionForDatabase(projection, "disabled_edge_first_slice");
   const commandHash = await sha256({
     commandType,
     envelope: body
@@ -832,6 +854,7 @@ Deno.serve(async (request) => {
     if (replay.error) throw databaseError(replay.error);
     if (replay.data) {
       const replayData = replay.data as Record<string, unknown>;
+      if (!adminAction) await notifyAdminTurnBestEffort(clients.serviceClient, replayData);
       return jsonResponse(replayData);
     }
     const adminPrepared = adminAction ? await clients.serviceClient.rpc("prepare_edge_admin_gym_battle", {
@@ -873,7 +896,7 @@ Deno.serve(async (request) => {
         p_input_snapshot_hash: prepared.input_snapshot_hash,
         p_next_snapshot: transition.snapshot,
         p_events: transition.events,
-        p_projection: projection
+        p_projection: projectionForDatabase(projection)
       });
       if (committed.error) throw databaseError(committed.error);
       if ((committed.data as Record<string, unknown> | null)?.ok === false
@@ -883,6 +906,7 @@ Deno.serve(async (request) => {
       result = committed.data;
     } else {
       result = await commit(clients.serviceClient, clients.userId, body, prepared, action, transition);
+      await notifyAdminTurnBestEffort(clients.serviceClient, result as Record<string, unknown>);
     }
     return jsonResponse(result as Record<string, unknown>);
   } catch (error) {

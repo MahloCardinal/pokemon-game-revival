@@ -7,6 +7,8 @@ import { button, moneyMarkup, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard } from "../client/pokemon-card.js";
 import { adventurePhaseIsCompleted } from "../client/mission-runtime.js";
 
+var ADVENTURE_MISSION_REQUIREMENT = "Completa le Missioni avventura necessarie";
+
 var KANTO_GYM_THEME_CLASSES = [
   "gym-theme-panel-roccia",
   "gym-theme-panel-acqua",
@@ -83,7 +85,7 @@ function renderGymChallengeAction(city, leader) {
     return '<div class="gym-challenge-row"><p class="gym-challenge-requirement">' + escapeHtml(status.message) + "</p></div>";
   }
   if (!adventurePhaseIsCompleted(adventurePhaseForGym(city.key))) {
-    return '<div class="gym-challenge-row"><p class="gym-challenge-requirement">' + escapeHtml("Completa le Missioni avventura per sbloccare questa Palestra") + "</p></div>";
+    return '<div class="gym-challenge-row"><p class="gym-challenge-requirement">' + escapeHtml(ADVENTURE_MISSION_REQUIREMENT) + "</p></div>";
   }
   return [
     '<div class="gym-challenge-row">',
@@ -158,7 +160,7 @@ function renderKantoLeagueTrainerPanel(member, index) {
     renderTrainerFlavorText(member.key),
     "      </div>",
     renderGymRewards(member.rewards),
-    renderGymChallengeLimits(member.challengeLimits, member.extraLimits),
+    renderGymChallengeLimits(member.challengeLimits, (member.extraLimits || []).concat([ADVENTURE_MISSION_REQUIREMENT])),
     "    </div>",
     "  </div>",
     "</article>"
@@ -237,7 +239,7 @@ function renderCampioneKantoScene() {
     renderTrainerFlavorText(champion.key),
     "      </div>",
     renderGymRewards(champion.rewards),
-    renderGymChallengeLimits(champion.challengeLimits, champion.extraLimits),
+    renderGymChallengeLimits(champion.challengeLimits, (champion.extraLimits || []).concat([ADVENTURE_MISSION_REQUIREMENT])),
     actionHtml,
     "    </div>",
     "  </div>",
@@ -276,7 +278,7 @@ export function renderGymCityScene(scene) {
       renderTrainerFlavorText(city.key),
       "      </div>",
       renderGymRewards(leader.rewards),
-      renderGymChallengeLimits(leader.challengeLimits, (leader.extraLimits || []).concat(["Completa le Missioni avventura " + adventurePhaseForGym(city.key)])),
+      renderGymChallengeLimits(leader.challengeLimits, (leader.extraLimits || []).concat([ADVENTURE_MISSION_REQUIREMENT])),
       renderGymChallengeAction(city, leader),
       "    </div>",
       "  </div>",

@@ -25,6 +25,11 @@ const teamRuleItems = read("app/data/team-rule-items.js");
 const catalogGenerator = read("scripts/generate-catalog-seed.mjs");
 const gameDataChangeGenerator = read("scripts/create-game-data-change.mjs");
 const discordAudienceMigration = read("supabase/migrations/20260814131000_notify_all_admin_battle_players.sql");
+const discordTurnMigration = read("supabase/migrations/20260814132000_admin_battle_turn_discord_notifications.sql");
+const renderUtils = read("app/client/render-utils.js");
+const zoneTexts = read("app/data/zones-text.js");
+const gymsView = read("app/view/gyms.js");
+const gymsHandler = read("app/client/gyms-handler.js");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
   .filter((name) => name.endsWith(".sql"))
@@ -57,7 +62,17 @@ assert.doesNotMatch(debugTrainingAction, /notifyDiscord|initializeAndNotifyAdmin
 assert.match(discordBattleEdge, /DISCORD_ADMIN_BATTLE_WEBHOOK_URL/);
 assert.match(discordBattleEdge, /\["discord\.com", "discordapp\.com"\]/);
 assert.match(discordBattleEdge, /allowed_mentions:\s*\{ parse: \[\] \}/);
+assert.match(discordBattleEdge, /content,/);
+assert.match(discordBattleEdge, /notifyDiscordAdminBattleTurnReady/);
 assert.doesNotMatch(discordBattleEdge, /debug_training/);
+assert.match(edge, /projectionForDatabase\(projection\)/);
+assert.match(edge, /notifyAdminTurnBestEffort\(clients\.serviceClient, result/);
+assert.match(renderUtils, /\.normalize\("NFD"\)/);
+assert.match(zoneTexts, /"Centro Pokémon"/);
+assert.match(zoneTexts, /"Club Pokéfan"/);
+assert.doesNotMatch(gymsView, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
+assert.doesNotMatch(gymsHandler, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
+assert.match(gymsView, /Completa le Missioni avventura necessarie/);
 assert.match(recoveryEdge, /https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery/);
 assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RECOVERY_REDIRECT_URL/);
 assert.doesNotMatch(recoveryEdge, /Deno\.env\.get\("APP_URL"\)|localhost|web-gdr-staging/);
@@ -182,6 +197,10 @@ assert.match(migrationSql, /grant execute on function public\.claim_discord_admi
 assert.match(discordAudienceMigration, /contract_key not in \('admin_gym', 'league'\)/i);
 assert.doesNotMatch(discordAudienceMigration, /username_normalized|debug_user|= 'aaa'/i);
 assert.match(discordAudienceMigration, /where status = 'skipped'/i);
+assert.match(discordTurnMigration, /primary key \(battle_id, battle_version\)/i);
+assert.match(discordTurnMigration, /contract_key not in \('admin_gym', 'league'\)/i);
+assert.match(discordTurnMigration, /waiting_for <> 'admin'/i);
+assert.match(discordTurnMigration, /grant execute on function public\.claim_discord_admin_battle_turn_notification\(uuid, bigint\) to service_role/i);
 
 const competitiveItemNames = Array.from(shoppingCenter.matchAll(
   /shopItem\(i\.([a-z0-9_]+), SHOPPING_CENTER_SECTIONS\.PORT, SHOPPING_CENTER_CATEGORIES\.COMPETITIVE,/g

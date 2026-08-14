@@ -5,9 +5,12 @@ const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf
 const config = read("app/api/supabase-config.js");
 const supabaseConfig = read("supabase/config.toml");
 const edge = read("supabase/functions/battle-command/index.ts");
+const recoveryEdge = read("supabase/functions/request-password-recovery/index.ts");
 const schema = read("supabase/migrations/20260812000000_revival_baseline.sql");
 const engine = read("app/engine/battle-runtime.js");
 const main = read("app/client/main.js");
+const supabaseApi = read("app/api/supabase.js");
+const session = read("app/client/session.js");
 const deploymentWatcher = read("app/client/deployment-version.js");
 const deploymentEndpoint = read("api/deployment-version.js");
 const vercel = read("vercel.json");
@@ -29,9 +32,18 @@ const migrationSql = readdirSync(migrationDirectory)
 
 assert.match(config, /https:\/\/etotvaneppzkxunezqrl\.supabase\.co/);
 assert.doesNotMatch(config, /ompjckjbvauemoxwggdi|viliofosdnmfnfboqnwu|web-gdr-staging/);
+assert.match(supabaseConfig, /site_url = "https:\/\/pokemon-game-revival\.vercel\.app"/);
+assert.match(supabaseConfig, /additional_redirect_urls = \[[^\]]*"https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery"/);
 assert.match(engine, /BATTLE_ENGINE_VERSION = "pokemon-game-revival"/);
 assert.match(edge, /requireServerRole\(clients\.serviceClient, clients\.userId, "debug"\)/);
 assert.match(edge, /requireRevivalProject\(\)/);
+assert.match(recoveryEdge, /https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery/);
+assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RECOVERY_REDIRECT_URL/);
+assert.doesNotMatch(recoveryEdge, /Deno\.env\.get\("APP_URL"\)|localhost|web-gdr-staging/);
+assert.match(supabaseApi, /detectSessionInUrl:\s*true/);
+assert.match(supabaseApi, /auth\.updateUser\(\{ password: normalizedPassword \}\)/);
+assert.match(session, /event === "PASSWORD_RECOVERY"/);
+assert.match(vercel, /"source": "\/\(\.\*\)", "destination": "\/index\.html"/);
 assert.doesNotMatch(main, /app-version|AppVersion/);
 assert.doesNotMatch(vercel, /app-version\.json/);
 assert.match(main, /initializeDeploymentWatcher/);

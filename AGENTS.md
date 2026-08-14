@@ -195,6 +195,19 @@ Le Edge Function applicative sono:
 
 Tutte devono conservare `verify_jwt = true` in `supabase/config.toml`.
 
+### Recupero password
+
+L'email è facoltativa in registrazione. Quando presente, coincide con l'email dell'utente Supabase Auth ed è indicizzata nella tabella privata tramite RLS `player_auth_recovery`; gli account senza email usano soltanto l'indirizzo tecnico `@pokemon-game-revival.local` e non possono richiedere il recupero.
+
+`request-password-recovery` verifica la coppia username–email senza rivelare se esiste, quindi chiama il recupero nativo Supabase. Il redirect canonico è il dato pubblico e fisso `https://pokemon-game-revival.vercel.app/auth/recovery`: non reintrodurre il segreto `APP_URL`, localhost o URL dei progetti eliminati. Supabase Auth deve mantenere:
+
+- Site URL: `https://pokemon-game-revival.vercel.app`;
+- Redirect URL consentito: `https://pokemon-game-revival.vercel.app/auth/recovery` (oltre all'origine principale se necessaria ad altri flussi).
+
+La SPA usa `detectSessionInUrl`, intercetta `PASSWORD_RECOVERY`, mostra il form di nuova password e aggiorna la credenziale con `auth.updateUser()`. `vercel.json` deve continuare a riscrivere `/auth/recovery` verso `index.html`.
+
+La configurazione remota Auth può essere aggiornata separatamente dal codice Edge. Non assumere che un errore finale di `supabase config push` implichi un rollback: il comando può aver già applicato Auth prima di fallire leggendo un altro servizio. Controllare sempre il diff proposto, preservare MFA/conferme/rate limit esistenti e verificare lo stato remoto prima di ripetere il comando.
+
 ### Migrazioni
 
 Creare sempre una nuova migrazione:

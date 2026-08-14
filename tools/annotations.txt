@@ -1,9 +1,7 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- modularizzare il gioco a livello di cataloghi/configurazione, così da non dover ricopiare l'intera configurazione per ogni singolo aggiornamento
 - bilanciamento team palestre e contenuto delle MT
-- re-implementare il reset-password (vedi txt con chat OpenCode)
 - inserire nelle palestre le date di vittoria da parte degli altri giocatori
 - correggere Bizzoaroma/Gonfioaroma
 - re-implementare web-hook Discord per sfide admin

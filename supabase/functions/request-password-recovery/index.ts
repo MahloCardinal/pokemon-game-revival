@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.108.2";
 import { getServiceRoleKey, EdgeJsonBodyError, enforceEdgeRateLimit, readBoundedJsonBody } from "../_shared/edge-rate-limit.ts";
 
 const SUCCESS_MESSAGE = "Se i dati sono corretti, riceverai una email per reimpostare la password.";
+const RECOVERY_REDIRECT_URL = "https://pokemon-game-revival.vercel.app/auth/recovery";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,8 +48,7 @@ Deno.serve(async function (request) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const serviceRoleKey = getServiceRoleKey();
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
-  const appUrl = (Deno.env.get("APP_URL") || "").replace(/\/+$/g, "");
-  if (!supabaseUrl || !serviceRoleKey || !anonKey || !appUrl) {
+  if (!supabaseUrl || !serviceRoleKey || !anonKey) {
     return jsonResponse({ ok: false, message: "Configurazione recupero password incompleta." }, 500);
   }
 
@@ -91,7 +91,7 @@ Deno.serve(async function (request) {
   }
 
   const resetResult = await authClient.auth.resetPasswordForEmail(email, {
-    redirectTo: appUrl + "/auth/recovery"
+    redirectTo: RECOVERY_REDIRECT_URL
   });
 
   if (resetResult.error) {

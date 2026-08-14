@@ -202,6 +202,11 @@ assert.match(discordTurnMigration, /contract_key not in \('admin_gym', 'league'\
 assert.match(discordTurnMigration, /waiting_for <> 'admin'/i);
 assert.match(discordTurnMigration, /grant execute on function public\.claim_discord_admin_battle_turn_notification\(uuid, bigint\) to service_role/i);
 
+const adminBattleCommit = finalFunctionBody("public", "commit_edge_admin_gym_command");
+assert.match(adminBattleCommit, /edge_jsonb_bigint\(p_next_snapshot\s*->\s*'snapshotVersion'\)\s*=\s*2/i);
+assert.match(adminBattleCommit, /jsonb_set\(p_next_snapshot,\s*'\{snapshotVersion\}',\s*'1'::jsonb,\s*false\)/i);
+assert.match(adminBattleCommit, /set\s+engine_snapshot\s*=\s*p_next_snapshot,[\s\S]*engine_snapshot_hash\s*=\s*v_snapshot_hash/i);
+
 const competitiveItemNames = Array.from(shoppingCenter.matchAll(
   /shopItem\(i\.([a-z0-9_]+), SHOPPING_CENTER_SECTIONS\.PORT, SHOPPING_CENTER_CATEGORIES\.COMPETITIVE,/g
 )).map((match) => match[1]).sort();

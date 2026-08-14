@@ -507,8 +507,8 @@ function applyEntryChoice(manager, context) {
   var heldItem = kindResult.heldItem;
   var kind = kindResult.kind;
   var entries = runHeldItemTrigger(manager, "entryChoiceEntries", HeldItemTriggerContext.entryChoiceEntries(combatant, kind)).entries;
-  var selectedIndex = Number(choice && choice.index);
-  var selectedEntry = Number.isFinite(selectedIndex) ? entries.find(function (entry) {
+  var selectedIndex = choice && choice.index !== null && choice.index !== undefined ? Number(choice.index) : NaN;
+  var selectedEntry = Number.isInteger(selectedIndex) ? entries.find(function (entry) {
     return Number(entry.index) === selectedIndex;
   }) : null;
   var opponent;

@@ -124,7 +124,7 @@ Team.prototype.switchRandom = function () {
   }
   this.getActive().resetSwitchModifiers();
   var previous = this.activeIndex;
-  index = Number(this.preferredSwitchIndex);
+  index = Number.isInteger(this.preferredSwitchIndex) ? this.preferredSwitchIndex : NaN;
   this.activeIndex = aliveChoices.indexOf(index) !== -1
     ? index
     : aliveChoices[Math.floor(random() * aliveChoices.length)];

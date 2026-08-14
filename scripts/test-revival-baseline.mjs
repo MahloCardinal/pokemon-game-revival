@@ -285,6 +285,18 @@ function pursuitTestManager() {
   const manager = pursuitTestManager();
   const caterpie = manager.playerTeam.combatantList[0];
   const butterfree = manager.playerTeam.combatantList[1];
+  manager.playerTeam.activeIndex = 1;
+  manager.playerTeam.lastSwitchedOutIndex = null;
+  assert.equal(manager.resolveMoveAction("npc", manager.enemyTeam.getActive().pokemon.moves[0]), true);
+  assert.equal(caterpie.hp, 200, "A missing switch target must never select team slot zero");
+  assert.equal(butterfree.hp, 180, "Without a preceding switch Inseguimento must hit the active Pokemon normally");
+  assert.equal(manager.combatantBySnapshotRef(null), null, "A missing snapshot reference must not select an enemy team member");
+}
+
+{
+  const manager = pursuitTestManager();
+  const caterpie = manager.playerTeam.combatantList[0];
+  const butterfree = manager.playerTeam.combatantList[1];
   assert.equal(manager.resolvePlayerSwitchAction(1), true);
   assert.equal(manager.resolveMoveAction("npc", manager.enemyTeam.getActive().pokemon.moves[0]), true);
   assert.equal(caterpie.hp, 170, "Inseguimento must hit the Pokemon switched out by the immediately preceding action with x1.5 damage");
@@ -300,6 +312,23 @@ function pursuitTestManager() {
   assert.equal(manager.resolveMoveAction("npc", manager.enemyTeam.getActive().pokemon.moves[0]), true);
   assert.equal(caterpie.hp, 200, "A stale switch target must not remain eligible for Inseguimento");
   assert.equal(butterfree.hp, 180, "Inseguimento must hit the current Pokemon normally after it has already acted");
+}
+
+{
+  const team = new Team("Cambio", [
+    pursuitTestPokemon("Primo", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })]),
+    pursuitTestPokemon("Attivo", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })]),
+    pursuitTestPokemon("Terzo", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })])
+  ], 1);
+  const originalRandom = Math.random;
+  team.preferredSwitchIndex = null;
+  try {
+    Math.random = function () { return 0.99; };
+    team.switchRandom();
+  } finally {
+    Math.random = originalRandom;
+  }
+  assert.equal(team.activeIndex, 2, "A missing switch preference must not force team slot zero");
 }
 
 console.log("Revival baseline contract checks passed.");

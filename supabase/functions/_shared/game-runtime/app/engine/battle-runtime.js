@@ -186,10 +186,17 @@ function serializeTeam(manager, team) {
 }
 
 function createTeam(snapshot) {
+  var pokemon = (snapshot.pokemon || []).map(restorePokemon);
+  var activeIndex = snapshot.state && Number.isInteger(snapshot.state.activeIndex)
+    ? snapshot.state.activeIndex
+    : NaN;
+  if (!Number.isInteger(activeIndex) || activeIndex < 0 || activeIndex >= pokemon.length) {
+    throw new Error("Indice del Pokémon attivo non valido nello snapshot.");
+  }
   return new Team(
     String(snapshot.state && snapshot.state.name || "Team"),
-    (snapshot.pokemon || []).map(restorePokemon),
-    Number(snapshot.state && snapshot.state.activeIndex) || 0
+    pokemon,
+    activeIndex
   );
 }
 
@@ -266,9 +273,21 @@ export function initializeBattleRuntime(input) {
   var playerTeam;
   var enemyTeam;
   var manager;
+  var playerActiveSlot;
+  var npcActiveSlot;
+  var playerActiveIndex;
+  var npcActiveIndex;
   var rngState = createRngState(Number(input.seed) >>> 0);
   var presentation = input.presentation || null;
+  function requiredSlot(value, label) {
+    var slot = value !== null && value !== undefined ? Number(value) : NaN;
+    if (!Number.isInteger(slot) || slot < 0) {
+      throw new Error(label + " non valido.");
+    }
+    return slot;
+  }
   function participantPokemon(entry) {
+    var authoritativeSlot = requiredSlot(entry.slot_index, "Slot partecipante");
     var pokemon = new Pokemon({
       name: entry.display_name,
       speciesKey: entry.species_key,
@@ -289,7 +308,7 @@ export function initializeBattleRuntime(input) {
       }),
       heldItemIndex: Number(entry.held_item_index) || 0
     });
-    pokemon.authoritativeSlot = Number(entry.slot_index);
+    pokemon.authoritativeSlot = authoritativeSlot;
     return pokemon;
   }
   playerPokemon = input.participants.filter(function (entry) { return entry.side === "player"; }).sort(function (a, b) { return a.slot_index - b.slot_index; }).map(participantPokemon);
@@ -319,12 +338,15 @@ export function initializeBattleRuntime(input) {
     rngState = towerGenerated.rngState;
   }
   if (!playerPokemon.length || !npcPokemon.length) { throw new Error("Partecipanti battaglia mancanti."); }
-  playerTeam = new Team("Giocatore", playerPokemon, Math.max(0, playerPokemon.findIndex(function (pokemon) {
-    return pokemon.authoritativeSlot === Number(input.playerActiveSlot);
-  })));
-  enemyTeam = new Team(presentation && presentation.name || "Avversario", npcPokemon, Math.max(0, npcPokemon.findIndex(function (pokemon) {
-    return pokemon.authoritativeSlot === Number(input.npcActiveSlot);
-  })));
+  playerActiveSlot = requiredSlot(input.playerActiveSlot, "Slot attivo del giocatore");
+  npcActiveSlot = requiredSlot(input.npcActiveSlot, "Slot attivo dell'avversario");
+  playerActiveIndex = playerPokemon.findIndex(function (pokemon) { return pokemon.authoritativeSlot === playerActiveSlot; });
+  npcActiveIndex = npcPokemon.findIndex(function (pokemon) { return pokemon.authoritativeSlot === npcActiveSlot; });
+  if (playerActiveIndex < 0 || npcActiveIndex < 0) {
+    throw new Error("Il Pokémon attivo non corrisponde a un partecipante della battaglia.");
+  }
+  playerTeam = new Team("Giocatore", playerPokemon, playerActiveIndex);
+  enemyTeam = new Team(presentation && presentation.name || "Avversario", npcPokemon, npcActiveIndex);
   input.participants.filter(function (entry) { return entry.side === "player"; }).sort(function (a, b) { return a.slot_index - b.slot_index; }).forEach(function (entry, index) {
     playerTeam.combatantList[index].hp = Number(entry.current_hp);
   });

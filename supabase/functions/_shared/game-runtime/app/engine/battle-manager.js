@@ -500,9 +500,12 @@ BattleManager.prototype.indexForCombatant = function (combatant) {
 };
 
 BattleManager.prototype.combatantBySnapshotRef = function (snapshot) {
-  var team = snapshot && snapshot.side === "player" ? this.playerTeam : this.enemyTeam;
-  var index = Number(snapshot && snapshot.index);
-  return team && Number.isFinite(index) ? team.combatantList[index] : null;
+  var team;
+  if (!snapshot || (snapshot.side !== "player" && snapshot.side !== "enemy") || !Number.isInteger(snapshot.index)) {
+    return null;
+  }
+  team = snapshot.side === "player" ? this.playerTeam : this.enemyTeam;
+  return team.combatantList[snapshot.index] || null;
 };
 
 BattleManager.prototype.heldItemsReturnAtBattleEnd = function () {

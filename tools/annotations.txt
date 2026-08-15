@@ -1,14 +1,16 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- diminuire catch-rate delle pokeball
-- bilanciamento team palestre e contenuto delle MT
-- inserire nelle palestre le date di vittoria da parte degli altri giocatori
-- correggere Bizzoaroma/Gonfioaroma
-- inserire possibilità di vedere squadre altri giocatori
-- verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
-- implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)
 - mettere versione inglese
+- correggere Bizzoaroma/Gonfioaroma
+- diminuire catch-rate delle pokeball
+- correggere funzionamento ricerca in Zone cattura (reset a varie azioni)
+- bilanciamento team palestre e contenuto delle MT
+- inserire i 'Titoli' (es. 'Campione della Lega di Kanto')
+- inserire nelle palestre le date di vittoria da parte degli altri giocatori
+- inserire possibilità di vedere squadre altri giocatori
+- implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)
+- verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
 
 
 

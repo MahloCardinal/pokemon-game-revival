@@ -10,7 +10,7 @@ import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-car
 import { renderDebugPokemonCreator, renderDebugTrainerBadgeControls, renderDebugTrainerBattlePointControls, renderDebugTrainerMoneyControls } from "../client/debug-tools.js";
 
 var GEN_FILTERS = [
-  { gen: 0, label: "Tutti" },
+  { gen: 0, label: "Nazionale" },
   { gen: 1, label: "1° Generazione" },
   { gen: 2, label: "2° Generazione" },
   { gen: 3, label: "3° Generazione" }

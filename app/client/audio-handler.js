@@ -2,6 +2,7 @@ import { assetPath, escapeHtml, musicPath, renderImage } from "./asset-helpers.j
 import { root, state } from "./game-state.js";
 import { isGymOrLeagueBattleType } from "../data/gyms.js";
 import { registerAction } from "./action-registry.js";
+import { renderLanguageSettingsControl } from "./language-settings.js";
 
 var MUSIC_ENABLED_KEY = "pokemon_game_revival:music_enabled";
 var MUSIC_VOLUME_KEY = "pokemon_game_revival:music_volume";
@@ -247,6 +248,7 @@ export function renderUserSettingsMenu(scene) {
     '      <span>Volume <strong data-music-volume-value>' + volumePercent + '%</strong></span>',
     '      <input type="range" min="0" max="100" step="1" value="' + volumePercent + '" data-field="music-volume" aria-label="Volume musica">',
     '    </label>',
+    renderLanguageSettingsControl(),
     '    <div class="user-settings-actions">',
     '      <button type="button" class="button button-dark user-settings-action" data-action="auth-logout">Logout</button>',
     '      <button type="button" class="button button-danger user-settings-action" data-action="auth-delete-account">Elimina account</button>',

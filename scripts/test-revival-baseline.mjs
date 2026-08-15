@@ -36,6 +36,7 @@ const zoneTexts = read("app/data/zones-text.js");
 const assetPaths = read("app/data/asset-paths.js");
 const captureZonesData = read("app/data/capture-zones.js");
 const i18nRuntime = read("app/client/i18n.js");
+const languageSettings = read("app/client/language-settings.js");
 const i18nCatalogIndex = read("app/data/i18n/index.js");
 const i18nItalian = read("app/data/i18n/it.js");
 const i18nEnglish = read("app/data/i18n/en.js");
@@ -95,6 +96,10 @@ assert.doesNotMatch(captureZonesData, /CAPTURE_ZONE_LABELS_IT|captureZoneDisplay
 assert.doesNotMatch(zoneTexts, /SCENE_PRESENTATION_TEXT/);
 assert.match(i18nRuntime, /export function t\(/);
 assert.match(i18nRuntime, /export function setLocale\(/);
+assert.match(i18nRuntime, /export function getLocaleLabel\(/);
+assert.match(languageSettings, /settings-language-select/);
+assert.match(languageSettings, /Lingua \/ Language/);
+assert.match(languageSettings, /aria-pressed/);
 assert.match(i18nCatalogIndex, /SUPPORTED_LOCALES = Object\.freeze\(\["it", "en"\]\)/);
 assert.match(i18nItalian, /scenePresentations/);
 assert.match(i18nEnglish, /ghost_tower: "Ghost Tower"/);

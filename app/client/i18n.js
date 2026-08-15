@@ -41,6 +41,12 @@ export function getSupportedLocales() {
   return SUPPORTED_LOCALES.slice();
 }
 
+export function getLocaleLabel(locale) {
+  var normalizedLocale = normalizeLocale(locale);
+  var label = translationCatalogValue(normalizedLocale, "locale.label");
+  return typeof label === "string" ? label : normalizedLocale.toUpperCase();
+}
+
 export function setLocale(locale) {
   var nextLocale = normalizeLocale(locale);
   if (nextLocale === currentLocale) {

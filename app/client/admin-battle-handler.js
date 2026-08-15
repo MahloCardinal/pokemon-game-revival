@@ -370,11 +370,6 @@ function runAuthoritativeAdminAction(scene, commandType, payload, operation) {
   });
 }
 
-registerAction("admin-battle-refresh", function () {
-  var scene = adminScene();
-  if (scene) { refreshOpenAdminBattle(scene.playerAuthUserId, scene.authoritativeBattleId); }
-});
-
 registerAction("admin-battle-move", function (element) {
   var scene = adminScene();
   var moveIndex = Number(element.dataset.index);

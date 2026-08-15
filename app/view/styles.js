@@ -1,6 +1,7 @@
 import { assetPath, escapeHtml, getItemDisplayImage, renderImage } from "../client/asset-helpers.js";
 import { sceneShell } from "../client/render-utils.js";
 import { itemDisplayDescription, ItemCategory, resolveInventoryItems } from "../data/items.js";
+import { isSingleCopyInventoryItem } from "./inventory-helpers.js";
 import { state } from "../client/game-state.js";
 
 function styleButton(label, className) {
@@ -128,7 +129,7 @@ function renderStyleZaino() {
     var imageMarkup = imageSrc
       ? renderImage(imageSrc, item.name, itemImageClass)
       : '<span class="style-zaino-item-image style-zaino-item-image-empty"></span>';
-    var availabilityMarkup = item.category === ItemCategory.Mt ? "" : '<div class="style-zaino-item-availability"><span class="style-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
+    var availabilityMarkup = isSingleCopyInventoryItem(item) ? "" : '<div class="style-zaino-item-availability"><span class="style-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
 
     return [
       '<article class="style-zaino-item-card">',

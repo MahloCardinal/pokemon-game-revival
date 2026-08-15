@@ -8,6 +8,7 @@ const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf
 const config = read("app/api/supabase-config.js");
 const supabaseConfig = read("supabase/config.toml");
 const edge = read("supabase/functions/battle-command/index.ts");
+const battleEdgeHelpers = read("supabase/functions/_shared/battle-edge.ts");
 const discordBattleEdge = read("supabase/functions/_shared/discord-admin-battle.ts");
 const recoveryEdge = read("supabase/functions/request-password-recovery/index.ts");
 const schema = read("supabase/migrations/20260812000000_revival_baseline.sql");
@@ -34,6 +35,12 @@ const renderUtils = read("app/client/render-utils.js");
 const zoneTexts = read("app/data/zones-text.js");
 const gymsView = read("app/view/gyms.js");
 const gymsHandler = read("app/client/gyms-handler.js");
+const battleHandler = read("app/client/battle-handler.js");
+const captureHandler = read("app/client/capture-handler.js");
+const adminBattleHandler = read("app/client/admin-battle-handler.js");
+const battleView = read("app/view/battle.js");
+const teamView = read("app/view/team.js");
+const inventoryViewHelpers = read("app/view/inventory-helpers.js");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
   .filter((name) => name.endsWith(".sql"))
@@ -71,6 +78,7 @@ assert.match(discordBattleEdge, /notifyDiscordAdminBattleTurnReady/);
 assert.doesNotMatch(discordBattleEdge, /debug_training/);
 assert.match(edge, /projectionForDatabase\(projection\)/);
 assert.match(edge, /notifyAdminTurnBestEffort\(clients\.serviceClient, result/);
+assert.match(battleEdgeHelpers, /pending ordinary progression[\s\S]*activity_in_progress/i);
 assert.match(renderer, /export function renderRegions\(regionNames, options\)/);
 assert.match(renderer, /data-render-region/);
 assert.match(renderer, /export function renderDialogLayer\(options\)/);
@@ -80,6 +88,14 @@ assert.match(zoneTexts, /"Club Pokéfan"/);
 assert.doesNotMatch(gymsView, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
 assert.doesNotMatch(gymsHandler, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
 assert.match(gymsView, /Completa le Missioni avventura necessarie/);
+assert.doesNotMatch(adminBattleHandler, /registerAction\("admin-battle-refresh"/);
+assert.doesNotMatch(battleView, /admin-battle-refresh|button\("Aggiorna"/);
+assert.match(battleHandler, /\["item", "switch"\]\.indexOf\(data\.command_type\)/);
+assert.match(battleHandler, /scene\.authoritativeCapture \? "Nella confusione perdi " : "Perdi "[\s\S]*Pokédollari/);
+assert.match(captureHandler, /await refreshCaptureEncounterState\(captureScene\)/);
+assert.match(captureHandler, /state\.ordinaryProgression[\s\S]*openActiveProgressionScene\(\)/);
+assert.match(inventoryViewHelpers, /SINGLE_COPY_INVENTORY_ITEM_INDEXES[\s\S]*occhialoni\.index[\s\S]*spettrosonda\.index[\s\S]*flauto_bianco\.index[\s\S]*flauto_nero\.index/);
+assert.match(teamView, /isSingleCopyInventoryItem\(item\) \? ""/);
 assert.match(recoveryEdge, /https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery/);
 assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RECOVERY_REDIRECT_URL/);
 assert.doesNotMatch(recoveryEdge, /Deno\.env\.get\("APP_URL"\)|localhost|web-gdr-staging/);
@@ -211,8 +227,9 @@ assert.match(discordTurnMigration, /grant execute on function public\.claim_disc
 assert.match(migrationSql, /alter publication supabase_realtime add table public\.authoritative_battle/i);
 
 const ordinaryBattleCommit = finalFunctionBody("server_authority_private", "commit_edge_battle_command_before_snapshot");
-assert.match(ordinaryBattleCommit, /contract_key in \('gym', 'capture', 'league'\)/i);
+assert.match(ordinaryBattleCommit, /contract_key in \('gym', 'admin_gym', 'capture', 'league'\)/i);
 assert.match(ordinaryBattleCommit, /create_terminal_ordinary_progression[\s\S]*p_projection\s*->\s*'ordinary_exp_awards'/i);
+assert.match(ordinaryBattleCommit, /apply_ordinary_money_penalty[\s\S]*money_penalty/i);
 
 const adminBattleCommit = finalFunctionBody("public", "commit_edge_admin_gym_command");
 assert.match(adminBattleCommit, /edge_jsonb_bigint\(p_next_snapshot\s*->\s*'snapshotVersion'\)\s*=\s*2/i);

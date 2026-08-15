@@ -4,6 +4,7 @@ import {
   ensureFinalBattleDisplaySnapshot,
   appendBattleEvents,
   closePersistedBattleRuntime,
+  openActiveProgressionScene,
   openBattleStartTargetPanel,
   consumePlayerBattleInventoryItem,
   syncBattleInventoryToState
@@ -452,6 +453,21 @@ async function buildBattleScene(captureScene, rosterIndex) {
     var client = getSupabaseClient();
     var user = client ? await currentUserId(client) : { ok: false, message: "Configurazione Supabase mancante." };
     if (!user.ok) { throw new Error(user.message || "Sessione utente non disponibile."); }
+    if (!await refreshCaptureEncounterState(captureScene)) {
+      throw new Error("Impossibile aggiornare lo stato prima della battaglia di cattura.");
+    }
+    if (state.ordinaryProgression) {
+      authoritativeCaptureCommandPending = false;
+      if (!openActiveProgressionScene()) {
+        openMessage(["Completa prima la progressione della battaglia precedente."], { title: "Cattura" });
+      }
+      return;
+    }
+    if (!captureScene.encounterId) {
+      authoritativeCaptureCommandPending = false;
+      openMessage(["L'incontro non è più disponibile."], { title: "Cattura" });
+      return;
+    }
     var input = { expectedPlayerRevision: state.authoritativeRevision, runtimeOwnerId: ownerId,
       encounterId: captureScene.encounterId, activeSlot: rosterIndex };
     pending = pendingCaptureStart(user.userId, input);

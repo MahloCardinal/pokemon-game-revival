@@ -29,7 +29,7 @@ import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { normalizeTrainingOpponentProfile, trainingAssignableLevelsForTeam, trainingDifficultyConfig } from "./training-data.js";
 import { abandonAuthoritativeBattle, allocateAuthoritativeTrainingLevels, appendPlayerBattleEvent, authoritativeBattleRuntimeOwnerId, claimAuthoritativeBattleRuntime, clearPendingAuthoritativeBattleCommand, createActivePlayerBattle, deleteActivePlayerBattle, finalizeAdminControlledBattleReward, getAuthoritativeBattle, inspectPendingAuthoritativeBattleCommand, loadActivePlayerBattle, readAuthoritativeOrdinaryProgression, readAuthoritativeTrainingProgression, resolveAuthoritativeBattleEntryChoice, resolveAuthoritativeOrdinaryProgression, resolveAuthoritativeTrainingPokemon, retryPendingAuthoritativeBattleCommand, retryPendingAuthoritativeTrainingProgressionCommand, startAuthoritativeBattleTower, startAuthoritativeLeagueBattle, startPostBattleExpEvents, submitAuthoritativeBattleMove, switchAuthoritativeBattlePokemon, useAuthoritativeBattleBall, useAuthoritativeBattleItem } from "../api/battle.js";
 import { startPostBattleExpProgression } from "./level-up.js";
-import { button, moneyText } from "./render-utils.js";
+import { button, formatInteger, moneyText } from "./render-utils.js";
 import { escapeHtml, getTrainerImage } from "./asset-helpers.js";
 import { KANTO_GYM_BADGE_NAMES, kantoGymCityByKey, kantoEliteFourMemberByIndex, KANTO_CAMPIONE_KANTO } from "../data/gyms.js";
 import { adjustInventoryItemQuantity, adjustTrainerMoney, broadcastAuthoritativeRevision, broadcastCaptureEncounterRuntimeInvalidation, replaceInventoryRuntimeState, replaceTeamRuntimeState, updateTrainerProfile } from "./runtime-state.js";
@@ -449,7 +449,8 @@ function commandResetsBattleScroll(events) {
   return (events || []).some(function (event) {
     var type = String(event && (event.event_type || event.type) || "");
     var data = event && (event.event_data || event.data) || {};
-    return (type === "command_resolved" && data.command_type === "item") || type === "ball_resolved";
+    return (type === "command_resolved" && ["item", "switch"].indexOf(data.command_type) !== -1)
+      || type === "ball_resolved";
   });
 }
 
@@ -639,12 +640,16 @@ function openAuthoritativeBattleOutcome(scene, projection) {
     : wildKo ? wildPokemonName + " è KO." : playerKo ? "La tua squadra è stata sconfitta."
     : scene.authoritativeStatus === "abandoned" ? "Hai abbandonato lo scontro."
       : scene.playerTeam.isAllFainted() ? "Hai perso la sfida." : "Hai vinto la sfida."];
-  var penalty = Number(projection && projection.money_penalty) || 0;
+  var hasPenalty = projection && projection.money_penalty !== null && projection.money_penalty !== undefined;
+  var penalty = Math.max(0, Number(projection && projection.money_penalty) || 0);
   var towerPoints = Number(projection && projection.tower_reward && projection.tower_reward.battle_points) || 0;
   if (scene.battleTower && (scene.authoritativeStatus === "abandoned" || scene.playerTeam.isAllFainted())) {
     lines.push("Ottieni " + towerPoints + " PL.");
   }
-  if (penalty) { lines.push("Nella confusione perdi " + moneyText(penalty) + "."); }
+  if (hasPenalty) {
+    lines.push((scene.authoritativeCapture ? "Nella confusione perdi " : "Perdi ")
+      + formatInteger(penalty) + " Pokédollari.");
+  }
   openMessage(lines, { title: scene.authoritativeCapture ? "Cattura" : scene.authoritativeGym ? "Palestra"
     : scene.trainingBattle ? "Zona allenamento" : scene.battleTower ? "Torre Lotta" : "Battaglia",
     requireButtonClose: true, onClose: function () {
@@ -3653,6 +3658,7 @@ function performBattleSwitch(index, entryChoice, anchorElement) {
       }, { canClose: true })) {
       return;
     }
+    window.scrollTo(0, 0);
     authoritativeBattleCommand(scene, function (input) {
       return switchAuthoritativeBattlePokemon(Object.assign(input, {
         teamSlot: authoritativeTarget.pokemon.authoritativeSlot,
@@ -4111,7 +4117,7 @@ function abandonBattleAndExit(scene) {
         return;
       }
       if (scene.gymScene) {
-        openMessage(["Ti sei ritirato dalla sfida.", "Nella confusione perdi " + moneyText(moneyPenalty) + "."], {
+        openMessage(["Ti sei ritirato dalla sfida.", "Perdi " + formatInteger(moneyPenalty) + " Pokédollari."], {
           title: "Ritiro dalla sfida",
           closeLabel: "Ok",
           closeClass: "button-accent",
@@ -4186,7 +4192,8 @@ function showBattleFollowup(scene) {
     var moneyPenalty = applyBattleMoneyPenalty(scene);
     markDirty();
     persistAndCloseFinishedBattle(scene);
-    openMessage(["Tutti i tuoi Pokémon sono ko! Nella confusione perdi " + moneyText(moneyPenalty)], {
+    openMessage(["Tutti i tuoi Pokémon sono ko!", (scene.gymScene ? "Perdi " : "Nella confusione perdi ")
+      + formatInteger(moneyPenalty) + " Pokédollari."], {
       title: "Battaglia",
       closeLabel: "Ok",
       closeClass: "button-accent",

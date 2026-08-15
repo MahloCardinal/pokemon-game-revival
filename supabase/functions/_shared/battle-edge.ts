@@ -148,6 +148,9 @@ export function databaseError(error: { code?: string; message?: string } | null)
   if (code === "23505" && /authoritative_battle_tower_run_auth_user_id_attempt_date_key|Hai già effettuato il tentativo di oggi/i.test(message)) {
     return new BattleEdgeError("battle_tower_daily_attempt_used", "Hai già effettuato il tentativo di oggi", 409);
   }
+  if (code === "55000" && /pending ordinary progression/i.test(message)) {
+    return new BattleEdgeError("activity_in_progress", "Completa prima la progressione della battaglia precedente.", 409);
+  }
   if (code === "42501") return new BattleEdgeError("authority_denied", "L'autorità attendibile per la battaglia è stata negata.", 500);
   if (code === "0A000" && /incompatible active battle|engine binding/i.test(message)) {
     return new BattleEdgeError("incompatible_active_battle", "La battaglia attiva richiede un bundle motore esatto non disponibile in questa distribuzione.", 409);

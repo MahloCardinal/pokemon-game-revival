@@ -1,6 +1,7 @@
 import { GDR_DATA } from "../data/index.js";
 import * as Engine from "../engine/index.js";
 import { resolveInventoryItems, itemDisplayDescription, ItemCategory } from "../data/items.js";
+import { isSingleCopyInventoryItem } from "./inventory-helpers.js";
 import { trainerSpriteByIndex } from "../data/trainers.js";
 import { state } from "../client/game-state.js";
 import { assetPath, escapeHtml, getItemDisplayImage, getItemImage, getPokemonStaticImage, getTrainerImage, renderImage, withPokemonSpriteAttrs, withPokemonSpriteClass, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
@@ -164,7 +165,7 @@ export function renderTeamScene() {
     var imageMarkup = imageSrc
       ? renderImage(imageSrc, item.name, itemImageClass)
       : '<span class="style-zaino-item-image style-zaino-item-image-empty"></span>';
-    var availabilityMarkup = item.category === ItemCategory.Mt ? "" : '<div class="style-zaino-item-availability"><span class="style-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
+    var availabilityMarkup = isSingleCopyInventoryItem(item) ? "" : '<div class="style-zaino-item-availability"><span class="style-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
 
     return [
       '<article class="style-zaino-item-card">',

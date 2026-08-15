@@ -302,8 +302,7 @@ export function renderBattleScene(scene) {
     moveAction: ownMoveAction
   } : { moveAction: ownMoveAction };
   var opponentSlotOptions = opponentNeedsSwitch ? { className: "has-fainted-overlay" } : {};
-  var authoritativeRefresh = scene.authoritativeBattle && ((waitingForAdmin && !scene.adminBattle)
-    || (scene.adminBattle && renderScene.manager.waitingFor === "player"));
+  var authoritativeRefresh = scene.authoritativeBattle && waitingForAdmin && !scene.adminBattle;
   var authoritativeUncertaintyMessage = scene.authoritativeCommandUncertain
     ? '<p class="battle-authoritative-uncertain-message">' + escapeHtml(scene.authoritativeUncertaintyMessage || "Il comando è ancora in verifica. Riprova prima di inviare altre azioni.") + "</p>"
     : "";
@@ -314,8 +313,7 @@ export function renderBattleScene(scene) {
     : scene.authoritativeCommandPending
       ? '<div class="battle-info-actions" data-battle-abandon-inline>' + button("Abbandona scontro", "battle-abandon-open", "disabled", "button-danger button-slim") + "</div>"
     : authoritativeRefresh
-    ? (scene.adminBattle ? '<div class="battle-info-actions">' + button("Aggiorna", "admin-battle-refresh", "", "button-ghost button-slim") + "</div>"
-      : '<div class="battle-info-actions battle-abandon-actions" data-battle-abandon-inline>' + button("Abbandona scontro", "battle-abandon-open", "", "button-danger button-slim") + "</div>")
+    ? '<div class="battle-info-actions battle-abandon-actions" data-battle-abandon-inline>' + button("Abbandona scontro", "battle-abandon-open", "", "button-danger button-slim") + "</div>"
     : authoritativeAdminEntryChoice
       ? '<div class="battle-info-actions"><p class="battle-admin-thinking-log">Scegli l\'effetto dello strumento tenuto.</p>'
         + (authoritativeAdminEntryChoice.entries || []).map(function (entry) {

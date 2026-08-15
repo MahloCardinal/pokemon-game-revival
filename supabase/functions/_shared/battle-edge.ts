@@ -151,6 +151,13 @@ export function databaseError(error: { code?: string; message?: string } | null)
   if (code === "55000" && /pending ordinary progression/i.test(message)) {
     return new BattleEdgeError("activity_in_progress", "Completa prima la progressione della battaglia precedente.", 409);
   }
+  if (code === "22023" && /Pokemon di livello superiore al limite consentito dalle medaglie/i.test(message)) {
+    return new BattleEdgeError(
+      "team_level_limit_exceeded",
+      "La squadra contiene un Pokémon di livello superiore al limite consentito dalle Medaglie.",
+      400
+    );
+  }
   if (code === "42501") return new BattleEdgeError("authority_denied", "L'autorità attendibile per la battaglia è stata negata.", 500);
   if (code === "0A000" && /incompatible active battle|engine binding/i.test(message)) {
     return new BattleEdgeError("incompatible_active_battle", "La battaglia attiva richiede un bundle motore esatto non disponibile in questa distribuzione.", 409);

@@ -79,6 +79,7 @@ assert.doesNotMatch(discordBattleEdge, /debug_training/);
 assert.match(edge, /projectionForDatabase\(projection\)/);
 assert.match(edge, /notifyAdminTurnBestEffort\(clients\.serviceClient, result/);
 assert.match(battleEdgeHelpers, /pending ordinary progression[\s\S]*activity_in_progress/i);
+assert.match(battleEdgeHelpers, /Pokemon di livello superiore al limite consentito dalle medaglie[\s\S]*team_level_limit_exceeded/i);
 assert.match(renderer, /export function renderRegions\(regionNames, options\)/);
 assert.match(renderer, /data-render-region/);
 assert.match(renderer, /export function renderDialogLayer\(options\)/);

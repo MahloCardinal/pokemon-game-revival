@@ -3,6 +3,7 @@ import { BADGE_LEVEL_LIMITS, CAPTURE_LEVEL_LIMITS } from "../data/progression.js
 import { formatCatalogDescription } from "../engine/index.js";
 import { assetPath, escapeHtml, getItemImage, getPokemonStaticImage, getTypeImage, renderImage } from "../client/asset-helpers.js";
 import { button, sceneShell } from "../client/render-utils.js";
+import { typeDisplayName } from "../data/type-chart.js";
 
 var RULES_SECTIONS = [
   { key: "about", label: "Pokémon Game Revival" },
@@ -61,7 +62,7 @@ function renderEffectivenessImage() {
 }
 
 function renderRulesType(typeName) {
-  return renderImage(getTypeImage(typeName), typeName, "rules-type-inline");
+  return renderImage(getTypeImage(typeName), typeDisplayName(typeName), "rules-type-inline");
 }
 
 function speciesName(speciesKey) {
@@ -294,7 +295,7 @@ function renderRulesArticle(section) {
       "<p>Tra gli strumenti da utilizzare ci sono anche vari tipi di Poké Ball, per tentare di catturare il Pokémon selvatico!</p>",
       '<p class="rules-note"><strong>Importante</strong><span>In <strong>qualsiasi</strong> sfida, che sia contro un Pokémon selvatico o contro un allenatore, non è possibile usare più di <strong>3 copie</strong> dello stesso strumento (ad eccezione delle Ball per catturare i Pokémon selvatici).</span></p>',
       "<p>Se volete rinunciare alla sfida, il bottone 'Abbandona scontro' si trova in fondo al pannello con il riassunto della sfida.<br>Al termine dello scontro la vostra squadra sarà automaticamente curata, senza bisogno di passare per il Centro Pokémon, che ha altre funzionalità.<br>Tuttavia se la vostra intera squadra andrà ko, perderete 1/5 dei vostri Pokédollari.</p>",
-      '<p class="rules-note"><strong>Importante</strong><span>In questo gioco NON si considera il Tipo della mossa, bensì il Tipo del Pokémon stesso. Questo significa che se un Pokémon di Tipo ' + renderRulesType("Fuoco") + ' attacca un Pokémon di Tipo ' + renderRulesType("Erba") + ', farà sempre un danno superefficace a prescindere dalla mossa utilizzata.</span></p>',
+      '<p class="rules-note"><strong>Importante</strong><span>In questo gioco NON si considera il Tipo della mossa, bensì il Tipo del Pokémon stesso. Questo significa che se un Pokémon di Tipo ' + renderRulesType("fire") + ' attacca un Pokémon di Tipo ' + renderRulesType("grass") + ', farà sempre un danno superefficace a prescindere dalla mossa utilizzata.</span></p>',
       renderEffectivenessImage(),
       "<h3>Guadagnare esperienza</h3>",
       "<p>Quando mettete ko un Pokémon selvatico, il Pokémon che l'ha messo ko guadagna Punti Esperienza ('Exp') pari al livello del Pokémon sconfitto per un moltiplicare a seconda del suo livello.</p>",
@@ -335,10 +336,10 @@ function renderRulesArticle(section) {
       renderEffectivenessImage(),
       "<p>Ricordo che si considera il <strong>Tipo del Pokémon</strong>, non quello della mossa. Ulteriore differenza rispetto ad altri giochi Pokémon è che non esistono Tipi 'immuni' ad altri, ma sono considerati 'poco efficaci'.</p>",
       "<h3>Pokémon con tipo multiplo</h3>",
-      "<p>In caso di Pokémon con Tipo multiplo va considerata l'efficacia totale. Prendiamo come esempio un Magneton " + renderRulesType("Elettro") + "/" + renderRulesType("Acciaio") + " che attacca un Gyarados " + renderRulesType("Acqua") + "/" + renderRulesType("Volante") + ".</p>",
-      "<ul><li>" + renderRulesType("Elettro") + " vs " + renderRulesType("Acqua") + " = superefficace</li><li>" + renderRulesType("Elettro") + " vs " + renderRulesType("Volante") + " = superefficace</li><li>" + renderRulesType("Acciaio") + " vs " + renderRulesType("Acqua") + " = poco efficace</li><li>" + renderRulesType("Acciaio") + " vs " + renderRulesType("Volante") + " = anno normale</li></ul>",
+      "<p>In caso di Pokémon con Tipo multiplo va considerata l'efficacia totale. Prendiamo come esempio un Magneton " + renderRulesType("electric") + "/" + renderRulesType("steel") + " che attacca un Gyarados " + renderRulesType("water") + "/" + renderRulesType("flying") + ".</p>",
+      "<ul><li>" + renderRulesType("electric") + " vs " + renderRulesType("water") + " = superefficace</li><li>" + renderRulesType("electric") + " vs " + renderRulesType("flying") + " = superefficace</li><li>" + renderRulesType("steel") + " vs " + renderRulesType("water") + " = poco efficace</li><li>" + renderRulesType("steel") + " vs " + renderRulesType("flying") + " = anno normale</li></ul>",
       "<p>Considerando che è maggiore il numero di 'superefficace', Magneton farà danno x2 a Gyarados.</p>",
-      '<p class="rules-note"><strong>Importante</strong><span>In questo gioco non esistono danni x4 o :4 da efficacia. Per esempio se Pikachu ' + renderRulesType("Elettro") + ' attacca Gyarados ' + renderRulesType("Acqua") + "/" + renderRulesType("Volante") + ', anche se Pikachu è 2 volte superefficace il danno sarà x2, e non x4.</span></p>',
+      '<p class="rules-note"><strong>Importante</strong><span>In questo gioco non esistono danni x4 o :4 da efficacia. Per esempio se Pikachu ' + renderRulesType("electric") + ' attacca Gyarados ' + renderRulesType("water") + "/" + renderRulesType("flying") + ', anche se Pikachu è 2 volte superefficace il danno sarà x2, e non x4.</span></p>',
       "<h3>Cambiamenti di stato</h3>",
       "<p>Ciascun Pokémon può essere affetto da un solo cambiamento di stato per volta. Finché il Pokémon è affetto da uno status esso non viene 'sostituito', anche se si usa una mossa che lo cambierebbe ulteriormente.</p>",
       "<p>Per esempio se si usa Tuononda su un Pokémon addormentato, esso continua a dormire e non è paralizzato.</p>",
@@ -400,25 +401,25 @@ function renderRulesArticle(section) {
       '<p class="rules-note"><strong>Importante</strong><span>Non si può usare una mossa Meteo per due turni di fila, anche se diversa e/o usata da Pokémon differenti.</span></p>',
       "<p><strong>Giornodisole</strong></p>",
       "<ul>",
-      "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("Fuoco") + " è aumentato di metà del livello di chi attacca</li>",
-      "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("Acqua") + " è diminuito di metà del livello di chi attacca</li>",
-      "<li>I Pokémon " + renderRulesType("Fuoco") + " ignorano i nerf alle statistiche (anche quelli già presenti)</li>",
+      "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("fire") + " è aumentato di metà del livello di chi attacca</li>",
+      "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("water") + " è diminuito di metà del livello di chi attacca</li>",
+      "<li>I Pokémon " + renderRulesType("fire") + " ignorano i nerf alle statistiche (anche quelli già presenti)</li>",
       "</ul>",
       "<p><strong>Pioggiadanza</strong></p>",
       "<ul>",
-      "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("Acqua") + " è aumentato di metà del livello di chi attacca</li>",
-      "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("Fuoco") + " è diminuito di metà del livello di chi attacca</li>",
+      "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("water") + " è aumentato di metà del livello di chi attacca</li>",
+      "<li>Il danno base delle mosse dei Pokémon " + renderRulesType("fire") + " è diminuito di metà del livello di chi attacca</li>",
       "<li>Tuono paralizza al 100% (la percentuale non viene persa/recuperata)</li>",
       "</ul>",
       "<p><strong>Terrempesta</strong></p>",
       "<ul>",
-      "<li>Ogni Pokémon perde PS pari a 1/8 dei propri PS massimi alla fine di ogni turno. I Pokémon " + renderRulesType("Acciaio") + ", " + renderRulesType("Terra") + " e " + renderRulesType("Roccia") + " sono esclusi.</li>",
-      "<li>I Pokémon " + renderRulesType("Roccia") + " guadagnano un buff in Attacco e Difesa pari a metà del proprio livello.</li>",
+      "<li>Ogni Pokémon perde PS pari a 1/8 dei propri PS massimi alla fine di ogni turno. I Pokémon " + renderRulesType("steel") + ", " + renderRulesType("ground") + " e " + renderRulesType("rock") + " sono esclusi.</li>",
+      "<li>I Pokémon " + renderRulesType("rock") + " guadagnano un buff in Attacco e Difesa pari a metà del proprio livello.</li>",
       "</ul>",
       "<p><strong>Grandine</strong></p>",
       "<ul>",
-      "<li>Ogni Pokémon perde PS pari a 1/8 dei propri PS massimi alla fine di ogni turno. I Pokémon " + renderRulesType("Ghiaccio") + " ne sono esclusi.</li>",
-      "<li>I Pokémon " + renderRulesType("Ghiaccio") + " guadagnano un buff in Attacco e Difesa pari a metà del proprio livello.</li>",
+      "<li>Ogni Pokémon perde PS pari a 1/8 dei propri PS massimi alla fine di ogni turno. I Pokémon " + renderRulesType("ice") + " ne sono esclusi.</li>",
+      "<li>I Pokémon " + renderRulesType("ice") + " guadagnano un buff in Attacco e Difesa pari a metà del proprio livello.</li>",
       "</ul>",
     ],
     evolutions: [

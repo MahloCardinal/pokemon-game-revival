@@ -18,12 +18,12 @@ var routeMap = {
   "terms": "/terms",
   "styles": "/styles",
   "city": "/city",
-  "battle-area": "/area-lotta",
-  "battle-tower": "/area-lotta/torre-lotta",
-  "battle-shop": "/area-lotta/negozio-lotta",
+  "battle-area": "/battle-area",
+  "battle-tower": "/battle-area/battle-tower",
+  "battle-shop": "/battle-area/battle-shop",
   "pokemon-center": "/city/pokemon-center",
   "shopping-center": "/city/shopping-center",
-  "training-zone": "/area-lotta/zona-allenamento",
+  "training-zone": "/battle-area/training-zone",
   "city-daycare": "/city/daycare",
   "city-garden": "/city/garden",
   "city-fanclub": "/city/fanclub",
@@ -46,7 +46,7 @@ var sceneByPage = {
   "privacy-policy": { name: "privacy-policy" },
   "terms": { name: "terms" },
   "styles": { name: "styles" },
-  "area-lotta": { name: "battle-area" },
+  "battle-area": { name: "battle-area" },
   "team": { name: "team" },
   "box": { name: "box" }
 };
@@ -58,7 +58,7 @@ var backSceneParents = {
   "styles": { name: "home" },
   "zones": { name: "home" },
   "city": { name: "home" },
-  "area-lotta": { name: "home" },
+  "battle-area": { name: "home" },
   "gyms": { name: "home" },
   "admin-home": { name: "home" },
   "admin-battles": { name: "home" },
@@ -144,7 +144,7 @@ function isRouteIdentifier(value) {
 }
 
 function isGymCityKey(cityKey) {
-  return cityKey === "superquattro" || cityKey === "campione-kanto" || KANTO_GYM_CITIES.some(function (city) {
+  return cityKey === "elite_four" || cityKey === "kanto_champion" || KANTO_GYM_CITIES.some(function (city) {
     return city.key === cityKey;
   });
 }
@@ -288,20 +288,20 @@ export function sceneFromRoute(route) {
     }
     return invalidRouteScene();
   }
-  if (page === "area-lotta") {
+  if (page === "battle-area") {
     if (parts.length === 1) {
       return { name: "battle-area" };
     }
     if (parts.length !== 2) {
       return invalidRouteScene();
     }
-    if (parts[1] === "torre-lotta") {
+    if (parts[1] === "battle-tower") {
       return { name: "battle-tower" };
     }
-    if (parts[1] === "zona-allenamento") {
+    if (parts[1] === "training-zone") {
       return { name: "training-zone", trainingDifficulty: "", trainingOpponentTeam: [], trainingOpponent: null, trainingPreparedBattle: null };
     }
-    if (parts[1] === "negozio-lotta") {
+    if (parts[1] === "battle-shop") {
       return { name: "battle-shop" };
     }
     return invalidRouteScene();
@@ -373,7 +373,7 @@ function backSceneForRoute(route) {
   if (page === "city" && parts[1]) {
     return { name: "city" };
   }
-  if (page === "area-lotta" && parts[1]) {
+  if (page === "battle-area" && parts[1]) {
     return { name: "battle-area" };
   }
   if (page === "gyms" && parts[1]) {

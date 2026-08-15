@@ -1,35 +1,35 @@
 import {
-  antidoto,
-  antigelo,
-  antiscottatura,
-  antiparalisi,
-  cura_totale,
-  iperpozione,
-  pozione,
-  pozione_max,
-  ricarica_totale,
-  revitalizzante,
-  revitalizzante_max,
-  superpozione,
-  sveglia
+  antidote,
+  ice_heal,
+  burn_heal,
+  paralyze_heal,
+  full_heal,
+  hyper_potion,
+  potion,
+  max_potion,
+  full_restore,
+  revive,
+  max_revive,
+  super_potion,
+  awakening
 } from "./items.js";
 import { kantoGymCityByKey } from "./gyms.js";
 
 var NPC_ITEM_QUANTITY = 3;
 var AUTOMATIC_NPC_ITEMS = [
-  pozione,
-  superpozione,
-  iperpozione,
-  pozione_max,
-  ricarica_totale,
-  antidoto,
-  antiparalisi,
-  sveglia,
-  antiscottatura,
-  antigelo,
-  cura_totale,
-  revitalizzante,
-  revitalizzante_max
+  potion,
+  super_potion,
+  hyper_potion,
+  max_potion,
+  full_restore,
+  antidote,
+  paralyze_heal,
+  awakening,
+  burn_heal,
+  ice_heal,
+  full_heal,
+  revive,
+  max_revive
 ];
 
 function reviveCounts(contractKey, trainingDifficulty, gymKey) {
@@ -61,8 +61,8 @@ export function authoritativeNpcItemsForBattle(input) {
   }
   return AUTOMATIC_NPC_ITEMS.map(function (item) {
     var quantity = NPC_ITEM_QUANTITY;
-    if (item.index === revitalizzante.index) { quantity = counts[0]; }
-    if (item.index === revitalizzante_max.index) { quantity = counts[1]; }
+    if (item.index === revive.index) { quantity = counts[0]; }
+    if (item.index === max_revive.index) { quantity = counts[1]; }
     return [item.index, quantity];
   });
 }

@@ -11,7 +11,7 @@ import { expMultiplierForWinnerLevel } from "../data/progression.js";
 import { authoritativeNpcItemsForBattle } from "../data/authoritative-npc-items.js";
 
 export var BATTLE_ENGINE_VERSION = "pokemon-game-revival";
-export var BATTLE_SNAPSHOT_VERSION = 2;
+export var BATTLE_SNAPSHOT_VERSION = 3;
 
 function jsonValue(value, depth) {
   var result;
@@ -43,10 +43,10 @@ function ownState(source, excluded) {
 
 function runtimeCombatantState(combatant) {
   return {
-    bandanaCharges: Number.isInteger(combatant._bandanaCharges) ? combatant._bandanaCharges : null,
-    focalnastroCharges: Number.isInteger(combatant._focalnastroCharges) ? combatant._focalnastroCharges : null,
-    focalnastroProtect: Boolean(combatant._focalnastroProtect),
-    luminpolvereActive: Boolean(combatant._luminpolvereActive)
+    focusBandCharges: Number.isInteger(combatant._focusBandCharges) ? combatant._focusBandCharges : null,
+    focusSashCharges: Number.isInteger(combatant._focusSashCharges) ? combatant._focusSashCharges : null,
+    focusSashProtect: Boolean(combatant._focusSashProtect),
+    brightPowderActive: Boolean(combatant._brightPowderActive)
   };
 }
 
@@ -120,7 +120,7 @@ function serializeCombatant(manager, combatant) {
     runtimeState: runtimeCombatantState(combatant),
     moveKoTrigger: combatant.moveKoTrigger ? {
       attacker: combatantRef(manager, combatant.moveKoTrigger.attacker),
-      moveName: combatant.moveKoTrigger.moveName || null,
+      moveKey: combatant.moveKoTrigger.moveKey || null,
       destinyBondActive: Boolean(combatant.moveKoTrigger.destinyBondActive),
       grudgeActive: Boolean(combatant.moveKoTrigger.grudgeActive)
     } : null
@@ -167,10 +167,10 @@ function restoreCombatant(manager, combatant, snapshot) {
   } : null;
   combatant.moveKoTrigger = null;
   if (snapshot.runtimeState) {
-    combatant._bandanaCharges = Number.isInteger(snapshot.runtimeState.bandanaCharges) ? snapshot.runtimeState.bandanaCharges : undefined;
-    combatant._focalnastroCharges = Number.isInteger(snapshot.runtimeState.focalnastroCharges) ? snapshot.runtimeState.focalnastroCharges : undefined;
-    combatant._focalnastroProtect = Boolean(snapshot.runtimeState.focalnastroProtect);
-    combatant._luminpolvereActive = Boolean(snapshot.runtimeState.luminpolvereActive);
+    combatant._focusBandCharges = Number.isInteger(snapshot.runtimeState.focusBandCharges) ? snapshot.runtimeState.focusBandCharges : undefined;
+    combatant._focusSashCharges = Number.isInteger(snapshot.runtimeState.focusSashCharges) ? snapshot.runtimeState.focusSashCharges : undefined;
+    combatant._focusSashProtect = Boolean(snapshot.runtimeState.focusSashProtect);
+    combatant._brightPowderActive = Boolean(snapshot.runtimeState.brightPowderActive);
   }
   if (snapshot.mimicInfo && snapshot.mimicInfo.pendingIsCopied && combatant.mimicInfo) { combatant.pendingMove = combatant.mimicInfo.copiedMove; }
   if (snapshot.tempMoveInfo && snapshot.tempMoveInfo.pendingIsCopied && combatant.tempMoveInfo) { combatant.pendingMove = combatant.tempMoveInfo.copiedMove; }
@@ -255,7 +255,7 @@ export function restoreBattleManager(snapshot) {
       var trigger = teamSnapshot.combatants[index] && teamSnapshot.combatants[index].moveKoTrigger;
       combatant.moveKoTrigger = trigger ? {
         attacker: combatantFromRef(manager, trigger.attacker),
-        moveName: trigger.moveName || null,
+        moveKey: trigger.moveKey || null,
         destinyBondActive: Boolean(trigger.destinyBondActive),
         grudgeActive: Boolean(trigger.grudgeActive)
       } : null;
@@ -295,7 +295,7 @@ export function initializeBattleRuntime(input) {
       level: Number(entry.level),
       type: entry.type_keys.slice(),
       maxHp: Number(entry.max_hp),
-      gender: entry.gender === "M" ? "Maschio" : entry.gender === "F" ? "Femmina" : entry.gender || null,
+      gender: entry.gender || null,
       isShiny: Boolean(entry.is_shiny),
       isMega: Boolean(entry.is_mega),
       expCurrent: Number(entry.exp_current) || 0,
@@ -508,7 +508,7 @@ export function executeBattleCommand(snapshot, command) {
         return combatant.pokemon.authoritativeSlot === Number(command.targetSlot);
       }) || null : null;
       if (!item || item.category === ItemCategory.Ball || !isPlayerBattleInventoryItem(item)) { throw new Error("Strumento battaglia non disponibile."); }
-      if ((Number(manager.usedItems[item.name]) || 0) >= 3) { throw new Error("Limite utilizzi dello strumento raggiunto."); }
+      if ((Number(manager.usedItems[item.key]) || 0) >= 3) { throw new Error("Limite utilizzi dello strumento raggiunto."); }
       var inventoryEntry = restored.playerItems.find(function (entry) { return Number(entry[0]) === Number(command.itemIndex); });
       var quantityBefore = Number(inventoryEntry && inventoryEntry[1]) || 0;
       if (quantityBefore <= 0) { throw new Error("Strumento battaglia non disponibile."); }
@@ -738,7 +738,7 @@ export function projectBattle(manager, status, playerItems) {
         }),
         pending_move_slot: combatant.pendingMove ? (pendingSlot >= 0 ? pendingSlot : 0) : null,
         disabled_move_slots: combatant.pokemon.moves.map(function (move, moveIndex) {
-          return combatant.disabledMoves.indexOf(move.name) !== -1 ? moveIndex : null;
+          return combatant.disabledMoves.indexOf(move.key) !== -1 ? moveIndex : null;
         }).filter(function (moveIndex) { return moveIndex !== null; }),
         presentation_state: ownState(combatant, [
           "pokemon", "team", "gui", "moveStates", "pendingMove", "turnBeforeMoveUsed",

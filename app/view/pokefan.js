@@ -40,10 +40,10 @@ function rewardBadgeCount(mission) {
 
 function renderReward(reward, mission) {
   var badges = rewardBadgeCount(mission);
-  if (reward && reward.kind === "dynamic-money") {
+  if (reward && reward.kind === "dynamic_money") {
     return renderMoneyReward((Number(reward.baseQuantity) || 0) + badges * (Number(reward.perBadge) || 0));
   }
-  if (reward && reward.kind === "dynamic-item") {
+  if (reward && reward.kind === "dynamic_item") {
     return renderItemReward({
       kind: "item",
       itemIndex: reward.itemIndex,
@@ -53,7 +53,7 @@ function renderReward(reward, mission) {
   if (reward && reward.kind === "money") {
     return renderMoneyReward(reward.quantity);
   }
-  if (reward && (reward.kind === "choice" || reward.kind === "pokemon-choice")) {
+  if (reward && (reward.kind === "choice" || reward.kind === "pokemon_choice")) {
     return '<span class="pokefan-mission-reward"><span>' + escapeHtml(reward.choiceLabel) + "</span></span>";
   }
   return renderItemReward(reward);

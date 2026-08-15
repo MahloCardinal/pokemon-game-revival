@@ -5,15 +5,17 @@ import { FLUTE_DAILY_USE_LIMIT, SEARCH_TOOL_ITEMS, captureLevelLimitForBadges, c
 import { escapeHtml, getItemDisplayImage, getTypeImage, renderImage } from "../client/asset-helpers.js";
 import { button, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard } from "../client/pokemon-card.js";
+import { typeDisplayName } from "../data/type-chart.js";
+import { captureZoneDisplayName } from "../data/capture-zones.js";
 
 var CAPTURE_ZONE_THEME_CLASS = {
-  "Bosco Smeraldo": "capture-search-wrap-bosco-smeraldo",
-  "Monte Luna": "capture-search-wrap-monte-luna",
-  Mare: "capture-search-wrap-mare",
-  "Torre Fantasma": "capture-search-wrap-torre-fantasma",
-  Safari: "capture-search-wrap-safari",
-  Palude: "capture-search-wrap-palude",
-  Deserto: "capture-search-wrap-deserto"
+  viridian_forest: "capture-search-wrap-bosco-smeraldo",
+  mt_moon: "capture-search-wrap-monte-luna",
+  sea: "capture-search-wrap-mare",
+  ghost_tower: "capture-search-wrap-torre-fantasma",
+  safari_zone: "capture-search-wrap-safari",
+  swamp: "capture-search-wrap-palude",
+  desert: "capture-search-wrap-deserto"
 };
 
 export function renderCaptureTeamSectionInner() {
@@ -73,7 +75,7 @@ export function renderCaptureScene(scene) {
     ? renderImage(getTypeImage(selectedType), selectedType, "type-label-image choice-menu-current")
     : '<span class="choice-menu-placeholder">Tipo</span>';
   var typeInlineList = zoneTypes.map(function (typeName) {
-    return renderImage(getTypeImage(typeName), typeName, "type-label-image capture-type-inline-image");
+    return renderImage(getTypeImage(typeName), typeDisplayName(typeName), "type-label-image capture-type-inline-image");
   }).join("");
   var typeMenu = [
     '<details class="choice-menu capture-type-menu">',
@@ -84,7 +86,7 @@ export function renderCaptureScene(scene) {
       return [
         '<label class="choice-menu-option' + selectedClass + '">',
         '  <input type="radio" name="capture-search-type" value="' + escapeHtml(typeName) + '" ' + (typeName === selectedType ? "checked" : "") + ' ' + (hasBlackFlute && blackFluteRemaining > 0 ? "" : "disabled") + ">",
-        renderImage(getTypeImage(typeName), typeName, "type-label-image choice-menu-image"),
+        renderImage(getTypeImage(typeName), typeDisplayName(typeName), "type-label-image choice-menu-image"),
         "</label>"
       ].join("");
     }).join(""),
@@ -148,5 +150,5 @@ export function renderCaptureScene(scene) {
     "</section>"
   ].join("");
 
-  return sceneShell(scene.zoneName, "", form, "", "", "parent-back");
+  return sceneShell(captureZoneDisplayName(scene.zoneName), "", form, "", "", "parent-back");
 }

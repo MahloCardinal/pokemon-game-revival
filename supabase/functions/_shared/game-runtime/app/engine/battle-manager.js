@@ -69,13 +69,13 @@ BattleManager.prototype.consumeExpEvents = function () {
 
 BattleManager.prototype.trackUsedItem = function (item, owner) {
   var targetMap;
-  if (!item || !item.name) {
+  if (!item || !item.key) {
     return;
   }
   targetMap = owner === "enemy" || (owner && owner.team === this.enemyTeam)
     ? this.enemyUsedItems
     : this.usedItems;
-  targetMap[item.name] = (targetMap[item.name] || 0) + 1;
+  targetMap[item.key] = (targetMap[item.key] || 0) + 1;
 };
 
 BattleManager.prototype.normalizedActor = function (actor) {
@@ -443,7 +443,7 @@ BattleManager.prototype.itemNeedsPokemonTarget = function (item) {
 };
 
 function subjectHasWeather(subject) {
-  return Boolean(subject && (subject.weather || subject.meteo));
+  return Boolean(subject && subject.weather);
 }
 
 function clearWeatherSubject(subject) {
@@ -453,9 +453,6 @@ function clearWeatherSubject(subject) {
   var hadWeather = subjectHasWeather(subject);
   if (subject.weather !== undefined) {
     subject.weather = null;
-  }
-  if (subject.meteo !== undefined) {
-    subject.meteo = null;
   }
   return hadWeather;
 }
@@ -581,7 +578,7 @@ function weatherDisplayName(weather) {
   if (weather === "rain") { return "Pioggiadanza"; }
   if (weather === "sand") { return "Terrempesta"; }
   if (weather === "hail") { return "Grandine"; }
-  return "meteo";
+  return "weather";
 }
 
 BattleManager.prototype.setWeather = function (weather) {
@@ -630,12 +627,12 @@ BattleManager.prototype.canUseItemOnTarget = function (item, target) {
         return { ok: false, message: target.pokemon.name + " non ha uno Status curabile con questo strumento." };
       }
       return { ok: true };
-    case ItemSubcategory.Meteo:
+    case ItemSubcategory.Weather:
       if (!this.hasActiveWeather()) {
         return { ok: false, message: "Non c'è alcun meteo attivo" };
       }
       return { ok: true };
-    case ItemSubcategory.TypeProtect:
+    case ItemSubcategory.TypeProtection:
       return { ok: false, message: "Questa bacca si attiva solo quando è tenuta da un Pokémon." };
     default:
       return { ok: false, message: "Sottocategoria non gestita: " + item.subcategory };
@@ -681,7 +678,7 @@ BattleManager.prototype.applyItemEffect = function (item, target) {
       clearCombatantStatus(target, item);
       this.emit({ log: "Allenatore usa " + item.name + " su " + target.pokemon.name + ": Status curato" });
       return { ok: true };
-    case ItemSubcategory.Meteo:
+    case ItemSubcategory.Weather:
       this.clearWeather();
       this.emit({ log: "Allenatore usa " + item.name + ": meteo rimosso" });
       return { ok: true };
@@ -733,10 +730,10 @@ BattleManager.prototype.playerUseBall = function (item) {
 
 BattleManager.prototype.applyWeatherBuffs = function (combatant) {
   if (!combatant || combatant.isFainted()) { return; }
-  if (this.weather === "sand" && combatant.type.indexOf("Roccia") !== -1) {
+  if (this.weather === "sand" && combatant.type.indexOf("rock") !== -1) {
     combatant.weatherAtkBuff = Math.floor(combatant.level / 2);
     combatant.weatherDefBuff = Math.floor(combatant.level / 2);
-  } else if (this.weather === "hail" && combatant.type.indexOf("Ghiaccio") !== -1) {
+  } else if (this.weather === "hail" && combatant.type.indexOf("ice") !== -1) {
     combatant.weatherAtkBuff = Math.floor(combatant.level / 2);
     combatant.weatherDefBuff = Math.floor(combatant.level / 2);
   } else {
@@ -806,12 +803,12 @@ BattleManager.prototype.startTurn = function (attacker, defender) {
     attacker.hp = Math.min(attacker.hp + rootHeal, attacker.pokemon.maxHp);
     manager.emit({ log: attacker.pokemon.name + " recupera " + rootHeal + " PS con Radicamento" });
   }
-  if (attacker.team.desiderioHealAmount > 0) {
-    var desiderioHeal = Math.min(attacker.team.desiderioHealAmount, attacker.pokemon.maxHp - attacker.hp);
-    attacker.hp = Math.min(attacker.hp + attacker.team.desiderioHealAmount, attacker.pokemon.maxHp);
-    manager.emit({ log: "Desiderio di " + (attacker.team.desiderioSourceName || attacker.pokemon.name) + " fa recuperare " + desiderioHeal + " PS a " + attacker.pokemon.name });
-    attacker.team.desiderioHealAmount = 0;
-    attacker.team.desiderioSourceName = "";
+  if (attacker.team.wishHealAmount > 0) {
+    var wishHeal = Math.min(attacker.team.wishHealAmount, attacker.pokemon.maxHp - attacker.hp);
+    attacker.hp = Math.min(attacker.hp + attacker.team.wishHealAmount, attacker.pokemon.maxHp);
+    manager.emit({ log: "Desiderio di " + (attacker.team.wishSourceName || attacker.pokemon.name) + " fa recuperare " + wishHeal + " PS a " + attacker.pokemon.name });
+    attacker.team.wishHealAmount = 0;
+    attacker.team.wishSourceName = "";
   }
 
   if (attacker.trappedMoveIndex && attacker.trappedTurns < 99) {
@@ -868,7 +865,7 @@ BattleManager.prototype.recentSwitchTargetForMove = function (defender, move) {
   var team = defender && defender.team;
   var index = team && Number.isInteger(team.lastSwitchedOutIndex) ? team.lastSwitchedOutIndex : NaN;
   var target = Number.isInteger(index) ? team.combatantList[index] : null;
-  if (!move || move.name !== "Inseguimento" || !target || target === defender || target.isFainted()) {
+  if (!move || move.key !== "pursuit" || !target || target === defender || target.isFainted()) {
     return null;
   }
   return target;
@@ -978,10 +975,10 @@ BattleManager.prototype.calculateMoveDamage = function (attacker, defender, move
   var basePower = move.power;
   var basePowerResult;
 
-  this._assorbisferaCost = 0;
+  this._lifeOrbCost = 0;
   basePowerResult = runHeldItemTrigger(this, "modifyBasePower", HeldItemTriggerContext.modifyBasePower(attacker, defender, move, basePower));
   basePower = basePowerResult.basePower;
-  this._assorbisferaCost = basePowerResult.hpCost || 0;
+  this._lifeOrbCost = basePowerResult.hpCost || 0;
   var typeMultiplier = this.typeEfficacy(attacker, defender);
   move.lastTypeEfficacy = typeMultiplier;
   var moveMultiplier = move.moveMult !== undefined ? move.moveMult : 1;
@@ -1010,7 +1007,7 @@ BattleManager.prototype.calculateMoveDamage = function (attacker, defender, move
   }));
   attackBuff = attackerStatMods.attackBuff;
   attackNerf = attackerStatMods.attackNerf;
-  if (this.weather === "sun" && attacker.type.indexOf("Fuoco") !== -1) {
+  if (this.weather === "sun" && attacker.type.indexOf("fire") !== -1) {
     attackNerf = 0;
   }
 
@@ -1026,17 +1023,17 @@ BattleManager.prototype.calculateMoveDamage = function (attacker, defender, move
   }));
   defenseBuff = defenderStatMods.defenseBuff;
   defNerf = defenderStatMods.defNerf;
-  if (this.weather === "sun" && defender.type.indexOf("Fuoco") !== -1) {
+  if (this.weather === "sun" && defender.type.indexOf("fire") !== -1) {
     defNerf = 0;
   }
 
   heldItemMultiplier = runHeldItemTrigger(this, "damageMultiplier", HeldItemTriggerContext.damageMultiplier(attacker)).multiplier;
   if (this.weather === "sun") {
-    if (attacker.type.indexOf("Fuoco") !== -1) { weatherPowerMod = Math.floor(attacker.level / 2); }
-    if (attacker.type.indexOf("Acqua") !== -1) { weatherPowerMod = -Math.floor(attacker.level / 2); }
+    if (attacker.type.indexOf("fire") !== -1) { weatherPowerMod = Math.floor(attacker.level / 2); }
+    if (attacker.type.indexOf("water") !== -1) { weatherPowerMod = -Math.floor(attacker.level / 2); }
   } else if (this.weather === "rain") {
-    if (attacker.type.indexOf("Acqua") !== -1) { weatherPowerMod = Math.floor(attacker.level / 2); }
-    if (attacker.type.indexOf("Fuoco") !== -1) { weatherPowerMod = -Math.floor(attacker.level / 2); }
+    if (attacker.type.indexOf("water") !== -1) { weatherPowerMod = Math.floor(attacker.level / 2); }
+    if (attacker.type.indexOf("fire") !== -1) { weatherPowerMod = -Math.floor(attacker.level / 2); }
   }
 
   attackAdjusted = basePower + attackBuff - attackNerf + weatherPowerMod;
@@ -1053,7 +1050,7 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   var defenderTeamForSwitch = defender && defender.team;
   var defenderActiveIndexBefore = defenderTeamForSwitch ? defenderTeamForSwitch.activeIndex : null;
   var pursuitTarget;
-  this._assorbisferaCost = 0;
+  this._lifeOrbCost = 0;
   this.lastResolvedMoveIndex = null;
   this.lastResolvedType = null;
   this.lastResolvedMoveWasWeather = false;
@@ -1128,7 +1125,7 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
     defender.hp = newHp;
     defender.turnBeforeDamageTaken = initialHp - newHp;
 
-    this._assorbisferaCost = runHeldItemTrigger(this, "afterDamageApplied", HeldItemTriggerContext.afterDamageApplied(attacker, defender, effectiveMove, damage, this._assorbisferaCost)).hpCost || 0;
+    this._lifeOrbCost = runHeldItemTrigger(this, "afterDamageApplied", HeldItemTriggerContext.afterDamageApplied(attacker, defender, effectiveMove, damage, this._lifeOrbCost)).hpCost || 0;
   }
 
   attackerStatusBefore = statusSnapshot(attacker);
@@ -1235,7 +1232,7 @@ BattleManager.prototype.availableMoveActions = function (actor) {
     return [];
   }
   if (active.pendingMove) {
-    if (active.disabledMoves.indexOf(active.pendingMove.name) !== -1
+    if (active.disabledMoves.indexOf(active.pendingMove.key) !== -1
       || this.isWeatherMoveBlocked(normalizedActor, active.pendingMove)) {
       return [];
     }
@@ -1243,7 +1240,7 @@ BattleManager.prototype.availableMoveActions = function (actor) {
     return [{ type: "move", move: active.pendingMove, moveSlot: pendingSlot >= 0 ? pendingSlot : 0 }];
   }
   available = active.pokemon.moves.map(function (move, slot) {
-    return active.disabledMoves.indexOf(move.name) === -1
+    return active.disabledMoves.indexOf(move.key) === -1
       && !manager.isWeatherMoveBlocked(normalizedActor, move)
       ? { type: "move", move: move, moveSlot: slot }
       : null;
@@ -1257,7 +1254,7 @@ BattleManager.prototype.availableMoveActions = function (actor) {
   return [{
     type: "move",
     moveSlot: 0,
-    move: createMove(m.Scontro, {
+    move: createMove(m.struggle, {
       power: active.pokemon.moves[0].power,
       stats: active.pokemon.moves[0].stats
     })
@@ -1425,12 +1422,12 @@ BattleManager.prototype.combatantAvailableMoves = function (combatant) {
     return [combatant.pendingMove];
   }
   moves = (combatant.pokemon.moves || []).filter(function (move) {
-    return move && combatant.disabledMoves.indexOf(move.name) === -1;
+    return move && combatant.disabledMoves.indexOf(move.key) === -1;
   });
   if (moves.length || !(combatant.pokemon.moves || []).length) {
     return moves;
   }
-  return [createMove(m.Scontro, {
+  return [createMove(m.struggle, {
     power: combatant.pokemon.moves[0].power,
     stats: combatant.pokemon.moves[0].stats
   })];
@@ -1438,7 +1435,7 @@ BattleManager.prototype.combatantAvailableMoves = function (combatant) {
 
 BattleManager.prototype.maxPotentialMoveDamage = function (attacker, defender) {
   var manager = this;
-  var previousHpCost = this._assorbisferaCost;
+  var previousHpCost = this._lifeOrbCost;
   var maxDamage = 0;
   if (!attacker || !defender || attacker.isFainted() || defender.isFainted()) {
     return 0;
@@ -1453,7 +1450,7 @@ BattleManager.prototype.maxPotentialMoveDamage = function (attacker, defender) {
       maxDamage = damage;
     }
   });
-  this._assorbisferaCost = previousHpCost;
+  this._lifeOrbCost = previousHpCost;
   return maxDamage;
 };
 
@@ -1578,7 +1575,7 @@ BattleManager.prototype.moveStatusCheck = function (attacker, move) {
   }
 
   if (attacker.status === "slp") {
-    if (move && (move.name === "Russare" || move.index === 262)) {
+    if (move && move.key === "snore") {
       return true;
     }
     resolvePendingAsFailed();
@@ -1604,7 +1601,7 @@ BattleManager.prototype.invulnerabilityCheck = function (defender, move) {
   if (!semi || !m.SEMI_INVULN_ALLOWED[semi]) {
     return true;
   }
-  return Boolean(m.SEMI_INVULN_ALLOWED[semi][move.name]);
+  return Boolean(m.SEMI_INVULN_ALLOWED[semi][move.key]);
 };
 
 BattleManager.prototype.damageStatusCheck = function (attacker) {
@@ -1619,7 +1616,7 @@ BattleManager.prototype.damageStatusCheck = function (attacker) {
     this.emit({ log: attacker.pokemon.name + " è bruciato e perde " + burnDamage + " PS" });
   }
   if (this.weather === "sand") {
-    var sandImmune = attacker.type.indexOf("Acciaio") !== -1 || attacker.type.indexOf("Terra") !== -1 || attacker.type.indexOf("Roccia") !== -1;
+    var sandImmune = attacker.type.indexOf("steel") !== -1 || attacker.type.indexOf("ground") !== -1 || attacker.type.indexOf("rock") !== -1;
     if (!sandImmune) {
       var sandDamage = Math.max(1, Math.floor(attacker.pokemon.maxHp / 8));
       attacker.hp = Math.max(0, attacker.hp - sandDamage);
@@ -1627,7 +1624,7 @@ BattleManager.prototype.damageStatusCheck = function (attacker) {
     }
   }
   if (this.weather === "hail") {
-    if (attacker.type.indexOf("Ghiaccio") === -1) {
+    if (attacker.type.indexOf("ice") === -1) {
       var hailDamage = Math.max(1, Math.floor(attacker.pokemon.maxHp / 8));
       attacker.hp = Math.max(0, attacker.hp - hailDamage);
       this.emit({ log: attacker.pokemon.name + " subisce " + hailDamage + " PS dalla Grandine" });
@@ -1658,7 +1655,7 @@ BattleManager.prototype.markMoveKoTrigger = function (attacker, defender, move, 
   }
   defender.moveKoTrigger = {
     attacker: attacker,
-    moveName: move.name,
+    moveKey: move.key,
     destinyBondActive: Boolean(defender.destinyBondActive),
     grudgeActive: Boolean(defender.grudgeActive)
   };
@@ -1667,7 +1664,9 @@ BattleManager.prototype.markMoveKoTrigger = function (attacker, defender, move, 
 BattleManager.prototype.applyMoveKoTriggeredEffects = function (defender) {
   var trigger = defender && defender.moveKoTrigger;
   var attacker = trigger && trigger.attacker;
-  var moveName = trigger && trigger.moveName;
+  var moveKey = trigger && trigger.moveKey;
+  var moveDefinition = moveKey ? m.MOVE_LIBRARY.find(function (move) { return move.key === moveKey; }) : null;
+  var moveName = moveDefinition ? moveDefinition.name : moveKey;
 
   if (!trigger) {
     return;
@@ -1681,8 +1680,8 @@ BattleManager.prototype.applyMoveKoTriggeredEffects = function (defender) {
     defender.destinyBondActive = false;
     this.emit({ log: "A causa di Destinobbligato, " + attacker.pokemon.name + " è KO!" });
   }
-  if (trigger.grudgeActive && moveName) {
-    attacker.disableMoveInhibit(moveName);
+  if (trigger.grudgeActive && moveKey) {
+    attacker.disableMoveInhibit(moveKey);
     defender.grudgeActive = false;
     this.emit({ log: "A causa di Rancore, " + attacker.pokemon.name + " non può più usare " + moveName + "!" });
   }
@@ -2028,17 +2027,19 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
         );
         var dmg = Math.max(1, Math.floor(attacker.team.futureSight.power * typeMultiplier));
         target.hp = Math.max(0, target.hp - dmg);
-        this.emit({ log: (attacker.team.futureSight.moveName || "Colpo futuro") + " di " + attacker.team.futureSight.attackerName + " colpisce " + target.pokemon.name + " infliggendo " + dmg + " danni!" });
+        var futureMove = m.MOVE_LIBRARY.find(function (move) { return move.key === attacker.team.futureSight.moveKey; });
+        this.emit({ log: (futureMove ? futureMove.name : "Colpo futuro") + " di " + attacker.team.futureSight.attackerName + " colpisce " + target.pokemon.name + " infliggendo " + dmg + " danni!" });
         this.KOCheck(attacker, target);
       } else {
-        this.emit({ log: (attacker.team.futureSight.moveName || "Colpo futuro") + " fallisce perché " + ((originalTarget || target) ? (originalTarget || target).pokemon.name : "il bersaglio") + " è già KO." });
+        var failedFutureMove = m.MOVE_LIBRARY.find(function (move) { return move.key === attacker.team.futureSight.moveKey; });
+        this.emit({ log: (failedFutureMove ? failedFutureMove.name : "Colpo futuro") + " fallisce perché " + ((originalTarget || target) ? (originalTarget || target).pokemon.name : "il bersaglio") + " è già KO." });
       }
       attacker.team.futureSight.active = false;
       attacker.team.futureSight.timer = 0;
       attacker.team.futureSight.power = 0;
       attacker.team.futureSight.attackerTypes = [];
       attacker.team.futureSight.attackerName = "";
-      attacker.team.futureSight.moveName = "";
+      attacker.team.futureSight.moveKey = "";
       attacker.team.futureSight.targetIndex = -1;
     }
   }

@@ -223,7 +223,7 @@ export async function startAuthenticatedSession(session) {
   }).then(function () {
     if (!state.activeBattle && state.authoritativeLeagueState
       && state.authoritativeLeagueState.status === "awaiting_battle") {
-      setScene({ name: "gym-city", cityKey: "superquattro" }, { history: "replace" });
+      setScene({ name: "gym-city", cityKey: "elite_four" }, { history: "replace" });
     } else if (!state.activeBattle && state.pendingActivity && state.pendingActivity.type === "ordinary_progression") {
       resumeAuthoritativeOrdinaryProgression();
     } else if (!state.activeBattle && state.pendingActivity && state.pendingActivity.type === "training_progression") {

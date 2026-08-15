@@ -11,24 +11,24 @@ import {
 } from "./asset-helpers.js";
 
 var POKEMON_CARD_TYPE_COLORS = {
-  Normale: "#eadfcd",
-  Fuoco: "#f7c7ad",
-  Acqua: "#b9d9f4",
-  Elettro: "#f5e7a5",
-  Erba: "#c6e2bb",
-  Ghiaccio: "#c5e8e8",
-  Lotta: "#e7b7ad",
-  Veleno: "#d7c1e8",
-  Terra: "#e7d3ad",
-  Volante: "#cbd4f4",
-  Psico: "#f5bfd2",
-  Coleottero: "#dce6ad",
-  Roccia: "#d8c9a2",
-  Spettro: "#c8bddc",
-  Drago: "#c6c1ec",
-  Buio: "#c3bab4",
-  Acciaio: "#d5d8e2",
-  Folletto: "#f2cce3"
+  normal: "#eadfcd",
+  fire: "#f7c7ad",
+  water: "#b9d9f4",
+  electric: "#f5e7a5",
+  grass: "#c6e2bb",
+  ice: "#c5e8e8",
+  fighting: "#e7b7ad",
+  poison: "#d7c1e8",
+  ground: "#e7d3ad",
+  flying: "#cbd4f4",
+  psychic: "#f5bfd2",
+  bug: "#dce6ad",
+  rock: "#d8c9a2",
+  ghost: "#c8bddc",
+  dragon: "#c6c1ec",
+  dark: "#c3bab4",
+  steel: "#d5d8e2",
+  fairy: "#f2cce3"
 };
 
 function itemByIndex(itemIndex) {

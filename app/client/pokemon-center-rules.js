@@ -8,7 +8,7 @@ export function pokemonCenterLimit(pokemon, catalogLimit) {
 
 export function pokemonCenterMode(scene) {
   var mode = scene && scene.centerMode;
-  return ["assign-held", "use-item", "use-mt"].indexOf(mode) !== -1 ? mode : "assign-held";
+  return ["assign-held", "use-item", "use-tm"].indexOf(mode) !== -1 ? mode : "assign-held";
 }
 
 export function pokemonCenterModeConfig(mode) {
@@ -22,11 +22,11 @@ export function pokemonCenterModeConfig(mode) {
       }
     };
   }
-  if (mode === "use-mt") {
+  if (mode === "use-tm") {
     return {
       pokemonTitle: "Pokemon su cui usare la MT",
       emptyText: "Nessuna MT disponibile.",
-      itemFilter: function (item) { return item.category === ItemCategory.Mt; }
+      itemFilter: function (item) { return item.category === ItemCategory.TM; }
     };
   }
   return {
@@ -38,7 +38,7 @@ export function pokemonCenterModeConfig(mode) {
 
 export function pokemonCenterTargetMode(scene, mode, item) {
   var pendingAction = scene && scene.pendingAction;
-  if (pendingAction && (pendingAction.type === "replace-mt-move" || pendingAction.type === "replace-tutor-move")) {
+  if (pendingAction && (pendingAction.type === "replace-tm-move" || pendingAction.type === "replace-tutor-move")) {
     return "forget-move";
   }
   if (!item) {
@@ -58,8 +58,8 @@ export function pokemonCenterTargetMode(scene, mode, item) {
       return pendingAction && pendingAction.type === "choose-tutor-move" ? "tutor-move" : "compatible-pokemon";
     }
   }
-  if (mode === "use-mt") {
-    return item.category === ItemCategory.Mt ? "compatible-pokemon" : "none";
+  if (mode === "use-tm") {
+    return item.category === ItemCategory.TM ? "compatible-pokemon" : "none";
   }
   return "none";
 }
@@ -81,8 +81,8 @@ export function pokemonCenterPokemonMatchesItem(mode, item, pokemon, compatibili
     }
     return Boolean(compatibility.hasItemEvolution);
   }
-  if (mode === "use-mt") {
-    return Boolean(compatibility.canLearnMt);
+  if (mode === "use-tm") {
+    return Boolean(compatibility.canLearnTM);
   }
   return false;
 }
@@ -138,7 +138,7 @@ export function pokemonCenterItemPrompt(mode, item, scene) {
   if (mode === "use-item" && item.category === ItemCategory.Vitamin && item.effect === "move_power") {
     return "Su quale mossa vuoi usare " + item.name + "?";
   }
-  if (mode === "use-mt") {
+  if (mode === "use-tm") {
     return "A chi vuoi insegnare " + item.name + "?";
   }
   return "Su chi vuoi usare " + item.name + "?";

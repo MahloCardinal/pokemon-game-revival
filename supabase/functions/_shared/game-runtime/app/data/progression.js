@@ -16,8 +16,8 @@ export var CAPTURE_LEVEL_RANGES = [
 ];
 
 export var SEARCH_TOOL_ITEMS = {
-  whiteFlute: i.flauto_bianco,
-  blackFlute: i.flauto_nero
+  whiteFlute: i.white_flute,
+  blackFlute: i.black_flute
 };
 
 export var FLUTE_DAILY_USE_LIMIT = 15;
@@ -64,7 +64,7 @@ export var AUTHORITATIVE_TRAINING_REPEAT_REWARDS = {
 
 export var MAX_TRAINING_LEVELS_PER_POKEMON = 3;
 
-export var MT_TIER_RULES = {
+export var TM_TIER_RULES = {
   0: { price: 12000, unlockBadges: 7 },
   1: { price: 8000, unlockBadges: 6 },
   2: { price: 5000, unlockBadges: 4 },
@@ -72,14 +72,14 @@ export var MT_TIER_RULES = {
 };
 
 export var GYM_REWARDS = [
-  { money: 3000, item: i.ps_su.index, itemQuantity: 3 },
-  { money: 5000, item: i.puroaroma.index, itemQuantity: 1 },
-  { money: 7000, item: i.pp_su.index, itemQuantity: 3 },
-  { money: 10000, item: i.flauto_nero.index, itemQuantity: 1 },
-  { money: 20000, item: i.bizzoaroma.index, itemQuantity: 1 },
+  { money: 3000, item: i.hp_up.index, itemQuantity: 3 },
+  { money: 5000, item: i.pure_incense.index, itemQuantity: 1 },
+  { money: 7000, item: i.pp_up.index, itemQuantity: 3 },
+  { money: 10000, item: i.black_flute.index, itemQuantity: 1 },
+  { money: 20000, item: i.odd_incense.index, itemQuantity: 1 },
   { money: 30000, item: i.pp_max.index, itemQuantity: 3 },
-  { money: 50000, item: i.flauto_bianco.index, itemQuantity: 1 },
-  { money: 70000, item: i.roccia_di_re.index, itemQuantity: 1 }
+  { money: 50000, item: i.white_flute.index, itemQuantity: 1 },
+  { money: 70000, item: i.kings_rock.index, itemQuantity: 1 }
 ];
 
 export var KANTO_LEAGUE_REWARDS = {
@@ -89,76 +89,76 @@ export var KANTO_LEAGUE_REWARDS = {
 
 export function adminControlledBattleRewardForType(battleType) {
   var type = String(battleType || "");
-  if (type === "gym_isola-cannella") {
+  if (type === "gym_cinnabar_island") {
     return Object.assign({ rewardKind: "gym", badgeIndex: 6 }, GYM_REWARDS[6]);
   }
-  if (type === "gym_smeraldopoli") {
+  if (type === "gym_viridian_city") {
     return Object.assign({ rewardKind: "gym", badgeIndex: 7 }, GYM_REWARDS[7]);
   }
   if (/^kanto_league_[1-4]$/.test(type)) {
-    return { rewardKind: "league", badgeIndex: null, money: KANTO_LEAGUE_REWARDS.member.money, mt: null, item: null };
+    return { rewardKind: "league", badgeIndex: null, money: KANTO_LEAGUE_REWARDS.member.money, tm: null, item: null };
   }
   if (type === "kanto_league_champion") {
-    return { rewardKind: "league", badgeIndex: null, money: KANTO_LEAGUE_REWARDS.champion.money, mt: null, item: null };
+    return { rewardKind: "league", badgeIndex: null, money: KANTO_LEAGUE_REWARDS.champion.money, tm: null, item: null };
   }
   return null;
 }
 
-export var GYM_REWARD_MT_ITEMS = GYM_REWARDS.map(function (reward) {
-  return reward && reward.mt;
+export var GYM_REWARD_TM_ITEMS = GYM_REWARDS.map(function (reward) {
+  return reward && reward.tm;
 }).filter(function (itemIndex, index, list) {
   return itemIndex && list.indexOf(itemIndex) === index;
 });
 
 export var ITEM_UNLOCK_RULES = [
   { item: i.poke_ball, requirement: { kind: "badges", value: 0 } },
-  { item: i.mega_ball, requirement: { kind: "badges", value: 0 } },
+  { item: i.great_ball, requirement: { kind: "badges", value: 0 } },
   { item: i.ultra_ball, requirement: { kind: "badges", value: 2 } },
 
-  { item: i.pozione, requirement: { kind: "badges", value: 0 } },
-  { item: i.superpozione, requirement: { kind: "badges", value: 0 } },
-  { item: i.antidoto, requirement: { kind: "badges", value: 0 } },
-  { item: i.antiparalisi, requirement: { kind: "badges", value: 0 } },
-  { item: i.sveglia, requirement: { kind: "badges", value: 0 } },
-  { item: i.antiscottatura, requirement: { kind: "badges", value: 0 } },
-  { item: i.antigelo, requirement: { kind: "badges", value: 0 } },
-  { item: i.iperpozione, requirement: { kind: "badges", value: 4 } },
-  { item: i.cura_totale, requirement: { kind: "badges", value: 4 } },
-  { item: i.elisir_chiarocielo, requirement: { kind: "badges", value: 4 } },
-  { item: i.revitalizzante, requirement: { kind: "badges", value: 2 } },
-  { item: i.pozione_max, requirement: { kind: "badges", value: 6 } },
-  { item: i.ricarica_totale, requirement: { kind: "badges", value: 6 } },
-  { item: i.revitalizzante_max, requirement: { kind: "badges", value: 6 } },
+  { item: i.potion, requirement: { kind: "badges", value: 0 } },
+  { item: i.super_potion, requirement: { kind: "badges", value: 0 } },
+  { item: i.antidote, requirement: { kind: "badges", value: 0 } },
+  { item: i.paralyze_heal, requirement: { kind: "badges", value: 0 } },
+  { item: i.awakening, requirement: { kind: "badges", value: 0 } },
+  { item: i.burn_heal, requirement: { kind: "badges", value: 0 } },
+  { item: i.ice_heal, requirement: { kind: "badges", value: 0 } },
+  { item: i.hyper_potion, requirement: { kind: "badges", value: 4 } },
+  { item: i.full_heal, requirement: { kind: "badges", value: 4 } },
+  { item: i.clear_sky_elixir, requirement: { kind: "badges", value: 4 } },
+  { item: i.revive, requirement: { kind: "badges", value: 2 } },
+  { item: i.max_potion, requirement: { kind: "badges", value: 6 } },
+  { item: i.full_restore, requirement: { kind: "badges", value: 6 } },
+  { item: i.max_revive, requirement: { kind: "badges", value: 6 } },
 
-  { item: i.pietrafocaia, requirement: { kind: "badges", value: 4 } },
-  { item: i.pietratuono, requirement: { kind: "badges", value: 4 } },
-  { item: i.pietraidrica, requirement: { kind: "badges", value: 4 } },
-  { item: i.pietrafoglia, requirement: { kind: "badges", value: 4 } },
+  { item: i.fire_stone, requirement: { kind: "badges", value: 4 } },
+  { item: i.thunder_stone, requirement: { kind: "badges", value: 4 } },
+  { item: i.water_stone, requirement: { kind: "badges", value: 4 } },
+  { item: i.leaf_stone, requirement: { kind: "badges", value: 4 } },
 
-  { item: i.polvocura, requirement: { kind: "badges", value: 8 } },
-  { item: i.polvenergia, requirement: { kind: "badges", value: 8 } },
-  { item: i.radicenergia, requirement: { kind: "badges", value: 8 } },
-  { item: i.vitalerba, requirement: { kind: "badges", value: 8 } },
+  { item: i.heal_powder, requirement: { kind: "badges", value: 8 } },
+  { item: i.energy_powder, requirement: { kind: "badges", value: 8 } },
+  { item: i.energy_root, requirement: { kind: "badges", value: 8 } },
+  { item: i.revival_herb, requirement: { kind: "badges", value: 8 } },
 
-  { item: i.ps_su, requirement: { kind: "badges", value: 4 } },
-  { item: i.pp_su, requirement: { kind: "badges", value: 4 } },
+  { item: i.hp_up, requirement: { kind: "badges", value: 4 } },
+  { item: i.pp_up, requirement: { kind: "badges", value: 4 } },
   { item: i.pp_max, requirement: { kind: "badges", value: 6 } },
 
-  { item: i.roccia_di_re, requirement: { kind: "badges", value: 7 } },
-  { item: i.bandana, requirement: { kind: "badges", value: 7 } },
-  { item: i.luminpolvere, requirement: { kind: "badges", value: 7 } },
-  { item: i.focalnastro, requirement: { kind: "badges", value: 7 } },
+  { item: i.kings_rock, requirement: { kind: "badges", value: 7 } },
+  { item: i.focus_band, requirement: { kind: "badges", value: 7 } },
+  { item: i.bright_powder, requirement: { kind: "badges", value: 7 } },
+  { item: i.focus_sash, requirement: { kind: "badges", value: 7 } },
 
-  { item: i.occhialoni, requirement: { kind: "badges", value: 0 } },
-  { item: i.spettrosonda, requirement: { kind: "badges", value: 0 } },
-  { item: i.conchinella, requirement: { kind: "badges", value: 0 } },
-  { item: i.scarponi_robusti, requirement: { kind: "badges", value: 0 } },
-  { item: i.copertura, requirement: { kind: "badges", value: 6 } },
-  { item: i.plessimetro, requirement: { kind: "badges", value: 6 } },
-  { item: i.assorbisfera, requirement: { kind: "badges", value: 6 } },
-  { item: i.fiascopolizza, requirement: { kind: "badges", value: 6 } },
-  { item: i.bitorzolelmo, requirement: { kind: "badges", value: 6 } },
-  { item: i.zoomlente, requirement: { kind: "badges", value: 6 } },
+  { item: i.go_goggles, requirement: { kind: "badges", value: 0 } },
+  { item: i.silph_scope, requirement: { kind: "badges", value: 0 } },
+  { item: i.shell_bell, requirement: { kind: "badges", value: 0 } },
+  { item: i.heavy_duty_boots, requirement: { kind: "badges", value: 0 } },
+  { item: i.protector, requirement: { kind: "badges", value: 6 } },
+  { item: i.metronome, requirement: { kind: "badges", value: 6 } },
+  { item: i.life_orb, requirement: { kind: "badges", value: 6 } },
+  { item: i.blunder_policy, requirement: { kind: "badges", value: 6 } },
+  { item: i.rocky_helmet, requirement: { kind: "badges", value: 6 } },
+  { item: i.zoom_lens, requirement: { kind: "badges", value: 6 } },
 ];
 
 export function normalizedBadges(badges) {
@@ -217,18 +217,18 @@ export function authoritativeTrainingReward(difficulty, fullReward) {
   return AUTHORITATIVE_TRAINING_DAILY_REWARDS[key] || { levels: 0, battlePoints: 0 };
 }
 
-export function mtTierForItem(item) {
+export function tmTierForItem(item) {
   var tier = Number(item && item.tier);
-  return Object.prototype.hasOwnProperty.call(MT_TIER_RULES, tier) ? tier : 3;
+  return Object.prototype.hasOwnProperty.call(TM_TIER_RULES, tier) ? tier : 3;
 }
 
-export function mtPrice(item) {
-  var rule = MT_TIER_RULES[mtTierForItem(item)] || MT_TIER_RULES[3];
+export function tmPrice(item) {
+  var rule = TM_TIER_RULES[tmTierForItem(item)] || TM_TIER_RULES[3];
   return rule.price;
 }
 
-export function mtUnlockBadges(item) {
-  var rule = MT_TIER_RULES[mtTierForItem(item)] || MT_TIER_RULES[3];
+export function tmUnlockBadges(item) {
+  var rule = TM_TIER_RULES[tmTierForItem(item)] || TM_TIER_RULES[3];
   return rule.unlockBadges;
 }
 

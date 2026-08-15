@@ -16,7 +16,7 @@ var progressionQueue = [];
 var activeSession = null;
 
 function speciesDataForPokemon(pokemon) {
-  return Engine.findSpecies(pokemon.speciesKey || pokemon.name);
+  return Engine.findSpecies(pokemon.speciesKey);
 }
 
 function speciesDisplayName(speciesIdentifier) {
@@ -70,7 +70,7 @@ function createLearnedMove(pokemon, moveDef) {
 }
 
 function levelEvolutionFor(pokemon, level, refusedBySpecies) {
-  var speciesKey = pokemon.speciesKey || pokemon.name;
+  var speciesKey = pokemon.speciesKey;
   var data = speciesDataForPokemon(pokemon);
   var candidates = data && data.evolution && Array.isArray(data.evolution.to) ? data.evolution.to : [];
   if (refusedBySpecies[speciesKey]) {
@@ -213,8 +213,8 @@ function applyLevelUp(session) {
   session.currentLevel = pokemon.level;
   session.phase = "level-up";
   session.moveQueue = moveDefsAtLevel(pokemon, pokemon.level);
-  recordMissionEvent("pokemon-level-up", { speciesKey: String(pokemon.speciesKey || pokemon.name || "") }, {
-    eventKey: createMissionEventKey("pokemon-level-up", [session.eventSeq || "local", pokemon.speciesKey || pokemon.name, pokemon.level])
+  recordMissionEvent("pokemon_level_up", { speciesKey: String(pokemon.speciesKey || "") }, {
+    eventKey: createMissionEventKey("pokemon_level_up", [session.eventSeq || "local", pokemon.speciesKey, pokemon.level])
   });
   return true;
 }
@@ -223,7 +223,7 @@ function applyEvolution(session, evolution) {
   var pokemon = session.pokemon;
   var targetData = Engine.findSpecies(evolution.species);
   var oldName = pokemon.name;
-  var sourceSpeciesKey = String(pokemon.speciesKey || pokemon.name || "");
+  var sourceSpeciesKey = String(pokemon.speciesKey || "");
   if (!targetData) {
     return;
   }
@@ -243,8 +243,8 @@ function applyEvolution(session, evolution) {
     oldName: oldName,
     newName: pokemon.name
   };
-  recordMissionEvent("pokemon-evolved", { speciesKey: sourceSpeciesKey }, {
-    eventKey: createMissionEventKey("pokemon-evolved", [session.eventSeq || "local", sourceSpeciesKey, pokemon.speciesKey])
+  recordMissionEvent("pokemon_evolved", { speciesKey: sourceSpeciesKey }, {
+    eventKey: createMissionEventKey("pokemon_evolved", [session.eventSeq || "local", sourceSpeciesKey, pokemon.speciesKey])
   });
 }
 
@@ -964,7 +964,7 @@ export function resolveProgressionEvolution(accepted) {
     render({ scrollBattleLogToBottom: true });
     return;
   } else {
-    activeSession.refusedBySpecies[activeSession.pokemon.speciesKey || activeSession.pokemon.name] = true;
+    activeSession.refusedBySpecies[activeSession.pokemon.speciesKey] = true;
     activeSession.scene.manager.log.push(activeSession.pokemon.name + " non si evolve.");
     activeSession.phase = "evolution";
   }

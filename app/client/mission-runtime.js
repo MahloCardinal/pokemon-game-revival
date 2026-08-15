@@ -266,36 +266,36 @@ function eventUpdateForMission(mission, eventType, payload) {
   var matches = false;
   var amount = 1;
   var distinctKey = "";
-  if (eventType === "pokemon-captured") {
-    matches = mission.type === "total-captures" || mission.type === "total-captures-after-badge";
-    if (mission.type === "same-type") {
+  if (eventType === "pokemon_captured") {
+    matches = mission.type === "total_captures" || mission.type === "total_captures_after_badge";
+    if (mission.type === "same_type") {
       matches = types.indexOf(mission.typeName) !== -1;
     }
-    if (mission.type === "species-specific") {
+    if (mission.type === "species_specific") {
       matches = dexNumber > 0 && mission.speciesDexNumbers.indexOf(dexNumber) !== -1;
       distinctKey = matches ? String(dexNumber) : "";
     }
-  } else if (eventType === "pokedex-species-registered") {
-    matches = mission.type === "species-different";
+  } else if (eventType === "pokedex_species_registered") {
+    matches = mission.type === "species_different";
     distinctKey = dexNumber > 0 ? String(dexNumber) : "";
-  } else if (eventType === "berries-harvested") {
-    matches = mission.type === "berries-harvested";
+  } else if (eventType === "berries_harvested") {
+    matches = mission.type === "berries_harvested";
     amount = Math.max(1, Math.floor(Number(payload && payload.quantity) || 1));
-  } else if (eventType === "training-victory") {
-    matches = (mission.type === "training-victory" || mission.type === "training-difficulties") && trainingMissionMatches(mission, payload);
-    if (mission.type === "training-difficulties") {
+  } else if (eventType === "training_victory") {
+    matches = (mission.type === "training_victory" || mission.type === "training_difficulties") && trainingMissionMatches(mission, payload);
+    if (mission.type === "training_difficulties") {
       distinctKey = matches ? "difficulty:" + String(payload && payload.difficulty || "") : "";
     }
-  } else if (eventType === "held-item-assigned") {
-    matches = mission.type === "held-item-assigned";
-  } else if (eventType === "pokemon-level-up") {
-    matches = mission.type === "distinct-species-level-up" && Boolean(speciesKey);
+  } else if (eventType === "held_item_assigned") {
+    matches = mission.type === "held_item_assigned";
+  } else if (eventType === "pokemon_level_up") {
+    matches = mission.type === "distinct_species_level_up" && Boolean(speciesKey);
     distinctKey = speciesKey;
-  } else if (eventType === "pokemon-evolved") {
-    matches = mission.type === "distinct-species-evolved" && Boolean(speciesKey);
+  } else if (eventType === "pokemon_evolved") {
+    matches = mission.type === "distinct_species_evolved" && Boolean(speciesKey);
     distinctKey = speciesKey;
-  } else if (eventType === "daycare-cycle-completed") {
-    matches = mission.type === "daycare-cycle-completed";
+  } else if (eventType === "daycare_cycle_completed") {
+    matches = mission.type === "daycare_cycle_completed";
   }
   if (!matches) {
     return null;
@@ -319,7 +319,7 @@ function resolvedRewardForClaim(mission, selectedReward) {
   if (!mission || !mission.reward) {
     return null;
   }
-  if (mission.reward.kind === "pokemon-choice") {
+  if (mission.reward.kind === "pokemon_choice") {
     return selectedReward && selectedReward.speciesKey ? selectedReward : null;
   }
   if (mission.reward.kind !== "choice") {
@@ -336,7 +336,7 @@ export function claimMission(missionIndex, selectedReward) {
   var selectedRewardItemIndex = mission && mission.reward && mission.reward.kind === "choice" && reward
     ? Number(reward.itemIndex)
     : null;
-  var selectedRewardSpeciesKey = mission && mission.reward && mission.reward.kind === "pokemon-choice" && reward
+  var selectedRewardSpeciesKey = mission && mission.reward && mission.reward.kind === "pokemon_choice" && reward
     ? String(reward.speciesKey || "")
     : null;
   var missionState = ensureMissionState();
@@ -414,7 +414,7 @@ if (typeof window !== "undefined" && typeof window.addEventListener === "functio
     var pokemon = event && event.detail ? event.detail.pokemon : null;
     var dexNumber = Math.floor(Number(pokemon && pokemon.ndex) || 0);
     if (dexNumber > 0) {
-      recordMissionEvent("pokedex-species-registered", { dexNumber: dexNumber }, {
+      recordMissionEvent("pokedex_species_registered", { dexNumber: dexNumber }, {
         eventKey: createMissionEventKey("pokedex", [dexNumber, Date.now()])
       });
     }

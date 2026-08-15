@@ -1,20 +1,30 @@
 export var TYPE_CHART = {
-  Normale: { Roccia: 0.5, Spettro: 0.5, Acciaio: 0.5 },
-  Fuoco: { Fuoco: 0.5, Acqua: 0.5, Erba: 2.0, Ghiaccio: 2.0, Coleottero: 2.0, Roccia: 0.5, Drago: 0.5, Acciaio: 2.0 },
-  Acqua: { Fuoco: 2.0, Acqua: 0.5, Erba: 0.5, Terra: 2.0, Roccia: 2.0, Drago: 0.5 },
-  Elettro: { Acqua: 2.0, Elettro: 0.5, Erba: 0.5, Terra: 0.5, Volante: 2.0, Drago: 0.5 },
-  Erba: { Fuoco: 0.5, Acqua: 2.0, Erba: 0.5, Veleno: 0.5, Terra: 2.0, Volante: 0.5, Coleottero: 0.5, Roccia: 2.0, Drago: 0.5, Acciaio: 0.5 },
-  Ghiaccio: { Fuoco: 0.5, Acqua: 0.5, Erba: 2.0, Ghiaccio: 0.5, Terra: 2.0, Volante: 2.0, Drago: 2.0, Acciaio: 0.5 },
-  Lotta: { Normale: 2.0, Ghiaccio: 2.0, Roccia: 2.0, Buio: 2.0, Acciaio: 2.0, Veleno: 0.5, Volante: 0.5, Psico: 0.5, Coleottero: 0.5, Spettro: 0.5, Folletto: 0.5 },
-  Veleno: { Erba: 2.0, Folletto: 2.0, Veleno: 0.5, Terra: 0.5, Roccia: 0.5, Spettro: 0.5, Acciaio: 0.5 },
-  Terra: { Fuoco: 2.0, Elettro: 2.0, Erba: 0.5, Veleno: 2.0, Volante: 0.5, Coleottero: 0.5, Roccia: 2.0, Acciaio: 2.0 },
-  Volante: { Elettro: 0.5, Erba: 2.0, Lotta: 2.0, Coleottero: 2.0, Roccia: 0.5, Acciaio: 0.5 },
-  Psico: { Lotta: 2.0, Veleno: 2.0, Psico: 0.5, Buio: 0.5, Acciaio: 0.5 },
-  Coleottero: { Fuoco: 0.5, Erba: 2.0, Lotta: 0.5, Veleno: 0.5, Volante: 0.5, Psico: 2.0, Spettro: 0.5, Buio: 2.0, Acciaio: 0.5, Folletto: 0.5 },
-  Roccia: { Fuoco: 2.0, Ghiaccio: 2.0, Lotta: 0.5, Terra: 0.5, Volante: 2.0, Coleottero: 2.0, Acciaio: 0.5 },
-  Spettro: { Normale: 0.5, Psico: 2.0, Spettro: 2.0, Buio: 0.5 },
-  Drago: { Drago: 2.0, Acciaio: 0.5, Folletto: 0.5 },
-  Buio: { Lotta: 0.5, Psico: 2.0, Spettro: 2.0, Buio: 0.5, Folletto: 0.5 },
-  Acciaio: { Fuoco: 0.5, Acqua: 0.5, Elettro: 0.5, Ghiaccio: 2.0, Roccia: 2.0, Folletto: 2.0, Acciaio: 0.5 },
-  Folletto: { Fuoco: 0.5, Lotta: 2.0, Veleno: 0.5, Drago: 2.0, Buio: 2.0, Acciaio: 0.5 }
+  normal: { rock: 0.5, ghost: 0.5, steel: 0.5 },
+  fire: { fire: 0.5, water: 0.5, grass: 2.0, ice: 2.0, bug: 2.0, rock: 0.5, dragon: 0.5, steel: 2.0 },
+  water: { fire: 2.0, water: 0.5, grass: 0.5, ground: 2.0, rock: 2.0, dragon: 0.5 },
+  electric: { water: 2.0, electric: 0.5, grass: 0.5, ground: 0.5, flying: 2.0, dragon: 0.5 },
+  grass: { fire: 0.5, water: 2.0, grass: 0.5, poison: 0.5, ground: 2.0, flying: 0.5, bug: 0.5, rock: 2.0, dragon: 0.5, steel: 0.5 },
+  ice: { fire: 0.5, water: 0.5, grass: 2.0, ice: 0.5, ground: 2.0, flying: 2.0, dragon: 2.0, steel: 0.5 },
+  fighting: { normal: 2.0, ice: 2.0, rock: 2.0, dark: 2.0, steel: 2.0, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, ghost: 0.5, fairy: 0.5 },
+  poison: { grass: 2.0, fairy: 2.0, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, steel: 0.5 },
+  ground: { fire: 2.0, electric: 2.0, grass: 0.5, poison: 2.0, flying: 0.5, bug: 0.5, rock: 2.0, steel: 2.0 },
+  flying: { electric: 0.5, grass: 2.0, fighting: 2.0, bug: 2.0, rock: 0.5, steel: 0.5 },
+  psychic: { fighting: 2.0, poison: 2.0, psychic: 0.5, dark: 0.5, steel: 0.5 },
+  bug: { fire: 0.5, grass: 2.0, fighting: 0.5, poison: 0.5, flying: 0.5, psychic: 2.0, ghost: 0.5, dark: 2.0, steel: 0.5, fairy: 0.5 },
+  rock: { fire: 2.0, ice: 2.0, fighting: 0.5, ground: 0.5, flying: 2.0, bug: 2.0, steel: 0.5 },
+  ghost: { normal: 0.5, psychic: 2.0, ghost: 2.0, dark: 0.5 },
+  dragon: { dragon: 2.0, steel: 0.5, fairy: 0.5 },
+  dark: { fighting: 0.5, psychic: 2.0, ghost: 2.0, dark: 0.5, fairy: 0.5 },
+  steel: { fire: 0.5, water: 0.5, electric: 0.5, ice: 2.0, rock: 2.0, fairy: 2.0, steel: 0.5 },
+  fairy: { fire: 0.5, fighting: 2.0, poison: 0.5, dragon: 2.0, dark: 2.0, steel: 0.5 }
 };
+
+export var TYPE_LABELS_IT = Object.freeze({
+  normal: "Normale", fire: "Fuoco", water: "Acqua", electric: "Elettro", grass: "Erba", ice: "Ghiaccio",
+  fighting: "Lotta", poison: "Veleno", ground: "Terra", flying: "Volante", psychic: "Psico", bug: "Coleottero",
+  rock: "Roccia", ghost: "Spettro", dragon: "Drago", dark: "Buio", steel: "Acciaio", fairy: "Folletto"
+});
+
+export function typeDisplayName(typeKey) {
+  return TYPE_LABELS_IT[typeKey] || String(typeKey || "");
+}

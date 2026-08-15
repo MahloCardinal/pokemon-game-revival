@@ -1,5 +1,5 @@
 import { getItemByIndex, ItemCategory, ItemSubcategory, pokemonCanHoldItem } from "../data/items.js";
-import { TYPE_CHART } from "../data/type-chart.js";
+import { TYPE_CHART, typeDisplayName } from "../data/type-chart.js";
 
 function heldItemCacheKey(combatant) {
   var pokemon = combatant && combatant.pokemon;
@@ -145,7 +145,7 @@ function isBelowHeldBerryHpThreshold(combatant) {
 function heldBerryProtectsFromAttacker(berry, attacker) {
   return Boolean(
     berry
-    && berry.subcategory === ItemSubcategory.TypeProtect
+    && berry.subcategory === ItemSubcategory.TypeProtection
     && berry.protectType
     && attacker
     && Array.isArray(attacker.type)
@@ -160,7 +160,7 @@ function applyDamageMultiplier(_manager, context) {
   if (!heldItem) {
     return Object.assign({}, context, { multiplier: multiplier });
   }
-  if (heldItem.subcategory === ItemSubcategory.TypeEnhance) {
+  if (heldItem.subcategory === ItemSubcategory.TypeBoost) {
     if (heldItem.boostType && attacker.type && attacker.type.indexOf(heldItem.boostType) !== -1) {
       multiplier *= heldItemMultiplierValue(heldItem);
     }
@@ -316,7 +316,7 @@ function applyTypeProtectBerry(manager, context) {
 function applyStatusRetaliateSetup(_manager, context) {
   var combatant = context && context.combatant;
   if (heldItemHasEffect(combatant, "status_retaliate_damage")) {
-    combatant._bitorzolelmoSelfInflicted = false;
+    combatant._rockyHelmetSelfInflicted = false;
   }
   return context;
 }
@@ -339,13 +339,13 @@ function applyOhkoProtect(manager, context) {
   if (!move || !move.isOhkoMove || !defender || defender.hp !== 0 || defenderHpBefore <= 0 || !heldItemHasEffect(defender, "ohko_protect")) {
     return Object.assign({}, context, { activated: false });
   }
-  charges = defender._bandanaCharges;
+  charges = defender._focusBandCharges;
   if (charges === undefined) { charges = 3; }
   if (charges <= 0) {
     return Object.assign({}, context, { activated: false });
   }
   defender.hp = defenderHpBefore;
-  defender._bandanaCharges = charges - 1;
+  defender._focusBandCharges = charges - 1;
   manager.emit({ log: defender.pokemon.name + " resiste all'OHKO con Bandana! (" + (charges - 1) + " cariche rimanenti)" });
   return Object.assign({}, context, { activated: true });
 }
@@ -354,7 +354,7 @@ function applyStatusRetaliateSelfInflicted(_manager, context) {
   var combatant = context && context.combatant;
   var beforeStatus = context ? context.beforeStatus : null;
   if (combatant && combatant.status !== beforeStatus && heldItemHasEffect(combatant, "status_retaliate_damage")) {
-    combatant._bitorzolelmoSelfInflicted = true;
+    combatant._rockyHelmetSelfInflicted = true;
   }
   return context;
 }
@@ -362,7 +362,7 @@ function applyStatusRetaliateSelfInflicted(_manager, context) {
 function applyEntryStatusImmunity(_manager, context) {
   var combatant = context && context.combatant;
   if (heldItemHasEffect(combatant, "entry_status_immunity")) {
-    combatant._luminpolvereActive = true;
+    combatant._brightPowderActive = true;
   }
   return context;
 }
@@ -370,7 +370,7 @@ function applyEntryStatusImmunity(_manager, context) {
 function applyEntryStatusProtection(manager, context) {
   var combatant = context && context.combatant;
   var before = context && context.before;
-  if (combatant && before && combatant._luminpolvereActive && combatant.status !== null && combatant.status !== before.status) {
+  if (combatant && before && combatant._brightPowderActive && combatant.status !== null && combatant.status !== before.status) {
     combatant.status = before.status;
     combatant.sleepCounter = before.sleepCounter;
     combatant.confCounter = before.confCounter;
@@ -382,11 +382,11 @@ function applyEntryStatusProtection(manager, context) {
 function applyAfterKoStatusProtection(manager, context) {
   var combatant = context && context.combatant;
   var before = context && context.before;
-  if (combatant && before && combatant._focalnastroProtect && combatant.status !== null && combatant.status !== before.status) {
+  if (combatant && before && combatant._focusSashProtect && combatant.status !== null && combatant.status !== before.status) {
     combatant.status = before.status;
     combatant.sleepCounter = before.sleepCounter;
     combatant.confCounter = before.confCounter;
-    combatant._focalnastroProtect = false;
+    combatant._focusSashProtect = false;
     return Object.assign({}, context, { log: "Focalnastro protegge " + combatant.pokemon.name + " dallo status!" });
   }
   return context;
@@ -399,13 +399,13 @@ function applyAfterKoStatusProtectCharge(manager, context) {
   if (!attacker || !defender || attacker === defender || !heldItemHasEffect(attacker, "status_protect_after_ko")) {
     return Object.assign({}, context, { activated: false });
   }
-  charges = attacker._focalnastroCharges;
+  charges = attacker._focusSashCharges;
   if (charges === undefined) { charges = 3; }
   if (charges <= 0) {
     return Object.assign({}, context, { activated: false });
   }
-  attacker._focalnastroProtect = true;
-  attacker._focalnastroCharges = charges - 1;
+  attacker._focusSashProtect = true;
+  attacker._focusSashCharges = charges - 1;
   manager.emit({ log: attacker.pokemon.name + " si prepara a proteggersi con Focalnastro! (" + (charges - 1) + " cariche rimanenti)" });
   return Object.assign({}, context, { activated: true });
 }
@@ -417,7 +417,7 @@ function applyStatusRetaliateDamage(manager, context) {
   if (heldItemHasEffect(combatant, "status_retaliate_damage")
       && combatant._startOfTurnStatus === null
       && combatant.status !== null
-      && !combatant._bitorzolelmoSelfInflicted) {
+      && !combatant._rockyHelmetSelfInflicted) {
     damage = 2 * combatant.level;
     opponent.hp = Math.max(0, opponent.hp - damage);
     manager.emit({ log: opponent.pokemon.name + " subisce " + damage + " danni da Bitorzolelmo di " + combatant.pokemon.name + "!" });
@@ -429,11 +429,11 @@ function applyStatusRetaliateDamage(manager, context) {
 
 function clearDefenderStatusProtectionFlags(_manager, context) {
   var defender = context && context.defender;
-  if (defender && defender._luminpolvereActive) {
-    defender._luminpolvereActive = false;
+  if (defender && defender._brightPowderActive) {
+    defender._brightPowderActive = false;
   }
-  if (defender && defender._focalnastroProtect) {
-    defender._focalnastroProtect = false;
+  if (defender && defender._focusSashProtect) {
+    defender._focusSashProtect = false;
   }
   return context;
 }
@@ -443,13 +443,13 @@ function applySwitchHazard(_manager, context) {
   var hazardTeam = combatant && combatant.team;
   var message = context && context.message ? String(context.message) : "";
   var hazardDamage;
-  if (!combatant || !hazardTeam || !hazardTeam.punteActive) {
+  if (!combatant || !hazardTeam || !hazardTeam.spikesActive) {
     return Object.assign({}, context, { message: message });
   }
-  hazardDamage = hazardTeam.punteLevel;
+  hazardDamage = hazardTeam.spikesLevel;
   if (heldItemHasEffect(combatant, "hazard_multiturn_guard")) {
-    hazardTeam.punteActive = false;
-    hazardTeam.punteLevel = 0;
+    hazardTeam.spikesActive = false;
+    hazardTeam.spikesLevel = 0;
     message += ", Scarponi robusti libera il terreno di " + combatant.pokemon.name + " dalle Punte";
     return Object.assign({}, context, { message: message, protected: true });
   }
@@ -486,7 +486,7 @@ function applyEntryChoiceEntries(manager, context) {
     opponent = combatant && combatant.team === manager.playerTeam ? manager.enemyTeam.getActive() : manager.playerTeam.getActive();
     entries = opponent && opponent.pokemon && Array.isArray(opponent.pokemon.moves)
       ? opponent.pokemon.moves.map(function (move, index) {
-        return { name: move.name, index: index };
+        return { key: move.key, name: move.name, index: index };
       })
       : [];
   } else if (kind === "type") {
@@ -494,7 +494,7 @@ function applyEntryChoiceEntries(manager, context) {
     entries = Object.keys(TYPE_CHART).filter(function (typeName) {
       return excludedTypes.indexOf(typeName) === -1;
     }).map(function (typeName, index) {
-      return { name: typeName, index: index, typeName: typeName };
+      return { key: typeName, name: typeDisplayName(typeName), index: index, typeName: typeName };
     });
   }
   return Object.assign({}, context, { entries: entries });
@@ -518,17 +518,17 @@ function applyEntryChoice(manager, context) {
   combatant.entryHeldItemResolved = true;
   if (kind === "move") {
     opponent = combatant.team === manager.playerTeam ? manager.enemyTeam.getActive() : manager.playerTeam.getActive();
-    if (!opponent || !selectedEntry.name) {
+    if (!opponent || !selectedEntry.key) {
       return Object.assign({}, context, { applied: false });
     }
-    opponent.disableMoveInhibit(selectedEntry.name);
+    opponent.disableMoveInhibit(selectedEntry.key);
     manager.emit({ log: heldItem.name + " blocca " + selectedEntry.name + " di " + opponent.pokemon.name});
     return Object.assign({}, context, { applied: true });
   }
   if (kind === "type") {
-    combatant.type = ["Normale", selectedEntry.typeName || selectedEntry.name];
+    combatant.type = ["normal", selectedEntry.typeName || selectedEntry.name];
     combatant.entryAddedType = selectedEntry.typeName || selectedEntry.name;
-    manager.emit({ log: heldItem.name + " aggiunge il tipo " + combatant.entryAddedType + " a " + combatant.pokemon.name});
+    manager.emit({ log: heldItem.name + " aggiunge il tipo " + typeDisplayName(combatant.entryAddedType) + " a " + combatant.pokemon.name});
     return Object.assign({}, context, { applied: true });
   }
   return Object.assign({}, context, { applied: false });

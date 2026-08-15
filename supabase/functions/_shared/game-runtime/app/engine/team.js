@@ -20,13 +20,13 @@ export function Team(name, pokemonList, activeIndex) {
   this.teamMistCounter = 0;
   this.teamMoveBoostProtectCounter = 0;
   this.teamKOTracker = false;
-  this.desiderioHealAmount = 0;
-  this.desiderioSourceName = "";
+  this.wishHealAmount = 0;
+  this.wishSourceName = "";
   this.sleepImmunityCounter = 0;
   this.teamStatusProtectCounter = 0;
   this.teamBoostSuppressCounter = 0;
-  this.punteActive = false;
-  this.punteLevel = 0;
+  this.spikesActive = false;
+  this.spikesLevel = 0;
   this.batonPassStats = null;
   this.preferredSwitchIndex = null;
   this.lastSwitchedOutIndex = null;
@@ -36,7 +36,7 @@ export function Team(name, pokemonList, activeIndex) {
     power: 0,
     attackerTypes: [],
     attackerName: "",
-    moveName: "",
+    moveKey: "",
     targetIndex: -1
   };
 }

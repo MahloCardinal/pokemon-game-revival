@@ -3,7 +3,7 @@ import { createCaptureScene } from "./router.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
 import { markDirty, render, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
 import { applyPlayerSave, state, root } from "./game-state.js";
-import { getInventoryItemByIndex, getItemByIndex, resolveInventoryItems, updateInventoryQuantity, ItemCategory, ItemSubcategory, isPlayerBattleInventoryItem, revitalizzante, revitalizzante_max } from "../data/items.js";
+import { getInventoryItemByIndex, getItemByIndex, resolveInventoryItems, updateInventoryQuantity, ItemCategory, ItemSubcategory, isPlayerBattleInventoryItem, revive, max_revive } from "../data/items.js";
 import * as Engine from "../engine/index.js";
 import {
   activateBattleRuntimeOwnership,
@@ -31,7 +31,7 @@ import { abandonAuthoritativeBattle, allocateAuthoritativeTrainingLevels, append
 import { startPostBattleExpProgression } from "./level-up.js";
 import { button, formatInteger, moneyText } from "./render-utils.js";
 import { escapeHtml, getTrainerImage } from "./asset-helpers.js";
-import { KANTO_GYM_BADGE_NAMES, kantoGymCityByKey, kantoEliteFourMemberByIndex, KANTO_CAMPIONE_KANTO } from "../data/gyms.js";
+import { KANTO_GYM_BADGE_NAMES, kantoGymCityByKey, kantoEliteFourMemberByIndex, KANTO_CHAMPION } from "../data/gyms.js";
 import { adjustInventoryItemQuantity, adjustTrainerMoney, broadcastAuthoritativeRevision, broadcastCaptureEncounterRuntimeInvalidation, replaceInventoryRuntimeState, replaceTeamRuntimeState, updateTrainerProfile } from "./runtime-state.js";
 import { ADMIN_BATTLE_ITEMS, isAdminControlledBattleType } from "../data/admin-battles.js";
 import { getSupabaseClient } from "../api/supabase.js";
@@ -224,8 +224,8 @@ export function applyAuthoritativeProjection(scene, projection, events) {
   scene.authoritativeGymKey = isGym ? String(projection.gym_key || scene.authoritativeGymKey || "") : "";
   scene.gymScene = isGym ? { name: "gym-city", cityKey: scene.authoritativeGymKey }
     : isLeague ? (leagueMemberIndex === 4
-      ? { name: "gym-city", cityKey: "campione-kanto" }
-      : { name: "gym-city", cityKey: "superquattro", e4MemberIndex: leagueMemberIndex }) : scene.gymScene;
+      ? { name: "gym-city", cityKey: "kanto_champion" }
+      : { name: "gym-city", cityKey: "elite_four", e4MemberIndex: leagueMemberIndex }) : scene.gymScene;
   scene.authoritativeContractKey = String(projection.contract_key || "");
   scene.trainingDifficulty = isTraining ? (projection.contract_key === "debug_training"
     ? "debug" : String(projection.training_difficulty || scene.trainingDifficulty || "")) : "";
@@ -276,8 +276,8 @@ export function openAuthoritativeBattleProjection(projection, events, options) {
     trainingScene: isTraining ? { name: "training-zone", trainingDifficulty: projection.contract_key === "debug_training"
       ? "debug" : String(projection.training_difficulty || "") } : null,
     gymScene: isGym ? { name: "gym-city", cityKey: String(projection.gym_key || "") }
-      : isLeague ? (leagueMemberIndex === 4 ? { name: "gym-city", cityKey: "campione-kanto" }
-        : { name: "gym-city", cityKey: "superquattro", e4MemberIndex: leagueMemberIndex }) : null,
+      : isLeague ? (leagueMemberIndex === 4 ? { name: "gym-city", cityKey: "kanto_champion" }
+        : { name: "gym-city", cityKey: "elite_four", e4MemberIndex: leagueMemberIndex }) : null,
     manager: { log: [] },
     captureScene: options && options.captureScene ? Object.assign({}, options.captureScene) : null };
   applyAuthoritativeProjection(scene, projection, events);
@@ -677,7 +677,7 @@ function showTerminalBattleScreen(scene) {
 function openAuthoritativeLeagueReward(scene, reward, leagueState) {
   var memberIndex = Number(reward && reward.memberIndex);
   var isChampion = memberIndex === 4;
-  var member = isChampion ? KANTO_CAMPIONE_KANTO : kantoEliteFourMemberByIndex(memberIndex);
+  var member = isChampion ? KANTO_CHAMPION : kantoEliteFourMemberByIndex(memberIndex);
   openMessage([
     "Hai sconfitto " + (isChampion ? "il Campione Blu" : member ? member.name : "il Superquattro") + "!",
     "Hai ricevuto " + moneyText(Number(reward && reward.money) || 0) + " come premio!"
@@ -828,7 +828,7 @@ function finishAuthoritativeOrdinaryProgression() {
   authoritativeOrdinaryProgressionComplete = null;
   if (typeof onComplete === "function") { onComplete(); return; }
   setScene(state.authoritativeLeagueState && state.authoritativeLeagueState.status === "awaiting_battle"
-    ? { name: "gym-city", cityKey: "superquattro" } : { name: "home" }, { history: "replace" });
+    ? { name: "gym-city", cityKey: "elite_four" } : { name: "home" }, { history: "replace" });
   openMessage(["Progressione della battaglia completata."], { title: "Esperienza" });
 }
 
@@ -1357,7 +1357,7 @@ function performBattleItemUse(element) {
   var itemEventData;
   var useResult;
   var itemValidation = state.scene.manager.canUseItemOnTarget(battleItem, null);
-  if (!itemValidation.ok && battleItem.subcategory === ItemSubcategory.Meteo) {
+  if (!itemValidation.ok && battleItem.subcategory === ItemSubcategory.Weather) {
     openBattleTargetPanel(element, battleItem, [], null, itemValidation.message);
     return;
   }
@@ -1632,12 +1632,12 @@ function sceneUsesNpcItems(scene) {
 }
 
 function battleItemUseLimitReached(scene, item) {
-  var itemName = item && item.name ? String(item.name) : "";
+  var itemKey = item && item.key ? String(item.key) : "";
   var usedItems = scene && scene.manager && scene.manager.usedItems ? scene.manager.usedItems : {};
-  if (!itemName || item.category === ItemCategory.Ball) {
+  if (!itemKey || item.category === ItemCategory.Ball) {
     return false;
   }
-  return (Number(usedItems[itemName]) || 0) >= BATTLE_ITEM_USE_LIMIT;
+  return (Number(usedItems[itemKey]) || 0) >= BATTLE_ITEM_USE_LIMIT;
 }
 
 function battleItemUseLimitMessage(item) {
@@ -1678,10 +1678,10 @@ function createAdminBattleItems() {
 function createBattleItemsWithReviveCounts(normalCount, maxCount) {
   return ADMIN_BATTLE_ITEMS.map(function (entry) {
     var itemIndex = Number(entry[0]);
-    if (itemIndex === revitalizzante.index) {
+    if (itemIndex === revive.index) {
       return [itemIndex, Number(normalCount) || 0];
     }
-    if (itemIndex === revitalizzante_max.index) {
+    if (itemIndex === max_revive.index) {
       return [itemIndex, Number(maxCount) || 0];
     }
     return [itemIndex, Number(entry[1])];
@@ -2071,11 +2071,11 @@ function commitTrainingReward(scene, payloads, onNoPayloads) {
     }
     reward = trainingRewardForBadges(state.trainerInfo[2], scene.trainingDifficulty, claimResult.full_reward !== false);
     updateTrainingDailyState(scene.trainingDifficulty, claimResult);
-    recordMissionEvent("training-victory", {
+    recordMissionEvent("training_victory", {
       difficulty: scene.trainingDifficulty,
       teamSizeAtStart: Number(scene.trainingTeamSizeAtStart) || (scene.playerTeam && scene.playerTeam.pokemonList ? scene.playerTeam.pokemonList.length : 0)
     }, {
-      eventKey: String(scene.missionEventKey || "training") + ":training-victory"
+      eventKey: String(scene.missionEventKey || "training") + ":training_victory"
     });
     adjustTrainerMoney(reward.money);
     if (!payloads || !payloads.length) {
@@ -2288,7 +2288,7 @@ function normalizedRewardResult(data) {
     rewardKind: String(data.rewardKind || data.reward_kind || ""),
     money: Number(data.money) || 0,
     badgeIndex: data.badgeIndex !== null && data.badgeIndex !== undefined ? Number(data.badgeIndex) : null,
-    mt: data.mt !== null && data.mt !== undefined ? Number(data.mt) : null,
+    tm: data.tm !== null && data.tm !== undefined ? Number(data.tm) : null,
     item: data.item !== null && data.item !== undefined ? Number(data.item) : null,
     profile: {
       pokedollars: Number(profile.pokedollars) || 0,
@@ -2353,7 +2353,7 @@ function battleRewardInventory(scene) {
 function openFinalizedGymRewardMessage(scene, baseLines, result) {
   var city = scene && scene.gymScene ? kantoGymCityByKey(scene.gymScene.cityKey) : null;
   var rewardLines = (baseLines && baseLines.length ? baseLines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
-  var rewardMt = result && result.mt ? getItemByIndex(result.mt) : null;
+  var rewardTM = result && result.tm ? getItemByIndex(result.tm) : null;
   var rewardItem = result && result.item ? getItemByIndex(result.item) : null;
   var badgeIndex = result && result.badgeIndex !== null && result.badgeIndex !== undefined ? result.badgeIndex : city && city.badgeIndex;
 
@@ -2361,8 +2361,8 @@ function openFinalizedGymRewardMessage(scene, baseLines, result) {
     rewardLines.push("Premi già registrati sul profilo.");
   } else {
     rewardLines.push("Ottieni " + moneyText(result ? result.money : 0) + ".");
-    if (rewardMt) {
-      rewardLines.push("Ottieni " + rewardMt.name + ".");
+    if (rewardTM) {
+      rewardLines.push("Ottieni " + rewardTM.name + ".");
     }
     if (rewardItem) {
       rewardLines.push("Ottieni " + rewardItem.name + ".");
@@ -2399,7 +2399,7 @@ function queueFinalizedKantoLeagueActivity(result, isChampion, member) {
     return;
   }
   opponentName = isChampion
-    ? "il Campione " + (KANTO_CAMPIONE_KANTO.name || "Kanto")
+    ? "il Campione " + (KANTO_CHAMPION.name || "Kanto")
     : "il Superquattro " + (member && member.name || "");
   queueGlobalActivityEvent({ eventType: "league", subjectName: opponentName });
 }
@@ -2515,7 +2515,7 @@ function openFinalizedKantoLeagueRewardMessage(scene, rewardLines, isChampion, m
 
 function finishAdminControlledKantoLeagueBattle(scene, lines) {
   var rewardLines = (lines && lines.length ? lines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
-  var isChampion = scene.gymScene && scene.gymScene.cityKey === "campione-kanto";
+  var isChampion = scene.gymScene && scene.gymScene.cityKey === "kanto_champion";
   var memberIndex = scene.gymScene && scene.gymScene.e4MemberIndex;
   var member = !isChampion && memberIndex !== undefined ? kantoEliteFourMemberByIndex(memberIndex) : null;
   var memberName = isChampion ? "il Campione Blu" : (member ? member.name : "il Superquattro");
@@ -2550,7 +2550,7 @@ function finishKantoLeagueBattle(scene, lines) {
     return;
   }
   var rewardLines = (lines && lines.length ? lines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
-  var isChampion = scene.gymScene && scene.gymScene.cityKey === "campione-kanto";
+  var isChampion = scene.gymScene && scene.gymScene.cityKey === "kanto_champion";
   var memberIndex = scene.gymScene && scene.gymScene.e4MemberIndex;
   var member = !isChampion && memberIndex !== undefined ? kantoEliteFourMemberByIndex(memberIndex) : null;
   var memberName = isChampion ? "il Campione Blu" : (member ? member.name : "il Superquattro");
@@ -2584,9 +2584,9 @@ function finishKantoLeagueBattle(scene, lines) {
 function showKantoLeagueEntryDialogForScene(battleScene, battleType) {
   var enemyTeam = battleScene && battleScene.enemyTeam;
   var trainerName = enemyTeam ? enemyTeam.name : "";
-  var member = battleScene.gymScene && battleScene.gymScene.cityKey === "superquattro" && battleScene.gymScene.e4MemberIndex !== undefined
+  var member = battleScene.gymScene && battleScene.gymScene.cityKey === "elite_four" && battleScene.gymScene.e4MemberIndex !== undefined
     ? kantoEliteFourMemberByIndex(battleScene.gymScene.e4MemberIndex) : null;
-  var champion = battleScene.gymScene && battleScene.gymScene.cityKey === "campione-kanto" ? KANTO_CAMPIONE_KANTO : null;
+  var champion = battleScene.gymScene && battleScene.gymScene.cityKey === "kanto_champion" ? KANTO_CHAMPION : null;
   var trainerInfo = member || champion;
   var trainerImage = trainerInfo ? getTrainerImage(trainerInfo.sprite) : "";
   var teamEntries = state.team.filter(Boolean).map(function (pokemon, index) {
@@ -2634,7 +2634,7 @@ export function startKantoLeagueNextBattle(nextIndex) {
 }
 
 function openAuthoritativeLeagueNextEntry(nextIndex) {
-  var trainer = nextIndex === 4 ? KANTO_CAMPIONE_KANTO : kantoEliteFourMemberByIndex(nextIndex);
+  var trainer = nextIndex === 4 ? KANTO_CHAMPION : kantoEliteFourMemberByIndex(nextIndex);
   state.dialog = {
     type: "kanto-league-entry",
     trainerName: trainer ? trainer.name : "Lega Kanto",
@@ -2675,16 +2675,16 @@ function submitAuthoritativeLeagueNextStart(activeSlot, expectedMemberIndex) {
           state.authoritativeLeagueState = fresh.projection.league_state;
         }
         openMessage([result.message || "Lo stato della Lega è cambiato. Aggiorna e riprova."], { title: "Lega Kanto" });
-        setScene({ name: "gym-city", cityKey: "superquattro" }, { history: "replace" });
+        setScene({ name: "gym-city", cityKey: "elite_four" }, { history: "replace" });
         return false;
       });
     }
     openMessage([result.message || "Impossibile avviare il prossimo incontro della Lega."], { title: "Lega Kanto" });
-    setScene({ name: "gym-city", cityKey: "superquattro" }, { history: "replace" });
+    setScene({ name: "gym-city", cityKey: "elite_four" }, { history: "replace" });
     return false;
   }).catch(function (error) {
     openMessage([error.message || "Impossibile avviare il prossimo incontro della Lega."], { title: "Lega Kanto" });
-    setScene({ name: "gym-city", cityKey: "superquattro" }, { history: "replace" });
+    setScene({ name: "gym-city", cityKey: "elite_four" }, { history: "replace" });
     return false;
   });
 }
@@ -3113,11 +3113,11 @@ export function sceneFromBattleRecord(battle, events) {
   if (kantoLeagueMatch) {
     var memberIdx = Number(kantoLeagueMatch[1]) - 1;
     scene.kantoLeague = true;
-    scene.gymScene = { name: "gym-city", cityKey: "superquattro", e4MemberIndex: memberIdx };
+    scene.gymScene = { name: "gym-city", cityKey: "elite_four", e4MemberIndex: memberIdx };
   }
   if (String(battleType || "") === "kanto_league_champion") {
     scene.kantoLeague = true;
-    scene.gymScene = { name: "gym-city", cityKey: "campione-kanto" };
+    scene.gymScene = { name: "gym-city", cityKey: "kanto_champion" };
   }
   ensureBattleBindings(scene);
   syncAdminControlledScene(scene);
@@ -3376,7 +3376,7 @@ function refreshAuthoritativeBattle(options) {
       setActiveBattleMeta(null);
       if (shouldOpen) { setScene({ name: "home" }, { history: "replace" }); }
       else if (state.scene && (state.scene.name === "gyms"
-        || state.scene.name === "gym-city" && state.scene.cityKey === "superquattro")) { render(); }
+        || state.scene.name === "gym-city" && state.scene.cityKey === "elite_four")) { render(); }
       return result;
     }
     setActiveBattleMeta({ battleType: ["training", "debug_training"].indexOf(result.battle.contract_key) !== -1
@@ -3789,7 +3789,7 @@ export function openBattleTargetPanel(anchorElement, item, entries, actionName, 
   backdrop.dataset.action = "battle-target-close";
   backdrop.dataset.floatingPanel = "true";
 
-  panel.className = "floating-panel pokemon-choice-panel";
+  panel.className = "floating-panel pokemon_choice-panel";
   panel.style.left = "0";
   panel.style.top = "0";
   panel.style.visibility = "hidden";
@@ -3895,7 +3895,7 @@ export function openBattleStartTargetPanel(anchorElement, entries, onPick, optio
   }
   backdrop.dataset.battleStartPanel = "true";
 
-  panel.className = "floating-panel pokemon-choice-panel battle-start-panel";
+  panel.className = "floating-panel pokemon_choice-panel battle-start-panel";
   panel.style.left = position.left + "px";
   panel.style.top = position.top + "px";
   panel.style.transform = "translateX(-50%)";
@@ -3997,7 +3997,7 @@ function finishGymBattle(scene, lines) {
   var badgeCount = Math.max(0, Math.floor(Number(state.trainerInfo[2]) || 0));
   var gymReward = city ? GYM_REWARDS[city.badgeIndex] : null;
   var rewardMoney = gymReward ? Number(gymReward.money) || 0 : 0;
-  var rewardMt = gymReward && gymReward.mt ? getItemByIndex(gymReward.mt) : null;
+  var rewardTM = gymReward && gymReward.tm ? getItemByIndex(gymReward.tm) : null;
   var rewardItem = gymReward && gymReward.item ? getItemByIndex(gymReward.item) : null;
   var rewardItemQuantity = Math.max(1, Number(gymReward && gymReward.itemQuantity) || 1);
   var rewardLines = (lines && lines.length ? lines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
@@ -4005,16 +4005,16 @@ function finishGymBattle(scene, lines) {
     updateTrainerProfile(function (trainerInfo) {
       return [trainerInfo[0], (Number(trainerInfo[1]) || 0) + rewardMoney, Math.min(8, badgeCount + 1), trainerInfo[3]];
     });
-    if (rewardMt) {
-      adjustInventoryItemQuantity(rewardMt.index, 1);
+    if (rewardTM) {
+      adjustInventoryItemQuantity(rewardTM.index, 1);
     }
     if (rewardItem) {
       adjustInventoryItemQuantity(rewardItem.index, rewardItemQuantity);
     }
     scene.gymRewardHandled = true;
     rewardLines.push("Ottieni " + moneyText(rewardMoney) + ".");
-    if (rewardMt) {
-      rewardLines.push("Ottieni " + rewardMt.name + ".");
+    if (rewardTM) {
+      rewardLines.push("Ottieni " + rewardTM.name + ".");
     }
     if (rewardItem) {
       rewardLines.push("Ottieni " + (rewardItemQuantity > 1 ? String(rewardItemQuantity) + " " : "") + rewardItem.name + ".");

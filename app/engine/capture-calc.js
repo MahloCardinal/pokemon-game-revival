@@ -20,7 +20,7 @@ export function computeBallCaptureResult(ballItem, wildCombatant) {
 export function computeBallCaptureRate(ballItem, wildCombatant) {
   var baseRate = Number(ballItem && ballItem.value) || 0;
   var pokemon = wildCombatant && wildCombatant.pokemon;
-  var species = pokemon ? findSpecies(pokemon.speciesKey || pokemon.name) : null;
+  var species = pokemon ? findSpecies(pokemon.speciesKey) : null;
   var encounter = species && species.encounter ? species.encounter : {};
   var rarity = encounter.rarity !== undefined ? encounter.rarity : species && species.rarity;
   var rarityMult = CATCH_RARITY_MULTIPLIERS[rarity] || 1.0;

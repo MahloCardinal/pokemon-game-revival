@@ -1,5 +1,5 @@
 import { ItemCategory } from "../data/items.js";
-import { SHOPPING_CENTER_SECTIONS, getShoppingCenterSections, getShoppingCenterGroups, shoppingCenterSalePrice, shoppingCenterIsSellSection, shoppingCenterItemIsSinglePurchase, shoppingCenterSectionify, computeCartEntries, computeCartTotal } from "../data/shopping-center.js";
+import { SHOPPING_CENTER_SECTIONS, getShoppingCenterSections, getShoppingCenterGroups, shoppingCenterSalePrice, shoppingCenterIsSellSection, shoppingCenterItemIsSinglePurchase, shoppingCenterSectionify, shoppingCenterSectionDisplayName, computeCartEntries, computeCartTotal } from "../data/shopping-center.js";
 import { formatCatalogDescription } from "../engine/index.js";
 import { state } from "../client/game-state.js";
 import { escapeHtml, getItemDisplayImage, renderImage } from "../client/asset-helpers.js";
@@ -7,7 +7,7 @@ import { button, formatInteger, moneyMarkup, renderScenePresentationPanel, scene
 import { isDebugUser } from "../client/debug-tools.js";
 
 function shoppingCenterItemImageMarkup(item) {
-  var imageClass = item && item.category === ItemCategory.Mt ? "inventory-item-image shopping-center-mt-image" : "inventory-item-image";
+  var imageClass = item && item.category === ItemCategory.TM ? "inventory-item-image shopping-center-mt-image" : "inventory-item-image";
   var imageSrc = getItemDisplayImage(item);
   return imageSrc ? renderImage(imageSrc, item.name, imageClass) : '<span class="inventory-item-image inventory-item-image-empty"></span>';
 }
@@ -18,7 +18,7 @@ function renderDebugAddButton(item) {
 }
 
 function shoppingCenterItemDescription(item) {
-  return item.category === ItemCategory.Mt && item.move ? formatCatalogDescription(item.move) : item.description;
+  return item.category === ItemCategory.TM && item.move ? formatCatalogDescription(item.move) : item.description;
 }
 
 function shoppingCenterPurchaseButtons(item, sectionName) {
@@ -38,7 +38,7 @@ function shoppingCenterShouldShowPrice(entry) {
   return Boolean(entry && entry.price !== null && (
     entry.canPurchase
     || availabilityKey === "unlocked"
-    || availabilityKey === "locked-badges"
+    || availabilityKey === "locked_badges"
   ));
 }
 
@@ -134,13 +134,13 @@ function renderShoppingCenterSectionPanel(activeSectionName) {
   var sections = getShoppingCenterSections();
   var buttons = sections.map(function (sectionName) {
     var selectedClass = sectionName === activeSectionName ? " button-primary" : " button-ghost";
-    return button(sectionName, "shopping-center-section", 'data-section="' + escapeHtml(sectionName) + '"', "button-slim" + selectedClass);
+    return button(shoppingCenterSectionDisplayName(sectionName), "shopping-center-section", 'data-section="' + escapeHtml(sectionName) + '"', "button-slim" + selectedClass);
   }).join("");
   return '<section class="panel shopping-center-sections-panel"><div class="panel-inner"><div class="pokemon-center-action-row rules-section-row">' + buttons + "</div></div></section>";
 }
 
 export function renderShoppingCenterCartPanelContent(pokedollars, entries, total, isSale) {
-  var confirmLabel = isSale ? SHOPPING_CENTER_SECTIONS.SELL : "Acquista";
+  var confirmLabel = isSale ? shoppingCenterSectionDisplayName(SHOPPING_CENTER_SECTIONS.SELL) : "Acquista";
   var confirmAction = isSale ? "shopping-center-confirm-sale" : "shopping-center-confirm-purchases";
   var totalLabel = isSale ? "Totale vendita" : "Totale spesa";
   var rows = entries.length ? entries.map(function (entry) {

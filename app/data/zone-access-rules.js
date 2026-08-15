@@ -1,12 +1,12 @@
-import { getInventoryItemByIndex, occhialoni, spettrosonda } from "./items.js";
+import { getInventoryItemByIndex, go_goggles, silph_scope } from "./items.js";
 
 var ZONE_ACCESS_REQUIREMENTS = {
-  "Torre Fantasma": {
-    item: spettrosonda,
+  ghost_tower: {
+    item: silph_scope,
     message: "Ti serve la Spettrosonda!"
   },
-  Deserto: {
-    item: occhialoni,
+  desert: {
+    item: go_goggles,
     message: "Ti servono gli Occhialoni!"
   }
 };

@@ -1,6 +1,6 @@
 import { getItemByIndex } from "../data/items.js";
 import { SPECIES_LIBRARY } from "../data/index.js";
-import { levelLimitForBadges, mtUnlockBadges } from "../data/progression.js";
+import { levelLimitForBadges, tmUnlockBadges } from "../data/progression.js";
 import { shoppingCenterItemIsSinglePurchase } from "../data/shopping-center.js";
 import { requireNotInBattle } from "./battle-scene-lock.js";
 import { registerAction } from "./action-registry.js";
@@ -67,12 +67,12 @@ function closeMissionChoiceMenu() {
 function missionChoiceEntries(mission) {
   var reward = mission && mission.reward || {};
   var badges = Math.max(0, Math.min(8, Number(state.trainerInfo && state.trainerInfo[2]) || 0));
-  if (reward.kind === "pokemon-choice") {
-    var level = reward.levelMode === "badge-cap" ? levelLimitForBadges(badges) : 5;
+  if (reward.kind === "pokemon_choice") {
+    var level = reward.levelMode === "badge_cap" ? levelLimitForBadges(badges) : 5;
     return Object.keys(SPECIES_LIBRARY).map(function (speciesKey) {
       var species = SPECIES_LIBRARY[speciesKey];
       var encounter = species && species.encounter || {};
-      return species && encounter.rarity !== "l" && (!reward.excludeFossils || encounter.rarity !== "f")
+      return species && encounter.rarity !== "legendary" && (!reward.excludeFossils || encounter.rarity !== "fossil")
         && minimumPokemonRewardLevel(speciesKey) <= level
         ? { kind: "pokemon", speciesKey: speciesKey, level: level, label: species.name + " (Lv. " + level + ")" }
         : null;
@@ -80,7 +80,7 @@ function missionChoiceEntries(mission) {
   }
   return (reward.choices || []).filter(function (choice) {
     var item = getItemByIndex(choice.itemIndex);
-    return !reward.purchasableNow || !item || mtUnlockBadges(item) <= badges;
+    return !reward.purchasableNow || !item || tmUnlockBadges(item) <= badges;
   });
 }
 
@@ -195,7 +195,7 @@ registerAction("pokefan-claim-mission", function (element) {
     showClaimError("Missione non ancora completata.");
     return;
   }
-  if (mission.reward && (mission.reward.kind === "choice" || mission.reward.kind === "pokemon-choice")) {
+  if (mission.reward && (mission.reward.kind === "choice" || mission.reward.kind === "pokemon_choice")) {
     openMissionChoiceMenu(element, mission);
     return;
   }

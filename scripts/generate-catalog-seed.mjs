@@ -174,14 +174,10 @@ function exportKeyByIdentity(namespace, values, label) {
 
 function moveExportKeys(namespace) {
   const byIndex = new Map();
-  Object.keys(namespace).sort().forEach((key) => {
-    const value = namespace[key];
-    if (!value || !Number.isInteger(value.index) || !value.name || key === "MOVE_LIBRARY") return;
-    if (byIndex.has(value.index)) throw new Error("Duplicate move exports for index " + value.index);
-    byIndex.set(value.index, key);
-  });
   namespace.MOVE_LIBRARY.forEach((move) => {
-    if (!byIndex.has(move.index)) throw new Error("Missing stable move export key for index " + move.index);
+    if (!move.key) throw new Error("Missing stable move key for index " + move.index);
+    if (byIndex.has(move.index)) throw new Error("Duplicate move key for index " + move.index);
+    byIndex.set(move.index, move.key);
   });
   return byIndex;
 }
@@ -262,29 +258,29 @@ async function progressionStatements(release) {
   const itemRefs = new Set(items.ITEM_LIBRARY);
   const records = [];
   const add = (family, key, order, rules) => records.push({ family, key, order, rules: plainValue(rules, "progression " + family + "." + key, { items: itemRefs }) });
-  data.BADGE_LEVEL_LIMITS.forEach((limit, badges) => add("badge-level-limit", String(badges), badges, { badges, level: limit }));
-  data.CAPTURE_LEVEL_LIMITS.forEach((limit, badges) => add("capture-level-limit", String(badges), badges, { badges, level: limit }));
-  data.CAPTURE_LEVEL_RANGES.forEach((ranges, badges) => ranges.forEach((range, index) => add("capture-level-range", badges + "." + index, badges * 10 + index, { badges, min: range.min, max: range.max })));
-  Object.keys(data.SEARCH_TOOL_ITEMS).sort().forEach((key, index) => add("search-tool", key, index, { itemIndex: data.SEARCH_TOOL_ITEMS[key].index }));
+  data.BADGE_LEVEL_LIMITS.forEach((limit, badges) => add("badge_level_limit", String(badges), badges, { badges, level: limit }));
+  data.CAPTURE_LEVEL_LIMITS.forEach((limit, badges) => add("capture_level_limit", String(badges), badges, { badges, level: limit }));
+  data.CAPTURE_LEVEL_RANGES.forEach((ranges, badges) => ranges.forEach((range, index) => add("capture_level_range", badges + "." + index, badges * 10 + index, { badges, min: range.min, max: range.max })));
+  Object.keys(data.SEARCH_TOOL_ITEMS).sort().forEach((key, index) => add("search_tool", key, index, { itemIndex: data.SEARCH_TOOL_ITEMS[key].index }));
   [
-    ["flute-daily-use-limit", data.FLUTE_DAILY_USE_LIMIT], ["garden-harvest-quantity", data.GARDEN_HARVEST_QUANTITY],
-    ["daycare-withdraw-base-cost", data.DAYCARE_WITHDRAW_BASE_COST], ["daycare-withdraw-level-cost", data.DAYCARE_WITHDRAW_LEVEL_COST],
-    ["daycare-max-pending-levels", data.DAYCARE_MAX_PENDING_LEVELS], ["daycare-level-interval-seconds", data.DAYCARE_LEVEL_INTERVAL_SECONDS],
-    ["training-max-levels-per-pokemon", data.MAX_TRAINING_LEVELS_PER_POKEMON]
+    ["flute_daily_use_limit", data.FLUTE_DAILY_USE_LIMIT], ["garden_harvest_quantity", data.GARDEN_HARVEST_QUANTITY],
+    ["daycare_withdraw_base_cost", data.DAYCARE_WITHDRAW_BASE_COST], ["daycare_withdraw_level_cost", data.DAYCARE_WITHDRAW_LEVEL_COST],
+    ["daycare_max_pending_levels", data.DAYCARE_MAX_PENDING_LEVELS], ["daycare_level_interval_seconds", data.DAYCARE_LEVEL_INTERVAL_SECONDS],
+    ["training_max_levels_per_pokemon", data.MAX_TRAINING_LEVELS_PER_POKEMON]
   ].forEach((entry, index) => add("constant", entry[0], index, { value: entry[1] }));
-  data.TRAINING_DIFFICULTIES.forEach((entry, index) => add("training-difficulty", entry.key, index, withoutPresentationFields(entry)));
-  data.BADGE_LEVEL_LIMITS.forEach((_levelCap, badges) => Object.keys(data.AUTHORITATIVE_TRAINING_DAILY_REWARDS).sort().forEach((difficulty, index) => add("training-daily-reward", badges + "." + difficulty, badges * 10 + index, { badges, difficulty, money: 0, ...data.AUTHORITATIVE_TRAINING_DAILY_REWARDS[difficulty] })));
-  Object.keys(data.AUTHORITATIVE_TRAINING_REPEAT_REWARDS).sort().forEach((difficulty, index) => add("training-repeat-reward", difficulty, index, { difficulty, money: 0, ...data.AUTHORITATIVE_TRAINING_REPEAT_REWARDS[difficulty] }));
-  Object.keys(data.MT_TIER_RULES).sort((a, b) => Number(a) - Number(b)).forEach((tier, index) => add("mt-tier", tier, index, { tier: Number(tier), ...data.MT_TIER_RULES[tier] }));
-  data.GYM_REWARDS.forEach((reward, badgeIndex) => add("gym-reward", String(badgeIndex), badgeIndex, { badgeIndex, ...reward }));
-  Object.keys(data.KANTO_LEAGUE_REWARDS).sort().forEach((key, index) => add("league-reward", key, index, { key, ...data.KANTO_LEAGUE_REWARDS[key] }));
-  data.ITEM_UNLOCK_RULES.forEach((entry, index) => add("item-unlock", String(entry.item.index), index, { itemIndex: entry.item.index, requirement: entry.requirement }));
+  data.TRAINING_DIFFICULTIES.forEach((entry, index) => add("training_difficulty", entry.key, index, withoutPresentationFields(entry)));
+  data.BADGE_LEVEL_LIMITS.forEach((_levelCap, badges) => Object.keys(data.AUTHORITATIVE_TRAINING_DAILY_REWARDS).sort().forEach((difficulty, index) => add("training_daily_reward", badges + "." + difficulty, badges * 10 + index, { badges, difficulty, money: 0, ...data.AUTHORITATIVE_TRAINING_DAILY_REWARDS[difficulty] })));
+  Object.keys(data.AUTHORITATIVE_TRAINING_REPEAT_REWARDS).sort().forEach((difficulty, index) => add("training_repeat_reward", difficulty, index, { difficulty, money: 0, ...data.AUTHORITATIVE_TRAINING_REPEAT_REWARDS[difficulty] }));
+  Object.keys(data.TM_TIER_RULES).sort((a, b) => Number(a) - Number(b)).forEach((tier, index) => add("tm_tier", tier, index, { tier: Number(tier), ...data.TM_TIER_RULES[tier] }));
+  data.GYM_REWARDS.forEach((reward, badgeIndex) => add("gym_reward", String(badgeIndex), badgeIndex, { badgeIndex, ...reward }));
+  Object.keys(data.KANTO_LEAGUE_REWARDS).sort().forEach((key, index) => add("league_reward", key, index, { key, ...data.KANTO_LEAGUE_REWARDS[key] }));
+  data.ITEM_UNLOCK_RULES.forEach((entry, index) => add("item_unlock", String(entry.item.index), index, { itemIndex: entry.item.index, requirement: entry.requirement }));
   let rangeStart = 1;
   let previous = data.expMultiplierForWinnerLevel(1);
   for (let level = 2; level <= 101; level += 1) {
     const current = level <= 100 ? data.expMultiplierForWinnerLevel(level) : null;
     if (current !== previous) {
-      add("experience-multiplier", String(rangeStart), rangeStart, { minLevel: rangeStart, maxLevel: level - 1, multiplier: previous });
+      add("experience_multiplier", String(rangeStart), rangeStart, { minLevel: rangeStart, maxLevel: level - 1, multiplier: previous });
       rangeStart = level;
       previous = current;
     }
@@ -316,24 +312,21 @@ async function shopStatements(release) {
   const data = await loadSourceModule(primary);
   const items = await loadSourceModule("app/data/items.js");
   const progression = await loadSourceModule("app/data/progression.js");
-  const itemKeys = exportKeyByIdentity(items, [...items.ITEM_LIBRARY], "item");
-  const sections = new Map(Object.keys(data.SHOPPING_CENTER_SECTIONS).map((key) => [data.SHOPPING_CENTER_SECTIONS[key], key]));
-  const categories = new Map(Object.keys(data.SHOPPING_CENTER_CATEGORIES).map((key) => [data.SHOPPING_CENTER_CATEGORIES[key], key]));
   const explicit = new Map(data.SHOPPING_CENTER_ITEMS.map((entry) => [entry.item.index, entry]));
   const unlocks = new Map(progression.ITEM_UNLOCK_RULES.map((entry) => [entry.item.index, entry.requirement]));
-  const gymRewardMt = new Set(progression.GYM_REWARD_MT_ITEMS);
+  const gymRewardTM = new Set(progression.GYM_REWARD_TM_ITEMS);
   const rows = items.ITEM_LIBRARY.map((item, order) => {
     const entry = explicit.get(item.index);
-    const isMt = item.category === items.ItemCategory.Mt;
+    const isTM = item.category === items.ItemCategory.TM;
     const purchasePrice = data.shoppingCenterItemPrice(item);
-    const unpurchasable = purchasePrice === null || data.SHOPPING_CENTER_UNPURCHASABLE_ITEMS.indexOf(item) !== -1 || gymRewardMt.has(item.index);
+    const unpurchasable = purchasePrice === null || data.SHOPPING_CENTER_UNPURCHASABLE_ITEMS.indexOf(item) !== -1 || gymRewardTM.has(item.index);
     const unsellable = data.SHOPPING_CENTER_UNSELLABLE_ITEMS.indexOf(item) !== -1;
     const singlePurchase = data.shoppingCenterItemIsSinglePurchase(item);
     const initialStock = data.shoppingCenterRemainingCartQuantity(item, { inventory: [], shopPurchases: {}, trainerInfo: [null, null, 8] }, {});
-    const stockRules = singlePurchase ? { kind: "single-owned", limit: 1 } : Number.isFinite(initialStock) ? { kind: "fixed", limit: initialStock } : {};
-    const requirement = isMt ? { kind: "badges", value: progression.mtUnlockBadges(item) } : (unlocks.get(item.index) || {});
+    const stockRules = singlePurchase ? { kind: "single_owned", limit: 1 } : Number.isFinite(initialStock) ? { kind: "fixed", limit: initialStock } : {};
+    const requirement = isTM ? { kind: "badges", value: progression.tmUnlockBadges(item) } : (unlocks.get(item.index) || {});
     const salePrice = data.shoppingCenterSalePrice(item);
-    return upsertJson("catalog_shop_offer", ["catalog_release_id", "offer_key", "item_index", "section_key", "category_key", "price", "stock_rules", "sort_order", "purchase_enabled", "sale_enabled", "single_purchase", "unlock_rules", "sale_rules"], [releaseId(release), itemKeys.get(item), item.index, entry ? sections.get(entry.section) : isMt ? "MT" : "NONE", entry ? categories.get(entry.category) : isMt ? "MT" : "NONE", purchasePrice, stockRules, order, Boolean((entry || isMt) && !unpurchasable), !unsellable, singlePurchase, requirement, { price: salePrice }], new Set([6, 11, 12]), ["catalog_release_id", "offer_key"], ["item_index", "section_key", "category_key", "price", "stock_rules", "sort_order", "purchase_enabled", "sale_enabled", "single_purchase", "unlock_rules", "sale_rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release));
+    return upsertJson("catalog_shop_offer", ["catalog_release_id", "offer_key", "item_index", "section_key", "category_key", "price", "stock_rules", "sort_order", "purchase_enabled", "sale_enabled", "single_purchase", "unlock_rules", "sale_rules"], [releaseId(release), item.key, item.index, entry ? entry.section : isTM ? "tm_shop" : "none", entry ? entry.category : isTM ? "tms" : "none", purchasePrice, stockRules, order, Boolean((entry || isTM) && !unpurchasable), !unsellable, singlePurchase, requirement, { price: salePrice }], new Set([6, 11, 12]), ["catalog_release_id", "offer_key"], ["item_index", "section_key", "category_key", "price", "stock_rules", "sort_order", "purchase_enabled", "sale_enabled", "single_purchase", "unlock_rules", "sale_rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release));
   });
   return familyResult(primary, rows, { catalog_shop_offer: rows.length }, rows.length);
 }
@@ -343,7 +336,7 @@ async function battleShopStatements(release) {
   const data = await loadSourceModule(primary);
   const rows = [];
   data.BATTLE_SHOP_ITEM_OFFERS.forEach((offer, order) => {
-    rows.push(upsertJson("catalog_battle_shop_offer", ["catalog_release_id", "offer_key", "offer_kind", "item_index", "battle_point_price", "sort_order", "rules"], [releaseId(release), "item-" + offer.item.index, "item", offer.item.index, offer.price, order, { group: offer.group }], new Set([6]), ["catalog_release_id", "offer_key"], ["offer_kind", "item_index", "battle_point_price", "sort_order", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
+    rows.push(upsertJson("catalog_battle_shop_offer", ["catalog_release_id", "offer_key", "offer_kind", "item_index", "battle_point_price", "sort_order", "rules"], [releaseId(release), "item_" + offer.item.index, "item", offer.item.index, offer.price, order, { group: offer.group }], new Set([6]), ["catalog_release_id", "offer_key"], ["offer_kind", "item_index", "battle_point_price", "sort_order", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
   });
   data.BATTLE_SHOP_POKEMON_OFFERS.forEach((offer, index) => {
     rows.push(upsertJson("catalog_battle_shop_offer", ["catalog_release_id", "offer_key", "offer_kind", "item_index", "battle_point_price", "sort_order", "rules"], [releaseId(release), offer.key, "pokemon", null, offer.price, data.BATTLE_SHOP_ITEM_OFFERS.length + index, { excludeFossils: offer.excludeFossils }], new Set([6]), ["catalog_release_id", "offer_key"], ["offer_kind", "item_index", "battle_point_price", "sort_order", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
@@ -452,12 +445,12 @@ async function opponentStatements(release) {
     const reward = progression.GYM_REWARDS[city.badgeIndex];
     opponentRewardRows(release, key, [
       { kind: "money", quantity: reward.money },
-      reward.mt ? { kind: "item", itemIndex: reward.mt, quantity: 1 } : null,
+      reward.tm ? { kind: "item", itemIndex: reward.tm, quantity: 1 } : null,
       reward.item ? { kind: "item", itemIndex: reward.item, quantity: Math.max(1, Number(reward.itemQuantity) || 1) } : null,
       { kind: "badge", quantity: 1, badgeIndex: city.badgeIndex }
     ].filter(Boolean), rows, counts);
   });
-  const league = data.KANTO_ELITE_FOUR.concat([data.KANTO_CAMPIONE_KANTO]);
+  const league = data.KANTO_ELITE_FOUR.concat([data.KANTO_CHAMPION]);
   league.forEach((member, index) => {
     const champion = index === data.KANTO_ELITE_FOUR.length;
     const key = champion ? "kanto_league_champion" : "kanto_league_" + (index + 1);
@@ -473,8 +466,8 @@ async function adminBattleStatements(release) {
   const primary = "app/data/admin-battles.js";
   const data = await loadSourceModule(primary);
   const battleTypes = [
-    "gym_plumbeopoli", "gym_celestopoli", "gym_aranciopoli", "gym_azzurropoli",
-    "gym_zafferanopoli", "gym_fucsiapoli", "gym_isola-cannella", "gym_smeraldopoli",
+    "gym_pewter_city", "gym_cerulean_city", "gym_vermilion_city", "gym_celadon_city",
+    "gym_saffron_city", "gym_fuchsia_city", "gym_cinnabar_island", "gym_viridian_city",
     "training_debug", "kanto_league_1", "kanto_league_2", "kanto_league_3",
     "kanto_league_4", "kanto_league_champion"
   ];
@@ -499,11 +492,12 @@ async function trainerStatements(release) {
 async function zoneStatements(release) {
   const primary = "app/data/capture-zones.js";
   const data = await loadSourceModule(primary);
+  const typeData = await loadSourceModule("app/data/type-chart.js");
   const rows = [];
   const typeKeys = [...new Set(Object.values(data.CAPTURE_ZONES).flat())];
-  typeKeys.forEach((typeKey, index) => rows.push(upsert("catalog_type", ["catalog_release_id", "type_key", "display_name", "sort_order"], [releaseId(release), typeKey, typeKey, index], ["catalog_release_id", "type_key"], ["display_name", "sort_order"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
+  typeKeys.forEach((typeKey, index) => rows.push(upsert("catalog_type", ["catalog_release_id", "type_key", "display_name", "sort_order"], [releaseId(release), typeKey, typeData.typeDisplayName(typeKey), index], ["catalog_release_id", "type_key"], ["display_name", "sort_order"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
   Object.entries(data.CAPTURE_ZONES).forEach(([zoneKey, types]) => {
-    rows.push(upsertJson("catalog_zone", ["catalog_release_id", "zone_key", "display_name", "rules"], [releaseId(release), zoneKey, zoneKey, {}], new Set([3]), ["catalog_release_id", "zone_key"], ["display_name", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
+    rows.push(upsertJson("catalog_zone", ["catalog_release_id", "zone_key", "display_name", "rules"], [releaseId(release), zoneKey, data.captureZoneDisplayName(zoneKey), {}], new Set([3]), ["catalog_release_id", "zone_key"], ["display_name", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
     types.forEach((typeKey, index) => rows.push(upsert("catalog_zone_type", ["catalog_release_id", "zone_key", "type_key", "type_order"], [releaseId(release), zoneKey, typeKey, index], ["catalog_release_id", "zone_key", "type_key"], ["type_order"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
   });
   Object.entries(data.RARITY_WEIGHTS).forEach(([key, weight]) => rows.push(upsert("catalog_rarity_rule", ["catalog_release_id", "rarity_key", "encounter_weight", "catch_multiplier"], [releaseId(release), key, weight, data.CATCH_RARITY_MULTIPLIERS[key]], ["catalog_release_id", "rarity_key"], ["encounter_weight", "catch_multiplier"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
@@ -524,7 +518,7 @@ async function moveStatements(release) {
   const primary = "app/data/moves.js";
   const data = await loadSourceModule(primary);
   const keys = moveExportKeys(data);
-  const excluded = new Set(["index", "name", "before", "after", "effect_before", "effect_after"]);
+  const excluded = new Set(["key", "index", "name", "before", "after", "effect_before", "effect_after"]);
   const rows = data.MOVE_LIBRARY.map((move) => {
     const key = keys.get(move.index);
     const rules = rulesWithout(move, excluded, "move " + key, null);
@@ -553,16 +547,13 @@ async function itemStatements(release) {
   const primary = "app/data/items.js";
   const data = await loadSourceModule(primary);
   const moves = await loadSourceModule("app/data/moves.js");
-  const itemKeys = exportKeyByIdentity(data, [...data.ITEM_LIBRARY], "item");
-  const categoryKeys = new Map(Object.keys(data.ItemCategory).map((key) => [data.ItemCategory[key], key]));
-  const subcategoryKeys = new Map(Object.keys(data.ItemSubcategory).map((key) => [data.ItemSubcategory[key], key]));
   const moveRefs = moveReferenceSet(moves);
   const itemRefs = new Set(data.ITEM_LIBRARY);
-  const excluded = new Set(["index", "name", "category", "subcategory", "move"]);
+  const excluded = new Set(["key", "index", "name", "category", "subcategory", "move"]);
   const rows = data.ITEM_LIBRARY.map((item) => {
-    const key = itemKeys.get(item);
-    const category = categoryKeys.get(item.category);
-    const subcategory = item.subcategory ? subcategoryKeys.get(item.subcategory) : null;
+    const key = item.key;
+    const category = item.category && item.category.key;
+    const subcategory = item.subcategory ? item.subcategory.key : null;
     if (!category) throw new Error("Unmapped category for item " + key);
     if (item.subcategory && !subcategory) throw new Error("Unmapped subcategory for item " + key);
     const rules = rulesWithout(item, excluded, "item " + key, { items: itemRefs, moves: moveRefs });
@@ -602,10 +593,10 @@ async function speciesStatements(release, chunk) {
     catalog_species_type: entries.reduce((count, entry) => count + (entry.species.type || []).length, 0),
     catalog_species_gender: entries.reduce((count, entry) => count + (entry.species.gender || []).length, 0),
     catalog_species_level_move: entries.reduce((count, entry) => count + Object.values(entry.species.movesByLevel || {}).reduce((subtotal, movesAtLevel) => subtotal + movesAtLevel.length, 0), 0),
-    catalog_species_machine_move: entries.reduce((count, entry) => count + (entry.species.movesByMT || []).length, 0),
+    catalog_species_machine_move: entries.reduce((count, entry) => count + (entry.species.movesByTM || []).length, 0),
     catalog_species_evolution: entries.reduce((count, entry) => count + ((entry.species.evolution && entry.species.evolution.to) || []).length, 0)
   };
-  const excluded = new Set(["name", "dexNumber", "type", "gender", "encounter", "exp", "spriteGendered", "movesByLevel", "movesByMT", "evolution"]);
+  const excluded = new Set(["name", "dexNumber", "type", "gender", "encounter", "exp", "spriteGendered", "movesByLevel", "movesByTM", "evolution"]);
   baseEntries.forEach(({ key, species }) => {
     const encounter = species.encounter || {};
     const rules = rulesWithout(species, excluded, "species " + key, { items: itemRefs, moves: moveRefs });
@@ -626,7 +617,7 @@ async function speciesStatements(release, chunk) {
         rows.push(upsert("catalog_species_level_move", ["catalog_release_id", "species_key", "level", "move_index", "move_order"], [releaseId(release), key, Number(level), move.index, index], ["catalog_release_id", "species_key", "level", "move_order"], ["move_index"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
       });
     });
-    (species.movesByMT || []).forEach((move) => {
+    (species.movesByTM || []).forEach((move) => {
       if (!moveRefs.has(move)) throw new Error("Unmapped machine move for species " + key);
       rows.push(upsert("catalog_species_machine_move", ["catalog_release_id", "species_key", "move_index"], [releaseId(release), key, move.index], ["catalog_release_id", "species_key", "move_index"], ["move_index"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
     });

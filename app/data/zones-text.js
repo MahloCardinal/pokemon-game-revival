@@ -8,30 +8,30 @@ export var SCENE_PRESENTATION_TEXT = {
   "Torre Lotta": "Benvenuto alla Torre Lotta! Sono Scott, e mi sto occupando di costruire l'intera Area Lotta. La Torre Lotta è la mia prima creazione, e qua gli allenatori mettono alla prova le loro strategie in sfide sempre piu impegnative.\nPrepara bene i tuoi Pokémon prima di cominciare la scalata: dovrai sconfiggere un allenatore dopo l'altro, la cui forza dipenderà da quella della tua squadra, ma andrà crescendo man mano che avanzerai. Più sfide consecutive vincerai e maggiore sarà il premio, quindi fai sempre del tuo meglio poiché hai a disposizione un solo tentativo al giorno.",
   "Zona allenamento": "Finalmente sei qui! Era un po' che non passava qualche sprovveduto pronto a prendere un sacco di bot... ehm, esperienza!\nQua nella Zona Allenamento potrai sfidare altri allenatori, e se riuscirai a sconfiggerli otterrai premi in base alla difficoltà della battaglia. Non preoccuparti di perdere, non c'è alcuna penalità.",
   "Negozio Lotta": "Oh, che giovane intraprendente. Se ti darai abbastanza da fare nell'Area Lotta, otterrai i Punti Lotta che ti servono per comprare le merci dal mio negozio o prendere in cura dei Pokémon.\nDevi sapere che alcuni oggetti puoi trovarli solo qui. Non temere per le scorte, ho il magazzino pieno, quindi prenditi pure il tempo che ci vuole per accumulare i Punti necessari ad acquistarli.",
-  "Bosco Smeraldo": "Ciao! Mi chiamo Gennaro, e sono un appassionato pigliamosche. Qua nel Bosco Smeraldo troverai Pokémon Erba, Veleno, e Coleottero, in assoluto tra i miei preferiti!\nIo è da ore che sto cercando un Beedrill, devi sapere che è un Pokémon fortissimissimo. Ehi, quello sembra un Kakuna, vado subito ad acchiapparlo!!!",
-  "Monte Luna": "Guarda chi c'è, un altro scalatore! Freschetto quassù, eh? Qua sul Monte Luna finora ho incontrato Pokémon Normale e Acciaio, e anche qualche Folletto.\nIo sto tornando a valle, ti auguro di imbatterti in qualche Pokémon raro.",
-  Mare: "Ehilà! Anche tu qua per fare un tuffo, o sei a caccia di Pokémon Acqua e Ghiaccio?\nIn ogni caso fai attenzione ai Tentacool, le loro punture sono davvero fastidiose.",
-  "Torre Fantasma": "Hi hi hi... Per caso mi hai confusa con un Pokémon Spettro? Sappi che non sono i soli a vagare in questa Torre: puoi incontrare anche Pokémon Psico e Buio.\nAttenzione a non perderti, potresti non trovare più la via d'uscita... Hi hi hi...",
-  Safari: "Ehi tu! Muoviti con cautela in queste terre selvagge, o ti potresti trovare nei guai con i Pokémon Drago, Lotta, e Volante che si muovono in queste zone.\n",
-  Palude: "Cosa? Se sto bene? Certo che sto bene. Ah, non mi avevi chiesto nulla? Non ti interessa sapere quali Pokémon Fuoco ed Elettro ho incontrato finora? No? Va bene, farò finta di non averti mai incontrato.",
-  Deserto: "Ooooooh ma che bel giovane! Mi aiuteresti a ritrovare il mio monocolo? Prima che qualche Pokémon Terra o Roccia me lo mandi in frantumi.\nEro a caccia di fossili di Pokémon estinti, si dice che se ne possa trovare ancora qualcuno sotto queste sabbie... Buona fortuna a me!",
+  viridian_forest: "Ciao! Mi chiamo Gennaro, e sono un appassionato pigliamosche. Qua nel Bosco Smeraldo troverai Pokémon Erba, Veleno, e Coleottero, in assoluto tra i miei preferiti!\nIo è da ore che sto cercando un Beedrill, devi sapere che è un Pokémon fortissimissimo. Ehi, quello sembra un Kakuna, vado subito ad acchiapparlo!!!",
+  mt_moon: "Guarda chi c'è, un altro scalatore! Freschetto quassù, eh? Qua sul Monte Luna finora ho incontrato Pokémon Normale e Acciaio, e anche qualche Folletto.\nIo sto tornando a valle, ti auguro di imbatterti in qualche Pokémon raro.",
+  sea: "Ehilà! Anche tu qua per fare un tuffo, o sei a caccia di Pokémon Acqua e Ghiaccio?\nIn ogni caso fai attenzione ai Tentacool, le loro punture sono davvero fastidiose.",
+  ghost_tower: "Hi hi hi... Per caso mi hai confusa con un Pokémon Spettro? Sappi che non sono i soli a vagare in questa Torre: puoi incontrare anche Pokémon Psico e Buio.\nAttenzione a non perderti, potresti non trovare più la via d'uscita... Hi hi hi...",
+  safari_zone: "Ehi tu! Muoviti con cautela in queste terre selvagge, o ti potresti trovare nei guai con i Pokémon Drago, Lotta, e Volante che si muovono in queste zone.\n",
+  swamp: "Cosa? Se sto bene? Certo che sto bene. Ah, non mi avevi chiesto nulla? Non ti interessa sapere quali Pokémon Fuoco ed Elettro ho incontrato finora? No? Va bene, farò finta di non averti mai incontrato.",
+  desert: "Ooooooh ma che bel giovane! Mi aiuteresti a ritrovare il mio monocolo? Prima che qualche Pokémon Terra o Roccia me lo mandi in frantumi.\nEro a caccia di fossili di Pokémon estinti, si dice che se ne possa trovare ancora qualcuno sotto queste sabbie... Buona fortuna a me!",
   Superquattro: "Sei finalmente qui, complimenti. Sappi però che questa sarà la tua sfida più difficile: dovrai sconfiggere uno dopo l'altro tutti i fortissimi allenatori dell'Altopiano Blu e, se ci riuscirai, l'ultimo passo sarà sconfiggere l'attuale Campione in carica! Sappi comunque che la tua squadra verrà curata tra una sfida e l'altra.\nFai molta attenzione all'ultimo scontro contro il Campione: sarai te a mandare il primo Pokémon in campo, dopodiché l'avversario sceglierà il suo Pokémon e farà la prima mossa. Buona fortuna!"
 };
 
 export var KANTO_TRAINER_FLAVOR_TEXTS = {
-  plumbeopoli: "Il mio motto è determinazione e difesa granitica! Ecco perché tutti i miei Pokémon sono del tipo Roccia!",
-  celestopoli: "La mia tattica è di attacco totale con Pokémon di tipo Acqua!",
-  aranciopoli: "Devi sapere che i Pokémon elettrici mi hanno salvato in guerra! Preparati a un'amara sconfitta!",
-  azzurropoli: "Studio l'arte delle composizioni floreali. I miei Pokémon sono di tipo Erba, non potrai resistere!",
-  zafferanopoli: "Già da bambina avevo poteri paranormali! Odio lottare ma se vuoi ti mostrerò le mie capacità!",
-  fucsiapoli: "Proverai la forza terrorizzante dei Pokémon di tipo Veleno!",
-  "isola-cannella": "I miei Pokémon inceneriranno ogni sfidante!",
-  smeraldopoli: "Sarai all'altezza?",
+  pewter_city: "Il mio motto è determinazione e difesa granitica! Ecco perché tutti i miei Pokémon sono del tipo Roccia!",
+  cerulean_city: "La mia tattica è di attacco totale con Pokémon di tipo Acqua!",
+  vermilion_city: "Devi sapere che i Pokémon elettrici mi hanno salvato in guerra! Preparati a un'amara sconfitta!",
+  celadon_city: "Studio l'arte delle composizioni floreali. I miei Pokémon sono di tipo Erba, non potrai resistere!",
+  saffron_city: "Già da bambina avevo poteri paranormali! Odio lottare ma se vuoi ti mostrerò le mie capacità!",
+  fuchsia_city: "Proverai la forza terrorizzante dei Pokémon di tipo Veleno!",
+  "cinnabar_island": "I miei Pokémon inceneriranno ogni sfidante!",
+  viridian_city: "Sarai all'altezza?",
   lorelei: "Nessuno conosce i Pokémon di tipo Ghiaccio come me, non ti lascerò via di scampo",
   bruno: "Nella mia vita ho sempre allenato Pokémon di tipo Lotta, non mi farò sconfiggere facilmente",
   agatha: "Non far caso alla mia età... Ho imparato bene ad annientare le mezze cartucce come te",
   lance: "I Pokémon Drago sono difficili da allenare, ma sono quasi imbattibili. La tua scalata finisce con me!",
-  "campione-kanto": "Sarà una sfida interessante..."
+  "kanto_champion": "Sarà una sfida interessante..."
 };
 
 export var ZONE_CARD_DESCRIPTIONS = {
@@ -54,14 +54,14 @@ export var ZONE_CARD_DESCRIPTIONS = {
   fanclub: "Prova a catturarli tutti!\nIl tuo impegno sarà ricompensato",
   daycare: "Nelle mani giuste, ogni Pokémon ha modo di crescere bene",
   // Palestre
-  plumbeopoli: "Capopalestra: Brock",
-  celestopoli: "Capopalestra: Misty",
-  aranciopoli: "Capopalestra: Lt. Surge",
-  azzurropoli: "Capopalestra: Erika",
-  zafferanopoli: "Capopalestra: Sabrina",
-  fucsiapoli: "Capopalestra: Koga",
-  "isola-cannella": "Capopalestra: Blaine",
-  smeraldopoli: "Capopalestra: Giovanni",
-  superquattro: "Qui si decide il destino degli eroi",
-  "campione-kanto": "L'ultimo ostacolo: la vera sfida"
+  pewter_city: "Capopalestra: Brock",
+  cerulean_city: "Capopalestra: Misty",
+  vermilion_city: "Capopalestra: Lt. Surge",
+  celadon_city: "Capopalestra: Erika",
+  saffron_city: "Capopalestra: Sabrina",
+  fuchsia_city: "Capopalestra: Koga",
+  "cinnabar_island": "Capopalestra: Blaine",
+  viridian_city: "Capopalestra: Giovanni",
+  elite_four: "Qui si decide il destino degli eroi",
+  "kanto_champion": "L'ultimo ostacolo: la vera sfida"
 };

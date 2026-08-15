@@ -8,7 +8,6 @@ var SAME_SPECIES_LIMIT = 2;
 var SAME_HELD_ITEM_LIMIT = 2;
 var OFFICIAL_CHALLENGE_OHKO_POKEMON_LIMIT = 2;
 var OHKO_MOVE_INDEXES = [2, 132, 211, 234];
-var OHKO_MOVE_NAMES = ["Abisso", "Ghigliottina", "Perforcorno", "Purogelo"];
 
 export var KANTO_LEAGUE_PORT_ITEM_RULE = { max: 2, requireDistinct: true };
 
@@ -28,10 +27,6 @@ function heldItemIndex(pokemon) {
   return Number(pokemon && pokemon.heldItemIndex) || 0;
 }
 
-function moveName(move) {
-  return move && move.name ? String(move.name) : "";
-}
-
 function moveIndex(move) {
   return Number(move && move.index) || 0;
 }
@@ -43,7 +38,7 @@ function itemName(itemIndex) {
 
 function createSpeciesViolation(pokemon) {
   return {
-    key: "species-limit",
+    key: "species_limit",
     message: "Ci sono già due Pokémon della stessa specie in squadra.",
     lines: [
       "Ci sono già due Pokémon della stessa specie in squadra.",
@@ -55,7 +50,7 @@ function createSpeciesViolation(pokemon) {
 
 function createHeldItemViolation(itemIndex) {
   return {
-    key: "held-item-limit",
+    key: "held_item_limit",
     message: "Ci sono già due Pokémon con " + itemName(itemIndex) + " in squadra.",
     lines: [
       "Ci sono già due Pokémon con " + itemName(itemIndex) + " in squadra.",
@@ -108,7 +103,7 @@ function findDuplicateSpeciesViolation(team) {
     return null;
   }
   return {
-    key: "species-limit",
+    key: "species_limit",
     message: "La squadra contiene più di 2 Pokémon della stessa specie.",
     lines: [
       "La squadra contiene più di 2 Pokémon della stessa specie.",
@@ -136,7 +131,7 @@ function findDuplicateHeldItemViolation(team) {
     return null;
   }
   return {
-    key: "held-item-limit",
+    key: "held_item_limit",
     message: "La squadra contiene più di 2 Pokémon con " + itemName(violationIndex) + ".",
     lines: [
       "La squadra contiene più di 2 Pokémon con " + itemName(violationIndex) + ".",
@@ -148,7 +143,7 @@ function findDuplicateHeldItemViolation(team) {
 
 function pokemonHasOhkoMove(pokemon) {
   return Boolean(pokemon && Array.isArray(pokemon.moves) && pokemon.moves.some(function (move) {
-    return OHKO_MOVE_INDEXES.indexOf(moveIndex(move)) !== -1 || OHKO_MOVE_NAMES.indexOf(moveName(move)) !== -1;
+    return OHKO_MOVE_INDEXES.indexOf(moveIndex(move)) !== -1;
   }));
 }
 
@@ -158,7 +153,7 @@ export function findOfficialChallengeOhkoMoveViolation(team) {
     return null;
   }
   return {
-    key: "ohko-move-pokemon-limit",
+    key: "ohko_move_pokemon_limit",
     message: "La squadra contiene più di 2 Pokémon con mosse OHKO.",
     lines: [
       "La squadra contiene più di 2 Pokémon con mosse OHKO.",
@@ -256,7 +251,7 @@ export function findOfficialChallengePortItemViolation(team, rule) {
 
   if (portItemIndexes.length > max) {
     return {
-      key: "port-held-item-limit",
+      key: "port-held_item_limit",
       message: "La squadra supera il limite di Strumenti del Porto per questa sfida.",
       lines: ["La squadra supera il limite di Strumenti del Porto per questa sfida."]
     };
@@ -273,7 +268,7 @@ export function findOfficialChallengePortItemViolation(team, rule) {
   }
   if (duplicateIndex) {
     return {
-      key: "port-held-item-duplicate",
+      key: "port_held_item_duplicate",
       message: "Gli Strumenti del Porto della squadra devono essere diversi.",
       lines: ["Gli Strumenti del Porto della squadra devono essere diversi.", itemName(duplicateIndex) + " non può essere tenuto in questa sfida."],
       itemIndex: duplicateIndex
@@ -298,7 +293,7 @@ export function findOfficialChallengeSuperEffectivePokemonViolation(team, oppone
     return null;
   }
   return {
-    key: "super-effective-pokemon-limit",
+    key: "super_effective_pokemon_limit",
     message: "La squadra supera il limite di Pokémon superefficaci per questa sfida.",
     lines: [
       "La squadra contiene " + superEffectivePokemon.length + " Pokémon superefficaci sui Pokémon del capopalestra.",

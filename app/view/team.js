@@ -151,7 +151,7 @@ export function renderTeamScene() {
   function getInventorySectionKey(item) {
     var category = item.category || "";
     if (category === ItemCategory.Ball) { return "balls"; }
-    if (category === ItemCategory.Mt) { return "mt"; }
+    if (category === ItemCategory.TM) { return "mt"; }
     if (category === ItemCategory.Vitamin) { return "tools"; }
     if (category === ItemCategory.HeldItem) { return "held"; }
     if (category === ItemCategory.Berry) { return "berries"; }
@@ -161,7 +161,7 @@ export function renderTeamScene() {
 
   function renderInventoryItem(item) {
     var imageSrc = getItemDisplayImage(item);
-    var itemImageClass = item.category === ItemCategory.Mt ? "style-zaino-item-image style-zaino-item-image-mt" : "style-zaino-item-image";
+    var itemImageClass = item.category === ItemCategory.TM ? "style-zaino-item-image style-zaino-item-image-mt" : "style-zaino-item-image";
     var imageMarkup = imageSrc
       ? renderImage(imageSrc, item.name, itemImageClass)
       : '<span class="style-zaino-item-image style-zaino-item-image-empty"></span>';

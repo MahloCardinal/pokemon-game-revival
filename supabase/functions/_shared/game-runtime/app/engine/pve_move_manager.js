@@ -1,18 +1,18 @@
 import { pveMoveCategoriesFor } from "../data/pve-move-categories.js";
 import {
-  antidoto,
-  antigelo,
-  antiscottatura,
-  antiparalisi,
-  cura_totale,
-  iperpozione,
-  pozione,
-  pozione_max,
-  ricarica_totale,
-  revitalizzante,
-  revitalizzante_max,
-  superpozione,
-  sveglia
+  antidote,
+  ice_heal,
+  burn_heal,
+  paralyze_heal,
+  full_heal,
+  hyper_potion,
+  potion,
+  max_potion,
+  full_restore,
+  revive,
+  max_revive,
+  super_potion,
+  awakening
 } from "../data/items.js";
 import { combatantHasCurableStatus } from "./held-items.js";
 import { random } from "./deterministic-rng.js";
@@ -26,10 +26,10 @@ var DAMAGE_NO_PERCENTAGE_CATEGORIES = [
   "damageNoPercentagePriority3",
   "damageNoPercentagePriority4"
 ];
-var NPC_REVIVE_ITEM_INDEXES = [revitalizzante.index, revitalizzante_max.index];
-var NPC_HP_ITEM_INDEXES = [pozione.index, superpozione.index, iperpozione.index, pozione_max.index];
-var NPC_STATUS_ITEM_INDEXES = [cura_totale.index, sveglia.index, antiparalisi.index, antigelo.index, antidoto.index, antiscottatura.index];
-var NPC_ALLOWED_ITEM_INDEXES = NPC_REVIVE_ITEM_INDEXES.concat(NPC_HP_ITEM_INDEXES, [ricarica_totale.index], NPC_STATUS_ITEM_INDEXES);
+var NPC_REVIVE_ITEM_INDEXES = [revive.index, max_revive.index];
+var NPC_HP_ITEM_INDEXES = [potion.index, super_potion.index, hyper_potion.index, max_potion.index];
+var NPC_STATUS_ITEM_INDEXES = [full_heal.index, awakening.index, paralyze_heal.index, ice_heal.index, antidote.index, burn_heal.index];
+var NPC_ALLOWED_ITEM_INDEXES = NPC_REVIVE_ITEM_INDEXES.concat(NPC_HP_ITEM_INDEXES, [full_restore.index], NPC_STATUS_ITEM_INDEXES);
 
 export function choosePveAction(context) {
   var actions = context.availableActions || [];
@@ -124,7 +124,7 @@ function chooseSurvivalAction(context, items) {
     return { handled: true, action: null };
   }
   if (combatantHasCurableStatus(npcActive)) {
-    action = itemActionForTarget(items, npcActive, ricarica_totale.index);
+    action = itemActionForTarget(items, npcActive, full_restore.index);
     return { handled: true, action: action && healedHp(action.item, npcActive) >= threshold ? action : null };
   }
   action = NPC_HP_ITEM_INDEXES.map(function (itemIndex) {
@@ -204,7 +204,7 @@ function compareReviveItemPriority(left, right) {
 }
 
 function reviveItemPriority(item) {
-  return Number(item && item.index) === revitalizzante_max.index ? 0 : 1;
+  return Number(item && item.index) === max_revive.index ? 0 : 1;
 }
 
 function chooseStatusCureAction(context, items) {
@@ -217,13 +217,13 @@ function chooseStatusCureAction(context, items) {
   specificItemIndex = specificStatusCureItemIndex(npcActive);
   if (wouldFaintFromStatusTick(npcActive)) {
     return itemActionForTarget(items, npcActive, specificItemIndex)
-      || itemActionForTarget(items, npcActive, cura_totale.index);
+      || itemActionForTarget(items, npcActive, full_heal.index);
   }
   if (!manager.combatantWillBeBlockedByStatus(npcActive) || playerHasStatusThreat(context.defender)) {
     return null;
   }
   return itemActionForTarget(items, npcActive, specificItemIndex)
-    || itemActionForTarget(items, npcActive, cura_totale.index);
+    || itemActionForTarget(items, npcActive, full_heal.index);
 }
 
 function wouldFaintFromStatusTick(combatant) {
@@ -245,11 +245,11 @@ function playerHasStatusThreat(playerActive) {
 
 function specificStatusCureItemIndex(combatant) {
   var status = combatant && combatant.status;
-  if (status === "slp") { return sveglia.index; }
-  if (status === "frz") { return antigelo.index; }
-  if (status === "par_block" || status === "par_free") { return antiparalisi.index; }
-  if (status === "psn") { return antidoto.index; }
-  if (status === "brn") { return antiscottatura.index; }
+  if (status === "slp") { return awakening.index; }
+  if (status === "frz") { return ice_heal.index; }
+  if (status === "par_block" || status === "par_free") { return paralyze_heal.index; }
+  if (status === "psn") { return antidote.index; }
+  if (status === "brn") { return burn_heal.index; }
   return null;
 }
 

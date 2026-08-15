@@ -150,7 +150,7 @@ export function renderGlobalNavigation(scene) {
       { label: "Regolamento", action: "open-rules", href: "/rules" },
       { label: "Zone cattura", action: "open-zones", href: "/zones" },
       { label: "Città", action: "open-city", href: "/city" },
-      { label: "Area Lotta", action: "open-battle-area", href: "/area-lotta" },
+      { label: "Area Lotta", action: "open-battle-area", href: "/battle-area" },
       { label: "Scheda", action: "open-team", href: "/team" },
       { label: "Box", action: "open-box", href: "/box" }
     ];

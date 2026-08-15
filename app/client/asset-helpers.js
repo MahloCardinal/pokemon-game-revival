@@ -1,18 +1,19 @@
 import { ItemCategory } from "../data/items.js";
 import { GDR_DATA as DATA } from "../data/index.js";
+import { typeDisplayName } from "../data/type-chart.js";
 
 var ZONE_IMAGE_MAP = {
-  "Bosco Smeraldo": "bosco_smeraldo_bottone.webp",
-  "Monte Luna": "monte_luna_bottone.webp",
-  Mare: "mare_bottone.webp",
-  "Torre Fantasma": "torre_fantasma_bottone.webp",
-  Safari: "safari_bottone.webp",
-  Palude: "palude_bottone.webp",
-  Deserto: "deserto_bottone.webp"
+  viridian_forest: "bosco_smeraldo_bottone.webp",
+  mt_moon: "monte_luna_bottone.webp",
+  sea: "mare_bottone.webp",
+  ghost_tower: "torre_fantasma_bottone.webp",
+  safari_zone: "safari_bottone.webp",
+  swamp: "palude_bottone.webp",
+  desert: "deserto_bottone.webp"
 };
 var GENDER_IMAGE_MAP = {
-  Maschio: "maschio.webp",
-  Femmina: "femmina.webp"
+  male: "maschio.webp",
+  female: "femmina.webp"
 };
 var POKEMON_SPRITE_SCALE_GROUPS = {
   "scale-35": ["10.webp", "304.webp"],
@@ -169,10 +170,10 @@ function pokemonNameForSprite(pokemon) {
 }
 
 function genderSuffix(gender) {
-  if (gender === "Maschio") {
+  if (gender === "male") {
     return "m";
   }
-  if (gender === "Femmina") {
+  if (gender === "female") {
     return "f";
   }
   return "";
@@ -295,14 +296,14 @@ export function getItemImage(fileName) {
 }
 
 export function getItemDisplayImage(item) {
-  if (item && item.category === ItemCategory.Mt) {
+  if (item && item.category === ItemCategory.TM) {
     return getItemImage("MT.webp");
   }
   return item && item.image ? getItemImage(item.image) : "";
 }
 
 export function getTypeImage(typeName) {
-  return assetPath("img_type", lowerSnakeAssetName(typeName));
+  return assetPath("img_type", lowerSnakeAssetName(typeDisplayName(typeName)));
 }
 
 export function getGenderImage(gender) {
@@ -363,6 +364,6 @@ export function renderPokemonSprite(pokemon, className, extraAttrs) {
 
 export function renderTypeIcons(types, imageAttrs) {
   return '<div class="type-icon-list">' + types.map(function (typeName) {
-    return renderImage(getTypeImage(typeName), typeName, "type-label-image", imageAttrs);
+    return renderImage(getTypeImage(typeName), typeDisplayName(typeName), "type-label-image", imageAttrs);
   }).join("") + "</div>";
 }

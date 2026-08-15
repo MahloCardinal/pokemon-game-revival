@@ -1,4 +1,4 @@
-import { KANTO_GYM_BADGE_IMAGES, KANTO_GYM_BADGE_NAMES, KANTO_GYM_CITIES, KANTO_ELITE_FOUR, KANTO_CAMPIONE_KANTO, adventurePhaseForGym, kantoGymChallengeStatus, kantoGymCityByKey, kantoGymLeaderByCity, kantoEliteFourChallengeStatus, kantoChampionChallengeStatus } from "../data/gyms.js";
+import { KANTO_GYM_BADGE_IMAGES, KANTO_GYM_BADGE_NAMES, KANTO_GYM_CITIES, KANTO_ELITE_FOUR, KANTO_CHAMPION, adventurePhaseForGym, kantoGymChallengeStatus, kantoGymCityByKey, kantoGymLeaderByCity, kantoEliteFourChallengeStatus, kantoChampionChallengeStatus } from "../data/gyms.js";
 import { KANTO_TRAINER_FLAVOR_TEXTS, SCENE_PRESENTATION_TEXT, ZONE_CARD_DESCRIPTIONS } from "../data/zones-text.js";
 import { getItemByIndex } from "../data/items.js";
 import { state } from "../client/game-state.js";
@@ -39,9 +39,9 @@ function renderGymRewards(rewards) {
   rewards = (rewards || []).filter(Boolean);
   if (!rewards.length) { return ""; }
   return [
-    '<section class="gym-rewards-panel">',
+    '<section class="gym_rewards-panel">',
     '  <h3 class="gym-section-title">Premi</h3>',
-    '  <div class="gym-reward-list">',
+    '  <div class="gym_reward-list">',
     rewards.map(function (reward) {
       var item = reward.kind === "item" ? getItemByIndex(reward.itemIndex) : null;
       var image = "";
@@ -115,13 +115,13 @@ export function renderKantoLeagueScene() {
   });
   var e4Cards = [
     {
-      key: "superquattro",
+      key: "elite_four",
       title: "Superquattro",
       image: "superquattro_bottone.webp",
       themeClass: "gym-theme-panel-superquattro"
     },
     {
-      key: "campione-kanto",
+      key: "kanto_champion",
       title: "Campione Kanto",
       image: "campione_kanto_bottone.webp",
       themeClass: "gym-theme-panel-campione"
@@ -218,7 +218,7 @@ function renderSuperquattroScene() {
 }
 
 function renderCampioneKantoScene() {
-  var champion = KANTO_CAMPIONE_KANTO;
+  var champion = KANTO_CHAMPION;
   var pokemonCards = champion.team.map(function (pokemon) { return renderPokemonCard(pokemon); }).join("");
   var status = kantoChampionChallengeStatus();
   var actionHtml;
@@ -253,10 +253,10 @@ function renderCampioneKantoScene() {
 }
 
 export function renderGymCityScene(scene) {
-  if (scene.cityKey === "superquattro") {
+  if (scene.cityKey === "elite_four") {
     return renderSuperquattroScene();
   }
-  if (scene.cityKey === "campione-kanto") {
+  if (scene.cityKey === "kanto_champion") {
     return renderCampioneKantoScene();
   }
   var city = kantoGymCityByKey(scene.cityKey);

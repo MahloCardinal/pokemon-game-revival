@@ -40,7 +40,7 @@ export function Combatant(pokemon) {
   this.seedValue = 0;
   this.endure = false;
   this.defenseCurlUsed = false;
-  this.accumuloUsed = false;
+  this.stockpileUsed = false;
   this.rooted = false;
   this.grudgeActive = false;
   this.destinyBondActive = false;
@@ -98,7 +98,7 @@ Combatant.prototype.resetSwitchModifiers = function () {
   this.activeChargeDamageMultiplier = 1;
   this.semiInvulnerable = null;
   this.disabledMoves = [];
-  this.accumuloUsed = false;
+  this.stockpileUsed = false;
   this.rooted = false;
   this.grudgeActive = false;
   this.destinyBondActive = false;
@@ -108,8 +108,8 @@ Combatant.prototype.resetSwitchModifiers = function () {
   this.exclusiveActive = false;
   this.entryAddedType = null;
   this.entryHeldItemResolved = false;
-  this._luminpolvereActive = false;
-  this._focalnastroProtect = false;
+  this._brightPowderActive = false;
+  this._focusSashProtect = false;
   this.type = this.pokemon.type.slice();
 
   if (this.mimicInfo) {
@@ -190,9 +190,9 @@ Combatant.prototype.removePending = function () {
   this.updateMovesState();
 };
 
-Combatant.prototype.disableMoveInhibit = function (moveName) {
-  if (this.disabledMoves.indexOf(moveName) === -1) {
-    this.disabledMoves.push(moveName);
+Combatant.prototype.disableMoveInhibit = function (moveKey) {
+  if (this.disabledMoves.indexOf(moveKey) === -1) {
+    this.disabledMoves.push(moveKey);
     this.updateMovesState();
   }
 };
@@ -214,7 +214,7 @@ Combatant.prototype.updateMovesState = function () {
   var allDisabled = this.disabledMoves.length === this.pokemon.moves.length;
   var replacementMove = null;
   if (allDisabled) {
-    replacementMove = createMove(m.Scontro, {
+    replacementMove = createMove(m.struggle, {
       power: this.pokemon.moves[0].power,
       stats: this.pokemon.moves[0].stats
     });
@@ -224,11 +224,11 @@ Combatant.prototype.updateMovesState = function () {
     var moveToShow = allDisabled && index === 0 ? replacementMove : move;
     var enabled;
     if (this.pendingMove !== null) {
-      enabled = moveToShow.name === this.pendingMove.name;
+      enabled = moveToShow.key === this.pendingMove.key;
     } else if (allDisabled) {
       enabled = index === 0;
     } else if (this.disabledMoves.length) {
-      enabled = this.disabledMoves.indexOf(moveToShow.name) === -1;
+      enabled = this.disabledMoves.indexOf(moveToShow.key) === -1;
     } else {
       enabled = true;
     }

@@ -150,7 +150,7 @@ function submitAuthoritativeDaycareResolution(targetSpeciesKey) {
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
     replaceTeamRuntimeState(state.team);
     clearPendingActivityRuntime("daycare_withdraw");
-    recordMissionEvent("daycare-cycle-completed", {}, {
+    recordMissionEvent("daycare_cycle_completed", {}, {
       eventKey: "daycare-withdraw-resolution:" + session.resolution.id
     });
     activeDaycareResolution = null;
@@ -307,7 +307,7 @@ function completePendingDaycareWithdraw(slot, pokemon) {
     clearPendingActivityRuntime("daycare_withdraw");
     state.dirty = false;
     state.saveStatus = { state: "saved", message: "" };
-    recordMissionEvent("daycare-cycle-completed", {}, {
+    recordMissionEvent("daycare_cycle_completed", {}, {
       eventKey: "daycare-withdraw:" + slot.slotIndex + ":" + String(slot.depositedAt || "")
     });
     render();

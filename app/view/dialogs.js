@@ -355,7 +355,7 @@ function renderStarterConfirmDialog(dialog) {
 function renderKantoLeagueEntryDialog(dialog) {
   var gridClass = "floating-panel-grid floating-panel-grid-count-" + Math.min(3, Math.max(1, (dialog.entries || []).length));
   var teamButtons = (dialog.entries || []).map(function (entry, index) {
-    return '<button type="button" class="floating-panel-btn pokemon-choice-button selectable" data-action="kanto-league-entry-pick" data-index="' + index + '">' + escapeHtml(entry.name || entry.pokemon.name) + "</button>";
+    return '<button type="button" class="floating-panel-btn pokemon_choice-button selectable" data-action="kanto-league-entry-pick" data-index="' + index + '">' + escapeHtml(entry.name || entry.pokemon.name) + "</button>";
   }).join("");
   return [
     '<div class="dialog-backdrop">',

@@ -176,7 +176,7 @@ function buildDebugPokemonMoves(panel, errors) {
 }
 
 function buildDebugPokemonFallbackMove() {
-  return Engine.createMove(MoveConstants.Azione, {
+  return Engine.createMove(MoveConstants.tackle, {
     power: 10,
     stats: 0
   });

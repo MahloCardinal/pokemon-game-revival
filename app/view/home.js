@@ -133,7 +133,7 @@ export function renderHomeScene() {
     homeCard("Città", "open-city", "citta_bottone.webp", "/city", "city"),
     homeCard("Scheda", "open-team", "scheda_bottone.webp", "/team", "team"),
     homeCard("Box", "open-box", "box_bottone.webp", "/box", "box"),
-    homeCard("Area Lotta", "open-battle-area", "area_lotta_bottone.webp", "/area-lotta", "battle_area"),
+    homeCard("Area Lotta", "open-battle-area", "area_lotta_bottone.webp", "/battle-area", "battle_area"),
     homeCard("Lega Kanto", "open-gyms", "lega_kanto_bottone.webp", "/gyms", "gyms")
   ];
 

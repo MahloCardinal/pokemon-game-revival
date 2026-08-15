@@ -18,9 +18,9 @@ function renderBattleAreaCard(title, action, image, href, descriptionKey) {
 
 export function renderBattleAreaScene() {
   var cards = [
-    renderBattleAreaCard("Torre Lotta", "open-battle-tower", "torre_lotta_bottone.webp", "/area-lotta/torre-lotta", "battle_tower"),
-    renderBattleAreaCard("Zona allenamento", "open-battle-training-zone", "zona_allenamento_bottone.webp", "/area-lotta/zona-allenamento", "training_zone"),
-    renderBattleAreaCard("Negozio Lotta", "open-battle-shop", "negozio_lotta_bottone.webp", "/area-lotta/negozio-lotta", "battle_shop")
+    renderBattleAreaCard("Torre Lotta", "open-battle-tower", "torre_lotta_bottone.webp", "/battle-area/battle-tower", "battle_tower"),
+    renderBattleAreaCard("Zona allenamento", "open-battle-training-zone", "zona_allenamento_bottone.webp", "/battle-area/training-zone", "training_zone"),
+    renderBattleAreaCard("Negozio Lotta", "open-battle-shop", "negozio_lotta_bottone.webp", "/battle-area/battle-shop", "battle_shop")
   ];
   return sceneShell("Area Lotta", "", '<section class="city-grid battle-area-grid">' + cards.join("") + "</section>", "", "scene-content-battle-area", "parent-back");
 }

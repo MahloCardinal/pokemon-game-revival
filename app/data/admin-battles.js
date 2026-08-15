@@ -8,8 +8,8 @@ export var ADMIN_BATTLE_ITEMS = PLAYER_BATTLE_USABLE_ITEMS.map(function (item) {
 
 export function isAdminControlledBattleType(battleType) {
   var type = String(battleType || "");
-  return type === "gym_isola-cannella"
-    || type === "gym_smeraldopoli"
+  return type === "gym_cinnabar_island"
+    || type === "gym_viridian_city"
     || type === "training_debug"
     || /^kanto_league_[1-4]$/.test(type)
     || type === "kanto_league_champion";
@@ -23,7 +23,7 @@ export function isKantoLeagueBattleType(battleType) {
 
 export function isAdminRewardBattleType(battleType) {
   var type = String(battleType || "");
-  return type === "gym_isola-cannella"
-    || type === "gym_smeraldopoli"
+  return type === "gym_cinnabar_island"
+    || type === "gym_viridian_city"
     || isKantoLeagueBattleType(type);
 }

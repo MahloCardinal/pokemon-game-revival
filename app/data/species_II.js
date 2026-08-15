@@ -5,3381 +5,3381 @@ export var SPECIES_LIBRARY = {
   "152": {
     name: "Chikorita",
     dexNumber: 152,
-    type: ["Erba"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 21
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      8: [m.Foglielama],
-      12: [m.Riflesso],
-      15: [m.Velenpolvere],
-      22: [m.Sintesi],
-      29: [m.Corposcontro],
-      36: [m.Schermoluce],
-      43: [m.Salvaguardia],
-      50: [m.Solarraggio]
+      5: [m.tackle, m.growl],
+      8: [m.razor_leaf],
+      12: [m.reflect],
+      15: [m.poison_powder],
+      22: [m.synthesis],
+      29: [m.body_slam],
+      36: [m.light_screen],
+      43: [m.safeguard],
+      50: [m.solar_beam]
     },
-    movesByMT: [
-      m.Taglio, m.Solarraggio, m.Tossina, m.Doppioteam, m.Schermoluce,
-      m.Riflesso, m.Flash, m.Riposo, m.Protezione, m.Gigassorbimento,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Codacciaio,
-      m.Introforza, m.Giornodisole, m.Facciata, m.Forzasegreta, m.Semitraglia,
-      m.Frustata, m.Contrattacco, m.Parassiseme, m.Flagello, m.Forzantica,
-      m.Naturforza, m.Radicamento, m.Meloderba, m.Danzaspada, m.Corposcontro,
-      m.Sdoppiatore, m.Mimica, m.Sostituto, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Bullo, m.Sonnolalia, m.Radicalbero
+    movesByTM: [
+      m.cut, m.solar_beam, m.toxic, m.double_team, m.light_screen,
+      m.reflect, m.flash, m.rest, m.protect, m.giga_drain,
+      m.attract, m.return_move, m.frustration, m.safeguard, m.iron_tail,
+      m.hidden_power, m.sunny_day, m.facade, m.secret_power, m.bullet_seed,
+      m.vine_whip, m.counter, m.leech_seed, m.flail, m.ancient_power,
+      m.nature_power, m.ingrain, m.grass_whistle, m.swords_dance, m.body_slam,
+      m.double_edge, m.mimic, m.substitute, m.snore, m.mud_slap,
+      m.endure, m.swagger, m.sleep_talk, m.frenzy_plant
     ],
     evolution: {stage: "base", to: [{species: "153", trigger: {kind: "level", level: 16}}]}
   },
   "153": {
     name: "Bayleef",
     dexNumber: 153,
-    type: ["Erba"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 16,
       maxLevel: 42
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      8: [m.Foglielama],
-      12: [m.Riflesso],
-      15: [m.Velenpolvere],
-      23: [m.Sintesi],
-      31: [m.Corposcontro],
-      39: [m.Schermoluce],
-      47: [m.Salvaguardia],
-      55: [m.Solarraggio]
+      5: [m.tackle, m.growl],
+      8: [m.razor_leaf],
+      12: [m.reflect],
+      15: [m.poison_powder],
+      23: [m.synthesis],
+      31: [m.body_slam],
+      39: [m.light_screen],
+      47: [m.safeguard],
+      55: [m.solar_beam]
     },
-    movesByMT: [
-      m.Taglio, m.Forza, m.Solarraggio, m.Tossina, m.Doppioteam,
-      m.Schermoluce, m.Riflesso, m.Flash, m.Riposo, m.Protezione,
-      m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia,
-      m.Codacciaio, m.Introforza, m.Giornodisole, m.Spaccaroccia, m.Facciata,
-      m.Forzasegreta, m.Semitraglia, m.Frustata, m.Contrattacco, m.Parassiseme,
-      m.Flagello, m.Forzantica, m.Naturforza, m.Radicamento, m.Meloderba,
-      m.Danzaspada, m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Sostituto,
-      m.Russare, m.Fangosberla, m.Resistenza, m.Bullo, m.Tagliofuria,
-      m.Sonnolalia, m.Radicalbero
+    movesByTM: [
+      m.cut, m.strength, m.solar_beam, m.toxic, m.double_team,
+      m.light_screen, m.reflect, m.flash, m.rest, m.protect,
+      m.giga_drain, m.attract, m.return_move, m.frustration, m.safeguard,
+      m.iron_tail, m.hidden_power, m.sunny_day, m.rock_smash, m.facade,
+      m.secret_power, m.bullet_seed, m.vine_whip, m.counter, m.leech_seed,
+      m.flail, m.ancient_power, m.nature_power, m.ingrain, m.grass_whistle,
+      m.swords_dance, m.body_slam, m.double_edge, m.mimic, m.substitute,
+      m.snore, m.mud_slap, m.endure, m.swagger, m.fury_cutter,
+      m.sleep_talk, m.frenzy_plant
     ],
     evolution: {stage: "stage1", to: [{species: "154", trigger: {kind: "level", level: 32}}]}
   },
   "154": {
     name: "Meganium",
     dexNumber: 154,
-    type: ["Erba"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 32,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      8: [m.Foglielama],
-      12: [m.Riflesso],
-      15: [m.Velenpolvere],
-      23: [m.Sintesi],
-      31: [m.Corposcontro],
-      41: [m.Schermoluce],
-      51: [m.Salvaguardia],
-      61: [m.Solarraggio]
+      5: [m.tackle, m.growl],
+      8: [m.razor_leaf],
+      12: [m.reflect],
+      15: [m.poison_powder],
+      23: [m.synthesis],
+      31: [m.body_slam],
+      41: [m.light_screen],
+      51: [m.safeguard],
+      61: [m.solar_beam]
     },
-    movesByMT: [
-      m.Taglio, m.IperRaggio, m.Forza, m.Solarraggio, m.Terremoto,
-      m.Tossina, m.Doppioteam, m.Schermoluce, m.Riflesso, m.Flash,
-      m.Riposo, m.Protezione, m.Gigassorbimento, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Salvaguardia, m.Codacciaio, m.Introforza, m.Giornodisole,
-      m.Spaccaroccia, m.Facciata, m.Forzasegreta, m.Semitraglia, m.Frustata,
-      m.Contrattacco, m.Parassiseme, m.Flagello, m.Forzantica, m.Naturforza,
-      m.Radicamento, m.Meloderba, m.Danzaspada, m.Corposcontro, m.Sdoppiatore,
-      m.Mimica, m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Bullo, m.Tagliofuria, m.Sonnolalia, m.Radicalbero
+    movesByTM: [
+      m.cut, m.hyper_beam, m.strength, m.solar_beam, m.earthquake,
+      m.toxic, m.double_team, m.light_screen, m.reflect, m.flash,
+      m.rest, m.protect, m.giga_drain, m.attract, m.return_move,
+      m.frustration, m.safeguard, m.iron_tail, m.hidden_power, m.sunny_day,
+      m.rock_smash, m.facade, m.secret_power, m.bullet_seed, m.vine_whip,
+      m.counter, m.leech_seed, m.flail, m.ancient_power, m.nature_power,
+      m.ingrain, m.grass_whistle, m.swords_dance, m.body_slam, m.double_edge,
+      m.mimic, m.substitute, m.snore, m.mud_slap, m.endure,
+      m.swagger, m.fury_cutter, m.sleep_talk, m.frenzy_plant
     ],
     evolution: {stage: "stage2", to: []}
   },
   "155": {
     name: "Cyndaquil",
     dexNumber: 155,
-    type: ["Fuoco"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fire"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 19
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione, m.Fulmisguardo],
-      6: [m.MurodiFumo],
-      12: [m.Braciere],
-      19: [m.AttaccoRapido],
-      27: [m.Ruotafuoco],
-      36: [m.Comete],
-      46: [m.Lanciafiamme]
+      5: [m.tackle, m.leer],
+      6: [m.smokescreen],
+      12: [m.ember],
+      19: [m.quick_attack],
+      27: [m.flame_wheel],
+      36: [m.swift],
+      46: [m.flamethrower]
     },
-    movesByMT: [
-      m.Taglio, m.Lanciafiamme, m.Fossa, m.Tossina, m.Doppioteam,
-      m.Fuocobomba, m.Riposo, m.Protezione, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Giornodisole, m.Facciata, m.Forzasegreta,
-      m.Vampata, m.Aeroassalto, m.Colpo, m.AttaccoRapido, m.Sfuriate,
-      m.Contropiede, m.Preveggenza, m.Tritartigli, m.Gridodilotta, m.Supplica,
-      m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Ricciolscudo, m.Comete,
-      m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento,
-      m.Bullo, m.Sonnolalia, m.Incendio
+    movesByTM: [
+      m.cut, m.flamethrower, m.dig, m.toxic, m.double_team,
+      m.fire_blast, m.rest, m.protect, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.sunny_day, m.facade, m.secret_power,
+      m.overheat, m.aerial_ace, m.thrash, m.quick_attack, m.fury_swipes,
+      m.reversal, m.foresight, m.crush_claw, m.howl, m.covet,
+      m.body_slam, m.double_edge, m.mimic, m.defense_curl, m.swift,
+      m.substitute, m.snore, m.mud_slap, m.endure, m.rollout,
+      m.swagger, m.sleep_talk, m.blast_burn
     ],
     evolution: {stage: "base", to: [{species: "156", trigger: {kind: "level", level: 14}}]}
   },
   "156": {
     name: "Quilava",
     dexNumber: 156,
-    type: ["Fuoco"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fire"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 14,
       maxLevel: 46
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Fulmisguardo],
-      6: [m.MurodiFumo],
-      12: [m.Braciere],
-      21: [m.AttaccoRapido],
-      31: [m.Ruotafuoco],
-      42: [m.Comete],
-      54: [m.Lanciafiamme]
+      5: [m.tackle, m.leer],
+      6: [m.smokescreen],
+      12: [m.ember],
+      21: [m.quick_attack],
+      31: [m.flame_wheel],
+      42: [m.swift],
+      54: [m.flamethrower]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.Lanciafiamme, m.Forza, m.Fossa,
-      m.Tossina, m.Doppioteam, m.Fuocobomba, m.Riposo, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Giornodisole,
-      m.Spaccaroccia, m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta,
-      m.Vampata, m.Aeroassalto, m.Colpo, m.AttaccoRapido, m.Sfuriate,
-      m.Contropiede, m.Preveggenza, m.Tritartigli, m.Gridodilotta, m.Supplica,
-      m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Ricciolscudo, m.Comete,
-      m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento,
-      m.Bullo, m.Tagliofuria, m.Sonnolalia, m.Incendio
+    movesByTM: [
+      m.cut, m.roar, m.flamethrower, m.strength, m.dig,
+      m.toxic, m.double_team, m.fire_blast, m.rest, m.protect,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.sunny_day,
+      m.rock_smash, m.facade, m.focus_punch, m.brick_break, m.secret_power,
+      m.overheat, m.aerial_ace, m.thrash, m.quick_attack, m.fury_swipes,
+      m.reversal, m.foresight, m.crush_claw, m.howl, m.covet,
+      m.body_slam, m.double_edge, m.mimic, m.defense_curl, m.swift,
+      m.substitute, m.snore, m.mud_slap, m.endure, m.rollout,
+      m.swagger, m.fury_cutter, m.sleep_talk, m.blast_burn
     ],
     evolution: {stage: "stage1", to: [{species: "157", trigger: {kind: "level", level: 36}}]}
   },
   "157": {
     name: "Typhlosion",
     dexNumber: 157,
-    type: ["Fuoco"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fire"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 36,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Azione, m.Fulmisguardo],
-      6: [m.MurodiFumo],
-      12: [m.Braciere],
-      21: [m.AttaccoRapido],
-      31: [m.Ruotafuoco],
-      45: [m.Comete],
-      60: [m.Lanciafiamme]
+      5: [m.tackle, m.leer],
+      6: [m.smokescreen],
+      12: [m.ember],
+      21: [m.quick_attack],
+      31: [m.flame_wheel],
+      45: [m.swift],
+      60: [m.flamethrower]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.Lanciafiamme, m.IperRaggio, m.Forza,
-      m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam, m.Fuocobomba,
-      m.Riposo, m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Giornodisole, m.Spaccaroccia, m.Facciata, m.Centripugno,
-      m.Breccia, m.Forzasegreta, m.Vampata, m.Aeroassalto, m.Colpo,
-      m.AttaccoRapido, m.Sfuriate, m.Contropiede, m.Preveggenza, m.Tritartigli,
-      m.Gridodilotta, m.Supplica, m.Megapugno, m.Fuocopugno, m.Tuonopugno,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Mimica, m.Ricciolscudo, m.Comete, m.Frana, m.Sostituto,
-      m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento, m.Bullo,
-      m.Tagliofuria, m.Sonnolalia, m.Dinamipugno, m.Incendio
+    movesByTM: [
+      m.cut, m.roar, m.flamethrower, m.hyper_beam, m.strength,
+      m.earthquake, m.dig, m.toxic, m.double_team, m.fire_blast,
+      m.rest, m.protect, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.sunny_day, m.rock_smash, m.facade, m.focus_punch,
+      m.brick_break, m.secret_power, m.overheat, m.aerial_ace, m.thrash,
+      m.quick_attack, m.fury_swipes, m.reversal, m.foresight, m.crush_claw,
+      m.howl, m.covet, m.mega_punch, m.fire_punch, m.thunder_punch,
+      m.mega_kick, m.body_slam, m.double_edge, m.counter, m.seismic_toss,
+      m.mimic, m.defense_curl, m.swift, m.rock_slide, m.substitute,
+      m.snore, m.mud_slap, m.endure, m.rollout, m.swagger,
+      m.fury_cutter, m.sleep_talk, m.dynamic_punch, m.blast_burn
     ],
     evolution: {stage: "stage2", to: []}
   },
   "158": {
     name: "Totodile",
     dexNumber: 158,
-    type: ["Acqua"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 23
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Graffio, m.Fulmisguardo],
-      7: [m.Ira],
-      13: [m.Pistolacqua],
-      20: [m.Morso],
-      27: [m.Visotruce],
-      35: [m.Lacerazione],
-      43: [m.Stridio],
-      52: [m.Idropompa]
+      5: [m.scratch, m.leer],
+      7: [m.rage],
+      13: [m.water_gun],
+      20: [m.bite],
+      27: [m.scary_face],
+      35: [m.slash],
+      43: [m.screech],
+      52: [m.hydro_pump]
     },
-    movesByMT: [
-      m.Taglio, m.Surf, m.Geloraggio, m.Bora, m.Fossa,
-      m.Tossina, m.Doppioteam, m.Cascata, m.Riposo, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza,
-      m.Pioggiadanza, m.Grandine, m.Facciata, m.Centripugno, m.Breccia,
-      m.Forzasegreta, m.Sub, m.Aeroassalto, m.Idropulsar, m.Colpo,
-      m.Idropompa, m.Frana, m.Sgranocchio, m.Forzantica, m.Fangata,
-      m.Dragartigli, m.Docciascudo, m.Megapugno, m.Gelopugno, m.Danzaspada,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Mimica, m.Sostituto, m.Russare, m.Fangosberla, m.Ventogelato,
-      m.Resistenza, m.Bullo, m.Sonnolalia, m.Dinamipugno, m.Idrocannone
+    movesByTM: [
+      m.cut, m.surf, m.ice_beam, m.blizzard, m.dig,
+      m.toxic, m.double_team, m.waterfall, m.rest, m.protect,
+      m.attract, m.return_move, m.frustration, m.iron_tail, m.hidden_power,
+      m.rain_dance, m.hail, m.facade, m.focus_punch, m.brick_break,
+      m.secret_power, m.dive, m.aerial_ace, m.water_pulse, m.thrash,
+      m.hydro_pump, m.rock_slide, m.crunch, m.ancient_power, m.mud_sport,
+      m.dragon_claw, m.water_sport, m.mega_punch, m.ice_punch, m.swords_dance,
+      m.mega_kick, m.body_slam, m.double_edge, m.counter, m.seismic_toss,
+      m.mimic, m.substitute, m.snore, m.mud_slap, m.icy_wind,
+      m.endure, m.swagger, m.sleep_talk, m.dynamic_punch, m.hydro_cannon
     ],
     evolution: {stage: "base", to: [{species: "159", trigger: {kind: "level", level: 18}}]}
   },
   "159": {
     name: "Croconaw",
     dexNumber: 159,
-    type: ["Acqua"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 18,
       maxLevel: 40
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Graffio, m.Fulmisguardo],
-      7: [m.Ira],
-      13: [m.Pistolacqua],
-      21: [m.Morso],
-      28: [m.Visotruce],
-      37: [m.Lacerazione],
-      45: [m.Stridio],
-      55: [m.Idropompa]
+      5: [m.scratch, m.leer],
+      7: [m.rage],
+      13: [m.water_gun],
+      21: [m.bite],
+      28: [m.scary_face],
+      37: [m.slash],
+      45: [m.screech],
+      55: [m.hydro_pump]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.Surf, m.Geloraggio, m.Bora,
-      m.Forza, m.Fossa, m.Tossina, m.Doppioteam, m.Cascata,
-      m.Riposo, m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Spaccaroccia, m.Grandine,
-      m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta, m.Sub,
-      m.Aeroassalto, m.Idropulsar, m.Colpo, m.Idropompa, m.Frana,
-      m.Sgranocchio, m.Forzantica, m.Fangata, m.Dragartigli, m.Docciascudo,
-      m.Megapugno, m.Gelopugno, m.Danzaspada, m.Megacalcio, m.Corposcontro,
-      m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico, m.Mimica, m.Sostituto,
-      m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza, m.Bullo,
-      m.Tagliofuria, m.Sonnolalia, m.Dinamipugno, m.Idrocannone
+    movesByTM: [
+      m.cut, m.roar, m.surf, m.ice_beam, m.blizzard,
+      m.strength, m.dig, m.toxic, m.double_team, m.waterfall,
+      m.rest, m.protect, m.attract, m.return_move, m.frustration,
+      m.iron_tail, m.hidden_power, m.rain_dance, m.rock_smash, m.hail,
+      m.facade, m.focus_punch, m.brick_break, m.secret_power, m.dive,
+      m.aerial_ace, m.water_pulse, m.thrash, m.hydro_pump, m.rock_slide,
+      m.crunch, m.ancient_power, m.mud_sport, m.dragon_claw, m.water_sport,
+      m.mega_punch, m.ice_punch, m.swords_dance, m.mega_kick, m.body_slam,
+      m.double_edge, m.counter, m.seismic_toss, m.mimic, m.substitute,
+      m.snore, m.mud_slap, m.icy_wind, m.endure, m.swagger,
+      m.fury_cutter, m.sleep_talk, m.dynamic_punch, m.hydro_cannon
     ],
     evolution: {stage: "stage1", to: [{species: "160", trigger: {kind: "level", level: 30}}]}
   },
   "160": {
     name: "Feraligatr",
     dexNumber: 160,
-    type: ["Acqua"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 30,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Graffio, m.Fulmisguardo],
-      7: [m.Ira],
-      13: [m.Pistolacqua],
-      21: [m.Morso],
-      28: [m.Visotruce],
-      38: [m.Lacerazione],
-      47: [m.Stridio],
-      58: [m.Idropompa]
+      5: [m.scratch, m.leer],
+      7: [m.rage],
+      13: [m.water_gun],
+      21: [m.bite],
+      28: [m.scary_face],
+      38: [m.slash],
+      47: [m.screech],
+      58: [m.hydro_pump]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.Surf, m.Geloraggio, m.Bora,
-      m.IperRaggio, m.Forza, m.Terremoto, m.Fossa, m.Tossina,
-      m.Doppioteam, m.Cascata, m.Riposo, m.Protezione, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza,
-      m.Spaccaroccia, m.Grandine, m.Facciata, m.Centripugno, m.Breccia,
-      m.Forzasegreta, m.Sub, m.Aeroassalto, m.Dragartigli, m.Idropulsar,
-      m.Colpo, m.Idropompa, m.Frana, m.Sgranocchio, m.Forzantica,
-      m.Fangata, m.Docciascudo, m.Megapugno, m.Gelopugno, m.Danzaspada,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Mimica, m.Sostituto, m.Russare, m.Fangosberla, m.Ventogelato,
-      m.Resistenza, m.Bullo, m.Tagliofuria, m.Sonnolalia, m.Dinamipugno,
-      m.Idrocannone
+    movesByTM: [
+      m.cut, m.roar, m.surf, m.ice_beam, m.blizzard,
+      m.hyper_beam, m.strength, m.earthquake, m.dig, m.toxic,
+      m.double_team, m.waterfall, m.rest, m.protect, m.attract,
+      m.return_move, m.frustration, m.iron_tail, m.hidden_power, m.rain_dance,
+      m.rock_smash, m.hail, m.facade, m.focus_punch, m.brick_break,
+      m.secret_power, m.dive, m.aerial_ace, m.dragon_claw, m.water_pulse,
+      m.thrash, m.hydro_pump, m.rock_slide, m.crunch, m.ancient_power,
+      m.mud_sport, m.water_sport, m.mega_punch, m.ice_punch, m.swords_dance,
+      m.mega_kick, m.body_slam, m.double_edge, m.counter, m.seismic_toss,
+      m.mimic, m.substitute, m.snore, m.mud_slap, m.icy_wind,
+      m.endure, m.swagger, m.fury_cutter, m.sleep_talk, m.dynamic_punch,
+      m.hydro_cannon
     ],
     evolution: {stage: "stage2", to: []}
   },
   "161": {
     name: "Sentret",
     dexNumber: 161,
-    type: ["Normale"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 25
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Graffio, m.Ricciolscudo],
-      7: [m.AttaccoRapido],
-      12: [m.Sfuriate],
-      17: [m.Altruismo],
-      24: [m.Schianto],
-      40: [m.Riposo],
-      49: [m.Amnesia]
+      5: [m.scratch, m.defense_curl],
+      7: [m.quick_attack],
+      12: [m.fury_swipes],
+      17: [m.helping_hand],
+      24: [m.slam],
+      40: [m.rest],
+      49: [m.amnesia]
     },
-    movesByMT: [
-      m.Taglio, m.Lanciafiamme, m.Surf, m.Geloraggio, m.Solarraggio,
-      m.Fulmine, m.Fossa, m.Tossina, m.Doppioteam, m.Riposo,
-      m.Furto, m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra,
-      m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta, m.Ondashock,
-      m.Idropulsar, m.Sdoppiatore, m.Focalenergia, m.Lacerazione, m.Sostituto,
-      m.Contropiede, m.Inseguimento, m.Raggiro, m.Assistente, m.Fuocopugno,
-      m.Gelopugno, m.Tuonopugno, m.Corposcontro, m.Mimica, m.Ricciolscudo,
-      m.Comete, m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento,
-      m.Bullo, m.Tagliofuria, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.cut, m.flamethrower, m.surf, m.ice_beam, m.solar_beam,
+      m.thunderbolt, m.dig, m.toxic, m.double_team, m.rest,
+      m.thief, m.protect, m.attract, m.return_move, m.frustration,
+      m.iron_tail, m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball,
+      m.facade, m.focus_punch, m.brick_break, m.secret_power, m.shock_wave,
+      m.water_pulse, m.double_edge, m.focus_energy, m.slash, m.substitute,
+      m.reversal, m.pursuit, m.trick, m.assist, m.fire_punch,
+      m.ice_punch, m.thunder_punch, m.body_slam, m.mimic, m.defense_curl,
+      m.swift, m.snore, m.mud_slap, m.endure, m.rollout,
+      m.swagger, m.fury_cutter, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "base", to: [{species: "162", trigger: {kind: "level", level: 15}}]}
   },
   "162": {
     name: "Furret",
     dexNumber: 162,
-    type: ["Normale"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 15,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Graffio, m.AttaccoRapido, m.Ricciolscudo],
-      12: [m.Sfuriate],
-      19: [m.Altruismo],
-      28: [m.Schianto],
-      48: [m.Riposo],
-      59: [m.Amnesia]
+      5: [m.scratch, m.quick_attack, m.defense_curl],
+      12: [m.fury_swipes],
+      19: [m.helping_hand],
+      28: [m.slam],
+      48: [m.rest],
+      59: [m.amnesia]
     },
-    movesByMT: [
-      m.Taglio, m.Lanciafiamme, m.Surf, m.Geloraggio, m.Bora,
-      m.IperRaggio, m.Forza, m.Solarraggio, m.Fulmine, m.Tuono,
-      m.Fossa, m.Tossina, m.Doppioteam, m.Riposo, m.Furto,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia,
-      m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta, m.Ondashock,
-      m.Idropulsar, m.Sdoppiatore, m.Focalenergia, m.Lacerazione, m.Sostituto,
-      m.Contropiede, m.Inseguimento, m.Raggiro, m.Assistente, m.Fuocopugno,
-      m.Gelopugno, m.Tuonopugno, m.Corposcontro, m.Mimica, m.Ricciolscudo,
-      m.Comete, m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento,
-      m.Bullo, m.Tagliofuria, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.cut, m.flamethrower, m.surf, m.ice_beam, m.blizzard,
+      m.hyper_beam, m.strength, m.solar_beam, m.thunderbolt, m.thunder,
+      m.dig, m.toxic, m.double_team, m.rest, m.thief,
+      m.protect, m.attract, m.return_move, m.frustration, m.iron_tail,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash,
+      m.facade, m.focus_punch, m.brick_break, m.secret_power, m.shock_wave,
+      m.water_pulse, m.double_edge, m.focus_energy, m.slash, m.substitute,
+      m.reversal, m.pursuit, m.trick, m.assist, m.fire_punch,
+      m.ice_punch, m.thunder_punch, m.body_slam, m.mimic, m.defense_curl,
+      m.swift, m.snore, m.mud_slap, m.endure, m.rollout,
+      m.swagger, m.fury_cutter, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "stage1", to: []}
   },
   "163": {
     name: "Hoothoot",
     dexNumber: 163,
-    type: ["Normale", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 30
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      6: [m.Preveggenza],
-      11: [m.Beccata],
-      16: [m.Ipnosi],
-      22: [m.Riflesso],
-      28: [m.Riduttore],
-      34: [m.Confusione],
-      48: [m.Mangiasogni]
+      5: [m.tackle, m.growl],
+      6: [m.foresight],
+      11: [m.peck],
+      16: [m.hypnosis],
+      22: [m.reflect],
+      28: [m.take_down],
+      34: [m.confusion],
+      48: [m.dream_eater]
     },
-    movesByMT: [
-      m.Volo, m.Tossina, m.Psichico, m.Doppioteam, m.Riflesso,
-      m.Flash, m.Riposo, m.Furto, m.Protezione, m.Alacciaio,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Facciata, m.Forzasegreta, m.Aeroassalto,
-      m.AttaccodAla, m.Turbine, m.Supersuono, m.Speculmossa, m.Aeroattacco,
-      m.Finta, m.Danzadipiume, m.Sdoppiatore, m.Mimica, m.Comete,
-      m.Mangiasogni, m.Sostituto, m.Incubo, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.fly, m.toxic, m.psychic, m.double_team, m.reflect,
+      m.flash, m.rest, m.thief, m.protect, m.steel_wing,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.facade, m.secret_power, m.aerial_ace,
+      m.wing_attack, m.whirlwind, m.supersonic, m.mirror_move, m.sky_attack,
+      m.feint_attack, m.feather_dance, m.double_edge, m.mimic, m.swift,
+      m.dream_eater, m.substitute, m.nightmare, m.snore, m.mud_slap,
+      m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: [{species: "164", trigger: {kind: "level", level: 20}}]}
   },
   "164": {
     name: "Noctowl",
     dexNumber: 164,
-    type: ["Normale", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 20,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      6: [m.Preveggenza],
-      11: [m.Beccata],
-      16: [m.Ipnosi],
-      25: [m.Riflesso],
-      33: [m.Riduttore],
-      41: [m.Confusione],
-      57: [m.Mangiasogni]
+      5: [m.tackle, m.growl],
+      6: [m.foresight],
+      11: [m.peck],
+      16: [m.hypnosis],
+      25: [m.reflect],
+      33: [m.take_down],
+      41: [m.confusion],
+      57: [m.dream_eater]
     },
-    movesByMT: [
-      m.Volo, m.IperRaggio, m.Tossina, m.Psichico, m.Doppioteam,
-      m.Riflesso, m.Flash, m.Riposo, m.Furto, m.Protezione,
-      m.Alacciaio, m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza,
-      m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Facciata, m.Forzasegreta,
-      m.Aeroassalto, m.AttaccodAla, m.Turbine, m.Supersuono, m.Speculmossa,
-      m.Aeroattacco, m.Finta, m.Danzadipiume, m.Sdoppiatore, m.Mimica,
-      m.Comete, m.Mangiasogni, m.Sostituto, m.Incubo, m.Russare,
-      m.Fangosberla, m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.fly, m.hyper_beam, m.toxic, m.psychic, m.double_team,
+      m.reflect, m.flash, m.rest, m.thief, m.protect,
+      m.steel_wing, m.attract, m.return_move, m.frustration, m.hidden_power,
+      m.rain_dance, m.sunny_day, m.shadow_ball, m.facade, m.secret_power,
+      m.aerial_ace, m.wing_attack, m.whirlwind, m.supersonic, m.mirror_move,
+      m.sky_attack, m.feint_attack, m.feather_dance, m.double_edge, m.mimic,
+      m.swift, m.dream_eater, m.substitute, m.nightmare, m.snore,
+      m.mud_slap, m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage1", to: []}
   },
   "165": {
     name: "Ledyba",
     dexNumber: 165,
-    type: ["Coleottero", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "flying"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 28
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione],
-      8: [m.Supersuono],
-      15: [m.Cometapugno],
-      22: [m.Schermoluce, m.Riflesso, m.Salvaguardia],
-      29: [m.Staffetta],
-      36: [m.Comete],
-      43: [m.Agilita],
-      50: [m.Sdoppiatore]
+      5: [m.tackle],
+      8: [m.supersonic],
+      15: [m.comet_punch],
+      22: [m.light_screen, m.reflect, m.safeguard],
+      29: [m.baton_pass],
+      36: [m.swift],
+      43: [m.agility],
+      50: [m.double_edge]
     },
-    movesByMT: [
-      m.Solarraggio, m.Fossa, m.Tossina, m.Doppioteam, m.Schermoluce,
-      m.Riflesso, m.Flash, m.Riposo, m.Furto, m.Protezione,
-      m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia,
-      m.Introforza, m.Giornodisole, m.Facciata, m.Centripugno, m.Breccia,
-      m.Forzasegreta, m.Aeroassalto, m.Psicoraggio, m.Pazienza, m.Ventargenteo,
-      m.Megapugno, m.Gelopugno, m.Tuonopugno, m.Danzaspada, m.Sdoppiatore,
-      m.Mimica, m.Comete, m.Sostituto, m.Russare, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia, m.Dinamipugno, m.Supersuono,
-      m.Rinfrescata
+    movesByTM: [
+      m.solar_beam, m.dig, m.toxic, m.double_team, m.light_screen,
+      m.reflect, m.flash, m.rest, m.thief, m.protect,
+      m.giga_drain, m.attract, m.return_move, m.frustration, m.safeguard,
+      m.hidden_power, m.sunny_day, m.facade, m.focus_punch, m.brick_break,
+      m.secret_power, m.aerial_ace, m.psybeam, m.bide, m.silver_wind,
+      m.mega_punch, m.ice_punch, m.thunder_punch, m.swords_dance, m.double_edge,
+      m.mimic, m.swift, m.substitute, m.snore, m.endure,
+      m.rollout, m.swagger, m.sleep_talk, m.dynamic_punch, m.supersonic,
+      m.refresh
     ],
     evolution: {stage: "base", to: [{species: "166", trigger: {kind: "level", level: 18}}]}
   },
   "166": {
     name: "Ledian",
     dexNumber: 166,
-    type: ["Coleottero", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "flying"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 18,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione],
-      8: [m.Supersuono],
-      15: [m.Cometapugno],
-      24: [m.Schermoluce, m.Riflesso, m.Salvaguardia],
-      33: [m.Staffetta],
-      42: [m.Comete],
-      51: [m.Agilita],
-      60: [m.Sdoppiatore]
+      5: [m.tackle],
+      8: [m.supersonic],
+      15: [m.comet_punch],
+      24: [m.light_screen, m.reflect, m.safeguard],
+      33: [m.baton_pass],
+      42: [m.swift],
+      51: [m.agility],
+      60: [m.double_edge]
     },
-    movesByMT: [
-      m.IperRaggio, m.Solarraggio, m.Fossa, m.Tossina, m.Doppioteam,
-      m.Schermoluce, m.Riflesso, m.Flash, m.Riposo, m.Furto,
-      m.Protezione, m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Salvaguardia, m.Introforza, m.Giornodisole, m.Facciata, m.Centripugno,
-      m.Breccia, m.Forzasegreta, m.Aeroassalto, m.Psicoraggio, m.Pazienza,
-      m.Ventargenteo, m.Megapugno, m.Gelopugno, m.Tuonopugno, m.Danzaspada,
-      m.Sdoppiatore, m.Mimica, m.Comete, m.Sostituto, m.Russare,
-      m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia, m.Dinamipugno,
-      m.Supersuono, m.Rinfrescata
+    movesByTM: [
+      m.hyper_beam, m.solar_beam, m.dig, m.toxic, m.double_team,
+      m.light_screen, m.reflect, m.flash, m.rest, m.thief,
+      m.protect, m.giga_drain, m.attract, m.return_move, m.frustration,
+      m.safeguard, m.hidden_power, m.sunny_day, m.facade, m.focus_punch,
+      m.brick_break, m.secret_power, m.aerial_ace, m.psybeam, m.bide,
+      m.silver_wind, m.mega_punch, m.ice_punch, m.thunder_punch, m.swords_dance,
+      m.double_edge, m.mimic, m.swift, m.substitute, m.snore,
+      m.endure, m.rollout, m.swagger, m.sleep_talk, m.dynamic_punch,
+      m.supersonic, m.refresh
     ],
     evolution: {stage: "stage1", to: []}
   },
   "167": {
     name: "Spinarak",
     dexNumber: 167,
-    type: ["Coleottero", "Veleno"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "poison"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 32
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Velenospina, m.Millebave],
-      6: [m.Visotruce],
-      11: [m.Limitazione],
-      17: [m.OmbraNotturna],
-      23: [m.Sanguisuga],
-      30: [m.Sfuriate],
-      37: [m.Ragnatela],
-      45: [m.Agilita],
-      53: [m.Psichico]
+      5: [m.poison_sting, m.string_shot],
+      6: [m.scary_face],
+      11: [m.constrict],
+      17: [m.night_shade],
+      23: [m.leech_life],
+      30: [m.fury_swipes],
+      37: [m.spider_web],
+      45: [m.agility],
+      53: [m.psychic]
     },
-    movesByMT: [
-      m.Solarraggio, m.Fossa, m.Tossina, m.Psichico, m.Doppioteam,
-      m.Flash, m.Riposo, m.Furto, m.Protezione, m.Fangobomba,
-      m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza,
-      m.Giornodisole, m.Facciata, m.Forzasegreta, m.Sonicboom, m.Inibitore,
-      m.Psicoraggio, m.Staffetta, m.Inseguimento, m.Segnoraggio, m.Corposcontro,
-      m.Sdoppiatore, m.Mimica, m.Sostituto, m.Russare, m.Resistenza,
-      m.Bullo, m.Sonnolalia, m.OmbraNotturna, m.Rinfrescata
+    movesByTM: [
+      m.solar_beam, m.dig, m.toxic, m.psychic, m.double_team,
+      m.flash, m.rest, m.thief, m.protect, m.sludge_bomb,
+      m.giga_drain, m.attract, m.return_move, m.frustration, m.hidden_power,
+      m.sunny_day, m.facade, m.secret_power, m.sonic_boom, m.disable,
+      m.psybeam, m.baton_pass, m.pursuit, m.signal_beam, m.body_slam,
+      m.double_edge, m.mimic, m.substitute, m.snore, m.endure,
+      m.swagger, m.sleep_talk, m.night_shade, m.refresh
     ],
     evolution: {stage: "base", to: [{species: "168", trigger: {kind: "level", level: 22}}]}
   },
   "168": {
     name: "Ariados",
     dexNumber: 168,
-    type: ["Coleottero", "Veleno"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "poison"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 22,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Velenospina, m.Millebave],
-      6: [m.Visotruce],
-      11: [m.Limitazione],
-      17: [m.OmbraNotturna],
-      25: [m.Sanguisuga],
-      34: [m.Sfuriate],
-      43: [m.Ragnatela],
-      53: [m.Agilita],
-      63: [m.Psichico]
+      5: [m.poison_sting, m.string_shot],
+      6: [m.scary_face],
+      11: [m.constrict],
+      17: [m.night_shade],
+      25: [m.leech_life],
+      34: [m.fury_swipes],
+      43: [m.spider_web],
+      53: [m.agility],
+      63: [m.psychic]
     },
-    movesByMT: [
-      m.IperRaggio, m.Solarraggio, m.Fossa, m.Tossina, m.Psichico,
-      m.Doppioteam, m.Flash, m.Riposo, m.Furto, m.Protezione,
-      m.Fangobomba, m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Giornodisole, m.Facciata, m.Forzasegreta, m.Sonicboom,
-      m.Inibitore, m.Psicoraggio, m.Staffetta, m.Inseguimento, m.Segnoraggio,
-      m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Sostituto, m.Russare,
-      m.Resistenza, m.Bullo, m.Sonnolalia, m.OmbraNotturna, m.Rinfrescata
+    movesByTM: [
+      m.hyper_beam, m.solar_beam, m.dig, m.toxic, m.psychic,
+      m.double_team, m.flash, m.rest, m.thief, m.protect,
+      m.sludge_bomb, m.giga_drain, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.sunny_day, m.facade, m.secret_power, m.sonic_boom,
+      m.disable, m.psybeam, m.baton_pass, m.pursuit, m.signal_beam,
+      m.body_slam, m.double_edge, m.mimic, m.substitute, m.snore,
+      m.endure, m.swagger, m.sleep_talk, m.night_shade, m.refresh
     ],
     evolution: {stage: "stage1", to: []}
   },
   "169": {
     name: "Crobat",
     dexNumber: 169,
-    type: ["Veleno", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["poison", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 40,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Stridio, m.Sanguisuga],
-      6: [m.Sgomento],
-      11: [m.Supersuono],
-      16: [m.Morso],
-      21: [m.AttaccodAla],
-      28: [m.Stordiraggio],
-      35: [m.Aerasoio],
-      42: [m.Malosguardo],
-      49: [m.Velenodenti],
-      56: [m.Nube]
+      5: [m.screech, m.leech_life],
+      6: [m.astonish],
+      11: [m.supersonic],
+      16: [m.bite],
+      21: [m.wing_attack],
+      28: [m.confuse_ray],
+      35: [m.air_cutter],
+      42: [m.mean_look],
+      49: [m.poison_fang],
+      56: [m.haze]
     },
-    movesByMT: [
-      m.Volo, m.IperRaggio, m.Tossina, m.Doppioteam, m.Riposo,
-      m.Furto, m.Protezione, m.Fangobomba, m.Gigassorbimento, m.Alacciaio,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Attaccalite, m.Facciata, m.Provocazione,
-      m.Scippo, m.Forzasegreta, m.Aeroassalto, m.Raffica, m.Turbine,
-      m.AttaccoRapido, m.Maledizione, m.Finta, m.Inseguimento, m.Sdoppiatore,
-      m.Mimica, m.Comete, m.Sostituto, m.Russare, m.Resistenza,
-      m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.fly, m.hyper_beam, m.toxic, m.double_team, m.rest,
+      m.thief, m.protect, m.sludge_bomb, m.giga_drain, m.steel_wing,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.torment, m.facade, m.taunt,
+      m.snatch, m.secret_power, m.aerial_ace, m.gust, m.whirlwind,
+      m.quick_attack, m.curse, m.feint_attack, m.pursuit, m.double_edge,
+      m.mimic, m.swift, m.substitute, m.snore, m.endure,
+      m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage2", to: []}
   },
   "170": {
     name: "Chinchou",
     dexNumber: 170,
-    type: ["Acqua", "Elettro"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "electric"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 37
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Tuononda, m.Bolla, m.Supersuono],
-      13: [m.Flagello],
-      17: [m.Pistolacqua],
-      25: [m.Scintilla],
-      29: [m.Stordiraggio],
-      37: [m.Riduttore],
-      41: [m.Idropompa],
-      49: [m.Sottocarica]
+      5: [m.thunder_wave, m.bubble, m.supersonic],
+      13: [m.flail],
+      17: [m.water_gun],
+      25: [m.spark],
+      29: [m.confuse_ray],
+      37: [m.take_down],
+      41: [m.hydro_pump],
+      49: [m.charge]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.Fulmine, m.Tuono,
-      m.Tossina, m.Doppioteam, m.Cascata, m.Flash, m.Riposo,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza,
-      m.Pioggiadanza, m.Grandine, m.Facciata, m.Forzasegreta, m.Sub,
-      m.Ondashock, m.Idropulsar, m.Stridio, m.Amnesia, m.Flagello,
-      m.Sdoppiatore, m.Tuononda, m.Mimica, m.Sostituto, m.Russare,
-      m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.thunderbolt, m.thunder,
+      m.toxic, m.double_team, m.waterfall, m.flash, m.rest,
+      m.protect, m.attract, m.return_move, m.frustration, m.hidden_power,
+      m.rain_dance, m.hail, m.facade, m.secret_power, m.dive,
+      m.shock_wave, m.water_pulse, m.screech, m.amnesia, m.flail,
+      m.double_edge, m.thunder_wave, m.mimic, m.substitute, m.snore,
+      m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: [{species: "171", trigger: {kind: "level", level: 27}}]}
   },
   "171": {
     name: "Lanturn",
     dexNumber: 171,
-    type: ["Acqua", "Elettro"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "electric"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 27,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Supersuono, m.Tuononda, m.Bolla],
-      13: [m.Flagello],
-      17: [m.Pistolacqua],
-      25: [m.Scintilla],
-      32: [m.Stordiraggio],
-      43: [m.Riduttore],
-      50: [m.Idropompa],
-      61: [m.Sottocarica]
+      5: [m.supersonic, m.thunder_wave, m.bubble],
+      13: [m.flail],
+      17: [m.water_gun],
+      25: [m.spark],
+      32: [m.confuse_ray],
+      43: [m.take_down],
+      50: [m.hydro_pump],
+      61: [m.charge]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.IperRaggio, m.Fulmine,
-      m.Tuono, m.Tossina, m.Doppioteam, m.Cascata, m.Flash,
-      m.Riposo, m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Pioggiadanza, m.Grandine, m.Facciata, m.Forzasegreta,
-      m.Sub, m.Ondashock, m.Idropulsar, m.Stridio, m.Amnesia,
-      m.Flagello, m.Sdoppiatore, m.Tuononda, m.Mimica, m.Sostituto,
-      m.Russare, m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.hyper_beam, m.thunderbolt,
+      m.thunder, m.toxic, m.double_team, m.waterfall, m.flash,
+      m.rest, m.protect, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.rain_dance, m.hail, m.facade, m.secret_power,
+      m.dive, m.shock_wave, m.water_pulse, m.screech, m.amnesia,
+      m.flail, m.double_edge, m.thunder_wave, m.mimic, m.substitute,
+      m.snore, m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage1", to: []}
   },
   "172": {
     name: "Pichu",
     dexNumber: 172,
-    type: ["Elettro"],
-    gender: ["Maschio", "Femmina"],
+    type: ["electric"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 15
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Tuonoshock, m.Fascino],
-      6: [m.Colpocoda],
-      8: [m.Tuononda],
-      11: [m.Dolcebacio]
+      5: [m.thunder_shock, m.charm],
+      6: [m.tail_whip],
+      8: [m.thunder_wave],
+      11: [m.sweet_kiss]
     },
-    movesByMT: [
-      m.Fulmine, m.Tuono, m.Tossina, m.Doppioteam, m.Schermoluce,
-      m.Flash, m.Riposo, m.Protezione, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Facciata,
-      m.Forzasegreta, m.Ondashock, m.Doppiasberla, m.Pazienza, m.Contropiede,
-      m.Regalino, m.Ripeti, m.Sottocarica, m.Desiderio, m.Megapugno,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Tuononda, m.Mimica, m.Ricciolscudo, m.Comete, m.Sostituto,
-      m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento, m.Bullo,
-      m.Sonnolalia, m.Locomovolt, m.Strampadanza, m.Surf
+    movesByTM: [
+      m.thunderbolt, m.thunder, m.toxic, m.double_team, m.light_screen,
+      m.flash, m.rest, m.protect, m.attract, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.rain_dance, m.facade,
+      m.secret_power, m.shock_wave, m.double_slap, m.bide, m.reversal,
+      m.present, m.encore, m.charge, m.wish, m.mega_punch,
+      m.mega_kick, m.body_slam, m.double_edge, m.counter, m.seismic_toss,
+      m.thunder_wave, m.mimic, m.defense_curl, m.swift, m.substitute,
+      m.snore, m.mud_slap, m.endure, m.rollout, m.swagger,
+      m.sleep_talk, m.volt_tackle, m.teeter_dance, m.surf
     ],
-    evolution: {stage: "base", to: [{species: "25", trigger: {kind: "item", item: i.felixpietra}}]}
+    evolution: {stage: "base", to: [{species: "25", trigger: {kind: "item", item: i.felix_stone}}]}
   },
   "173": {
     name: "Cleffa",
     dexNumber: 173,
-    type: ["Folletto"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fairy"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 15
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Botta, m.Fascino, m.Ripeti],
-      8: [m.Canto],
-      13: [m.Dolcebacio],
-      17: [m.Fogliamagica]
+      5: [m.pound, m.charm, m.encore],
+      8: [m.sing],
+      13: [m.sweet_kiss],
+      17: [m.magical_leaf]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Solarraggio, m.Fossa, m.Tossina, m.Psichico,
-      m.Doppioteam, m.Schermoluce, m.Riflesso, m.Fuocobomba, m.Flash,
-      m.Riposo, m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Salvaguardia, m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.PallaOmbra, m.Facciata, m.Forzasegreta, m.Ondashock, m.Idropulsar,
-      m.Mimica, m.Metronomo, m.Amnesia, m.Splash, m.Sostituto,
-      m.Panciamburo, m.Regalino, m.Desiderio, m.Megapugno, m.Megacalcio,
-      m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico, m.Tuononda,
-      m.Ricciolscudo, m.Covauova, m.Mangiasogni, m.Incubo, m.Russare,
-      m.Fangosberla, m.Ventogelato, m.Resistenza, m.Rotolamento, m.Bullo,
-      m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.flamethrower, m.solar_beam, m.dig, m.toxic, m.psychic,
+      m.double_team, m.light_screen, m.reflect, m.fire_blast, m.flash,
+      m.rest, m.protect, m.attract, m.return_move, m.frustration,
+      m.safeguard, m.iron_tail, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.shadow_ball, m.facade, m.secret_power, m.shock_wave, m.water_pulse,
+      m.mimic, m.metronome, m.amnesia, m.splash, m.substitute,
+      m.belly_drum, m.present, m.wish, m.mega_punch, m.mega_kick,
+      m.body_slam, m.double_edge, m.counter, m.seismic_toss, m.thunder_wave,
+      m.defense_curl, m.soft_boiled, m.dream_eater, m.nightmare, m.snore,
+      m.mud_slap, m.icy_wind, m.endure, m.rollout, m.swagger,
+      m.sleep_talk, m.psych_up
     ],
-    evolution: {stage: "base", to: [{species: "35", trigger: {kind: "item", item: i.felixpietra}}]}
+    evolution: {stage: "base", to: [{species: "35", trigger: {kind: "item", item: i.felix_stone}}]}
   },
   "174": {
     name: "Igglybuff",
     dexNumber: 174,
-    type: ["Normale", "Folletto"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal", "fairy"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 15
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Botta, m.Canto, m.Fascino, m.Ricciolscudo],
-      14: [m.Dolcebacio]
+      5: [m.pound, m.sing, m.charm, m.defense_curl],
+      14: [m.sweet_kiss]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Solarraggio, m.Fossa, m.Tossina, m.Psichico,
-      m.Doppioteam, m.Schermoluce, m.Riflesso, m.Fuocobomba, m.Flash,
-      m.Riposo, m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Salvaguardia, m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra,
-      m.Facciata, m.Forzasegreta, m.Ondashock, m.Idropulsar, m.Finta,
-      m.Ultimocanto, m.Regalino, m.Desiderio, m.Falselacrime, m.Megapugno,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Tuononda, m.Mimica, m.Ricciolscudo, m.Mangiasogni, m.Sostituto,
-      m.Incubo, m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia, m.Psicamisu, m.Solletico
+    movesByTM: [
+      m.flamethrower, m.solar_beam, m.dig, m.toxic, m.psychic,
+      m.double_team, m.light_screen, m.reflect, m.fire_blast, m.flash,
+      m.rest, m.protect, m.attract, m.return_move, m.frustration,
+      m.safeguard, m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball,
+      m.facade, m.secret_power, m.shock_wave, m.water_pulse, m.feint_attack,
+      m.perish_song, m.present, m.wish, m.fake_tears, m.mega_punch,
+      m.mega_kick, m.body_slam, m.double_edge, m.counter, m.seismic_toss,
+      m.thunder_wave, m.mimic, m.defense_curl, m.dream_eater, m.substitute,
+      m.nightmare, m.snore, m.mud_slap, m.icy_wind, m.endure,
+      m.rollout, m.swagger, m.sleep_talk, m.psych_up, m.tickle
     ],
-    evolution: {stage: "base", to: [{species: "39", trigger: {kind: "item", item: i.felixpietra}}]}
+    evolution: {stage: "base", to: [{species: "39", trigger: {kind: "item", item: i.felix_stone}}]}
   },
   "175": {
     name: "Togepi",
     dexNumber: 175,
-    type: ["Folletto"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fairy"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 15
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Botta, m.Ruggito, m.Fascino, m.Metronomo],
-      9: [m.Dolcebacio],
-      13: [m.Sbadiglio],
-      17: [m.Ripeti],
-      21: [m.Forzantica],
-      29: [m.Desiderio],
-      33: [m.Salvaguardia],
-      37: [m.Sdoppiatore],
-      41: [m.Staffetta]
+      5: [m.pound, m.growl, m.charm, m.metronome],
+      9: [m.sweet_kiss],
+      13: [m.yawn],
+      17: [m.encore],
+      21: [m.ancient_power],
+      29: [m.wish],
+      33: [m.safeguard],
+      37: [m.double_edge],
+      41: [m.baton_pass]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Solarraggio, m.Tossina, m.Psichico, m.Doppioteam,
-      m.Schermoluce, m.Riflesso, m.Fuocobomba, m.Flash, m.Riposo,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia,
-      m.Facciata, m.Forzasegreta, m.Ondashock, m.Idropulsar, m.Beccata,
-      m.Speculmossa, m.Sostituto, m.Preveggenza, m.Regalino, m.Psicamisu,
-      m.Divinazione, m.Megapugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore,
-      m.Contrattacco, m.MovimentoSismico, m.Tuononda, m.Mimica, m.Ricciolscudo,
-      m.Metronomo, m.Comete, m.Covauova, m.Mangiasogni, m.Russare,
-      m.Fangosberla, m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia,
-      m.Tripletta, m.Forzantica, m.Altruismo
+    movesByTM: [
+      m.flamethrower, m.solar_beam, m.toxic, m.psychic, m.double_team,
+      m.light_screen, m.reflect, m.fire_blast, m.flash, m.rest,
+      m.protect, m.attract, m.return_move, m.frustration, m.safeguard,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash,
+      m.facade, m.secret_power, m.shock_wave, m.water_pulse, m.peck,
+      m.mirror_move, m.substitute, m.foresight, m.present, m.psych_up,
+      m.future_sight, m.mega_punch, m.mega_kick, m.body_slam, m.double_edge,
+      m.counter, m.seismic_toss, m.thunder_wave, m.mimic, m.defense_curl,
+      m.metronome, m.swift, m.soft_boiled, m.dream_eater, m.snore,
+      m.mud_slap, m.endure, m.rollout, m.swagger, m.sleep_talk,
+      m.tri_attack, m.ancient_power, m.helping_hand
     ],
-    evolution: {stage: "base", to: [{species: "176", trigger: {kind: "item", item: i.felixpietra}}]}
+    evolution: {stage: "base", to: [{species: "176", trigger: {kind: "item", item: i.felix_stone}}]}
   },
   "176": {
     name: "Togetic",
     dexNumber: 176,
-    type: ["Folletto", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fairy", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 15,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Metronomo, m.Fascino, m.Fogliamagica],
-      9: [m.Dolcebacio],
-      13: [m.Sbadiglio],
-      17: [m.Ripeti],
-      21: [m.Forzantica],
-      29: [m.Desiderio],
-      33: [m.Salvaguardia],
-      37: [m.Sdoppiatore],
-      41: [m.Staffetta]
+      5: [m.metronome, m.charm, m.magical_leaf],
+      9: [m.sweet_kiss],
+      13: [m.yawn],
+      17: [m.encore],
+      21: [m.ancient_power],
+      29: [m.wish],
+      33: [m.safeguard],
+      37: [m.double_edge],
+      41: [m.baton_pass]
     },
-    movesByMT: [
-      m.Volo, m.Lanciafiamme, m.IperRaggio, m.Solarraggio, m.Tossina,
-      m.Psichico, m.Doppioteam, m.Schermoluce, m.Riflesso, m.Fuocobomba,
-      m.Flash, m.Riposo, m.Protezione, m.Alacciaio, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Spaccaroccia, m.Facciata, m.Centripugno,
-      m.Breccia, m.Forzasegreta, m.Aeroassalto, m.Ondashock, m.Idropulsar,
-      m.Beccata, m.Speculmossa, m.Sostituto, m.Preveggenza, m.Regalino,
-      m.Psicamisu, m.Divinazione, m.Megapugno, m.Megacalcio, m.Corposcontro,
-      m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico, m.Tuononda, m.Mimica,
-      m.Ricciolscudo, m.Metronomo, m.Comete, m.Covauova, m.Mangiasogni,
-      m.Aeroattacco, m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento,
-      m.Bullo, m.Sonnolalia, m.Tripletta, m.Forzantica, m.Altruismo
+    movesByTM: [
+      m.fly, m.flamethrower, m.hyper_beam, m.solar_beam, m.toxic,
+      m.psychic, m.double_team, m.light_screen, m.reflect, m.fire_blast,
+      m.flash, m.rest, m.protect, m.steel_wing, m.attract,
+      m.return_move, m.frustration, m.safeguard, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.rock_smash, m.facade, m.focus_punch,
+      m.brick_break, m.secret_power, m.aerial_ace, m.shock_wave, m.water_pulse,
+      m.peck, m.mirror_move, m.substitute, m.foresight, m.present,
+      m.psych_up, m.future_sight, m.mega_punch, m.mega_kick, m.body_slam,
+      m.double_edge, m.counter, m.seismic_toss, m.thunder_wave, m.mimic,
+      m.defense_curl, m.metronome, m.swift, m.soft_boiled, m.dream_eater,
+      m.sky_attack, m.snore, m.mud_slap, m.endure, m.rollout,
+      m.swagger, m.sleep_talk, m.tri_attack, m.ancient_power, m.helping_hand
     ],
     evolution: {stage: "stage1", to: []}
   },
   "177": {
     name: "Natu",
     dexNumber: 177,
-    type: ["Psico", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["psychic", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 35
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Beccata],
-      10: [m.OmbraNotturna],
-      20: [m.Teletrasporto],
-      30: [m.Divinazione, m.Desiderio],
-      40: [m.Stordiraggio],
-      50: [m.Psichico]
+      5: [m.leer, m.peck],
+      10: [m.night_shade],
+      20: [m.teleport],
+      30: [m.future_sight, m.wish],
+      40: [m.confuse_ray],
+      50: [m.psychic]
     },
-    movesByMT: [
-      m.Solarraggio, m.Tossina, m.Psichico, m.Doppioteam, m.Schermoluce,
-      m.Riflesso, m.Flash, m.Riposo, m.Furto, m.Protezione,
-      m.Gigassorbimento, m.Alacciaio, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Facciata,
-      m.Forzasegreta, m.Aeroassalto, m.Calmamente, m.Perforbecco, m.AttaccoRapido,
-      m.Nube, m.Finta, m.Psicamisu, m.Rinfrescata, m.Danzadipiume,
-      m.Sdoppiatore, m.Tuononda, m.Mimica, m.Comete, m.Mangiasogni,
-      m.Aeroattacco, m.Sostituto, m.Incubo, m.Russare, m.Resistenza,
-      m.Bullo, m.Sonnolalia, m.OmbraNotturna, m.Staffetta, m.Divinazione
+    movesByTM: [
+      m.solar_beam, m.toxic, m.psychic, m.double_team, m.light_screen,
+      m.reflect, m.flash, m.rest, m.thief, m.protect,
+      m.giga_drain, m.steel_wing, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.facade,
+      m.secret_power, m.aerial_ace, m.calm_mind, m.drill_peck, m.quick_attack,
+      m.haze, m.feint_attack, m.psych_up, m.refresh, m.feather_dance,
+      m.double_edge, m.thunder_wave, m.mimic, m.swift, m.dream_eater,
+      m.sky_attack, m.substitute, m.nightmare, m.snore, m.endure,
+      m.swagger, m.sleep_talk, m.night_shade, m.baton_pass, m.future_sight
     ],
     evolution: {stage: "base", to: [{species: "178", trigger: {kind: "level", level: 25}}]}
   },
   "178": {
     name: "Xatu",
     dexNumber: 178,
-    type: ["Psico", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["psychic", "flying"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 25,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Beccata],
-      10: [m.OmbraNotturna],
-      20: [m.Teletrasporto],
-      35: [m.Divinazione, m.Desiderio],
-      50: [m.Stordiraggio],
-      65: [m.Psichico]
+      5: [m.leer, m.peck],
+      10: [m.night_shade],
+      20: [m.teleport],
+      35: [m.future_sight, m.wish],
+      50: [m.confuse_ray],
+      65: [m.psychic]
     },
-    movesByMT: [
-      m.Volo, m.IperRaggio, m.Solarraggio, m.Tossina, m.Psichico,
-      m.Doppioteam, m.Schermoluce, m.Riflesso, m.Flash, m.Riposo,
-      m.Furto, m.Protezione, m.Gigassorbimento, m.Alacciaio, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.PallaOmbra, m.Facciata, m.Forzasegreta, m.Aeroassalto, m.Calmamente,
-      m.Perforbecco, m.AttaccoRapido, m.Nube, m.Finta, m.Psicamisu,
-      m.Rinfrescata, m.Danzadipiume, m.Sdoppiatore, m.Tuononda, m.Mimica,
-      m.Comete, m.Mangiasogni, m.Aeroattacco, m.Sostituto, m.Incubo,
-      m.Russare, m.Resistenza, m.Bullo, m.Sonnolalia, m.OmbraNotturna,
-      m.Staffetta, m.Divinazione
+    movesByTM: [
+      m.fly, m.hyper_beam, m.solar_beam, m.toxic, m.psychic,
+      m.double_team, m.light_screen, m.reflect, m.flash, m.rest,
+      m.thief, m.protect, m.giga_drain, m.steel_wing, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.shadow_ball, m.facade, m.secret_power, m.aerial_ace, m.calm_mind,
+      m.drill_peck, m.quick_attack, m.haze, m.feint_attack, m.psych_up,
+      m.refresh, m.feather_dance, m.double_edge, m.thunder_wave, m.mimic,
+      m.swift, m.dream_eater, m.sky_attack, m.substitute, m.nightmare,
+      m.snore, m.endure, m.swagger, m.sleep_talk, m.night_shade,
+      m.baton_pass, m.future_sight
     ],
     evolution: {stage: "stage1", to: []}
   },
   "179": {
     name: "Mareep",
     dexNumber: 179,
-    type: ["Elettro"],
-    gender: ["Maschio", "Femmina"],
+    type: ["electric"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 20
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      9: [m.Tuonoshock],
-      16: [m.Tuononda],
-      23: [m.Cottonspora],
-      30: [m.Schermoluce],
-      37: [m.Tuono]
+      5: [m.tackle, m.growl],
+      9: [m.thunder_shock],
+      16: [m.thunder_wave],
+      23: [m.cotton_spore],
+      30: [m.light_screen],
+      37: [m.thunder]
     },
-    movesByMT: [
-      m.Fulmine, m.Tuono, m.Tossina, m.Doppioteam, m.Schermoluce,
-      m.Flash, m.Riposo, m.Protezione, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Facciata,
-      m.Forzasegreta, m.Ondashock, m.Corposcontro, m.Riduttore, m.Stridio,
-      m.Riflesso, m.Salvaguardia, m.Sottocarica, m.Segugio, m.Sdoppiatore,
-      m.Tuononda, m.Mimica, m.Ricciolscudo, m.Comete, m.Sostituto,
-      m.Russare, m.Resistenza, m.Bullo, m.Sonnolalia, m.Tuonoshock,
-      m.Rintoccasana
+    movesByTM: [
+      m.thunderbolt, m.thunder, m.toxic, m.double_team, m.light_screen,
+      m.flash, m.rest, m.protect, m.attract, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.rain_dance, m.facade,
+      m.secret_power, m.shock_wave, m.body_slam, m.take_down, m.screech,
+      m.reflect, m.safeguard, m.charge, m.odor_sleuth, m.double_edge,
+      m.thunder_wave, m.mimic, m.defense_curl, m.swift, m.substitute,
+      m.snore, m.endure, m.swagger, m.sleep_talk, m.thunder_shock,
+      m.heal_bell
     ],
     evolution: {stage: "base", to: [{species: "180", trigger: {kind: "level", level: 15}}]}
   },
   "180": {
     name: "Flaaffy",
     dexNumber: 180,
-    type: ["Elettro"],
-    gender: ["Maschio", "Femmina"],
+    type: ["electric"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 15,
       maxLevel: 40
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      9: [m.Tuonoshock],
-      18: [m.Tuononda],
-      27: [m.Cottonspora],
-      36: [m.Schermoluce],
-      45: [m.Tuono]
+      5: [m.tackle, m.growl],
+      9: [m.thunder_shock],
+      18: [m.thunder_wave],
+      27: [m.cotton_spore],
+      36: [m.light_screen],
+      45: [m.thunder]
     },
-    movesByMT: [
-      m.Forza, m.Fulmine, m.Tuono, m.Tossina, m.Doppioteam,
-      m.Schermoluce, m.Flash, m.Riposo, m.Protezione, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza,
-      m.Spaccaroccia, m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta,
-      m.Ondashock, m.Corposcontro, m.Riduttore, m.Stridio, m.Riflesso,
-      m.Salvaguardia, m.Sottocarica, m.Segugio, m.Megapugno, m.Fuocopugno,
-      m.Tuonopugno, m.Megacalcio, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Tuononda, m.Mimica, m.Ricciolscudo, m.Comete, m.Sostituto,
-      m.Russare, m.Resistenza, m.Bullo, m.Sonnolalia, m.Dinamipugno,
-      m.Tuonoshock, m.Rintoccasana
+    movesByTM: [
+      m.strength, m.thunderbolt, m.thunder, m.toxic, m.double_team,
+      m.light_screen, m.flash, m.rest, m.protect, m.attract,
+      m.return_move, m.frustration, m.iron_tail, m.hidden_power, m.rain_dance,
+      m.rock_smash, m.facade, m.focus_punch, m.brick_break, m.secret_power,
+      m.shock_wave, m.body_slam, m.take_down, m.screech, m.reflect,
+      m.safeguard, m.charge, m.odor_sleuth, m.mega_punch, m.fire_punch,
+      m.thunder_punch, m.mega_kick, m.double_edge, m.counter, m.seismic_toss,
+      m.thunder_wave, m.mimic, m.defense_curl, m.swift, m.substitute,
+      m.snore, m.endure, m.swagger, m.sleep_talk, m.dynamic_punch,
+      m.thunder_shock, m.heal_bell
     ],
     evolution: {stage: "stage1", to: [{species: "181", trigger: {kind: "level", level: 30}}]}
   },
   "181": {
     name: "Ampharos",
     dexNumber: 181,
-    type: ["Elettro"],
-    gender: ["Maschio", "Femmina"],
+    type: ["electric"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 30,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      9: [m.Tuonoshock],
-      18: [m.Tuononda],
-      27: [m.Cottonspora],
-      30: [m.Tuonopugno],
-      42: [m.Schermoluce],
-      57: [m.Tuono]
+      5: [m.tackle, m.growl],
+      9: [m.thunder_shock],
+      18: [m.thunder_wave],
+      27: [m.cotton_spore],
+      30: [m.thunder_punch],
+      42: [m.light_screen],
+      57: [m.thunder]
     },
-    movesByMT: [
-      m.IperRaggio, m.Forza, m.Fulmine, m.Tuono, m.Tossina,
-      m.Doppioteam, m.Schermoluce, m.Flash, m.Riposo, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza,
-      m.Pioggiadanza, m.Spaccaroccia, m.Facciata, m.Centripugno, m.Breccia,
-      m.Forzasegreta, m.Ondashock, m.Corposcontro, m.Riduttore, m.Stridio,
-      m.Riflesso, m.Salvaguardia, m.Sottocarica, m.Segugio, m.Megapugno,
-      m.Fuocopugno, m.Tuonopugno, m.Megacalcio, m.Sdoppiatore, m.Contrattacco,
-      m.MovimentoSismico, m.Tuononda, m.Mimica, m.Ricciolscudo, m.Comete,
-      m.Sostituto, m.Russare, m.Resistenza, m.Bullo, m.Sonnolalia,
-      m.Dinamipugno, m.Tuonoshock, m.Rintoccasana
+    movesByTM: [
+      m.hyper_beam, m.strength, m.thunderbolt, m.thunder, m.toxic,
+      m.double_team, m.light_screen, m.flash, m.rest, m.protect,
+      m.attract, m.return_move, m.frustration, m.iron_tail, m.hidden_power,
+      m.rain_dance, m.rock_smash, m.facade, m.focus_punch, m.brick_break,
+      m.secret_power, m.shock_wave, m.body_slam, m.take_down, m.screech,
+      m.reflect, m.safeguard, m.charge, m.odor_sleuth, m.mega_punch,
+      m.fire_punch, m.thunder_punch, m.mega_kick, m.double_edge, m.counter,
+      m.seismic_toss, m.thunder_wave, m.mimic, m.defense_curl, m.swift,
+      m.substitute, m.snore, m.endure, m.swagger, m.sleep_talk,
+      m.dynamic_punch, m.thunder_shock, m.heal_bell
     ],
     evolution: {stage: "stage2", to: []}
   },
   "182": {
     name: "Bellossom",
     dexNumber: 182,
-    type: ["Erba"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 40,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Assorbimento, m.Paralizzante, m.Profumino, m.Fogliamagica],
-      44: [m.Petalodanza],
-      55: [m.Solarraggio]
+      5: [m.absorb, m.stun_spore, m.sweet_scent, m.magical_leaf],
+      44: [m.petal_dance],
+      55: [m.solar_beam]
     },
-    movesByMT: [
-      m.Taglio, m.IperRaggio, m.Solarraggio, m.Tossina, m.Doppioteam,
-      m.Flash, m.Riposo, m.Protezione, m.Fangobomba, m.Gigassorbimento,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Introforza,
-      m.Giornodisole, m.Facciata, m.Forzasegreta, m.Semitraglia, m.Danzaspada,
-      m.Foglielama, m.Flagello, m.Fascino, m.Sintesi, m.Radicamento,
-      m.Sdoppiatore, m.Mimica, m.Sostituto, m.Russare, m.Resistenza,
-      m.Bullo, m.Sonnolalia, m.Parassiseme
+    movesByTM: [
+      m.cut, m.hyper_beam, m.solar_beam, m.toxic, m.double_team,
+      m.flash, m.rest, m.protect, m.sludge_bomb, m.giga_drain,
+      m.attract, m.return_move, m.frustration, m.safeguard, m.hidden_power,
+      m.sunny_day, m.facade, m.secret_power, m.bullet_seed, m.swords_dance,
+      m.razor_leaf, m.flail, m.charm, m.synthesis, m.ingrain,
+      m.double_edge, m.mimic, m.substitute, m.snore, m.endure,
+      m.swagger, m.sleep_talk, m.leech_seed
     ],
     evolution: {stage: "stage2", to: []}
   },
   "183": {
     name: "Marill",
     dexNumber: 183,
-    type: ["Acqua", "Folletto"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "fairy"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 28
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Ricciolscudo],
-      6: [m.Colpocoda],
-      10: [m.Pistolacqua],
-      15: [m.Rotolamento],
-      21: [m.Bollaraggio],
-      28: [m.Sdoppiatore],
-      36: [m.Pioggiadanza],
-      45: [m.Idropompa]
+      5: [m.tackle, m.defense_curl],
+      6: [m.tail_whip],
+      10: [m.water_gun],
+      15: [m.rollout],
+      21: [m.bubble_beam],
+      28: [m.double_edge],
+      36: [m.rain_dance],
+      45: [m.hydro_pump]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.Forza, m.Fossa,
-      m.Tossina, m.Doppioteam, m.Cascata, m.Riposo, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza,
-      m.Pioggiadanza, m.Spaccaroccia, m.Grandine, m.Facciata, m.Centripugno,
-      m.Breccia, m.Forzasegreta, m.Sub, m.Idropulsar, m.Schianto,
-      m.Canto, m.Supersuono, m.Schermoluce, m.Amnesia, m.Sostituto,
-      m.Panciamburo, m.Ultimocanto, m.Regalino, m.Ripeti, m.Divinazione,
-      m.Rinfrescata, m.Solletico, m.Megapugno, m.Gelopugno, m.Megacalcio,
-      m.Corposcontro, m.Sdoppiatore, m.MovimentoSismico, m.Mimica, m.Ricciolscudo,
-      m.Comete, m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.strength, m.dig,
+      m.toxic, m.double_team, m.waterfall, m.rest, m.protect,
+      m.attract, m.return_move, m.frustration, m.iron_tail, m.hidden_power,
+      m.rain_dance, m.rock_smash, m.hail, m.facade, m.focus_punch,
+      m.brick_break, m.secret_power, m.dive, m.water_pulse, m.slam,
+      m.sing, m.supersonic, m.light_screen, m.amnesia, m.substitute,
+      m.belly_drum, m.perish_song, m.present, m.encore, m.future_sight,
+      m.refresh, m.tickle, m.mega_punch, m.ice_punch, m.mega_kick,
+      m.body_slam, m.double_edge, m.seismic_toss, m.mimic, m.defense_curl,
+      m.swift, m.snore, m.mud_slap, m.icy_wind, m.endure,
+      m.rollout, m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "base", to: [{species: "184", trigger: {kind: "level", level: 18}}]}
   },
   "184": {
     name: "Azumarill",
     dexNumber: 184,
-    type: ["Acqua", "Folletto"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "fairy"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 18,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Azione, m.Ricciolscudo],
-      6: [m.Colpocoda],
-      10: [m.Pistolacqua],
-      15: [m.Rotolamento],
-      24: [m.Bollaraggio],
-      34: [m.Sdoppiatore],
-      45: [m.Pioggiadanza],
-      57: [m.Idropompa]
+      5: [m.tackle, m.defense_curl],
+      6: [m.tail_whip],
+      10: [m.water_gun],
+      15: [m.rollout],
+      24: [m.bubble_beam],
+      34: [m.double_edge],
+      45: [m.rain_dance],
+      57: [m.hydro_pump]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.IperRaggio, m.Forza,
-      m.Fossa, m.Tossina, m.Doppioteam, m.Cascata, m.Riposo,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio,
-      m.Introforza, m.Pioggiadanza, m.Spaccaroccia, m.Grandine, m.Facciata,
-      m.Centripugno, m.Breccia, m.Forzasegreta, m.Sub, m.Idropulsar,
-      m.Schianto, m.Canto, m.Supersuono, m.Schermoluce, m.Amnesia,
-      m.Sostituto, m.Panciamburo, m.Ultimocanto, m.Regalino, m.Ripeti,
-      m.Divinazione, m.Rinfrescata, m.Solletico, m.Megapugno, m.Gelopugno,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.MovimentoSismico, m.Mimica,
-      m.Ricciolscudo, m.Comete, m.Russare, m.Fangosberla, m.Ventogelato,
-      m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.hyper_beam, m.strength,
+      m.dig, m.toxic, m.double_team, m.waterfall, m.rest,
+      m.protect, m.attract, m.return_move, m.frustration, m.iron_tail,
+      m.hidden_power, m.rain_dance, m.rock_smash, m.hail, m.facade,
+      m.focus_punch, m.brick_break, m.secret_power, m.dive, m.water_pulse,
+      m.slam, m.sing, m.supersonic, m.light_screen, m.amnesia,
+      m.substitute, m.belly_drum, m.perish_song, m.present, m.encore,
+      m.future_sight, m.refresh, m.tickle, m.mega_punch, m.ice_punch,
+      m.mega_kick, m.body_slam, m.double_edge, m.seismic_toss, m.mimic,
+      m.defense_curl, m.swift, m.snore, m.mud_slap, m.icy_wind,
+      m.endure, m.rollout, m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "stage1", to: []}
   },
   "185": {
     name: "Sudowoodo",
     dexNumber: 185,
-    type: ["Roccia"],
-    gender: ["Maschio", "Femmina"],
+    type: ["rock"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Sassata, m.Mimica],
-      9: [m.Flagello],
-      17: [m.ColpoBasso],
-      25: [m.Frana],
-      33: [m.Blocco],
-      41: [m.Staffetta],
-      49: [m.Schianto],
-      57: [m.Sdoppiatore]
+      5: [m.rock_throw, m.mimic],
+      9: [m.flail],
+      17: [m.low_kick],
+      25: [m.rock_slide],
+      33: [m.block],
+      41: [m.baton_pass],
+      49: [m.slam],
+      57: [m.double_edge]
     },
-    movesByMT: [
-      m.Forza, m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam,
-      m.Riposo, m.Furto, m.Protezione, m.Terrempesta, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Giornodisole, m.Spaccaroccia,
-      m.Facciata, m.Centripugno, m.Provocazione, m.Breccia, m.Forzasegreta,
-      m.Rocciotomba, m.Calmamente, m.Autodistruzione, m.Megapugno, m.Fuocopugno,
-      m.Gelopugno, m.Tuonopugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore,
-      m.Contrattacco, m.MovimentoSismico, m.Mimica, m.Ricciolscudo, m.Esplosione,
-      m.Frana, m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia, m.Dinamipugno, m.Psicamisu
+    movesByTM: [
+      m.strength, m.earthquake, m.dig, m.toxic, m.double_team,
+      m.rest, m.thief, m.protect, m.sandstorm, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.sunny_day, m.rock_smash,
+      m.facade, m.focus_punch, m.taunt, m.brick_break, m.secret_power,
+      m.rock_tomb, m.calm_mind, m.self_destruct, m.mega_punch, m.fire_punch,
+      m.ice_punch, m.thunder_punch, m.mega_kick, m.body_slam, m.double_edge,
+      m.counter, m.seismic_toss, m.mimic, m.defense_curl, m.explosion,
+      m.rock_slide, m.substitute, m.snore, m.mud_slap, m.endure,
+      m.rollout, m.swagger, m.sleep_talk, m.dynamic_punch, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   },
   "186": {
     name: "Politoed",
     dexNumber: 186,
-    type: ["Acqua"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 50,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Doppiasberla, m.Pistolacqua, m.Ipnosi],
-      35: [m.Ultimocanto],
-      51: [m.Bullo]
+      5: [m.double_slap, m.water_gun, m.hypnosis],
+      35: [m.perish_song],
+      51: [m.swagger]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.IperRaggio, m.Forza,
-      m.Terremoto, m.Fossa, m.Tossina, m.Psichico, m.Doppioteam,
-      m.Cascata, m.Riposo, m.Furto, m.Protezione, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Spaccaroccia,
-      m.Grandine, m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta,
-      m.Sub, m.Idropulsar, m.Nebbia, m.Bollaraggio, m.Nube,
-      m.Splash, m.Leggimente, m.PallaGelo, m.Docciascudo, m.Megapugno,
-      m.Gelopugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco,
-      m.MovimentoSismico, m.Mimica, m.Ricciolscudo, m.Metronomo, m.Sostituto,
-      m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza, m.Bullo,
-      m.Sonnolalia, m.Dinamipugno, m.Dolcebacio
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.hyper_beam, m.strength,
+      m.earthquake, m.dig, m.toxic, m.psychic, m.double_team,
+      m.waterfall, m.rest, m.thief, m.protect, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.rock_smash,
+      m.hail, m.facade, m.focus_punch, m.brick_break, m.secret_power,
+      m.dive, m.water_pulse, m.mist, m.bubble_beam, m.haze,
+      m.splash, m.mind_reader, m.ice_ball, m.water_sport, m.mega_punch,
+      m.ice_punch, m.mega_kick, m.body_slam, m.double_edge, m.counter,
+      m.seismic_toss, m.mimic, m.defense_curl, m.metronome, m.substitute,
+      m.snore, m.mud_slap, m.icy_wind, m.endure, m.swagger,
+      m.sleep_talk, m.dynamic_punch, m.sweet_kiss
     ],
     evolution: {stage: "stage2", to: []}
   },
   "187": {
     name: "Hoppip",
     dexNumber: 187,
-    type: ["Erba", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 23
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Splash, m.Colpocoda, m.Sintesi, m.Azione],
-      13: [m.Velenpolvere],
-      15: [m.Paralizzante],
-      17: [m.Sonnifero],
-      20: [m.Parassiseme],
-      25: [m.Cottonspora],
-      30: [m.Megassorbimento]
+      5: [m.splash, m.tail_whip, m.synthesis, m.tackle],
+      13: [m.poison_powder],
+      15: [m.stun_spore],
+      17: [m.sleep_powder],
+      20: [m.leech_seed],
+      25: [m.cotton_spore],
+      30: [m.mega_drain]
     },
-    movesByMT: [
-      m.Solarraggio, m.Tossina, m.Doppioteam, m.Flash, m.Riposo,
-      m.Protezione, m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Giornodisole, m.Facciata, m.Forzasegreta, m.Semitraglia,
-      m.Aeroassalto, m.Sdoppiatore, m.Confusione, m.Riflesso, m.Amnesia,
-      m.Ripeti, m.Psicamisu, m.Altruismo, m.Danzaspada, m.Mimica,
-      m.Ricciolscudo, m.Sostituto, m.Russare, m.Resistenza, m.Bullo,
-      m.Sonnolalia
+    movesByTM: [
+      m.solar_beam, m.toxic, m.double_team, m.flash, m.rest,
+      m.protect, m.giga_drain, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.sunny_day, m.facade, m.secret_power, m.bullet_seed,
+      m.aerial_ace, m.double_edge, m.confusion, m.reflect, m.amnesia,
+      m.encore, m.psych_up, m.helping_hand, m.swords_dance, m.mimic,
+      m.defense_curl, m.substitute, m.snore, m.endure, m.swagger,
+      m.sleep_talk
     ],
     evolution: {stage: "base", to: [{species: "188", trigger: {kind: "level", level: 18}}]}
   },
   "188": {
     name: "Skiploom",
     dexNumber: 188,
-    type: ["Erba", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 18,
       maxLevel: 37
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Colpocoda, m.Splash, m.Sintesi],
-      13: [m.Velenpolvere],
-      15: [m.Paralizzante],
-      17: [m.Sonnifero],
-      22: [m.Parassiseme],
-      29: [m.Cottonspora],
-      36: [m.Megassorbimento]
+      5: [m.tackle, m.tail_whip, m.splash, m.synthesis],
+      13: [m.poison_powder],
+      15: [m.stun_spore],
+      17: [m.sleep_powder],
+      22: [m.leech_seed],
+      29: [m.cotton_spore],
+      36: [m.mega_drain]
     },
-    movesByMT: [
-      m.Solarraggio, m.Tossina, m.Doppioteam, m.Flash, m.Riposo,
-      m.Protezione, m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Giornodisole, m.Facciata, m.Forzasegreta, m.Semitraglia,
-      m.Aeroassalto, m.Sdoppiatore, m.Confusione, m.Riflesso, m.Amnesia,
-      m.Ripeti, m.Psicamisu, m.Altruismo, m.Danzaspada, m.Mimica,
-      m.Ricciolscudo, m.Sostituto, m.Russare, m.Resistenza, m.Bullo,
-      m.Sonnolalia
+    movesByTM: [
+      m.solar_beam, m.toxic, m.double_team, m.flash, m.rest,
+      m.protect, m.giga_drain, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.sunny_day, m.facade, m.secret_power, m.bullet_seed,
+      m.aerial_ace, m.double_edge, m.confusion, m.reflect, m.amnesia,
+      m.encore, m.psych_up, m.helping_hand, m.swords_dance, m.mimic,
+      m.defense_curl, m.substitute, m.snore, m.endure, m.swagger,
+      m.sleep_talk
     ],
     evolution: {stage: "stage1", to: [{species: "189", trigger: {kind: "level", level: 27}}]}
   },
   "189": {
     name: "Jumpluff",
     dexNumber: 189,
-    type: ["Erba", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 27,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Azione, m.Colpocoda, m.Splash, m.Sintesi],
-      13: [m.Velenpolvere],
-      15: [m.Paralizzante],
-      17: [m.Sonnifero],
-      22: [m.Parassiseme],
-      33: [m.Cottonspora],
-      44: [m.Megassorbimento]
+      5: [m.tackle, m.tail_whip, m.splash, m.synthesis],
+      13: [m.poison_powder],
+      15: [m.stun_spore],
+      17: [m.sleep_powder],
+      22: [m.leech_seed],
+      33: [m.cotton_spore],
+      44: [m.mega_drain]
     },
-    movesByMT: [
-      m.IperRaggio, m.Solarraggio, m.Tossina, m.Doppioteam, m.Flash,
-      m.Riposo, m.Protezione, m.Gigassorbimento, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Giornodisole, m.Facciata, m.Forzasegreta,
-      m.Semitraglia, m.Aeroassalto, m.Dinamipugno, m.Sdoppiatore, m.Confusione,
-      m.Riflesso, m.Amnesia, m.Ripeti, m.Psicamisu, m.Altruismo,
-      m.Danzaspada, m.Mimica, m.Ricciolscudo, m.Sostituto, m.Russare,
-      m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.hyper_beam, m.solar_beam, m.toxic, m.double_team, m.flash,
+      m.rest, m.protect, m.giga_drain, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.sunny_day, m.facade, m.secret_power,
+      m.bullet_seed, m.aerial_ace, m.dynamic_punch, m.double_edge, m.confusion,
+      m.reflect, m.amnesia, m.encore, m.psych_up, m.helping_hand,
+      m.swords_dance, m.mimic, m.defense_curl, m.substitute, m.snore,
+      m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage2", to: []}
   },
   "190": {
     name: "Aipom",
     dexNumber: 190,
-    type: ["Normale"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Graffio, m.Colpocoda],
-      6: [m.Turbosabbia],
-      13: [m.Sgomento],
-      18: [m.Staffetta],
-      25: [m.Solletico],
-      31: [m.Sfuriate],
-      38: [m.Comete],
-      43: [m.Stridio],
-      50: [m.Agilita]
+      5: [m.scratch, m.tail_whip],
+      6: [m.sand_attack],
+      13: [m.astonish],
+      18: [m.baton_pass],
+      25: [m.tickle],
+      31: [m.fury_swipes],
+      38: [m.swift],
+      43: [m.screech],
+      50: [m.agility]
     },
-    movesByMT: [
-      m.Taglio, m.Forza, m.Solarraggio, m.Fulmine, m.Tuono,
-      m.Fossa, m.Tossina, m.Doppioteam, m.Riposo, m.Furto,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia,
-      m.Facciata, m.Centripugno, m.Provocazione, m.Breccia, m.Scippo,
-      m.Forzasegreta, m.Aeroassalto, m.Ondashock, m.Idropulsar, m.Doppiasberla,
-      m.Schianto, m.Contrattacco, m.Agilita, m.Stridio, m.Dispetto,
-      m.Inseguimento, m.Picchiaduro, m.Megapugno, m.Fuocopugno, m.Gelopugno,
-      m.Tuonopugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.MovimentoSismico,
-      m.Tuononda, m.Mimica, m.Ricciolscudo, m.Metronomo, m.Comete,
-      m.Mangiasogni, m.Sostituto, m.Incubo, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Bullo, m.Tagliofuria, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.cut, m.strength, m.solar_beam, m.thunderbolt, m.thunder,
+      m.dig, m.toxic, m.double_team, m.rest, m.thief,
+      m.protect, m.attract, m.return_move, m.frustration, m.iron_tail,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash,
+      m.facade, m.focus_punch, m.taunt, m.brick_break, m.snatch,
+      m.secret_power, m.aerial_ace, m.shock_wave, m.water_pulse, m.double_slap,
+      m.slam, m.counter, m.agility, m.screech, m.spite,
+      m.pursuit, m.beat_up, m.mega_punch, m.fire_punch, m.ice_punch,
+      m.thunder_punch, m.mega_kick, m.body_slam, m.double_edge, m.seismic_toss,
+      m.thunder_wave, m.mimic, m.defense_curl, m.metronome, m.swift,
+      m.dream_eater, m.substitute, m.nightmare, m.snore, m.mud_slap,
+      m.endure, m.swagger, m.fury_cutter, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "base", to: []}
   },
   "191": {
     name: "Sunkern",
     dexNumber: 191,
-    type: ["Erba"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 50
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Assorbimento],
-      6: [m.Crescita],
-      13: [m.Megassorbimento],
-      18: [m.Radicamento],
-      25: [m.Rimonta],
-      30: [m.Giornodisole],
-      37: [m.Sintesi],
-      42: [m.Gigassorbimento]
+      5: [m.absorb],
+      6: [m.growth],
+      13: [m.mega_drain],
+      18: [m.ingrain],
+      25: [m.endeavor],
+      30: [m.sunny_day],
+      37: [m.synthesis],
+      42: [m.giga_drain]
     },
-    movesByMT: [
-      m.Taglio, m.Solarraggio, m.Tossina, m.Doppioteam, m.Schermoluce,
-      m.Flash, m.Riposo, m.Protezione, m.Fangobomba, m.Gigassorbimento,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Introforza,
-      m.Giornodisole, m.Facciata, m.Forzasegreta, m.Semitraglia, m.Parassiseme,
-      m.Maledizione, m.Ripeti, m.Naturforza, m.Altruismo, m.Meloderba,
-      m.Danzaspada, m.Sdoppiatore, m.Mimica, m.Sostituto, m.Russare,
-      m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.cut, m.solar_beam, m.toxic, m.double_team, m.light_screen,
+      m.flash, m.rest, m.protect, m.sludge_bomb, m.giga_drain,
+      m.attract, m.return_move, m.frustration, m.safeguard, m.hidden_power,
+      m.sunny_day, m.facade, m.secret_power, m.bullet_seed, m.leech_seed,
+      m.curse, m.encore, m.nature_power, m.helping_hand, m.grass_whistle,
+      m.swords_dance, m.double_edge, m.mimic, m.substitute, m.snore,
+      m.endure, m.swagger, m.sleep_talk
     ],
-    evolution: {stage: "base", to: [{species: "192", trigger: {kind: "item", item: i.pietrasolare}}]}
+    evolution: {stage: "base", to: [{species: "192", trigger: {kind: "item", item: i.sun_stone}}]}
   },
   "192": {
     name: "Sunflora",
     dexNumber: 192,
-    type: ["Erba"],
-    gender: ["Maschio", "Femmina"],
+    type: ["grass"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 40,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Botta, m.Assorbimento],
-      6: [m.Crescita],
-      13: [m.Foglielama],
-      18: [m.Radicamento],
-      25: [m.Semitraglia],
-      30: [m.Giornodisole],
-      37: [m.Petalodanza],
-      42: [m.Solarraggio]
+      5: [m.pound, m.absorb],
+      6: [m.growth],
+      13: [m.razor_leaf],
+      18: [m.ingrain],
+      25: [m.bullet_seed],
+      30: [m.sunny_day],
+      37: [m.petal_dance],
+      42: [m.solar_beam]
     },
-    movesByMT: [
-      m.Taglio, m.IperRaggio, m.Solarraggio, m.Tossina, m.Doppioteam,
-      m.Schermoluce, m.Flash, m.Riposo, m.Protezione, m.Fangobomba,
-      m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia,
-      m.Introforza, m.Giornodisole, m.Facciata, m.Forzasegreta, m.Semitraglia,
-      m.Parassiseme, m.Maledizione, m.Ripeti, m.Naturforza, m.Altruismo,
-      m.Meloderba, m.Danzaspada, m.Sdoppiatore, m.Mimica, m.Sostituto,
-      m.Russare, m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.cut, m.hyper_beam, m.solar_beam, m.toxic, m.double_team,
+      m.light_screen, m.flash, m.rest, m.protect, m.sludge_bomb,
+      m.giga_drain, m.attract, m.return_move, m.frustration, m.safeguard,
+      m.hidden_power, m.sunny_day, m.facade, m.secret_power, m.bullet_seed,
+      m.leech_seed, m.curse, m.encore, m.nature_power, m.helping_hand,
+      m.grass_whistle, m.swords_dance, m.double_edge, m.mimic, m.substitute,
+      m.snore, m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage1", to: []}
   },
   "193": {
     name: "Yanma",
     dexNumber: 193,
-    type: ["Coleottero", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Preveggenza],
-      6: [m.AttaccoRapido],
-      12: [m.Doppioteam],
-      17: [m.Sonicboom],
-      23: [m.Ipnosi],
-      28: [m.Individua],
-      34: [m.Baraonda],
-      39: [m.AttaccodAla],
-      45: [m.Supersuono],
-      50: [m.Stridio]
+      5: [m.tackle, m.foresight],
+      6: [m.quick_attack],
+      12: [m.double_team],
+      17: [m.sonic_boom],
+      23: [m.hypnosis],
+      28: [m.detect],
+      34: [m.uproar],
+      39: [m.wing_attack],
+      45: [m.supersonic],
+      50: [m.screech]
     },
-    movesByMT: [
-      m.Solarraggio, m.Tossina, m.Psichico, m.Doppioteam, m.Flash,
-      m.Riposo, m.Furto, m.Protezione, m.Gigassorbimento, m.Alacciaio,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Giornodisole,
-      m.PallaOmbra, m.Facciata, m.Forzasegreta, m.Aeroassalto, m.Turbine,
-      m.Sanguisuga, m.Contropiede, m.Ventargenteo, m.Segnoraggio, m.Sdoppiatore,
-      m.Mimica, m.Comete, m.Mangiasogni, m.Sostituto, m.Russare,
-      m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.solar_beam, m.toxic, m.psychic, m.double_team, m.flash,
+      m.rest, m.thief, m.protect, m.giga_drain, m.steel_wing,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.sunny_day,
+      m.shadow_ball, m.facade, m.secret_power, m.aerial_ace, m.whirlwind,
+      m.leech_life, m.reversal, m.silver_wind, m.signal_beam, m.double_edge,
+      m.mimic, m.swift, m.dream_eater, m.substitute, m.snore,
+      m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "194": {
     name: "Wooper",
     dexNumber: 194,
-    type: ["Acqua", "Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "ground"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 30
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Colpocoda, m.Pistolacqua],
-      11: [m.Schianto],
-      16: [m.Colpodifango],
-      21: [m.Amnesia],
-      31: [m.Sbadiglio],
-      36: [m.Terremoto],
-      41: [m.Pioggiadanza],
-      51: [m.Nebbia, m.Nube]
+      5: [m.tail_whip, m.water_gun],
+      11: [m.slam],
+      16: [m.mud_shot],
+      21: [m.amnesia],
+      31: [m.yawn],
+      36: [m.earthquake],
+      41: [m.rain_dance],
+      51: [m.mist, m.haze]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.Terremoto, m.Fossa,
-      m.Tossina, m.Doppioteam, m.Cascata, m.Flash, m.Riposo,
-      m.Protezione, m.Fangobomba, m.Terrempesta, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Spaccaroccia,
-      m.Grandine, m.Facciata, m.Forzasegreta, m.Sub, m.Idropulsar,
-      m.Corposcontro, m.Maledizione, m.Salvaguardia, m.Forzantica, m.Accumulo,
-      m.Sfoghenergia, m.Introenergia, m.Fangata, m.Gelopugno, m.Sdoppiatore,
-      m.Mimica, m.Ricciolscudo, m.Sostituto, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.earthquake, m.dig,
+      m.toxic, m.double_team, m.waterfall, m.flash, m.rest,
+      m.protect, m.sludge_bomb, m.sandstorm, m.attract, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.rain_dance, m.rock_smash,
+      m.hail, m.facade, m.secret_power, m.dive, m.water_pulse,
+      m.body_slam, m.curse, m.safeguard, m.ancient_power, m.stockpile,
+      m.spit_up, m.swallow, m.mud_sport, m.ice_punch, m.double_edge,
+      m.mimic, m.defense_curl, m.substitute, m.snore, m.mud_slap,
+      m.endure, m.rollout, m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "base", to: [{species: "195", trigger: {kind: "level", level: 20}}]}
   },
   "195": {
     name: "Quagsire",
     dexNumber: 195,
-    type: ["Acqua", "Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "ground"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 20,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Colpocoda, m.Pistolacqua],
-      11: [m.Schianto],
-      16: [m.Colpodifango],
-      23: [m.Amnesia],
-      35: [m.Sbadiglio],
-      42: [m.Terremoto],
-      49: [m.Pioggiadanza],
-      61: [m.Nebbia, m.Nube]
+      5: [m.tail_whip, m.water_gun],
+      11: [m.slam],
+      16: [m.mud_shot],
+      23: [m.amnesia],
+      35: [m.yawn],
+      42: [m.earthquake],
+      49: [m.rain_dance],
+      61: [m.mist, m.haze]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.IperRaggio, m.Forza,
-      m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam, m.Cascata,
-      m.Flash, m.Riposo, m.Protezione, m.Fangobomba, m.Terrempesta,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza,
-      m.Pioggiadanza, m.Spaccaroccia, m.Grandine, m.Facciata, m.Centripugno,
-      m.Breccia, m.Forzasegreta, m.Sub, m.Rocciotomba, m.Idropulsar,
-      m.Corposcontro, m.Maledizione, m.Salvaguardia, m.Forzantica, m.Accumulo,
-      m.Sfoghenergia, m.Introenergia, m.Fangata, m.Megapugno, m.Gelopugno,
-      m.Megacalcio, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico, m.Mimica,
-      m.Ricciolscudo, m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.hyper_beam, m.strength,
+      m.earthquake, m.dig, m.toxic, m.double_team, m.waterfall,
+      m.flash, m.rest, m.protect, m.sludge_bomb, m.sandstorm,
+      m.attract, m.return_move, m.frustration, m.iron_tail, m.hidden_power,
+      m.rain_dance, m.rock_smash, m.hail, m.facade, m.focus_punch,
+      m.brick_break, m.secret_power, m.dive, m.rock_tomb, m.water_pulse,
+      m.body_slam, m.curse, m.safeguard, m.ancient_power, m.stockpile,
+      m.spit_up, m.swallow, m.mud_sport, m.mega_punch, m.ice_punch,
+      m.mega_kick, m.double_edge, m.counter, m.seismic_toss, m.mimic,
+      m.defense_curl, m.substitute, m.snore, m.mud_slap, m.endure,
+      m.rollout, m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "stage1", to: []}
   },
   "196": {
     name: "Espeon",
     dexNumber: 196,
-    type: ["Psico"],
-    gender: ["Maschio", "Femmina"],
+    type: ["psychic"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 40,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Colpocoda, m.Altruismo],
-      8: [m.Turbosabbia],
-      16: [m.Confusione],
-      23: [m.AttaccoRapido],
-      30: [m.Comete],
-      36: [m.Psicoraggio],
-      42: [m.Psicamisu],
-      47: [m.Psichico],
-      52: [m.Mattindoro]
+      5: [m.tackle, m.tail_whip, m.helping_hand],
+      8: [m.sand_attack],
+      16: [m.confusion],
+      23: [m.quick_attack],
+      30: [m.swift],
+      36: [m.psybeam],
+      42: [m.psych_up],
+      47: [m.psychic],
+      52: [m.morning_sun]
     },
-    movesByMT: [
-      m.Taglio, m.IperRaggio, m.Fossa, m.Tossina, m.Psichico,
-      m.Doppioteam, m.Schermoluce, m.Riflesso, m.Flash, m.Riposo,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Facciata,
-      m.Forzasegreta, m.Calmamente, m.Maledizione, m.Flagello, m.Resistenza,
-      m.Fascino, m.Desiderio, m.Solletico, m.Corposcontro, m.Sdoppiatore,
-      m.Mimica, m.Comete, m.Mangiasogni, m.Sostituto, m.Incubo,
-      m.Russare, m.Fangosberla, m.Bullo, m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.cut, m.hyper_beam, m.dig, m.toxic, m.psychic,
+      m.double_team, m.light_screen, m.reflect, m.flash, m.rest,
+      m.protect, m.attract, m.return_move, m.frustration, m.iron_tail,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.facade,
+      m.secret_power, m.calm_mind, m.curse, m.flail, m.endure,
+      m.charm, m.wish, m.tickle, m.body_slam, m.double_edge,
+      m.mimic, m.swift, m.dream_eater, m.substitute, m.nightmare,
+      m.snore, m.mud_slap, m.swagger, m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "stage1", to: []}
   },
   "197": {
     name: "Umbreon",
     dexNumber: 197,
-    type: ["Buio"],
-    gender: ["Maschio", "Femmina"],
+    type: ["dark"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 40,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Colpocoda, m.Altruismo],
-      8: [m.Turbosabbia],
-      16: [m.Inseguimento],
-      23: [m.AttaccoRapido],
-      30: [m.Stordiraggio],
-      36: [m.Finta],
-      42: [m.Malosguardo],
-      47: [m.Stridio],
-      52: [m.Lucelunare]
+      5: [m.tackle, m.tail_whip, m.helping_hand],
+      8: [m.sand_attack],
+      16: [m.pursuit],
+      23: [m.quick_attack],
+      30: [m.confuse_ray],
+      36: [m.feint_attack],
+      42: [m.mean_look],
+      47: [m.screech],
+      52: [m.moonlight]
     },
-    movesByMT: [
-      m.Taglio, m.IperRaggio, m.Fossa, m.Tossina, m.Psichico,
-      m.Doppioteam, m.Flash, m.Riposo, m.Protezione, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Attaccalite, m.Facciata, m.Provocazione,
-      m.Scippo, m.Forzasegreta, m.Maledizione, m.Flagello, m.Resistenza,
-      m.Fascino, m.Desiderio, m.Solletico, m.Corposcontro, m.Sdoppiatore,
-      m.Mimica, m.Comete, m.Mangiasogni, m.Sostituto, m.Incubo,
-      m.Russare, m.Fangosberla, m.Bullo, m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.cut, m.hyper_beam, m.dig, m.toxic, m.psychic,
+      m.double_team, m.flash, m.rest, m.protect, m.attract,
+      m.return_move, m.frustration, m.iron_tail, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.torment, m.facade, m.taunt,
+      m.snatch, m.secret_power, m.curse, m.flail, m.endure,
+      m.charm, m.wish, m.tickle, m.body_slam, m.double_edge,
+      m.mimic, m.swift, m.dream_eater, m.substitute, m.nightmare,
+      m.snore, m.mud_slap, m.swagger, m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "stage1", to: []}
   },
   "198": {
     name: "Murkrow",
     dexNumber: 198,
-    type: ["Buio", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["dark", "flying"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Beccata],
-      9: [m.Sgomento],
-      14: [m.Inseguimento],
-      22: [m.Nube],
-      27: [m.OmbraNotturna],
-      35: [m.Finta],
-      40: [m.Provocazione],
-      48: [m.Malosguardo]
+      5: [m.peck],
+      9: [m.astonish],
+      14: [m.pursuit],
+      22: [m.haze],
+      27: [m.night_shade],
+      35: [m.feint_attack],
+      40: [m.taunt],
+      48: [m.mean_look]
     },
-    movesByMT: [
-      m.Volo, m.Tossina, m.Doppioteam, m.Riposo, m.Furto,
-      m.Protezione, m.Alacciaio, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Attaccalite,
-      m.Facciata, m.Provocazione, m.Scippo, m.Forzasegreta, m.Aeroassalto,
-      m.Calmamente, m.AttaccodAla, m.Turbine, m.Perforbecco, m.Stordiraggio,
-      m.Speculmossa, m.Aeroattacco, m.Ultimocanto, m.Danzadipiume, m.Sdoppiatore,
-      m.Tuononda, m.Mimica, m.Comete, m.Mangiasogni, m.Sostituto,
-      m.Incubo, m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza,
-      m.Bullo, m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.fly, m.toxic, m.double_team, m.rest, m.thief,
+      m.protect, m.steel_wing, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.torment,
+      m.facade, m.taunt, m.snatch, m.secret_power, m.aerial_ace,
+      m.calm_mind, m.wing_attack, m.whirlwind, m.drill_peck, m.confuse_ray,
+      m.mirror_move, m.sky_attack, m.perish_song, m.feather_dance, m.double_edge,
+      m.thunder_wave, m.mimic, m.swift, m.dream_eater, m.substitute,
+      m.nightmare, m.snore, m.mud_slap, m.icy_wind, m.endure,
+      m.swagger, m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   },
   "199": {
     name: "Slowking",
     dexNumber: 199,
-    type: ["Acqua", "Psico"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "psychic"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 50,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Azione, m.Maledizione, m.Sbadiglio],
-      6: [m.Ruggito],
-      13: [m.Pistolacqua],
-      17: [m.Confusione],
-      24: [m.Inibitore],
-      29: [m.Bottintesta],
-      36: [m.Bullo],
-      40: [m.Psichico],
-      47: [m.Psicamisu]
+      5: [m.tackle, m.curse, m.yawn],
+      6: [m.growl],
+      13: [m.water_gun],
+      17: [m.confusion],
+      24: [m.disable],
+      29: [m.headbutt],
+      36: [m.swagger],
+      40: [m.psychic],
+      47: [m.psych_up]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Surf, m.Geloraggio, m.Bora, m.IperRaggio,
-      m.Forza, m.Terremoto, m.Fossa, m.Tossina, m.Psichico,
-      m.Doppioteam, m.Fuocobomba, m.Flash, m.Riposo, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Codacciaio,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia,
-      m.Grandine, m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta,
-      m.Sub, m.Calmamente, m.Idropulsar, m.Pestone, m.Russare,
-      m.Panciamburo, m.Sonnolalia, m.Divinazione, m.Fangata, m.Megapugno,
-      m.Gelopugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco,
-      m.MovimentoSismico, m.Tuononda, m.Mimica, m.Comete, m.Mangiasogni,
-      m.Sostituto, m.Incubo, m.Fangosberla, m.Ventogelato, m.Resistenza,
-      m.Bullo, m.Tagliofuria, m.Dinamipugno, m.Psicamisu
+    movesByTM: [
+      m.flamethrower, m.surf, m.ice_beam, m.blizzard, m.hyper_beam,
+      m.strength, m.earthquake, m.dig, m.toxic, m.psychic,
+      m.double_team, m.fire_blast, m.flash, m.rest, m.protect,
+      m.attract, m.return_move, m.frustration, m.safeguard, m.iron_tail,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash,
+      m.hail, m.facade, m.focus_punch, m.brick_break, m.secret_power,
+      m.dive, m.calm_mind, m.water_pulse, m.stomp, m.snore,
+      m.belly_drum, m.sleep_talk, m.future_sight, m.mud_sport, m.mega_punch,
+      m.ice_punch, m.mega_kick, m.body_slam, m.double_edge, m.counter,
+      m.seismic_toss, m.thunder_wave, m.mimic, m.swift, m.dream_eater,
+      m.substitute, m.nightmare, m.mud_slap, m.icy_wind, m.endure,
+      m.swagger, m.fury_cutter, m.dynamic_punch, m.psych_up
     ],
     evolution: {stage: "stage2", to: []}
   },
   "200": {
     name: "Misdreavus",
     dexNumber: 200,
-    type: ["Spettro"],
-    gender: ["Maschio", "Femmina"],
+    type: ["ghost"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Ruggito, m.Psiconda, m.Sgomento],
-      6: [m.Dispetto],
-      17: [m.Stordiraggio],
-      23: [m.Malosguardo],
-      30: [m.Psicoraggio],
-      37: [m.Malcomune],
-      45: [m.Ultimocanto],
-      53: [m.Rancore]
+      5: [m.growl, m.psywave, m.astonish],
+      6: [m.spite],
+      17: [m.confuse_ray],
+      23: [m.mean_look],
+      30: [m.psybeam],
+      37: [m.pain_split],
+      45: [m.perish_song],
+      53: [m.grudge]
     },
-    movesByMT: [
-      m.Fulmine, m.Tuono, m.Tossina, m.Psichico, m.Doppioteam,
-      m.Flash, m.Riposo, m.Furto, m.Protezione, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.PallaOmbra, m.Attaccalite, m.Facciata, m.Provocazione, m.Scippo,
-      m.Forzasegreta, m.Aeroassalto, m.Calmamente, m.Ondashock, m.Stridio,
-      m.Destinobbligato, m.Psicamisu, m.Esclusiva, m.Sdoppiatore, m.Tuononda,
-      m.Mimica, m.Ricciolscudo, m.Comete, m.Mangiasogni, m.Sostituto,
-      m.Incubo, m.Russare, m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.thunderbolt, m.thunder, m.toxic, m.psychic, m.double_team,
+      m.flash, m.rest, m.thief, m.protect, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.shadow_ball, m.torment, m.facade, m.taunt, m.snatch,
+      m.secret_power, m.aerial_ace, m.calm_mind, m.shock_wave, m.screech,
+      m.destiny_bond, m.psych_up, m.imprison, m.double_edge, m.thunder_wave,
+      m.mimic, m.defense_curl, m.swift, m.dream_eater, m.substitute,
+      m.nightmare, m.snore, m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "201": {
     name: "Unown",
     dexNumber: 201,
-    type: ["Psico"],
+    type: ["psychic"],
     gender: [],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Introforza]
+      5: [m.hidden_power]
     },
-    movesByMT: [],
+    movesByTM: [],
     evolution: {stage: "base", to: []}
   },
   "202": {
     name: "Wobbuffet",
     dexNumber: 202,
-    type: ["Psico"],
-    gender: ["Maschio", "Femmina"],
+    type: ["psychic"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Contrattacco, m.Destinobbligato, m.Salvaguardia, m.Specchiovelo]
+      5: [m.counter, m.destiny_bond, m.safeguard, m.mirror_coat]
     },
-    movesByMT: [
-      m.Solletico
+    movesByTM: [
+      m.tickle
     ],
     evolution: {stage: "base", to: []}
   },
   "203": {
     name: "Girafarig",
     dexNumber: 203,
-    type: ["Normale", "Psico"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal", "psychic"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      7: [m.Sgomento],
-      13: [m.Confusione],
-      19: [m.Pestone],
-      25: [m.Segugio],
-      31: [m.Agilita],
-      37: [m.Staffetta],
-      43: [m.Psicoraggio],
-      49: [m.Sgranocchio]
+      5: [m.tackle, m.growl],
+      7: [m.astonish],
+      13: [m.confusion],
+      19: [m.stomp],
+      25: [m.odor_sleuth],
+      31: [m.agility],
+      37: [m.baton_pass],
+      43: [m.psybeam],
+      49: [m.crunch]
     },
-    movesByMT: [
-      m.Forza, m.Fulmine, m.Tuono, m.Terremoto, m.Tossina,
-      m.Psichico, m.Doppioteam, m.Schermoluce, m.Riflesso, m.Flash,
-      m.Riposo, m.Furto, m.Protezione, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.PallaOmbra, m.Spaccaroccia, m.Facciata, m.Forzasegreta, m.Calmamente,
-      m.Ondashock, m.Riduttore, m.Amnesia, m.Preveggenza, m.Psicamisu,
-      m.Divinazione, m.Picchiaduro, m.Desiderio, m.Magivelo, m.Corposcontro,
-      m.Sdoppiatore, m.Tuononda, m.Mimica, m.Comete, m.Mangiasogni,
-      m.Sostituto, m.Incubo, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.strength, m.thunderbolt, m.thunder, m.earthquake, m.toxic,
+      m.psychic, m.double_team, m.light_screen, m.reflect, m.flash,
+      m.rest, m.thief, m.protect, m.attract, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.shadow_ball, m.rock_smash, m.facade, m.secret_power, m.calm_mind,
+      m.shock_wave, m.take_down, m.amnesia, m.foresight, m.psych_up,
+      m.future_sight, m.beat_up, m.wish, m.magic_coat, m.body_slam,
+      m.double_edge, m.thunder_wave, m.mimic, m.swift, m.dream_eater,
+      m.substitute, m.nightmare, m.snore, m.mud_slap, m.endure,
+      m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "204": {
     name: "Pineco",
     dexNumber: 204,
-    type: ["Coleottero"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 41
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione, m.Protezione],
-      8: [m.Autodistruzione],
-      15: [m.Riduttore],
-      22: [m.Rapigiro],
-      29: [m.Pazienza],
-      36: [m.Esplosione],
-      43: [m.Punte],
-      50: [m.Sdoppiatore]
+      5: [m.tackle, m.protect],
+      8: [m.self_destruct],
+      15: [m.take_down],
+      22: [m.rapid_spin],
+      29: [m.bide],
+      36: [m.explosion],
+      43: [m.spikes],
+      50: [m.double_edge]
     },
-    movesByMT: [
-      m.Forza, m.Solarraggio, m.Terremoto, m.Fossa, m.Tossina,
-      m.Doppioteam, m.Schermoluce, m.Riflesso, m.Riposo, m.Protezione,
-      m.Terrempesta, m.Gigassorbimento, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Giornodisole, m.Spaccaroccia, m.Facciata, m.Forzasegreta,
-      m.Missilspillo, m.Contrattacco, m.Comete, m.Flagello, m.Sabbiotomba,
-      m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Ricciolscudo, m.Autodistruzione,
-      m.Esplosione, m.Frana, m.Sostituto, m.Russare, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia, m.Punte, m.Rinfrescata
+    movesByTM: [
+      m.strength, m.solar_beam, m.earthquake, m.dig, m.toxic,
+      m.double_team, m.light_screen, m.reflect, m.rest, m.protect,
+      m.sandstorm, m.giga_drain, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.sunny_day, m.rock_smash, m.facade, m.secret_power,
+      m.pin_missile, m.counter, m.swift, m.flail, m.sand_tomb,
+      m.body_slam, m.double_edge, m.mimic, m.defense_curl, m.self_destruct,
+      m.explosion, m.rock_slide, m.substitute, m.snore, m.endure,
+      m.rollout, m.swagger, m.sleep_talk, m.spikes, m.refresh
     ],
     evolution: {stage: "base", to: [{species: "205", trigger: {kind: "level", level: 31}}]}
   },
   "205": {
     name: "Forretress",
     dexNumber: 205,
-    type: ["Coleottero", "Acciaio"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "steel"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 31,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Protezione],
-      8: [m.Autodistruzione],
-      15: [m.Riduttore],
-      22: [m.Rapigiro],
-      29: [m.Pazienza],
-      31: [m.Falcecannone],
-      39: [m.Esplosione],
-      49: [m.Punte],
-      59: [m.Sdoppiatore]
+      5: [m.tackle, m.protect],
+      8: [m.self_destruct],
+      15: [m.take_down],
+      22: [m.rapid_spin],
+      29: [m.bide],
+      31: [m.zap_cannon],
+      39: [m.explosion],
+      49: [m.spikes],
+      59: [m.double_edge]
     },
-    movesByMT: [
-      m.IperRaggio, m.Forza, m.Solarraggio, m.Terremoto, m.Fossa,
-      m.Tossina, m.Doppioteam, m.Schermoluce, m.Riflesso, m.Riposo,
-      m.Protezione, m.Terrempesta, m.Gigassorbimento, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Giornodisole, m.Spaccaroccia, m.Facciata,
-      m.Forzasegreta, m.Missilspillo, m.Contrattacco, m.Comete, m.Flagello,
-      m.Sabbiotomba, m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Ricciolscudo,
-      m.Autodistruzione, m.Esplosione, m.Frana, m.Sostituto, m.Russare,
-      m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia, m.Punte,
-      m.Rinfrescata
+    movesByTM: [
+      m.hyper_beam, m.strength, m.solar_beam, m.earthquake, m.dig,
+      m.toxic, m.double_team, m.light_screen, m.reflect, m.rest,
+      m.protect, m.sandstorm, m.giga_drain, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.sunny_day, m.rock_smash, m.facade,
+      m.secret_power, m.pin_missile, m.counter, m.swift, m.flail,
+      m.sand_tomb, m.body_slam, m.double_edge, m.mimic, m.defense_curl,
+      m.self_destruct, m.explosion, m.rock_slide, m.substitute, m.snore,
+      m.endure, m.rollout, m.swagger, m.sleep_talk, m.spikes,
+      m.refresh
     ],
     evolution: {stage: "stage1", to: []}
   },
   "206": {
     name: "Dunsparce",
     dexNumber: 206,
-    type: ["Normale"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Ira, m.Ricciolscudo],
-      11: [m.Sbadiglio],
-      14: [m.SguardoFeroce],
-      21: [m.Rotolamento],
-      24: [m.Dispetto],
-      31: [m.Inseguimento],
-      34: [m.Stridio],
-      41: [m.Riduttore],
-      44: [m.Flagello],
-      51: [m.Rimonta]
+      5: [m.rage, m.defense_curl],
+      11: [m.yawn],
+      14: [m.glare],
+      21: [m.rollout],
+      24: [m.spite],
+      31: [m.pursuit],
+      34: [m.screech],
+      41: [m.take_down],
+      44: [m.flail],
+      51: [m.endeavor]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Geloraggio, m.Bora, m.Forza, m.Solarraggio,
-      m.Fulmine, m.Tuono, m.Terremoto, m.Fossa, m.Tossina,
-      m.Doppioteam, m.Fuocobomba, m.Riposo, m.Furto, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza,
-      m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia, m.Facciata,
-      m.Forzasegreta, m.Rocciotomba, m.Calmamente, m.Ondashock, m.Idropulsar,
-      m.Bottintesta, m.Morso, m.Pazienza, m.Frana, m.Maledizione,
-      m.Forzantica, m.Sgomento, m.Corposcontro, m.Sdoppiatore, m.Contrattacco,
-      m.Tuononda, m.Mimica, m.Ricciolscudo, m.Mangiasogni, m.Sostituto,
-      m.Incubo, m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento,
-      m.Bullo, m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.flamethrower, m.ice_beam, m.blizzard, m.strength, m.solar_beam,
+      m.thunderbolt, m.thunder, m.earthquake, m.dig, m.toxic,
+      m.double_team, m.fire_blast, m.rest, m.thief, m.protect,
+      m.attract, m.return_move, m.frustration, m.iron_tail, m.hidden_power,
+      m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash, m.facade,
+      m.secret_power, m.rock_tomb, m.calm_mind, m.shock_wave, m.water_pulse,
+      m.headbutt, m.bite, m.bide, m.rock_slide, m.curse,
+      m.ancient_power, m.astonish, m.body_slam, m.double_edge, m.counter,
+      m.thunder_wave, m.mimic, m.defense_curl, m.dream_eater, m.substitute,
+      m.nightmare, m.snore, m.mud_slap, m.endure, m.rollout,
+      m.swagger, m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   },
   "207": {
     name: "Gligar",
     dexNumber: 207,
-    type: ["Terra", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["ground", "flying"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Velenospina],
-      6: [m.Turbosabbia],
-      13: [m.Rafforzatore],
-      20: [m.AttaccoRapido],
-      28: [m.Finta],
-      36: [m.Lacerazione],
-      44: [m.Stridio],
-      52: [m.Ghigliottina]
+      5: [m.poison_sting],
+      6: [m.sand_attack],
+      13: [m.harden],
+      20: [m.quick_attack],
+      28: [m.feint_attack],
+      36: [m.slash],
+      44: [m.screech],
+      52: [m.guillotine]
     },
-    movesByMT: [
-      m.Taglio, m.Forza, m.Terremoto, m.Fossa, m.Tossina,
-      m.Doppioteam, m.Riposo, m.Furto, m.Protezione, m.Fangobomba,
-      m.Terrempesta, m.Alacciaio, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Giornodisole, m.Spaccaroccia,
-      m.Facciata, m.Forzasegreta, m.Rocciotomba, m.Aeroassalto, m.Ventagliente,
-      m.AttaccodAla, m.Contrattacco, m.Ferrartigli, m.Sabbiotomba, m.Danzaspada,
-      m.Sdoppiatore, m.Mimica, m.Comete, m.Mangiasogni, m.Frana,
-      m.Sostituto, m.Russare, m.Resistenza, m.Bullo, m.Tagliofuria,
-      m.Sonnolalia
+    movesByTM: [
+      m.cut, m.strength, m.earthquake, m.dig, m.toxic,
+      m.double_team, m.rest, m.thief, m.protect, m.sludge_bomb,
+      m.sandstorm, m.steel_wing, m.attract, m.return_move, m.frustration,
+      m.iron_tail, m.hidden_power, m.rain_dance, m.sunny_day, m.rock_smash,
+      m.facade, m.secret_power, m.rock_tomb, m.aerial_ace, m.razor_wind,
+      m.wing_attack, m.counter, m.metal_claw, m.sand_tomb, m.swords_dance,
+      m.double_edge, m.mimic, m.swift, m.dream_eater, m.rock_slide,
+      m.substitute, m.snore, m.endure, m.swagger, m.fury_cutter,
+      m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "208": {
     name: "Steelix",
     dexNumber: 208,
-    type: ["Acciaio", "Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["steel", "ground"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 50,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Stridio],
-      8: [m.Legatutto],
-      12: [m.Sassata],
-      19: [m.Rafforzatore],
-      23: [m.Ira],
-      30: [m.Dragospiro],
-      34: [m.Terrempesta],
-      41: [m.Schianto],
-      45: [m.Codacciaio],
-      52: [m.Sgranocchio],
-      56: [m.Sdoppiatore]
+      5: [m.tackle, m.screech],
+      8: [m.bind],
+      12: [m.rock_throw],
+      19: [m.harden],
+      23: [m.rage],
+      30: [m.dragon_breath],
+      34: [m.sandstorm],
+      41: [m.slam],
+      45: [m.iron_tail],
+      52: [m.crunch],
+      56: [m.double_edge]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.IperRaggio, m.Forza, m.Terremoto,
-      m.Fossa, m.Tossina, m.Doppioteam, m.Riposo, m.Protezione,
-      m.Terrempesta, m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio,
-      m.Introforza, m.Giornodisole, m.Spaccaroccia, m.Attaccalite, m.Facciata,
-      m.Provocazione, m.Forzasegreta, m.Rocciotomba, m.Esplosione, m.Frana,
-      m.Flagello, m.Blocco, m.Corposcontro, m.Sdoppiatore, m.Mimica,
-      m.Ricciolscudo, m.Autodistruzione, m.Sostituto, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.cut, m.roar, m.hyper_beam, m.strength, m.earthquake,
+      m.dig, m.toxic, m.double_team, m.rest, m.protect,
+      m.sandstorm, m.attract, m.return_move, m.frustration, m.iron_tail,
+      m.hidden_power, m.sunny_day, m.rock_smash, m.torment, m.facade,
+      m.taunt, m.secret_power, m.rock_tomb, m.explosion, m.rock_slide,
+      m.flail, m.block, m.body_slam, m.double_edge, m.mimic,
+      m.defense_curl, m.self_destruct, m.substitute, m.snore, m.mud_slap,
+      m.endure, m.rollout, m.swagger, m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "stage1", to: []}
   },
   "209": {
     name: "Snubbull",
     dexNumber: 209,
-    type: ["Folletto"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fairy"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 33
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione, m.Colpocoda, m.Visotruce],
-      8: [m.Fascino],
-      13: [m.Morso],
-      19: [m.Leccata],
-      26: [m.Boato],
-      34: [m.Ira],
-      43: [m.Riduttore],
-      53: [m.Sgranocchio]
+      5: [m.tackle, m.tail_whip, m.scary_face],
+      8: [m.charm],
+      13: [m.bite],
+      19: [m.lick],
+      26: [m.roar],
+      34: [m.rage],
+      43: [m.take_down],
+      53: [m.crunch]
     },
-    movesByMT: [
-      m.Boato, m.Lanciafiamme, m.Forza, m.Solarraggio, m.Fulmine,
-      m.Tuono, m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam,
-      m.Fuocobomba, m.Riposo, m.Furto, m.Protezione, m.Fangobomba,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Spaccaroccia, m.Attaccalite, m.Facciata,
-      m.Centripugno, m.Provocazione, m.Breccia, m.Forzasegreta, m.Vampata,
-      m.Granfisico, m.Ondashock, m.Idropulsar, m.Riflesso, m.Metronomo,
-      m.Russare, m.Finta, m.Rintoccasana, m.Regalino, m.Sgranocchio,
-      m.Maniereforti, m.Megapugno, m.Fuocopugno, m.Gelopugno, m.Tuonopugno,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Tuononda, m.Mimica, m.Ricciolscudo, m.Sostituto, m.Fangosberla,
-      m.Resistenza, m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.roar, m.flamethrower, m.strength, m.solar_beam, m.thunderbolt,
+      m.thunder, m.earthquake, m.dig, m.toxic, m.double_team,
+      m.fire_blast, m.rest, m.thief, m.protect, m.sludge_bomb,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.rock_smash, m.torment, m.facade,
+      m.focus_punch, m.taunt, m.brick_break, m.secret_power, m.overheat,
+      m.bulk_up, m.shock_wave, m.water_pulse, m.reflect, m.metronome,
+      m.snore, m.feint_attack, m.heal_bell, m.present, m.crunch,
+      m.smelling_salts, m.mega_punch, m.fire_punch, m.ice_punch, m.thunder_punch,
+      m.mega_kick, m.body_slam, m.double_edge, m.counter, m.seismic_toss,
+      m.thunder_wave, m.mimic, m.defense_curl, m.substitute, m.mud_slap,
+      m.endure, m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "base", to: [{species: "210", trigger: {kind: "level", level: 23}}]}
   },
   "210": {
     name: "Granbull",
     dexNumber: 210,
-    type: ["Folletto"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fairy"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 23,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Colpocoda, m.Visotruce],
-      8: [m.Fascino],
-      13: [m.Morso],
-      19: [m.Leccata],
-      28: [m.Boato],
-      38: [m.Ira],
-      49: [m.Riduttore],
-      61: [m.Sgranocchio]
+      5: [m.tackle, m.tail_whip, m.scary_face],
+      8: [m.charm],
+      13: [m.bite],
+      19: [m.lick],
+      28: [m.roar],
+      38: [m.rage],
+      49: [m.take_down],
+      61: [m.crunch]
     },
-    movesByMT: [
-      m.Boato, m.Lanciafiamme, m.IperRaggio, m.Forza, m.Solarraggio,
-      m.Fulmine, m.Tuono, m.Terremoto, m.Fossa, m.Tossina,
-      m.Doppioteam, m.Fuocobomba, m.Riposo, m.Furto, m.Protezione,
-      m.Fangobomba, m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia,
-      m.Attaccalite, m.Facciata, m.Centripugno, m.Provocazione, m.Breccia,
-      m.Forzasegreta, m.Vampata, m.Rocciotomba, m.Granfisico, m.Ondashock,
-      m.Idropulsar, m.Riflesso, m.Metronomo, m.Russare, m.Finta,
-      m.Rintoccasana, m.Regalino, m.Sgranocchio, m.Maniereforti, m.Megapugno,
-      m.Fuocopugno, m.Gelopugno, m.Tuonopugno, m.Megacalcio, m.Corposcontro,
-      m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico, m.Tuononda, m.Mimica,
-      m.Ricciolscudo, m.Frana, m.Sostituto, m.Fangosberla, m.Resistenza,
-      m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.roar, m.flamethrower, m.hyper_beam, m.strength, m.solar_beam,
+      m.thunderbolt, m.thunder, m.earthquake, m.dig, m.toxic,
+      m.double_team, m.fire_blast, m.rest, m.thief, m.protect,
+      m.sludge_bomb, m.attract, m.return_move, m.frustration, m.iron_tail,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash,
+      m.torment, m.facade, m.focus_punch, m.taunt, m.brick_break,
+      m.secret_power, m.overheat, m.rock_tomb, m.bulk_up, m.shock_wave,
+      m.water_pulse, m.reflect, m.metronome, m.snore, m.feint_attack,
+      m.heal_bell, m.present, m.crunch, m.smelling_salts, m.mega_punch,
+      m.fire_punch, m.ice_punch, m.thunder_punch, m.mega_kick, m.body_slam,
+      m.double_edge, m.counter, m.seismic_toss, m.thunder_wave, m.mimic,
+      m.defense_curl, m.rock_slide, m.substitute, m.mud_slap, m.endure,
+      m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "stage1", to: []}
   },
   "211": {
     name: "Qwilfish",
     dexNumber: 211,
-    type: ["Acqua", "Veleno"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "poison"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Velenospina, m.Punte],
-      9: [m.Rafforzatore, m.Minimizzato],
-      13: [m.Pistolacqua],
-      21: [m.Missilspillo],
-      25: [m.Vendetta],
-      33: [m.Riduttore],
-      37: [m.Idropompa],
-      45: [m.Destinobbligato]
+      5: [m.tackle, m.poison_sting, m.spikes],
+      9: [m.harden, m.minimize],
+      13: [m.water_gun],
+      21: [m.pin_missile],
+      25: [m.revenge],
+      33: [m.take_down],
+      37: [m.hydro_pump],
+      45: [m.destiny_bond]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.Tossina, m.Doppioteam,
-      m.Cascata, m.Riposo, m.Protezione, m.Fangobomba, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.PallaOmbra,
-      m.Grandine, m.Facciata, m.Forzasegreta, m.Sub, m.Ondashock,
-      m.Idropulsar, m.Supersuono, m.Bollaraggio, m.Nube, m.Flagello,
-      m.Sgomento, m.Danzaspada, m.Sdoppiatore, m.Tuononda, m.Mimica,
-      m.Ricciolscudo, m.Autodistruzione, m.Comete, m.Sostituto, m.Russare,
-      m.Ventogelato, m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.toxic, m.double_team,
+      m.waterfall, m.rest, m.protect, m.sludge_bomb, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.shadow_ball,
+      m.hail, m.facade, m.secret_power, m.dive, m.shock_wave,
+      m.water_pulse, m.supersonic, m.bubble_beam, m.haze, m.flail,
+      m.astonish, m.swords_dance, m.double_edge, m.thunder_wave, m.mimic,
+      m.defense_curl, m.self_destruct, m.swift, m.substitute, m.snore,
+      m.icy_wind, m.endure, m.rollout, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "212": {
     name: "Scizor",
     dexNumber: 212,
-    type: ["Coleottero", "Acciaio"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "steel"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 50,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.AttaccoRapido],
-      6: [m.Focalenergia],
-      11: [m.Inseguimento],
-      16: [m.Falsofinale],
-      21: [m.Agilita],
-      26: [m.Ferrartigli],
-      31: [m.Lacerazione],
-      36: [m.Danzaspada],
-      41: [m.Ferroscudo],
-      46: [m.Tagliofuria],
-      60: [m.Ghigliottina]
+      5: [m.leer, m.quick_attack],
+      6: [m.focus_energy],
+      11: [m.pursuit],
+      16: [m.false_swipe],
+      21: [m.agility],
+      26: [m.metal_claw],
+      31: [m.slash],
+      36: [m.swords_dance],
+      41: [m.iron_defense],
+      46: [m.fury_cutter],
+      60: [m.guillotine]
     },
-    movesByMT: [
-      m.Taglio, m.IperRaggio, m.Forza, m.Tossina, m.Doppioteam,
-      m.Riposo, m.Furto, m.Protezione, m.Terrempesta, m.Alacciaio,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.Spaccaroccia, m.Facciata, m.Forzasegreta, m.Aeroassalto,
-      m.Ventagliente, m.Contrattacco, m.Schermoluce, m.Contropiede, m.Resistenza,
-      m.Salvaguardia, m.Staffetta, m.Ventargenteo, m.Danzaspada, m.Sdoppiatore,
-      m.Mimica, m.Comete, m.Sostituto, m.Russare, m.Bullo,
-      m.Tagliofuria, m.Sonnolalia, m.Lacerazione, m.Mattindoro
+    movesByTM: [
+      m.cut, m.hyper_beam, m.strength, m.toxic, m.double_team,
+      m.rest, m.thief, m.protect, m.sandstorm, m.steel_wing,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.rock_smash, m.facade, m.secret_power, m.aerial_ace,
+      m.razor_wind, m.counter, m.light_screen, m.reversal, m.endure,
+      m.safeguard, m.baton_pass, m.silver_wind, m.swords_dance, m.double_edge,
+      m.mimic, m.swift, m.substitute, m.snore, m.swagger,
+      m.fury_cutter, m.sleep_talk, m.slash, m.morning_sun
     ],
     evolution: {stage: "stage1", to: []}
   },
   "213": {
     name: "Shuckle",
     dexNumber: 213,
-    type: ["Coleottero", "Roccia"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "rock"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Ritirata, m.Limitazione],
-      9: [m.Avvolgibotta],
-      14: [m.Ripeti],
-      23: [m.Salvaguardia],
-      28: [m.Pazienza],
-      37: [m.Riposo]
+      5: [m.withdraw, m.constrict],
+      9: [m.wrap],
+      14: [m.encore],
+      23: [m.safeguard],
+      28: [m.bide],
+      37: [m.rest]
     },
-    movesByMT: [
-      m.Forza, m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam,
-      m.Flash, m.Riposo, m.Protezione, m.Fangobomba, m.Terrempesta,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Introforza,
-      m.Giornodisole, m.Spaccaroccia, m.Facciata, m.Forzasegreta, m.Rocciotomba,
-      m.Profumino, m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Ricciolscudo,
-      m.Frana, m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.strength, m.earthquake, m.dig, m.toxic, m.double_team,
+      m.flash, m.rest, m.protect, m.sludge_bomb, m.sandstorm,
+      m.attract, m.return_move, m.frustration, m.safeguard, m.hidden_power,
+      m.sunny_day, m.rock_smash, m.facade, m.secret_power, m.rock_tomb,
+      m.sweet_scent, m.body_slam, m.double_edge, m.mimic, m.defense_curl,
+      m.rock_slide, m.substitute, m.snore, m.mud_slap, m.endure,
+      m.rollout, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "214": {
     name: "Heracross",
     dexNumber: 214,
-    type: ["Coleottero", "Lotta"],
-    gender: ["Maschio", "Femmina"],
+    type: ["bug", "fighting"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Fulmisguardo],
-      6: [m.Incornata],
-      11: [m.Resistenza],
-      17: [m.Furia],
-      23: [m.Breccia],
-      30: [m.Contrattacco],
-      37: [m.Riduttore],
-      45: [m.Contropiede],
-      53: [m.Megacorno]
+      5: [m.tackle, m.leer],
+      6: [m.horn_attack],
+      11: [m.endure],
+      17: [m.fury_attack],
+      23: [m.brick_break],
+      30: [m.counter],
+      37: [m.take_down],
+      45: [m.reversal],
+      53: [m.megahorn]
     },
-    movesByMT: [
-      m.Taglio, m.IperRaggio, m.Forza, m.Terremoto, m.Fossa,
-      m.Tossina, m.Doppioteam, m.Riposo, m.Furto, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.Spaccaroccia, m.Facciata, m.Centripugno, m.Breccia,
-      m.Forzasegreta, m.Rocciotomba, m.Granfisico, m.Rafforzatore, m.Pazienza,
-      m.Flagello, m.Falsofinale, m.Danzaspada, m.Corposcontro, m.Sdoppiatore,
-      m.Contrattacco, m.MovimentoSismico, m.Mimica, m.Frana, m.Sostituto,
-      m.Russare, m.Resistenza, m.Bullo, m.Tagliofuria, m.Sonnolalia
+    movesByTM: [
+      m.cut, m.hyper_beam, m.strength, m.earthquake, m.dig,
+      m.toxic, m.double_team, m.rest, m.thief, m.protect,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.rock_smash, m.facade, m.focus_punch, m.brick_break,
+      m.secret_power, m.rock_tomb, m.bulk_up, m.harden, m.bide,
+      m.flail, m.false_swipe, m.swords_dance, m.body_slam, m.double_edge,
+      m.counter, m.seismic_toss, m.mimic, m.rock_slide, m.substitute,
+      m.snore, m.endure, m.swagger, m.fury_cutter, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "215": {
     name: "Sneasel",
     dexNumber: 215,
-    type: ["Buio", "Ghiaccio"],
-    gender: ["Maschio", "Femmina"],
+    type: ["dark", "ice"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Graffio, m.Fulmisguardo, m.Provocazione],
-      8: [m.AttaccoRapido],
-      15: [m.Stridio],
-      22: [m.Finta],
-      29: [m.Sfuriate],
-      36: [m.Agilita],
-      43: [m.Ventogelato],
-      50: [m.Lacerazione],
-      57: [m.Picchiaduro],
-      60: [m.Purogelo],
-      64: [m.Ferrartigli]
+      5: [m.scratch, m.leer, m.taunt],
+      8: [m.quick_attack],
+      15: [m.screech],
+      22: [m.feint_attack],
+      29: [m.fury_swipes],
+      36: [m.agility],
+      43: [m.icy_wind],
+      50: [m.slash],
+      57: [m.beat_up],
+      60: [m.sheer_cold],
+      64: [m.metal_claw]
     },
-    movesByMT: [
-      m.Taglio, m.Surf, m.Geloraggio, m.Bora, m.Forza,
-      m.Fossa, m.Tossina, m.Doppioteam, m.Riposo, m.Furto,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia,
-      m.Grandine, m.Attaccalite, m.Facciata, m.Centripugno, m.Provocazione,
-      m.Breccia, m.Scippo, m.Forzasegreta, m.Aeroassalto, m.Calmamente,
-      m.Morso, m.Contrattacco, m.Riflesso, m.Dispetto, m.Preveggenza,
-      m.Bruciapelo, m.Tritartigli, m.Gelopugno, m.Danzaspada, m.Sdoppiatore,
-      m.Mimica, m.Ricciolscudo, m.Comete, m.Mangiasogni, m.Sostituto,
-      m.Incubo, m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza,
-      m.Bullo, m.Tagliofuria, m.Sonnolalia, m.Dinamipugno, m.Psicamisu
+    movesByTM: [
+      m.cut, m.surf, m.ice_beam, m.blizzard, m.strength,
+      m.dig, m.toxic, m.double_team, m.rest, m.thief,
+      m.protect, m.attract, m.return_move, m.frustration, m.iron_tail,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash,
+      m.hail, m.torment, m.facade, m.focus_punch, m.taunt,
+      m.brick_break, m.snatch, m.secret_power, m.aerial_ace, m.calm_mind,
+      m.bite, m.counter, m.reflect, m.spite, m.foresight,
+      m.fake_out, m.crush_claw, m.ice_punch, m.swords_dance, m.double_edge,
+      m.mimic, m.defense_curl, m.swift, m.dream_eater, m.substitute,
+      m.nightmare, m.snore, m.mud_slap, m.icy_wind, m.endure,
+      m.swagger, m.fury_cutter, m.sleep_talk, m.dynamic_punch, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   },
   "216": {
     name: "Teddiursa",
     dexNumber: 216,
-    type: ["Normale"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 40
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Graffio, m.Fulmisguardo],
-      7: [m.Leccata],
-      13: [m.Sfuriate],
-      19: [m.Falselacrime],
-      25: [m.Finta],
-      31: [m.Riposo],
-      37: [m.Lacerazione],
-      43: [m.Russare],
-      49: [m.Colpo]
+      5: [m.scratch, m.leer],
+      7: [m.lick],
+      13: [m.fury_swipes],
+      19: [m.fake_tears],
+      25: [m.feint_attack],
+      31: [m.rest],
+      37: [m.slash],
+      43: [m.snore],
+      49: [m.thrash]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.Forza, m.Terremoto, m.Fossa,
-      m.Tossina, m.Doppioteam, m.Riposo, m.Furto, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.Spaccaroccia, m.Attaccalite, m.Facciata, m.Centripugno,
-      m.Provocazione, m.Breccia, m.Forzasegreta, m.Aeroassalto, m.Granfisico,
-      m.Riduttore, m.Contrattacco, m.MovimentoSismico, m.Sonnolalia, m.Ferrartigli,
-      m.Sgranocchio, m.Sbadiglio, m.Falselacrime, m.Megapugno, m.Fuocopugno,
-      m.Gelopugno, m.Tuonopugno, m.Danzaspada, m.Megacalcio, m.Corposcontro,
-      m.Sdoppiatore, m.Mimica, m.Ricciolscudo, m.Metronomo, m.Comete,
-      m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento,
-      m.Bullo, m.Tagliofuria, m.Dinamipugno, m.Leccata, m.Rinfrescata
+    movesByTM: [
+      m.cut, m.roar, m.strength, m.earthquake, m.dig,
+      m.toxic, m.double_team, m.rest, m.thief, m.protect,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.rock_smash, m.torment, m.facade, m.focus_punch,
+      m.taunt, m.brick_break, m.secret_power, m.aerial_ace, m.bulk_up,
+      m.take_down, m.counter, m.seismic_toss, m.sleep_talk, m.metal_claw,
+      m.crunch, m.yawn, m.fake_tears, m.mega_punch, m.fire_punch,
+      m.ice_punch, m.thunder_punch, m.swords_dance, m.mega_kick, m.body_slam,
+      m.double_edge, m.mimic, m.defense_curl, m.metronome, m.swift,
+      m.substitute, m.snore, m.mud_slap, m.endure, m.rollout,
+      m.swagger, m.fury_cutter, m.dynamic_punch, m.lick, m.refresh
     ],
     evolution: {stage: "base", to: [{species: "217", trigger: {kind: "level", level: 30}}]}
   },
   "217": {
     name: "Ursaring",
     dexNumber: 217,
-    type: ["Normale"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 30,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Graffio, m.Fulmisguardo],
-      7: [m.Leccata],
-      13: [m.Sfuriate],
-      19: [m.Falselacrime],
-      25: [m.Finta],
-      31: [m.Riposo],
-      37: [m.Lacerazione],
-      43: [m.Russare],
-      49: [m.Colpo]
+      5: [m.scratch, m.leer],
+      7: [m.lick],
+      13: [m.fury_swipes],
+      19: [m.fake_tears],
+      25: [m.feint_attack],
+      31: [m.rest],
+      37: [m.slash],
+      43: [m.snore],
+      49: [m.thrash]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.IperRaggio, m.Forza, m.Terremoto,
-      m.Fossa, m.Tossina, m.Doppioteam, m.Riposo, m.Furto,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza,
-      m.Pioggiadanza, m.Giornodisole, m.Spaccaroccia, m.Attaccalite, m.Facciata,
-      m.Centripugno, m.Provocazione, m.Breccia, m.Forzasegreta, m.Rocciotomba,
-      m.Aeroassalto, m.Granfisico, m.Riduttore, m.Contrattacco, m.MovimentoSismico,
-      m.Sonnolalia, m.Ferrartigli, m.Sgranocchio, m.Sbadiglio, m.Falselacrime,
-      m.Megapugno, m.Fuocopugno, m.Gelopugno, m.Tuonopugno, m.Danzaspada,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Ricciolscudo,
-      m.Metronomo, m.Comete, m.Frana, m.Sostituto, m.Russare,
-      m.Fangosberla, m.Resistenza, m.Rotolamento, m.Bullo, m.Tagliofuria,
-      m.Dinamipugno, m.Leccata, m.Rinfrescata
+    movesByTM: [
+      m.cut, m.roar, m.hyper_beam, m.strength, m.earthquake,
+      m.dig, m.toxic, m.double_team, m.rest, m.thief,
+      m.protect, m.attract, m.return_move, m.frustration, m.hidden_power,
+      m.rain_dance, m.sunny_day, m.rock_smash, m.torment, m.facade,
+      m.focus_punch, m.taunt, m.brick_break, m.secret_power, m.rock_tomb,
+      m.aerial_ace, m.bulk_up, m.take_down, m.counter, m.seismic_toss,
+      m.sleep_talk, m.metal_claw, m.crunch, m.yawn, m.fake_tears,
+      m.mega_punch, m.fire_punch, m.ice_punch, m.thunder_punch, m.swords_dance,
+      m.mega_kick, m.body_slam, m.double_edge, m.mimic, m.defense_curl,
+      m.metronome, m.swift, m.rock_slide, m.substitute, m.snore,
+      m.mud_slap, m.endure, m.rollout, m.swagger, m.fury_cutter,
+      m.dynamic_punch, m.lick, m.refresh
     ],
     evolution: {stage: "stage1", to: []}
   },
   "218": {
     name: "Slugma",
     dexNumber: 218,
-    type: ["Fuoco"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fire"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 48
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Smog, m.Sbadiglio],
-      8: [m.Braciere],
-      15: [m.Sassata],
-      22: [m.Rafforzatore],
-      29: [m.Amnesia],
-      36: [m.Lanciafiamme],
-      43: [m.Frana],
-      50: [m.Corposcontro]
+      5: [m.smog, m.yawn],
+      8: [m.ember],
+      15: [m.rock_throw],
+      22: [m.harden],
+      29: [m.amnesia],
+      36: [m.flamethrower],
+      43: [m.rock_slide],
+      50: [m.body_slam]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Tossina, m.Doppioteam, m.Schermoluce, m.Riflesso,
-      m.Fuocobomba, m.Riposo, m.Protezione, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Giornodisole, m.Spaccaroccia, m.Facciata,
-      m.Forzasegreta, m.Vampata, m.ScudoAcido, m.Ondacalda, m.Corposcontro,
-      m.Sdoppiatore, m.Mimica, m.Ricciolscudo, m.Autodistruzione, m.Frana,
-      m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza, m.Rotolamento,
-      m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.flamethrower, m.toxic, m.double_team, m.light_screen, m.reflect,
+      m.fire_blast, m.rest, m.protect, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.sunny_day, m.rock_smash, m.facade,
+      m.secret_power, m.overheat, m.acid_armor, m.heat_wave, m.body_slam,
+      m.double_edge, m.mimic, m.defense_curl, m.self_destruct, m.rock_slide,
+      m.substitute, m.snore, m.mud_slap, m.endure, m.rollout,
+      m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: [{species: "219", trigger: {kind: "level", level: 38}}]}
   },
   "219": {
     name: "Magcargo",
     dexNumber: 219,
-    type: ["Fuoco", "Roccia"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fire", "rock"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 38,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Smog, m.Sbadiglio],
-      8: [m.Braciere],
-      15: [m.Sassata],
-      22: [m.Rafforzatore],
-      29: [m.Amnesia],
-      36: [m.Lanciafiamme],
-      48: [m.Frana],
-      60: [m.Corposcontro]
+      5: [m.smog, m.yawn],
+      8: [m.ember],
+      15: [m.rock_throw],
+      22: [m.harden],
+      29: [m.amnesia],
+      36: [m.flamethrower],
+      48: [m.rock_slide],
+      60: [m.body_slam]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.IperRaggio, m.Forza, m.Terremoto, m.Tossina,
-      m.Doppioteam, m.Schermoluce, m.Riflesso, m.Fuocobomba, m.Riposo,
-      m.Protezione, m.Terrempesta, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Giornodisole, m.Spaccaroccia, m.Facciata, m.Forzasegreta,
-      m.Vampata, m.Rocciotomba, m.Falcecannone, m.ScudoAcido, m.Ondacalda,
-      m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Ricciolscudo, m.Autodistruzione,
-      m.Frana, m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia, m.Rinfrescata
+    movesByTM: [
+      m.flamethrower, m.hyper_beam, m.strength, m.earthquake, m.toxic,
+      m.double_team, m.light_screen, m.reflect, m.fire_blast, m.rest,
+      m.protect, m.sandstorm, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.sunny_day, m.rock_smash, m.facade, m.secret_power,
+      m.overheat, m.rock_tomb, m.zap_cannon, m.acid_armor, m.heat_wave,
+      m.body_slam, m.double_edge, m.mimic, m.defense_curl, m.self_destruct,
+      m.rock_slide, m.substitute, m.snore, m.mud_slap, m.endure,
+      m.rollout, m.swagger, m.sleep_talk, m.refresh
     ],
     evolution: {stage: "stage1", to: []}
   },
   "220": {
     name: "Swinub",
     dexNumber: 220,
-    type: ["Ghiaccio", "Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["ice", "ground"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 43
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione, m.Segugio],
-      10: [m.Polneve],
-      19: [m.Resistenza],
-      28: [m.Riduttore],
-      37: [m.Nebbia],
-      46: [m.Bora],
-      55: [m.Amnesia]
+      5: [m.tackle, m.odor_sleuth],
+      10: [m.powder_snow],
+      19: [m.endure],
+      28: [m.take_down],
+      37: [m.mist],
+      46: [m.blizzard],
+      55: [m.amnesia]
     },
-    movesByMT: [
-      m.Boato, m.Geloraggio, m.Bora, m.Forza, m.Terremoto,
-      m.Fossa, m.Tossina, m.Doppioteam, m.Schermoluce, m.Riflesso,
-      m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Spaccaroccia, m.Grandine,
-      m.Facciata, m.Forzasegreta, m.Rocciotomba, m.Corposcontro, m.Riduttore,
-      m.Sdoppiatore, m.Morso, m.Frana, m.Forzantica, m.Gelolancia,
-      m.Colpodifango, m.Mimica, m.Ricciolscudo, m.Sostituto, m.Russare,
-      m.Fangosberla, m.Ventogelato, m.Resistenza, m.Bullo, m.Sonnolalia,
-      m.Nebbia, m.Fascino
+    movesByTM: [
+      m.roar, m.ice_beam, m.blizzard, m.strength, m.earthquake,
+      m.dig, m.toxic, m.double_team, m.light_screen, m.reflect,
+      m.rest, m.protect, m.sandstorm, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.rain_dance, m.rock_smash, m.hail,
+      m.facade, m.secret_power, m.rock_tomb, m.body_slam, m.take_down,
+      m.double_edge, m.bite, m.rock_slide, m.ancient_power, m.icicle_spear,
+      m.mud_shot, m.mimic, m.defense_curl, m.substitute, m.snore,
+      m.mud_slap, m.icy_wind, m.endure, m.swagger, m.sleep_talk,
+      m.mist, m.charm
     ],
     evolution: {stage: "base", to: [{species: "221", trigger: {kind: "level", level: 33}}]}
   },
   "221": {
     name: "Piloswine",
     dexNumber: 221,
-    type: ["Ghiaccio", "Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["ice", "ground"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 33,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Incornata, m.Segugio],
-      10: [m.Polneve],
-      19: [m.Resistenza],
-      28: [m.Riduttore],
-      33: [m.Furia],
-      42: [m.Nebbia],
-      56: [m.Bora],
-      70: [m.Amnesia]
+      5: [m.horn_attack, m.odor_sleuth],
+      10: [m.powder_snow],
+      19: [m.endure],
+      28: [m.take_down],
+      33: [m.fury_attack],
+      42: [m.mist],
+      56: [m.blizzard],
+      70: [m.amnesia]
     },
-    movesByMT: [
-      m.Boato, m.Geloraggio, m.Bora, m.IperRaggio, m.Forza,
-      m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam, m.Schermoluce,
-      m.Riflesso, m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Spaccaroccia,
-      m.Grandine, m.Facciata, m.Forzasegreta, m.Rocciotomba, m.Corposcontro,
-      m.Riduttore, m.Sdoppiatore, m.Morso, m.Frana, m.Forzantica,
-      m.Gelolancia, m.Colpodifango, m.Mimica, m.Ricciolscudo, m.Sostituto,
-      m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza, m.Bullo,
-      m.Sonnolalia, m.Nebbia, m.Fascino
+    movesByTM: [
+      m.roar, m.ice_beam, m.blizzard, m.hyper_beam, m.strength,
+      m.earthquake, m.dig, m.toxic, m.double_team, m.light_screen,
+      m.reflect, m.rest, m.protect, m.sandstorm, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.rock_smash,
+      m.hail, m.facade, m.secret_power, m.rock_tomb, m.body_slam,
+      m.take_down, m.double_edge, m.bite, m.rock_slide, m.ancient_power,
+      m.icicle_spear, m.mud_shot, m.mimic, m.defense_curl, m.substitute,
+      m.snore, m.mud_slap, m.icy_wind, m.endure, m.swagger,
+      m.sleep_talk, m.mist, m.charm
     ],
     evolution: {stage: "stage1", to: []}
   },
   "222": {
     name: "Corsola",
     dexNumber: 222,
-    type: ["Acqua", "Roccia"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "rock"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione],
-      6: [m.Rafforzatore],
-      12: [m.Bolla],
-      17: [m.Ripresa, m.Rinfrescata],
-      23: [m.Bollaraggio],
-      28: [m.Sparalance],
-      34: [m.Cadutamassi],
-      39: [m.Specchiovelo],
-      45: [m.Forzantica]
+      5: [m.tackle],
+      6: [m.harden],
+      12: [m.bubble],
+      17: [m.recover, m.refresh],
+      23: [m.bubble_beam],
+      28: [m.spike_cannon],
+      34: [m.rock_blast],
+      39: [m.mirror_coat],
+      45: [m.ancient_power]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.Forza, m.Terremoto,
-      m.Fossa, m.Tossina, m.Psichico, m.Doppioteam, m.Schermoluce,
-      m.Riflesso, m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Spaccaroccia, m.Grandine, m.Facciata,
-      m.Forzasegreta, m.Rocciotomba, m.Calmamente, m.Idropulsar, m.Nebbia,
-      m.Stridio, m.Stordiraggio, m.Barriera, m.Amnesia, m.Frana,
-      m.Radicamento, m.Gelolancia, m.Corposcontro, m.Sdoppiatore, m.Mimica,
-      m.Ricciolscudo, m.Autodistruzione, m.Esplosione, m.Sostituto, m.Russare,
-      m.Fangosberla, m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia,
-      m.Fangata
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.strength, m.earthquake,
+      m.dig, m.toxic, m.psychic, m.double_team, m.light_screen,
+      m.reflect, m.rest, m.protect, m.sandstorm, m.attract,
+      m.return_move, m.frustration, m.safeguard, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.rock_smash, m.hail, m.facade,
+      m.secret_power, m.rock_tomb, m.calm_mind, m.water_pulse, m.mist,
+      m.screech, m.confuse_ray, m.barrier, m.amnesia, m.rock_slide,
+      m.ingrain, m.icicle_spear, m.body_slam, m.double_edge, m.mimic,
+      m.defense_curl, m.self_destruct, m.explosion, m.substitute, m.snore,
+      m.mud_slap, m.endure, m.rollout, m.swagger, m.sleep_talk,
+      m.mud_sport
     ],
     evolution: {stage: "base", to: []}
   },
   "223": {
     name: "Remoraid",
     dexNumber: 223,
-    type: ["Acqua"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 35
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Pistolacqua],
-      11: [m.Localizza],
-      22: [m.Psicoraggio, m.Bollaraggio, m.Raggiaurora],
-      33: [m.Focalenergia],
-      44: [m.Geloraggio],
-      55: [m.IperRaggio]
+      5: [m.water_gun],
+      11: [m.lock_on],
+      22: [m.psybeam, m.bubble_beam, m.aurora_beam],
+      33: [m.focus_energy],
+      44: [m.ice_beam],
+      55: [m.hyper_beam]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Surf, m.Geloraggio, m.Bora, m.IperRaggio,
-      m.Tossina, m.Psichico, m.Doppioteam, m.Fuocobomba, m.Cascata,
-      m.Riposo, m.Furto, m.Protezione, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Giornodisole, m.Facciata,
-      m.Forzasegreta, m.Sub, m.Idropulsar, m.Supersuono, m.Raggiaurora,
-      m.Tuononda, m.Stridio, m.Nube, m.Octazooka, m.Cadutamassi,
-      m.Sdoppiatore, m.Mimica, m.Ricciolscudo, m.Comete, m.Sostituto,
-      m.Russare, m.Fangosberla, m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.flamethrower, m.surf, m.ice_beam, m.blizzard, m.hyper_beam,
+      m.toxic, m.psychic, m.double_team, m.fire_blast, m.waterfall,
+      m.rest, m.thief, m.protect, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.rain_dance, m.sunny_day, m.facade,
+      m.secret_power, m.dive, m.water_pulse, m.supersonic, m.aurora_beam,
+      m.thunder_wave, m.screech, m.haze, m.octazooka, m.rock_blast,
+      m.double_edge, m.mimic, m.defense_curl, m.swift, m.substitute,
+      m.snore, m.mud_slap, m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: [{species: "224", trigger: {kind: "level", level: 25}}]}
   },
   "224": {
     name: "Octillery",
     dexNumber: 224,
-    type: ["Acqua"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 25,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Pistolacqua],
-      11: [m.Limitazione],
-      22: [m.Psicoraggio, m.Bollaraggio, m.Raggiaurora],
-      25: [m.Octazooka],
-      38: [m.Focalenergia],
-      54: [m.Geloraggio],
-      70: [m.IperRaggio]
+      5: [m.water_gun],
+      11: [m.constrict],
+      22: [m.psybeam, m.bubble_beam, m.aurora_beam],
+      25: [m.octazooka],
+      38: [m.focus_energy],
+      54: [m.ice_beam],
+      70: [m.hyper_beam]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Surf, m.Geloraggio, m.Bora, m.IperRaggio,
-      m.Tossina, m.Psichico, m.Doppioteam, m.Fuocobomba, m.Cascata,
-      m.Riposo, m.Furto, m.Protezione, m.Fangobomba, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.Facciata, m.Forzasegreta, m.Sub, m.Semitraglia, m.Idropulsar,
-      m.Supersuono, m.Raggiaurora, m.Tuononda, m.Stridio, m.Nube,
-      m.Octazooka, m.Cadutamassi, m.Sdoppiatore, m.MovimentoSismico, m.Mimica,
-      m.Ricciolscudo, m.Comete, m.Sostituto, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.flamethrower, m.surf, m.ice_beam, m.blizzard, m.hyper_beam,
+      m.toxic, m.psychic, m.double_team, m.fire_blast, m.waterfall,
+      m.rest, m.thief, m.protect, m.sludge_bomb, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.facade, m.secret_power, m.dive, m.bullet_seed, m.water_pulse,
+      m.supersonic, m.aurora_beam, m.thunder_wave, m.screech, m.haze,
+      m.octazooka, m.rock_blast, m.double_edge, m.seismic_toss, m.mimic,
+      m.defense_curl, m.swift, m.substitute, m.snore, m.mud_slap,
+      m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage1", to: []}
   },
   "225": {
     name: "Delibird",
     dexNumber: 225,
-    type: ["Ghiaccio", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["ice", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Regalino, m.Azione]
+      5: [m.present, m.tackle]
     },
-    movesByMT: [
-      m.Volo, m.Geloraggio, m.Bora, m.Tossina, m.Doppioteam,
-      m.Riposo, m.Furto, m.Protezione, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Grandine, m.Facciata,
-      m.Centripugno, m.Forzasegreta, m.Aeroassalto, m.Idropulsar, m.Raggiaurora,
-      m.AttaccoRapido, m.Splash, m.Rapigiro, m.Divinazione, m.PallaGelo,
-      m.Megapugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco,
-      m.MovimentoSismico, m.Mimica, m.Comete, m.Aeroattacco, m.Sostituto,
-      m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza, m.Bullo,
-      m.Sonnolalia
+    movesByTM: [
+      m.fly, m.ice_beam, m.blizzard, m.toxic, m.double_team,
+      m.rest, m.thief, m.protect, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.rain_dance, m.hail, m.facade,
+      m.focus_punch, m.secret_power, m.aerial_ace, m.water_pulse, m.aurora_beam,
+      m.quick_attack, m.splash, m.rapid_spin, m.future_sight, m.ice_ball,
+      m.mega_punch, m.mega_kick, m.body_slam, m.double_edge, m.counter,
+      m.seismic_toss, m.mimic, m.swift, m.sky_attack, m.substitute,
+      m.snore, m.mud_slap, m.icy_wind, m.endure, m.swagger,
+      m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "226": {
     name: "Mantine",
     dexNumber: 226,
-    type: ["Acqua", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Bolla],
-      8: [m.Supersuono],
-      15: [m.Bollaraggio],
-      22: [m.Riduttore],
-      29: [m.Agilita],
-      36: [m.AttaccodAla],
-      43: [m.Idropulsar],
-      50: [m.Stordiraggio]
+      5: [m.tackle, m.bubble],
+      8: [m.supersonic],
+      15: [m.bubble_beam],
+      22: [m.take_down],
+      29: [m.agility],
+      36: [m.wing_attack],
+      43: [m.water_pulse],
+      50: [m.confuse_ray]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.Terremoto, m.Tossina,
-      m.Doppioteam, m.Cascata, m.Riposo, m.Protezione, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Grandine,
-      m.Facciata, m.Forzasegreta, m.Sub, m.Aeroassalto, m.Idropulsar,
-      m.Schianto, m.Idropompa, m.Nube, m.Frana, m.Tornado,
-      m.Fangata, m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Comete,
-      m.Sostituto, m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza,
-      m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.earthquake, m.toxic,
+      m.double_team, m.waterfall, m.rest, m.protect, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.hail,
+      m.facade, m.secret_power, m.dive, m.aerial_ace, m.water_pulse,
+      m.slam, m.hydro_pump, m.haze, m.rock_slide, m.twister,
+      m.mud_sport, m.body_slam, m.double_edge, m.mimic, m.swift,
+      m.substitute, m.snore, m.mud_slap, m.icy_wind, m.endure,
+      m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "227": {
     name: "Skarmory",
     dexNumber: 227,
-    type: ["Acciaio", "Volante"],
-    gender: ["Maschio", "Femmina"],
+    type: ["steel", "flying"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Beccata],
-      10: [m.Turbosabbia],
-      13: [m.Comete],
-      16: [m.Agilita],
-      26: [m.Furia],
-      29: [m.Aerasoio],
-      32: [m.Alacciaio],
-      42: [m.Punte],
-      45: [m.Ferrostrido]
+      5: [m.leer, m.peck],
+      10: [m.sand_attack],
+      13: [m.swift],
+      16: [m.agility],
+      26: [m.fury_attack],
+      29: [m.air_cutter],
+      32: [m.steel_wing],
+      42: [m.spikes],
+      45: [m.metal_sound]
     },
-    movesByMT: [
-      m.Taglio, m.Volo, m.Boato, m.Tossina, m.Doppioteam,
-      m.Riposo, m.Furto, m.Protezione, m.Terrempesta, m.Alacciaio,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Giornodisole,
-      m.Spaccaroccia, m.Attaccalite, m.Facciata, m.Provocazione, m.Forzasegreta,
-      m.Aeroassalto, m.Falcecannone, m.Turbine, m.Perforbecco, m.Aeroattacco,
-      m.Maledizione, m.Inseguimento, m.Sdoppiatore, m.Contrattacco, m.Mimica,
-      m.Comete, m.Frana, m.Sostituto, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.cut, m.fly, m.roar, m.toxic, m.double_team,
+      m.rest, m.thief, m.protect, m.sandstorm, m.steel_wing,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.sunny_day,
+      m.rock_smash, m.torment, m.facade, m.taunt, m.secret_power,
+      m.aerial_ace, m.zap_cannon, m.whirlwind, m.drill_peck, m.sky_attack,
+      m.curse, m.pursuit, m.double_edge, m.counter, m.mimic,
+      m.swift, m.rock_slide, m.substitute, m.snore, m.mud_slap,
+      m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "228": {
     name: "Houndour",
     dexNumber: 228,
-    type: ["Buio", "Fuoco"],
-    gender: ["Maschio", "Femmina"],
+    type: ["dark", "fire"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 34
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Braciere],
-      7: [m.Gridodilotta],
-      13: [m.Smog],
-      19: [m.Boato],
-      25: [m.Morso],
-      31: [m.Segugio],
-      37: [m.Finta],
-      43: [m.Lanciafiamme],
-      49: [m.Sgranocchio]
+      5: [m.leer, m.ember],
+      7: [m.howl],
+      13: [m.smog],
+      19: [m.roar],
+      25: [m.bite],
+      31: [m.odor_sleuth],
+      37: [m.feint_attack],
+      43: [m.flamethrower],
+      49: [m.crunch]
     },
-    movesByMT: [
-      m.Boato, m.Lanciafiamme, m.Solarraggio, m.Tossina, m.Doppioteam,
-      m.Fuocobomba, m.Riposo, m.Furto, m.Protezione, m.Fangobomba,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza,
-      m.Giornodisole, m.PallaOmbra, m.Spaccaroccia, m.Attaccalite, m.Facciata,
-      m.Provocazione, m.Scippo, m.Forzasegreta, m.Vampata, m.Contrattacco,
-      m.Turbofuoco, m.Ira, m.Contropiede, m.Dispetto, m.Inseguimento,
-      m.Picchiaduro, m.Fuocofatuo, m.Corposcontro, m.Sdoppiatore, m.Mimica,
-      m.Comete, m.Mangiasogni, m.Sostituto, m.Incubo, m.Russare,
-      m.Fangosberla, m.Resistenza, m.Bullo, m.Sonnolalia, m.Braciere,
-      m.Finta, m.Fascino
+    movesByTM: [
+      m.roar, m.flamethrower, m.solar_beam, m.toxic, m.double_team,
+      m.fire_blast, m.rest, m.thief, m.protect, m.sludge_bomb,
+      m.attract, m.return_move, m.frustration, m.iron_tail, m.hidden_power,
+      m.sunny_day, m.shadow_ball, m.rock_smash, m.torment, m.facade,
+      m.taunt, m.snatch, m.secret_power, m.overheat, m.counter,
+      m.fire_spin, m.rage, m.reversal, m.spite, m.pursuit,
+      m.beat_up, m.will_o_wisp, m.body_slam, m.double_edge, m.mimic,
+      m.swift, m.dream_eater, m.substitute, m.nightmare, m.snore,
+      m.mud_slap, m.endure, m.swagger, m.sleep_talk, m.ember,
+      m.feint_attack, m.charm
     ],
     evolution: {stage: "base", to: [{species: "229", trigger: {kind: "level", level: 24}}]}
   },
   "229": {
     name: "Houndoom",
     dexNumber: 229,
-    type: ["Buio", "Fuoco"],
-    gender: ["Maschio", "Femmina"],
+    type: ["dark", "fire"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 24,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Braciere],
-      7: [m.Gridodilotta],
-      13: [m.Smog],
-      19: [m.Boato],
-      27: [m.Morso],
-      35: [m.Segugio],
-      43: [m.Finta],
-      51: [m.Lanciafiamme],
-      59: [m.Sgranocchio]
+      5: [m.leer, m.ember],
+      7: [m.howl],
+      13: [m.smog],
+      19: [m.roar],
+      27: [m.bite],
+      35: [m.odor_sleuth],
+      43: [m.feint_attack],
+      51: [m.flamethrower],
+      59: [m.crunch]
     },
-    movesByMT: [
-      m.Boato, m.Lanciafiamme, m.IperRaggio, m.Forza, m.Solarraggio,
-      m.Tossina, m.Doppioteam, m.Fuocobomba, m.Riposo, m.Furto,
-      m.Protezione, m.Fangobomba, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Codacciaio, m.Introforza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia,
-      m.Attaccalite, m.Facciata, m.Provocazione, m.Scippo, m.Forzasegreta,
-      m.Vampata, m.Contrattacco, m.Turbofuoco, m.Ira, m.Contropiede,
-      m.Dispetto, m.Inseguimento, m.Picchiaduro, m.Fuocofatuo, m.Corposcontro,
-      m.Sdoppiatore, m.Mimica, m.Comete, m.Mangiasogni, m.Sostituto,
-      m.Incubo, m.Russare, m.Fangosberla, m.Resistenza, m.Bullo,
-      m.Sonnolalia, m.Braciere, m.Finta, m.Fascino
+    movesByTM: [
+      m.roar, m.flamethrower, m.hyper_beam, m.strength, m.solar_beam,
+      m.toxic, m.double_team, m.fire_blast, m.rest, m.thief,
+      m.protect, m.sludge_bomb, m.attract, m.return_move, m.frustration,
+      m.iron_tail, m.hidden_power, m.sunny_day, m.shadow_ball, m.rock_smash,
+      m.torment, m.facade, m.taunt, m.snatch, m.secret_power,
+      m.overheat, m.counter, m.fire_spin, m.rage, m.reversal,
+      m.spite, m.pursuit, m.beat_up, m.will_o_wisp, m.body_slam,
+      m.double_edge, m.mimic, m.swift, m.dream_eater, m.substitute,
+      m.nightmare, m.snore, m.mud_slap, m.endure, m.swagger,
+      m.sleep_talk, m.ember, m.feint_attack, m.charm
     ],
     evolution: {stage: "stage1", to: []}
   },
   "230": {
     name: "Kingdra",
     dexNumber: 230,
-    type: ["Acqua", "Drago"],
-    gender: ["Maschio", "Femmina"],
+    type: ["water", "dragon"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 50,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Bolla],
-      8: [m.MurodiFumo],
-      15: [m.Fulmisguardo],
-      22: [m.Pistolacqua],
-      29: [m.Tornado],
-      40: [m.Agilita],
-      51: [m.Idropompa],
-      60: [m.Purogelo, m.Privazione],
-      62: [m.Dragodanza]
+      5: [m.bubble],
+      8: [m.smokescreen],
+      15: [m.leer],
+      22: [m.water_gun],
+      29: [m.twister],
+      40: [m.agility],
+      51: [m.hydro_pump],
+      60: [m.sheer_cold, m.knock_off],
+      62: [m.dragon_dance]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.IperRaggio, m.Tossina,
-      m.Doppioteam, m.Cascata, m.Riposo, m.Protezione, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Grandine,
-      m.Facciata, m.Forzasegreta, m.Sub, m.Idropulsar, m.Inibitore,
-      m.Raggiaurora, m.IradiDrago, m.Splash, m.Flagello, m.Octazooka,
-      m.Dragospiro, m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Comete,
-      m.Sostituto, m.Russare, m.Ventogelato, m.Resistenza, m.Bullo,
-      m.Sonnolalia
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.hyper_beam, m.toxic,
+      m.double_team, m.waterfall, m.rest, m.protect, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.hail,
+      m.facade, m.secret_power, m.dive, m.water_pulse, m.disable,
+      m.aurora_beam, m.dragon_rage, m.splash, m.flail, m.octazooka,
+      m.dragon_breath, m.body_slam, m.double_edge, m.mimic, m.swift,
+      m.substitute, m.snore, m.icy_wind, m.endure, m.swagger,
+      m.sleep_talk
     ],
     evolution: {stage: "stage2", to: []}
   },
   "231": {
     name: "Phanpy",
     dexNumber: 231,
-    type: ["Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["ground"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "c",
+      rarity: "common",
       minLevel: 5,
       maxLevel: 35
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito, m.Segugio],
-      9: [m.Ricciolscudo],
-      17: [m.Flagello],
-      25: [m.Riduttore],
-      33: [m.Rotolamento],
-      41: [m.Resistenza],
-      49: [m.Sdoppiatore]
+      5: [m.tackle, m.growl, m.odor_sleuth],
+      9: [m.defense_curl],
+      17: [m.flail],
+      25: [m.take_down],
+      33: [m.rollout],
+      41: [m.endure],
+      49: [m.double_edge]
     },
-    movesByMT: [
-      m.Boato, m.Forza, m.Terremoto, m.Tossina, m.Doppioteam,
-      m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Giornodisole, m.Spaccaroccia,
-      m.Facciata, m.Forzasegreta, m.Rocciotomba, m.Corposcontro, m.Contrattacco,
-      m.Abisso, m.Focalenergia, m.Russare, m.Forzantica, m.Sdoppiatore,
-      m.Mimica, m.Ricciolscudo, m.Sostituto, m.Fangosberla, m.Resistenza,
-      m.Rotolamento, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.roar, m.strength, m.earthquake, m.toxic, m.double_team,
+      m.rest, m.protect, m.sandstorm, m.attract, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.sunny_day, m.rock_smash,
+      m.facade, m.secret_power, m.rock_tomb, m.body_slam, m.counter,
+      m.fissure, m.focus_energy, m.snore, m.ancient_power, m.double_edge,
+      m.mimic, m.defense_curl, m.substitute, m.mud_slap, m.endure,
+      m.rollout, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: [{species: "232", trigger: {kind: "level", level: 25}}]}
   },
   "232": {
     name: "Donphan",
     dexNumber: 232,
-    type: ["Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["ground"],
+    gender: ["male", "female"],
     spriteGendered: true,
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 25,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Incornata, m.Ruggito, m.Segugio],
-      9: [m.Ricciolscudo],
-      17: [m.Flagello],
-      25: [m.Furia],
-      33: [m.Rotolamento],
-      41: [m.Rapigiro],
-      49: [m.Terremoto]
+      5: [m.horn_attack, m.growl, m.odor_sleuth],
+      9: [m.defense_curl],
+      17: [m.flail],
+      25: [m.fury_attack],
+      33: [m.rollout],
+      41: [m.rapid_spin],
+      49: [m.earthquake]
     },
-    movesByMT: [
-      m.Boato, m.IperRaggio, m.Forza, m.Terremoto, m.Tossina,
-      m.Doppioteam, m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza, m.Giornodisole,
-      m.Spaccaroccia, m.Facciata, m.Forzasegreta, m.Rocciotomba, m.Corposcontro,
-      m.Contrattacco, m.Abisso, m.Focalenergia, m.Russare, m.Forzantica,
-      m.Sdoppiatore, m.Mimica, m.Ricciolscudo, m.Frana, m.Sostituto,
-      m.Fangosberla, m.Resistenza, m.Rotolamento, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.roar, m.hyper_beam, m.strength, m.earthquake, m.toxic,
+      m.double_team, m.rest, m.protect, m.sandstorm, m.attract,
+      m.return_move, m.frustration, m.iron_tail, m.hidden_power, m.sunny_day,
+      m.rock_smash, m.facade, m.secret_power, m.rock_tomb, m.body_slam,
+      m.counter, m.fissure, m.focus_energy, m.snore, m.ancient_power,
+      m.double_edge, m.mimic, m.defense_curl, m.rock_slide, m.substitute,
+      m.mud_slap, m.endure, m.rollout, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage1", to: []}
   },
   "233": {
     name: "Porygon2",
     dexNumber: 233,
-    type: ["Normale"],
+    type: ["normal"],
     gender: [],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 50,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Conversione, m.Conversione2],
-      9: [m.Agilita],
-      12: [m.Psicoraggio],
-      20: [m.Ripresa],
-      24: [m.Ricciolscudo],
-      32: [m.Localizza],
-      36: [m.Tripletta],
-      44: [m.Riciclo],
-      48: [m.Falcecannone]
+      5: [m.tackle, m.conversion, m.conversion_2],
+      9: [m.agility],
+      12: [m.psybeam],
+      20: [m.recover],
+      24: [m.defense_curl],
+      32: [m.lock_on],
+      36: [m.tri_attack],
+      44: [m.recycle],
+      48: [m.zap_cannon]
     },
-    movesByMT: [
-      m.Geloraggio, m.Bora, m.IperRaggio, m.Solarraggio, m.Fulmine,
-      m.Tuono, m.Tossina, m.Psichico, m.Doppioteam, m.Flash,
-      m.Riposo, m.Furto, m.Protezione, m.Ritorno, m.Frustrazione,
-      m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra,
-      m.Facciata, m.Forzasegreta, m.Aeroassalto, m.Ondashock, m.Sdoppiatore,
-      m.Tuononda, m.Mimica, m.Ricciolscudo, m.Comete, m.Mangiasogni,
-      m.Sostituto, m.Incubo, m.Russare, m.Ventogelato, m.Resistenza,
-      m.Bullo, m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.ice_beam, m.blizzard, m.hyper_beam, m.solar_beam, m.thunderbolt,
+      m.thunder, m.toxic, m.psychic, m.double_team, m.flash,
+      m.rest, m.thief, m.protect, m.return_move, m.frustration,
+      m.iron_tail, m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball,
+      m.facade, m.secret_power, m.aerial_ace, m.shock_wave, m.double_edge,
+      m.thunder_wave, m.mimic, m.defense_curl, m.swift, m.dream_eater,
+      m.substitute, m.nightmare, m.snore, m.icy_wind, m.endure,
+      m.swagger, m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "stage1", to: []}
   },
   "234": {
     name: "Stantler",
     dexNumber: 234,
-    type: ["Normale"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione],
-      7: [m.Fulmisguardo],
-      11: [m.Sgomento],
-      17: [m.Ipnosi],
-      21: [m.Pestone],
-      27: [m.Turbosabbia],
+      5: [m.tackle],
+      7: [m.leer],
+      11: [m.astonish],
+      17: [m.hypnosis],
+      21: [m.stomp],
+      27: [m.sand_attack],
       31: [],
-      37: [m.Riduttore],
-      41: [m.Stordiraggio],
-      47: [m.Calmamente]
+      37: [m.take_down],
+      41: [m.confuse_ray],
+      47: [m.calm_mind]
     },
-    movesByMT: [
-      m.Boato, m.Solarraggio, m.Fulmine, m.Tuono, m.Terremoto,
-      m.Tossina, m.Psichico, m.Doppioteam, m.Schermoluce, m.Riflesso,
-      m.Flash, m.Riposo, m.Furto, m.Protezione, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Facciata, m.Forzasegreta, m.Calmamente,
-      m.Ondashock, m.Morso, m.Inibitore, m.Dispetto, m.Bullo,
-      m.Psicamisu, m.Extrasenso, m.Corposcontro, m.Sdoppiatore, m.Tuononda,
-      m.Mimica, m.Comete, m.Mangiasogni, m.Sostituto, m.Incubo,
-      m.Russare, m.Fangosberla, m.Resistenza, m.Sonnolalia
+    movesByTM: [
+      m.roar, m.solar_beam, m.thunderbolt, m.thunder, m.earthquake,
+      m.toxic, m.psychic, m.double_team, m.light_screen, m.reflect,
+      m.flash, m.rest, m.thief, m.protect, m.attract,
+      m.return_move, m.frustration, m.iron_tail, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.facade, m.secret_power, m.calm_mind,
+      m.shock_wave, m.bite, m.disable, m.spite, m.swagger,
+      m.psych_up, m.extrasensory, m.body_slam, m.double_edge, m.thunder_wave,
+      m.mimic, m.swift, m.dream_eater, m.substitute, m.nightmare,
+      m.snore, m.mud_slap, m.endure, m.sleep_talk
     ],
     evolution: {stage: "base", to: []}
   },
   "235": {
     name: "Smeargle",
     dexNumber: 235,
-    type: ["Normale"],
-    gender: ["Maschio", "Femmina"],
+    type: ["normal"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Schizzo],
-      11: [m.Schizzo],
-      21: [m.Schizzo],
-      31: [m.Schizzo],
-      41: [m.Schizzo],
-      51: [m.Schizzo],
-      61: [m.Schizzo],
-      71: [m.Schizzo],
-      81: [m.Schizzo],
-      91: [m.Schizzo]
+      5: [m.sketch],
+      11: [m.sketch],
+      21: [m.sketch],
+      31: [m.sketch],
+      41: [m.sketch],
+      51: [m.sketch],
+      61: [m.sketch],
+      71: [m.sketch],
+      81: [m.sketch],
+      91: [m.sketch]
     },
-    movesByMT: [],
+    movesByTM: [],
     evolution: {stage: "base", to: []}
   },
   "236": {
     name: "Tyrogue",
     dexNumber: 236,
-    type: ["Lotta"],
-    gender: ["Maschio"],
+    type: ["fighting"],
+    gender: ["male"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 25
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Azione]
+      5: [m.tackle]
     },
-    movesByMT: [
-      m.Forza, m.Terremoto, m.Tossina, m.Doppioteam, m.Riposo,
-      m.Furto, m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.Spaccaroccia, m.Facciata,
-      m.Breccia, m.Forzasegreta, m.Granfisico, m.Calcinvolo, m.Leggimente,
-      m.Pugnorapido, m.Rapigiro, m.Altruismo, m.Megacalcio, m.Corposcontro,
-      m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico, m.Mimica, m.Comete,
-      m.Frana, m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.strength, m.earthquake, m.toxic, m.double_team, m.rest,
+      m.thief, m.protect, m.attract, m.return_move, m.frustration,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.rock_smash, m.facade,
+      m.brick_break, m.secret_power, m.bulk_up, m.high_jump_kick, m.mind_reader,
+      m.mach_punch, m.rapid_spin, m.helping_hand, m.mega_kick, m.body_slam,
+      m.double_edge, m.counter, m.seismic_toss, m.mimic, m.swift,
+      m.rock_slide, m.substitute, m.snore, m.mud_slap, m.endure,
+      m.swagger, m.sleep_talk
     ],
-    evolution: {stage: "base", to: [{species: "106", trigger: {kind: "item", item: i.pp_max}} , {species: "107", trigger: {kind: "item", item: i.pp_su}} , {species: "237", trigger: {kind: "item", item: i.ps_su}}]}
+    evolution: {stage: "base", to: [{species: "106", trigger: {kind: "item", item: i.pp_max}} , {species: "107", trigger: {kind: "item", item: i.pp_up}} , {species: "237", trigger: {kind: "item", item: i.hp_up}}]}
   },
   "237": {
     name: "Hitmontop",
     dexNumber: 237,
-    type: ["Lotta"],
-    gender: ["Maschio"],
+    type: ["fighting"],
+    gender: ["male"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 40,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Calciorullo, m.Vendetta],
-      7: [m.Focalenergia],
-      13: [m.Inseguimento],
-      19: [m.AttaccoRapido],
-      20: [m.Triplocalcio],
-      25: [m.Rapigiro],
-      31: [m.Contrattacco],
-      37: [m.Agilita],
-      43: [m.Individua],
-      49: [m.Rimonta]
+      5: [m.rolling_kick, m.revenge],
+      7: [m.focus_energy],
+      13: [m.pursuit],
+      19: [m.quick_attack],
+      20: [m.triple_kick],
+      25: [m.rapid_spin],
+      31: [m.counter],
+      37: [m.agility],
+      43: [m.detect],
+      49: [m.endeavor]
     },
-    movesByMT: [
-      m.Forza, m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam,
-      m.Riposo, m.Furto, m.Protezione, m.Terrempesta, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.Spaccaroccia, m.Facciata, m.Breccia, m.Forzasegreta, m.Granfisico,
-      m.Calcinvolo, m.Leggimente, m.Pugnorapido, m.Rapigiro, m.Altruismo,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Mimica, m.Comete, m.Frana, m.Sostituto, m.Russare,
-      m.Fangosberla, m.Resistenza, m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.strength, m.earthquake, m.dig, m.toxic, m.double_team,
+      m.rest, m.thief, m.protect, m.sandstorm, m.attract,
+      m.return_move, m.frustration, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.rock_smash, m.facade, m.brick_break, m.secret_power, m.bulk_up,
+      m.high_jump_kick, m.mind_reader, m.mach_punch, m.rapid_spin, m.helping_hand,
+      m.mega_kick, m.body_slam, m.double_edge, m.counter, m.seismic_toss,
+      m.mimic, m.swift, m.rock_slide, m.substitute, m.snore,
+      m.mud_slap, m.endure, m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage1", to: []}
   },
   "238": {
     name: "Smoochum",
     dexNumber: 238,
-    type: ["Ghiaccio", "Psico"],
-    gender: ["Femmina"],
+    type: ["ice", "psychic"],
+    gender: ["female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 35
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Botta, m.Leccata],
-      9: [m.Dolcebacio],
-      13: [m.Polneve],
-      21: [m.Confusione],
-      25: [m.Canto],
-      33: [m.Malosguardo],
-      37: [m.Falselacrime],
-      45: [m.Psichico],
-      49: [m.Ultimocanto],
-      57: [m.Bora]
+      5: [m.pound, m.lick],
+      9: [m.sweet_kiss],
+      13: [m.powder_snow],
+      21: [m.confusion],
+      25: [m.sing],
+      33: [m.mean_look],
+      37: [m.fake_tears],
+      45: [m.psychic],
+      49: [m.perish_song],
+      57: [m.blizzard]
     },
-    movesByMT: [
-      m.Geloraggio, m.Bora, m.Tossina, m.Psichico, m.Doppioteam,
-      m.Schermoluce, m.Riflesso, m.Flash, m.Riposo, m.Furto,
-      m.Protezione, m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza,
-      m.Pioggiadanza, m.PallaOmbra, m.Grandine, m.Facciata, m.Forzasegreta,
-      m.Calmamente, m.Idropulsar, m.Gelopugno, m.Meditazione, m.Psicamisu,
-      m.Bruciapelo, m.Desiderio, m.Megapugno, m.Megacalcio, m.Corposcontro,
-      m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico, m.Mimica, m.Metronomo,
-      m.Mangiasogni, m.Sostituto, m.Incubo, m.Russare, m.Fangosberla,
-      m.Ventogelato, m.Resistenza, m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.ice_beam, m.blizzard, m.toxic, m.psychic, m.double_team,
+      m.light_screen, m.reflect, m.flash, m.rest, m.thief,
+      m.protect, m.attract, m.return_move, m.frustration, m.hidden_power,
+      m.rain_dance, m.shadow_ball, m.hail, m.facade, m.secret_power,
+      m.calm_mind, m.water_pulse, m.ice_punch, m.meditate, m.psych_up,
+      m.fake_out, m.wish, m.mega_punch, m.mega_kick, m.body_slam,
+      m.double_edge, m.counter, m.seismic_toss, m.mimic, m.metronome,
+      m.dream_eater, m.substitute, m.nightmare, m.snore, m.mud_slap,
+      m.icy_wind, m.endure, m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "base", to: [{species: "124", trigger: {kind: "level", level: 30}}]}
   },
   "239": {
     name: "Elekid",
     dexNumber: 239,
-    type: ["Elettro"],
-    gender: ["Maschio", "Femmina"],
+    type: ["electric"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 35
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.AttaccoRapido],
-      9: [m.Tuonopugno],
-      17: [m.Schermoluce],
-      25: [m.Comete],
-      33: [m.Stridio],
-      41: [m.Fulmine],
-      49: [m.Tuono]
+      5: [m.leer, m.quick_attack],
+      9: [m.thunder_punch],
+      17: [m.light_screen],
+      25: [m.swift],
+      33: [m.screech],
+      41: [m.thunderbolt],
+      49: [m.thunder]
     },
-    movesByMT: [
-      m.Fulmine, m.Tuono, m.Tossina, m.Psichico, m.Doppioteam,
-      m.Schermoluce, m.Flash, m.Riposo, m.Furto, m.Protezione,
-      m.Attrazione, m.Ritorno, m.Frustrazione, m.Introforza, m.Pioggiadanza,
-      m.Spaccaroccia, m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta,
-      m.Ondashock, m.Colpokarate, m.Fuocopugno, m.Gelopugno, m.Calciorullo,
-      m.Meditazione, m.Barriera, m.Incrocolpo, m.Megapugno, m.Tuonopugno,
-      m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico,
-      m.Tuononda, m.Mimica, m.Comete, m.Sostituto, m.Russare,
-      m.Fangosberla, m.Resistenza, m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.thunderbolt, m.thunder, m.toxic, m.psychic, m.double_team,
+      m.light_screen, m.flash, m.rest, m.thief, m.protect,
+      m.attract, m.return_move, m.frustration, m.hidden_power, m.rain_dance,
+      m.rock_smash, m.facade, m.focus_punch, m.brick_break, m.secret_power,
+      m.shock_wave, m.karate_chop, m.fire_punch, m.ice_punch, m.rolling_kick,
+      m.meditate, m.barrier, m.cross_chop, m.mega_punch, m.thunder_punch,
+      m.mega_kick, m.body_slam, m.double_edge, m.counter, m.seismic_toss,
+      m.thunder_wave, m.mimic, m.swift, m.substitute, m.snore,
+      m.mud_slap, m.endure, m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "base", to: [{species: "125", trigger: {kind: "level", level: 30}}]}
   },
   "240": {
     name: "Magby",
     dexNumber: 240,
-    type: ["Fuoco"],
-    gender: ["Maschio", "Femmina"],
+    type: ["fire"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "r",
+      rarity: "rare",
       minLevel: 5,
       maxLevel: 35
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Braciere],
-      7: [m.Fulmisguardo],
-      13: [m.Smog],
-      19: [m.Fuocopugno],
-      25: [m.MurodiFumo],
-      31: [m.Giornodisole],
-      37: [m.Lanciafiamme],
-      43: [m.Stordiraggio],
-      49: [m.Fuocobomba]
+      5: [m.ember],
+      7: [m.leer],
+      13: [m.smog],
+      19: [m.fire_punch],
+      25: [m.smokescreen],
+      31: [m.sunny_day],
+      37: [m.flamethrower],
+      43: [m.confuse_ray],
+      49: [m.fire_blast]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Tossina, m.Psichico, m.Doppioteam, m.Fuocobomba,
-      m.Riposo, m.Furto, m.Protezione, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Giornodisole, m.Spaccaroccia,
-      m.Facciata, m.Centripugno, m.Breccia, m.Forzasegreta, m.Colpokarate,
-      m.Megapugno, m.Tuonopugno, m.Stridio, m.Barriera, m.Incrocolpo,
-      m.Fuocopugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco,
-      m.MovimentoSismico, m.Mimica, m.Sostituto, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Bullo, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.flamethrower, m.toxic, m.psychic, m.double_team, m.fire_blast,
+      m.rest, m.thief, m.protect, m.attract, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.sunny_day, m.rock_smash,
+      m.facade, m.focus_punch, m.brick_break, m.secret_power, m.karate_chop,
+      m.mega_punch, m.thunder_punch, m.screech, m.barrier, m.cross_chop,
+      m.fire_punch, m.mega_kick, m.body_slam, m.double_edge, m.counter,
+      m.seismic_toss, m.mimic, m.substitute, m.snore, m.mud_slap,
+      m.endure, m.swagger, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "base", to: [{species: "126", trigger: {kind: "level", level: 30}}]}
   },
   "241": {
     name: "Miltank",
     dexNumber: 241,
-    type: ["Normale"],
-    gender: ["Femmina"],
+    type: ["normal"],
+    gender: ["female"],
     encounter: {
-      rarity: "u",
+      rarity: "uncommon",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Azione, m.Ruggito],
-      8: [m.Ricciolscudo],
-      13: [m.Pestone],
-      19: [m.Buonlatte],
-      26: [m.Pazienza],
-      34: [m.Rotolamento],
-      43: [m.Corposcontro],
-      53: [m.Rintoccasana]
+      5: [m.tackle, m.growl],
+      8: [m.defense_curl],
+      13: [m.stomp],
+      19: [m.milk_drink],
+      26: [m.bide],
+      34: [m.rollout],
+      43: [m.body_slam],
+      53: [m.heal_bell]
     },
-    movesByMT: [
-      m.Surf, m.Geloraggio, m.Bora, m.IperRaggio, m.Forza,
-      m.Solarraggio, m.Fulmine, m.Tuono, m.Terremoto, m.Tossina,
-      m.Doppioteam, m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione,
-      m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Spaccaroccia, m.Facciata, m.Centripugno,
-      m.Breccia, m.Forzasegreta, m.Rocciotomba, m.Ondashock, m.Idropulsar,
-      m.MovimentoSismico, m.Maledizione, m.Contropiede, m.Resistenza, m.Sonnolalia,
-      m.Regalino, m.Psicamisu, m.Altruismo, m.Megapugno, m.Fuocopugno,
-      m.Gelopugno, m.Tuonopugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore,
-      m.Contrattacco, m.Tuononda, m.Mimica, m.Ricciolscudo, m.Metronomo,
-      m.Frana, m.Sostituto, m.Russare, m.Fangosberla, m.Ventogelato,
-      m.Rotolamento, m.Bullo, m.Dinamipugno
+    movesByTM: [
+      m.surf, m.ice_beam, m.blizzard, m.hyper_beam, m.strength,
+      m.solar_beam, m.thunderbolt, m.thunder, m.earthquake, m.toxic,
+      m.double_team, m.rest, m.protect, m.sandstorm, m.attract,
+      m.return_move, m.frustration, m.iron_tail, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.rock_smash, m.facade, m.focus_punch,
+      m.brick_break, m.secret_power, m.rock_tomb, m.shock_wave, m.water_pulse,
+      m.seismic_toss, m.curse, m.reversal, m.endure, m.sleep_talk,
+      m.present, m.psych_up, m.helping_hand, m.mega_punch, m.fire_punch,
+      m.ice_punch, m.thunder_punch, m.mega_kick, m.body_slam, m.double_edge,
+      m.counter, m.thunder_wave, m.mimic, m.defense_curl, m.metronome,
+      m.rock_slide, m.substitute, m.snore, m.mud_slap, m.icy_wind,
+      m.rollout, m.swagger, m.dynamic_punch
     ],
     evolution: {stage: "base", to: []}
   },
   "242": {
     name: "Blissey",
     dexNumber: 242,
-    type: ["Normale"],
-    gender: ["Femmina"],
+    type: ["normal"],
+    gender: ["female"],
     encounter: {
-      rarity: "s",
+      rarity: "super_rare",
       minLevel: 40,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Botta, m.Colpocoda, m.Ruggito],
-      7: [m.Rinfrescata],
-      10: [m.Covauova],
-      13: [m.Doppiasberla],
-      18: [m.Minimizzato],
-      23: [m.Canto],
-      28: [m.Uovobomba],
-      33: [m.Ricciolscudo],
-      40: [m.Schermoluce],
-      47: [m.Sdoppiatore]
+      5: [m.pound, m.tail_whip, m.growl],
+      7: [m.refresh],
+      10: [m.soft_boiled],
+      13: [m.double_slap],
+      18: [m.minimize],
+      23: [m.sing],
+      28: [m.egg_bomb],
+      33: [m.defense_curl],
+      40: [m.light_screen],
+      47: [m.double_edge]
     },
-    movesByMT: [
-      m.Lanciafiamme, m.Geloraggio, m.Bora, m.IperRaggio, m.Forza,
-      m.Solarraggio, m.Fulmine, m.Tuono, m.Terremoto, m.Tossina,
-      m.Psichico, m.Doppioteam, m.Schermoluce, m.Fuocobomba, m.Flash,
-      m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Salvaguardia, m.Codacciaio, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.PallaOmbra, m.Spaccaroccia, m.Grandine, m.Facciata,
-      m.Centripugno, m.Breccia, m.Scippo, m.Forzasegreta, m.Rocciotomba,
-      m.Calmamente, m.Ondashock, m.Idropulsar, m.Metronomo, m.Sostituto,
-      m.Rintoccasana, m.Regalino, m.Aromaterapia, m.Megapugno, m.Megacalcio,
-      m.Corposcontro, m.Sdoppiatore, m.Contrattacco, m.MovimentoSismico, m.Tuononda,
-      m.Mimica, m.Ricciolscudo, m.Covauova, m.Mangiasogni, m.Russare,
-      m.Fangosberla, m.Ventogelato, m.Resistenza, m.Rotolamento, m.Bullo,
-      m.Sonnolalia, m.Dinamipugno, m.Psicamisu, m.Dolcebacio, m.Desiderio,
-      m.Profumino
+    movesByTM: [
+      m.flamethrower, m.ice_beam, m.blizzard, m.hyper_beam, m.strength,
+      m.solar_beam, m.thunderbolt, m.thunder, m.earthquake, m.toxic,
+      m.psychic, m.double_team, m.light_screen, m.fire_blast, m.flash,
+      m.rest, m.protect, m.sandstorm, m.attract, m.return_move,
+      m.frustration, m.safeguard, m.iron_tail, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.shadow_ball, m.rock_smash, m.hail, m.facade,
+      m.focus_punch, m.brick_break, m.snatch, m.secret_power, m.rock_tomb,
+      m.calm_mind, m.shock_wave, m.water_pulse, m.metronome, m.substitute,
+      m.heal_bell, m.present, m.aromatherapy, m.mega_punch, m.mega_kick,
+      m.body_slam, m.double_edge, m.counter, m.seismic_toss, m.thunder_wave,
+      m.mimic, m.defense_curl, m.soft_boiled, m.dream_eater, m.snore,
+      m.mud_slap, m.icy_wind, m.endure, m.rollout, m.swagger,
+      m.sleep_talk, m.dynamic_punch, m.psych_up, m.sweet_kiss, m.wish,
+      m.sweet_scent
     ],
     evolution: {stage: "stage2", to: []}
   },
   "243": {
     name: "Raikou",
     dexNumber: 243,
-    type: ["Elettro"],
+    type: ["electric"],
     gender: [],
     encounter: {
-      rarity: "l",
+      rarity: "legendary",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 300,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Morso],
-      11: [m.Tuonoshock],
-      21: [m.Boato],
-      31: [m.AttaccoRapido],
-      41: [m.Scintilla],
-      51: [m.Riflesso],
-      61: [m.Sgranocchio],
-      71: [m.Tuono],
-      81: [m.Calmamente]
+      5: [m.leer, m.bite],
+      11: [m.thunder_shock],
+      21: [m.roar],
+      31: [m.quick_attack],
+      41: [m.spark],
+      51: [m.reflect],
+      61: [m.crunch],
+      71: [m.thunder],
+      81: [m.calm_mind]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.IperRaggio, m.Forza, m.Fulmine,
-      m.Tuono, m.Fossa, m.Tossina, m.Doppioteam, m.Riflesso,
-      m.Flash, m.Riposo, m.Protezione, m.Terrempesta, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.Spaccaroccia, m.Facciata, m.Forzasegreta, m.Calmamente, m.Ondashock,
-      m.Corposcontro, m.Sdoppiatore, m.Tuononda, m.Mimica, m.Comete,
-      m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza, m.Bullo,
-      m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.cut, m.roar, m.hyper_beam, m.strength, m.thunderbolt,
+      m.thunder, m.dig, m.toxic, m.double_team, m.reflect,
+      m.flash, m.rest, m.protect, m.sandstorm, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.rock_smash, m.facade, m.secret_power, m.calm_mind, m.shock_wave,
+      m.body_slam, m.double_edge, m.thunder_wave, m.mimic, m.swift,
+      m.substitute, m.snore, m.mud_slap, m.endure, m.swagger,
+      m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   },
   "244": {
     name: "Entei",
     dexNumber: 244,
-    type: ["Fuoco"],
+    type: ["fire"],
     gender: [],
     encounter: {
-      rarity: "l",
+      rarity: "legendary",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 300,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Morso],
-      11: [m.Braciere],
-      21: [m.Boato],
-      31: [m.Turbofuoco],
-      41: [m.Pestone],
-      51: [m.Lanciafiamme],
-      61: [m.Bullo],
-      71: [m.Fuocobomba],
-      81: [m.Calmamente]
+      5: [m.leer, m.bite],
+      11: [m.ember],
+      21: [m.roar],
+      31: [m.fire_spin],
+      41: [m.stomp],
+      51: [m.flamethrower],
+      61: [m.swagger],
+      71: [m.fire_blast],
+      81: [m.calm_mind]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.Lanciafiamme, m.IperRaggio, m.Forza,
-      m.Solarraggio, m.Fossa, m.Tossina, m.Doppioteam, m.Riflesso,
-      m.Fuocobomba, m.Flash, m.Riposo, m.Protezione, m.Terrempesta,
-      m.Ritorno, m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza,
-      m.Giornodisole, m.Spaccaroccia, m.Facciata, m.Forzasegreta, m.Calmamente,
-      m.Falcecannone, m.Corposcontro, m.Sdoppiatore, m.Mimica, m.Comete,
-      m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza, m.Bullo,
-      m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.cut, m.roar, m.flamethrower, m.hyper_beam, m.strength,
+      m.solar_beam, m.dig, m.toxic, m.double_team, m.reflect,
+      m.fire_blast, m.flash, m.rest, m.protect, m.sandstorm,
+      m.return_move, m.frustration, m.iron_tail, m.hidden_power, m.rain_dance,
+      m.sunny_day, m.rock_smash, m.facade, m.secret_power, m.calm_mind,
+      m.zap_cannon, m.body_slam, m.double_edge, m.mimic, m.swift,
+      m.substitute, m.snore, m.mud_slap, m.endure, m.swagger,
+      m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   },
   "245": {
     name: "Suicune",
     dexNumber: 245,
-    type: ["Acqua"],
+    type: ["water"],
     gender: [],
     encounter: {
-      rarity: "l",
+      rarity: "legendary",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 300,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Morso],
-      11: [m.Bollaraggio],
-      21: [m.Pioggiadanza],
-      31: [m.Raffica],
-      41: [m.Raggiaurora],
-      51: [m.Nebbia],
-      61: [m.Specchiovelo],
-      71: [m.Idropompa],
-      81: [m.Calmamente]
+      5: [m.leer, m.bite],
+      11: [m.bubble_beam],
+      21: [m.rain_dance],
+      31: [m.gust],
+      41: [m.aurora_beam],
+      51: [m.mist],
+      61: [m.mirror_coat],
+      71: [m.hydro_pump],
+      81: [m.calm_mind]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.Surf, m.Geloraggio, m.Bora,
-      m.IperRaggio, m.Fossa, m.Tossina, m.Doppioteam, m.Riflesso,
-      m.Cascata, m.Riposo, m.Protezione, m.Terrempesta, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.Spaccaroccia, m.Grandine, m.Facciata, m.Forzasegreta, m.Sub,
-      m.Calmamente, m.Idropulsar, m.Falcecannone, m.Corposcontro, m.Sdoppiatore,
-      m.Mimica, m.Comete, m.Sostituto, m.Russare, m.Fangosberla,
-      m.Ventogelato, m.Resistenza, m.Bullo, m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.cut, m.roar, m.surf, m.ice_beam, m.blizzard,
+      m.hyper_beam, m.dig, m.toxic, m.double_team, m.reflect,
+      m.waterfall, m.rest, m.protect, m.sandstorm, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.rock_smash, m.hail, m.facade, m.secret_power, m.dive,
+      m.calm_mind, m.water_pulse, m.zap_cannon, m.body_slam, m.double_edge,
+      m.mimic, m.swift, m.substitute, m.snore, m.mud_slap,
+      m.icy_wind, m.endure, m.swagger, m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   },
   "246": {
     name: "Larvitar",
     dexNumber: 246,
-    type: ["Roccia", "Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["rock", "ground"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "s",
+      rarity: "super_rare",
       minLevel: 5,
       maxLevel: 35
     },
     exp: 50,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Morso],
-      8: [m.Terrempesta],
-      15: [m.Stridio],
-      22: [m.Frana],
-      29: [m.Colpo],
-      36: [m.Visotruce],
-      43: [m.Sgranocchio],
-      50: [m.Terremoto],
-      57: [m.IperRaggio]
+      5: [m.leer, m.bite],
+      8: [m.sandstorm],
+      15: [m.screech],
+      22: [m.rock_slide],
+      29: [m.thrash],
+      36: [m.scary_face],
+      43: [m.crunch],
+      50: [m.earthquake],
+      57: [m.hyper_beam]
     },
-    movesByMT: [
-      m.IperRaggio, m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam,
-      m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Giornodisole, m.Spaccaroccia,
-      m.Attaccalite, m.Facciata, m.Provocazione, m.Breccia, m.Forzasegreta,
-      m.Pestone, m.Focalenergia, m.Maledizione, m.Oltraggio, m.Inseguimento,
-      m.Forzantica, m.Dragodanza, m.Corposcontro, m.Sdoppiatore, m.Mimica,
-      m.Frana, m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.hyper_beam, m.earthquake, m.dig, m.toxic, m.double_team,
+      m.rest, m.protect, m.sandstorm, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.rain_dance, m.sunny_day, m.rock_smash,
+      m.torment, m.facade, m.taunt, m.brick_break, m.secret_power,
+      m.stomp, m.focus_energy, m.curse, m.outrage, m.pursuit,
+      m.ancient_power, m.dragon_dance, m.body_slam, m.double_edge, m.mimic,
+      m.rock_slide, m.substitute, m.snore, m.mud_slap, m.endure,
+      m.swagger, m.sleep_talk
     ],
     evolution: {stage: "base", to: [{species: "247", trigger: {kind: "level", level: 30}}]}
   },
   "247": {
     name: "Pupitar",
     dexNumber: 247,
-    type: ["Roccia", "Terra"],
-    gender: ["Maschio", "Femmina"],
+    type: ["rock", "ground"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "m",
+      rarity: "mythic",
       minLevel: 30,
       maxLevel: 60
     },
     exp: 100,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Morso],
-      8: [m.Terrempesta],
-      15: [m.Stridio],
-      22: [m.Frana],
-      29: [m.Colpo],
-      38: [m.Visotruce],
-      47: [m.Sgranocchio],
-      56: [m.Terremoto],
-      65: [m.IperRaggio]
+      5: [m.leer, m.bite],
+      8: [m.sandstorm],
+      15: [m.screech],
+      22: [m.rock_slide],
+      29: [m.thrash],
+      38: [m.scary_face],
+      47: [m.crunch],
+      56: [m.earthquake],
+      65: [m.hyper_beam]
     },
-    movesByMT: [
-      m.IperRaggio, m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam,
-      m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Introforza, m.Pioggiadanza, m.Giornodisole, m.Spaccaroccia,
-      m.Attaccalite, m.Facciata, m.Provocazione, m.Breccia, m.Forzasegreta,
-      m.Pestone, m.Focalenergia, m.Maledizione, m.Oltraggio, m.Inseguimento,
-      m.Forzantica, m.Dragodanza, m.Corposcontro, m.Sdoppiatore, m.Mimica,
-      m.Frana, m.Sostituto, m.Russare, m.Fangosberla, m.Resistenza,
-      m.Bullo, m.Sonnolalia
+    movesByTM: [
+      m.hyper_beam, m.earthquake, m.dig, m.toxic, m.double_team,
+      m.rest, m.protect, m.sandstorm, m.attract, m.return_move,
+      m.frustration, m.hidden_power, m.rain_dance, m.sunny_day, m.rock_smash,
+      m.torment, m.facade, m.taunt, m.brick_break, m.secret_power,
+      m.stomp, m.focus_energy, m.curse, m.outrage, m.pursuit,
+      m.ancient_power, m.dragon_dance, m.body_slam, m.double_edge, m.mimic,
+      m.rock_slide, m.substitute, m.snore, m.mud_slap, m.endure,
+      m.swagger, m.sleep_talk
     ],
     evolution: {stage: "stage1", to: [{species: "248", trigger: {kind: "level", level: 55}}]}
   },
   "248": {
     name: "Tyranitar",
     dexNumber: 248,
-    type: ["Roccia", "Buio"],
-    gender: ["Maschio", "Femmina"],
+    type: ["rock", "dark"],
+    gender: ["male", "female"],
     encounter: {
-      rarity: "m",
+      rarity: "mythic",
       minLevel: 55,
       maxLevel: 60
     },
     exp: 150,
     movesByLevel: {
-      5: [m.Fulmisguardo, m.Morso],
-      8: [m.Terrempesta],
-      15: [m.Stridio],
-      22: [m.Frana],
-      29: [m.Colpo],
-      38: [m.Visotruce],
-      47: [m.Sgranocchio],
-      61: [m.Terremoto],
-      75: [m.IperRaggio]
+      5: [m.leer, m.bite],
+      8: [m.sandstorm],
+      15: [m.screech],
+      22: [m.rock_slide],
+      29: [m.thrash],
+      38: [m.scary_face],
+      47: [m.crunch],
+      61: [m.earthquake],
+      75: [m.hyper_beam]
     },
-    movesByMT: [
-      m.Taglio, m.Boato, m.Lanciafiamme, m.Surf, m.Geloraggio,
-      m.Bora, m.IperRaggio, m.Forza, m.Fulmine, m.Tuono,
-      m.Terremoto, m.Fossa, m.Tossina, m.Doppioteam, m.Fuocobomba,
-      m.Riposo, m.Protezione, m.Terrempesta, m.Attrazione, m.Ritorno,
-      m.Frustrazione, m.Codacciaio, m.Introforza, m.Pioggiadanza, m.Giornodisole,
-      m.Spaccaroccia, m.Attaccalite, m.Facciata, m.Centripugno, m.Provocazione,
-      m.Breccia, m.Forzasegreta, m.Rocciotomba, m.Aeroassalto, m.Dragartigli,
-      m.Ondashock, m.Idropulsar, m.Pestone, m.Focalenergia, m.Maledizione,
-      m.Oltraggio, m.Inseguimento, m.Forzantica, m.Dragodanza, m.Megapugno,
-      m.Fuocopugno, m.Megacalcio, m.Corposcontro, m.Sdoppiatore, m.Contrattacco,
-      m.MovimentoSismico, m.Tuononda, m.Mimica, m.Frana, m.Sostituto,
-      m.Incubo, m.Russare, m.Fangosberla, m.Resistenza, m.Bullo,
-      m.Tagliofuria, m.Sonnolalia, m.Dinamipugno
+    movesByTM: [
+      m.cut, m.roar, m.flamethrower, m.surf, m.ice_beam,
+      m.blizzard, m.hyper_beam, m.strength, m.thunderbolt, m.thunder,
+      m.earthquake, m.dig, m.toxic, m.double_team, m.fire_blast,
+      m.rest, m.protect, m.sandstorm, m.attract, m.return_move,
+      m.frustration, m.iron_tail, m.hidden_power, m.rain_dance, m.sunny_day,
+      m.rock_smash, m.torment, m.facade, m.focus_punch, m.taunt,
+      m.brick_break, m.secret_power, m.rock_tomb, m.aerial_ace, m.dragon_claw,
+      m.shock_wave, m.water_pulse, m.stomp, m.focus_energy, m.curse,
+      m.outrage, m.pursuit, m.ancient_power, m.dragon_dance, m.mega_punch,
+      m.fire_punch, m.mega_kick, m.body_slam, m.double_edge, m.counter,
+      m.seismic_toss, m.thunder_wave, m.mimic, m.rock_slide, m.substitute,
+      m.nightmare, m.snore, m.mud_slap, m.endure, m.swagger,
+      m.fury_cutter, m.sleep_talk, m.dynamic_punch
     ],
     evolution: {stage: "stage2", to: []}
   },
   "249": {
     name: "Lugia",
     dexNumber: 249,
-    type: ["Psico", "Volante"],
+    type: ["psychic", "flying"],
     gender: [],
     encounter: {
-      rarity: "l",
+      rarity: "legendary",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 300,
     movesByLevel: {
-      5: [m.Raffica, m.Turbine],
-      11: [m.Salvaguardia],
-      33: [m.Ripresa],
-      44: [m.Idropompa],
-      55: [m.Pioggiadanza],
-      66: [m.Comete],
-      77: [m.Aerocolpo],
-      88: [m.Forzantica],
-      99: [m.Divinazione]
+      5: [m.gust, m.whirlwind],
+      11: [m.safeguard],
+      33: [m.recover],
+      44: [m.hydro_pump],
+      55: [m.rain_dance],
+      66: [m.swift],
+      77: [m.aeroblast],
+      88: [m.ancient_power],
+      99: [m.future_sight]
     },
-    movesByMT: [
-      m.Volo, m.Boato, m.Surf, m.Geloraggio, m.Bora,
-      m.IperRaggio, m.Forza, m.Fulmine, m.Tuono, m.Terremoto,
-      m.Tossina, m.Psichico, m.Doppioteam, m.Schermoluce, m.Riflesso,
-      m.Cascata, m.Riposo, m.Protezione, m.Terrempesta, m.Gigassorbimento,
-      m.Alacciaio, m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Codacciaio,
-      m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia,
-      m.Grandine, m.Facciata, m.Forzasegreta, m.Sub, m.Aeroassalto,
-      m.Calmamente, m.Ondashock, m.Idropulsar, m.Corposcontro, m.Sdoppiatore,
-      m.Tuononda, m.Mimica, m.Comete, m.Mangiasogni, m.Sostituto,
-      m.Incubo, m.Russare, m.Fangosberla, m.Ventogelato, m.Resistenza,
-      m.Bullo, m.Sonnolalia, m.Psicamisu, m.Idropompa, m.Danzadipiume,
-      m.Psicoslancio
+    movesByTM: [
+      m.fly, m.roar, m.surf, m.ice_beam, m.blizzard,
+      m.hyper_beam, m.strength, m.thunderbolt, m.thunder, m.earthquake,
+      m.toxic, m.psychic, m.double_team, m.light_screen, m.reflect,
+      m.waterfall, m.rest, m.protect, m.sandstorm, m.giga_drain,
+      m.steel_wing, m.return_move, m.frustration, m.safeguard, m.iron_tail,
+      m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash,
+      m.hail, m.facade, m.secret_power, m.dive, m.aerial_ace,
+      m.calm_mind, m.shock_wave, m.water_pulse, m.body_slam, m.double_edge,
+      m.thunder_wave, m.mimic, m.swift, m.dream_eater, m.substitute,
+      m.nightmare, m.snore, m.mud_slap, m.icy_wind, m.endure,
+      m.swagger, m.sleep_talk, m.psych_up, m.hydro_pump, m.feather_dance,
+      m.psycho_boost
     ],
     evolution: {stage: "base", to: []}
   },
   "250": {
     name: "Ho-Oh",
     dexNumber: 250,
-    type: ["Fuoco", "Volante"],
+    type: ["fire", "flying"],
     gender: [],
     encounter: {
-      rarity: "l",
+      rarity: "legendary",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 300,
     movesByLevel: {
-      5: [m.Raffica, m.Turbine],
-      11: [m.Salvaguardia],
-      33: [m.Ripresa],
-      44: [m.Fuocobomba],
-      55: [m.Giornodisole],
-      66: [m.Comete],
-      77: [m.Magifuoco],
-      88: [m.Forzantica],
-      99: [m.Divinazione]
+      5: [m.gust, m.whirlwind],
+      11: [m.safeguard],
+      33: [m.recover],
+      44: [m.fire_blast],
+      55: [m.sunny_day],
+      66: [m.swift],
+      77: [m.sacred_fire],
+      88: [m.ancient_power],
+      99: [m.future_sight]
     },
-    movesByMT: [
-      m.Volo, m.Boato, m.Lanciafiamme, m.IperRaggio, m.Forza,
-      m.Solarraggio, m.Fulmine, m.Tuono, m.Terremoto, m.Tossina,
-      m.Psichico, m.Doppioteam, m.Schermoluce, m.Riflesso, m.Fuocobomba,
-      m.Flash, m.Riposo, m.Protezione, m.Terrempesta, m.Gigassorbimento,
-      m.Alacciaio, m.Ritorno, m.Frustrazione, m.Salvaguardia, m.Introforza,
-      m.Pioggiadanza, m.Giornodisole, m.PallaOmbra, m.Spaccaroccia, m.Facciata,
-      m.Forzasegreta, m.Vampata, m.Aeroassalto, m.Calmamente, m.Ondashock,
-      m.Sdoppiatore, m.Tuononda, m.Mimica, m.Comete, m.Mangiasogni,
-      m.Aeroattacco, m.Sostituto, m.Incubo, m.Russare, m.Fangosberla,
-      m.Resistenza, m.Bullo, m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.fly, m.roar, m.flamethrower, m.hyper_beam, m.strength,
+      m.solar_beam, m.thunderbolt, m.thunder, m.earthquake, m.toxic,
+      m.psychic, m.double_team, m.light_screen, m.reflect, m.fire_blast,
+      m.flash, m.rest, m.protect, m.sandstorm, m.giga_drain,
+      m.steel_wing, m.return_move, m.frustration, m.safeguard, m.hidden_power,
+      m.rain_dance, m.sunny_day, m.shadow_ball, m.rock_smash, m.facade,
+      m.secret_power, m.overheat, m.aerial_ace, m.calm_mind, m.shock_wave,
+      m.double_edge, m.thunder_wave, m.mimic, m.swift, m.dream_eater,
+      m.sky_attack, m.substitute, m.nightmare, m.snore, m.mud_slap,
+      m.endure, m.swagger, m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   },
   "251": {
     name: "Celebi",
     dexNumber: 251,
-    type: ["Psico", "Erba"],
+    type: ["psychic", "grass"],
     gender: [],
     encounter: {
-      rarity: "l",
+      rarity: "legendary",
       minLevel: 5,
       maxLevel: 60
     },
     exp: 300,
     movesByLevel: {
-      5: [m.Parassiseme, m.Confusione, m.Ripresa, m.Rintoccasana],
-      10: [m.Salvaguardia],
-      20: [m.Forzantica],
-      30: [m.Divinazione],
-      40: [m.Staffetta],
-      50: [m.Ultimocanto]
+      5: [m.leech_seed, m.confusion, m.recover, m.heal_bell],
+      10: [m.safeguard],
+      20: [m.ancient_power],
+      30: [m.future_sight],
+      40: [m.baton_pass],
+      50: [m.perish_song]
     },
-    movesByMT: [
-      m.Taglio, m.IperRaggio, m.Solarraggio, m.Tossina, m.Psichico,
-      m.Doppioteam, m.Schermoluce, m.Riflesso, m.Flash, m.Riposo,
-      m.Protezione, m.Terrempesta, m.Gigassorbimento, m.Ritorno, m.Frustrazione,
-      m.Salvaguardia, m.Introforza, m.Pioggiadanza, m.Giornodisole, m.PallaOmbra,
-      m.Facciata, m.Forzasegreta, m.Aeroassalto, m.Calmamente, m.Ondashock,
-      m.Idropulsar, m.Falcecannone, m.Danzaspada, m.Sdoppiatore, m.Mimica,
-      m.Ricciolscudo, m.Metronomo, m.Comete, m.Mangiasogni, m.Sostituto,
-      m.Incubo, m.Russare, m.Fangosberla, m.Resistenza, m.Bullo,
-      m.Sonnolalia, m.Psicamisu
+    movesByTM: [
+      m.cut, m.hyper_beam, m.solar_beam, m.toxic, m.psychic,
+      m.double_team, m.light_screen, m.reflect, m.flash, m.rest,
+      m.protect, m.sandstorm, m.giga_drain, m.return_move, m.frustration,
+      m.safeguard, m.hidden_power, m.rain_dance, m.sunny_day, m.shadow_ball,
+      m.facade, m.secret_power, m.aerial_ace, m.calm_mind, m.shock_wave,
+      m.water_pulse, m.zap_cannon, m.swords_dance, m.double_edge, m.mimic,
+      m.defense_curl, m.metronome, m.swift, m.dream_eater, m.substitute,
+      m.nightmare, m.snore, m.mud_slap, m.endure, m.swagger,
+      m.sleep_talk, m.psych_up
     ],
     evolution: {stage: "base", to: []}
   }

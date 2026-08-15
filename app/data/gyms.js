@@ -4,14 +4,14 @@ import { getItemByIndex } from "./items.js";
 import { BADGE_LEVEL_LIMITS, GYM_REWARDS, KANTO_LEAGUE_REWARDS } from "./progression.js";
 
 export var KANTO_GYM_CITIES = [
-  { key: "plumbeopoli", title: "Plumbeopoli", image: "plumbeopoli_bottone.webp", badgeIndex: 0 },
-  { key: "celestopoli", title: "Celestopoli", image: "celestopoli_bottone.webp", badgeIndex: 1 },
-  { key: "aranciopoli", title: "Aranciopoli", image: "aranciopoli_bottone.webp", badgeIndex: 2 },
-  { key: "azzurropoli", title: "Azzurropoli", image: "azzurropoli_bottone.webp", badgeIndex: 3 },
-  { key: "zafferanopoli", title: "Zafferanopoli", image: "zafferanopoli_bottone.webp", badgeIndex: 4 },
-  { key: "fucsiapoli", title: "Fucsiapoli", image: "fucsiapoli_bottone.webp", badgeIndex: 5 },
-  { key: "isola-cannella", title: "Isola Cannella", image: "isola_cannella_bottone.webp", badgeIndex: 6 },
-  { key: "smeraldopoli", title: "Smeraldopoli", image: "smeraldopoli_bottone.webp", badgeIndex: 7 }
+  { key: "pewter_city", title: "Plumbeopoli", image: "plumbeopoli_bottone.webp", badgeIndex: 0 },
+  { key: "cerulean_city", title: "Celestopoli", image: "celestopoli_bottone.webp", badgeIndex: 1 },
+  { key: "vermilion_city", title: "Aranciopoli", image: "aranciopoli_bottone.webp", badgeIndex: 2 },
+  { key: "celadon_city", title: "Azzurropoli", image: "azzurropoli_bottone.webp", badgeIndex: 3 },
+  { key: "saffron_city", title: "Zafferanopoli", image: "zafferanopoli_bottone.webp", badgeIndex: 4 },
+  { key: "fuchsia_city", title: "Fucsiapoli", image: "fucsiapoli_bottone.webp", badgeIndex: 5 },
+  { key: "cinnabar_island", title: "Isola Cannella", image: "isola_cannella_bottone.webp", badgeIndex: 6 },
+  { key: "viridian_city", title: "Smeraldopoli", image: "smeraldopoli_bottone.webp", badgeIndex: 7 }
 ];
 
 export var KANTO_GYM_BADGE_NAMES = [
@@ -61,7 +61,7 @@ function buildGymPokemon(config) {
     level: config.level,
     type: (config.type || speciesData.type).slice(),
     maxHp: config.maxHp,
-    gender: config.gender !== undefined ? config.gender : "Maschio",
+    gender: config.gender !== undefined ? config.gender : "male",
     isShiny: Boolean(config.isShiny),
     isMega: Boolean(config.isMega),
     expCurrent: Number(config.expCurrent) || 0,
@@ -74,39 +74,39 @@ function buildGymPokemon(config) {
 }
 
 export var KANTO_GYM_LEADERS = {
-  plumbeopoli: { name: "Brock", sprite: "brock.webp", team: [
+  pewter_city: { name: "Brock", sprite: "brock.webp", team: [
     gymPokemon("74", 12, 62, [gymMove(25, 28, 2), gymMove(245, 29, 2), gymMove(98, 30, 2), gymMove(266, 31, 2)]),
     gymPokemon("95", 14, 68, [gymMove(25, 32, 2), gymMove(307, 33, 2), gymMove(266, 35, 2), gymMove(159, 34, 2)])
   ], extraLimits: [] },
-  celestopoli: { name: "Misty", sprite: "misty.webp", team: [
+  cerulean_city: { name: "Misty", sprite: "misty.webp", team: [
     gymPokemon("116", 20, 86, [gymMove(31, 64, 4), gymMove(190, 66, 4), gymMove(123, 68, 4)]),
     gymPokemon("120", 20, 86, [gymMove(217, 64, 4), gymMove(242, 65, 4), gymMove(255, 66, 4), gymMove(47, 67, 4)]),
     gymPokemon("121", 22, 92, [gymMove(217, 68, 7), gymMove(255, 69, 7), gymMove(61, 71, 7), gymMove(242, 70, 7)])
   ], extraLimits: [] },
-  aranciopoli: { name: "Lt. Surge", sprite: "lt_surge.webp", team: [
+  vermilion_city: { name: "Lt. Surge", sprite: "lt_surge.webp", team: [
     gymPokemon("25", 28, 110, [gymMove(21, 80, 19), gymMove(85, 81, 19), gymMove(270, 82, 19), gymMove(122, 83, 19)]),
     gymPokemon("100", 31, 119, [gymMove(307, 106, 26), gymMove(289, 107, 26), gymMove(272, 108, 26), gymMove(23, 109, 26)]),
     gymPokemon("26", 34, 128, [gymMove(328, 114, 29), gymMove(57, 113, 29), gymMove(21, 112, 29), gymMove(122, 115, 29)])
   ], extraLimits: [] },
-  azzurropoli: { name: "Erika", sprite: "erika.webp", team: [
+  celadon_city: { name: "Erika", sprite: "erika.webp", team: [
     gymPokemon("71", 39, 143, [gymMove(120, 122, 34), gymMove(290, 123, 34), gymMove(222, 124, 34), gymMove(113, 125, 34)]),
     gymPokemon("114", 40, 161, [gymMove(159, 144, 34), gymMove(178, 147, 34), gymMove(207, 146, 34), gymMove(270, 145, 34)]),
     gymPokemon("45", 43, 170, [gymMove(319, 150, 38), gymMove(15, 151, 38), gymMove(207, 152, 38), gymMove(178, 153, 38)])
   ], extraLimits: [] },
-  zafferanopoli: { name: "Sabrina", sprite: "sabrina.webp", team: [
+  saffron_city: { name: "Sabrina", sprite: "sabrina.webp", team: [
     gymPokemon("64", 48, 185, [gymMove(255, 160, 54), gymMove(79, 161, 56), gymMove(226, 162, 58), gymMove(228, 163, 60)]),
     gymPokemon("122", 50, 226, [gymMove(239, 174, 58), gymMove(226, 177, 60), gymMove(228, 174, 62), gymMove(264, 177, 64)]),
     gymPokemon("49", 50, 226, [gymMove(207, 174, 58), gymMove(236, 175, 60), gymMove(228, 177, 62), gymMove(290, 177, 64)]),
     gymPokemon("65", 53, 235, [gymMove(79, 180, 64), gymMove(46, 181, 66), gymMove(226, 182, 68), gymMove(150, 183, 70)])
   ], extraLimits: [] },
-  fucsiapoli: { name: "Koga", sprite: "koga.webp", team: [
+  fuchsia_city: { name: "Koga", sprite: "koga.webp", team: [
     gymPokemon("109", 55, 241, [gymMove(100, 184, 68), gymMove(91, 185, 70), gymMove(128, 186, 72), gymMove(180, 187, 74)]),
     gymPokemon("49", 58, 250, [gymMove(228, 191, 76), gymMove(290, 192, 78), gymMove(236, 190, 74), gymMove(226, 193, 80)]),
     gymPokemon("24", 70, 306, [gymMove(148, 254, 98), gymMove(280, 255, 100), gymMove(3, 256, 102), gymMove(214, 257, 104)]),
     gymPokemon("89", 62, 282, [gymMove(133, 238, 82), gymMove(275, 239, 84), gymMove(100, 240, 86), gymMove(77, 240, 88)]),
     gymPokemon("110", 62, 282, [gymMove(100, 238, 82), gymMove(91, 239, 84), gymMove(76, 240, 86), gymMove(319, 241, 88)])
   ], extraLimits: [] },
-  "isola-cannella": { name: "Blaine", sprite: "blaine.webp", team: [
+  "cinnabar_island": { name: "Blaine", sprite: "blaine.webp", team: [
     gymPokemon("58", 70, 306, [gymMove(157, 254, 98), gymMove(13, 255, 100), gymMove(11, 256, 102), gymMove(154, 257, 104)]),
     gymPokemon("38", 72, 312, [gymMove(53, 258, 102), gymMove(154, 259, 104), gymMove(264, 260, 106), gymMove(330, 261, 108)], 204),
     gymPokemon("6", 76, 324, [gymMove(124, 269, 110), gymMove(87, 267, 112), gymMove(214, 267, 114), gymMove(330, 266, 116)], 220),
@@ -114,7 +114,7 @@ export var KANTO_GYM_LEADERS = {
     gymPokemon("78", 80, 336, [gymMove(11, 274, 118), gymMove(127, 274, 120), gymMove(154, 275, 122), gymMove(124, 277, 124)], 238),
     gymPokemon("126", 80, 336, [gymMove(134, 274, 118), gymMove(157, 277, 120), gymMove(327, 275, 122), gymMove(77, 277, 124)])
   ], extraLimits: [] },
-  smeraldopoli: { name: "Giovanni", sprite: "giovanni.webp", team: [
+  viridian_city: { name: "Giovanni", sprite: "giovanni.webp", team: [
     gymPokemon("111", 88, 360, [gymMove(128, 290, 134), gymMove(247, 289, 136), gymMove(127, 292, 138), gymMove(154, 292, 140)]),
     gymPokemon("51", 90, 366, [gymMove(148, 296, 138), gymMove(154, 296, 140), gymMove(100, 294, 142), gymMove(2, 297, 144)], 220),
     gymPokemon("112", 90, 366, [gymMove(211, 294, 138), gymMove(128, 295, 140), gymMove(77, 296, 142), gymMove(188, 297, 144)], 308),
@@ -178,7 +178,7 @@ export function kantoGymLeaderByCity(cityKey) {
   if (!leader) { return null; }
   var team = leader.team.map(buildGymPokemon).filter(Boolean);
   var rewardConfig = GYM_REWARDS[city.badgeIndex];
-  var rewardMt = rewardConfig.mt ? getItemByIndex(rewardConfig.mt) : null;
+  var rewardTM = rewardConfig.tm ? getItemByIndex(rewardConfig.tm) : null;
   var rewardItem = rewardConfig.item ? getItemByIndex(rewardConfig.item) : null;
   var rewardItemQuantity = Math.max(1, Number(rewardConfig.itemQuantity) || 1);
   return {
@@ -186,7 +186,7 @@ export function kantoGymLeaderByCity(cityKey) {
     sprite: leader.sprite,
     rewards: [
       { kind: "money", quantity: rewardConfig.money, label: String(rewardConfig.money) },
-      rewardMt ? { kind: "item", itemIndex: rewardMt.index, label: rewardMt.name } : null,
+      rewardTM ? { kind: "item", itemIndex: rewardTM.index, label: rewardTM.name } : null,
       rewardItem ? { kind: "item", itemIndex: rewardItem.index, quantity: rewardItemQuantity, label: rewardItemQuantity > 1 ? String(rewardItemQuantity) + " " + rewardItem.name : rewardItem.name } : null,
       { kind: "badge", label: KANTO_GYM_BADGE_NAMES[city.badgeIndex] || "Medaglia " + city.title, image: KANTO_GYM_BADGE_IMAGES[city.badgeIndex] || "" }
     ].filter(Boolean),
@@ -211,7 +211,7 @@ function buildNamedPokemon(speciesKey, level, maxHp, moveIndices, heldItemIndex)
     level: level,
     type: speciesData.type.slice(),
     maxHp: maxHp,
-    gender: "Maschio",
+    gender: "male",
     isShiny: false,
     isMega: false,
     expCurrent: 0,
@@ -303,8 +303,8 @@ export var KANTO_ELITE_FOUR = [
   }
 ];
 
-export var KANTO_CAMPIONE_KANTO = {
-  key: "campione-kanto",
+export var KANTO_CHAMPION = {
+  key: "kanto_champion",
   name: "Blu",
   sprite: "blu.webp",
   team: [

@@ -85,7 +85,7 @@ function normalizeRenderableScene(scene) {
   if (scene.name === "capture" && !playerCanAccessZone(state.inventory, scene.zoneName)) {
     return { name: "zones" };
   }
-  if (scene.name === "gym-city" && (scene.cityKey === "superquattro" || scene.cityKey === "campione-kanto") && kantoEliteFourChallengeStatus(state.trainerInfo[2]).state === "locked") {
+  if (scene.name === "gym-city" && (scene.cityKey === "elite_four" || scene.cityKey === "kanto_champion") && kantoEliteFourChallengeStatus(state.trainerInfo[2]).state === "locked") {
     return { name: "gyms" };
   }
   return scene;

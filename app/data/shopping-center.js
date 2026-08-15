@@ -1,5 +1,5 @@
 import * as i from "./items.js";
-import { ITEM_UNLOCK_RULES, GYM_REWARD_MT_ITEMS, mtPrice, mtUnlockBadges, normalizedBadges } from "./progression.js";
+import { ITEM_UNLOCK_RULES, GYM_REWARD_TM_ITEMS, tmPrice, tmUnlockBadges, normalizedBadges } from "./progression.js";
 
 function shopItem(item, section, category, price) {
   return { item: item, section: section, category: category, price: price };
@@ -8,133 +8,156 @@ function shopItem(item, section, category, price) {
 var DEFAULT_UNCATALOGUED_SALE_PRICE = 100;
 
 export var SHOPPING_CENTER_SECTIONS = {
-  MARKET: "Market",
-  PORT: "Mercato del Porto",
-  DEVON: "Devon SpA",
-  MT: "Negozio MT",
-  SELL: "Vendi"
+  MARKET: "market",
+  PORT: "port_market",
+  DEVON: "devon_corporation",
+  TM: "tm_shop",
+  SELL: "sell"
 };
 
+export var SHOPPING_CENTER_SECTION_LABELS_IT = Object.freeze({
+  market: "Market",
+  port_market: "Mercato del Porto",
+  devon_corporation: "Devon SpA",
+  tm_shop: "Negozio MT",
+  sell: "Vendi"
+});
+
 export var SHOPPING_CENTER_CATEGORIES = {
-  POKE_BALL: "Poké Ball",
-  HEALING: "Strumenti curativi",
-  EVOLUTION_STONES: "Pietre evolutive",
-  HERB: "Erbe medicinali",
-  DRINK: "Bevande",
-  VITAMIN: "Vitamine",
-  COMPETITIVE: "Strumenti del Porto",
-  TYPE_BOOSTERS: "Strumenti potenziatori",
-  DEVON: "Devon SpA",
-  INCENSES: "Aromi",
-  FLUTES: "Flauti",
-  EVOLUTION_ITEMS: "Strumenti evolutivi",
-  MT: "MT",
-  RARE: "Strumenti rari"
+  POKE_BALL: "poke_balls",
+  HEALING: "healing_items",
+  EVOLUTION_STONES: "evolution_stones",
+  HERB: "medicinal_herbs",
+  DRINK: "drinks",
+  VITAMIN: "vitamins",
+  COMPETITIVE: "port_items",
+  TYPE_BOOSTERS: "type_boosters",
+  DEVON: "devon_items",
+  INCENSES: "incenses",
+  FLUTES: "flutes",
+  EVOLUTION_ITEMS: "evolution_items",
+  TM: "tms",
+  RARE: "rare_items"
 };
+
+export var SHOPPING_CENTER_CATEGORY_LABELS_IT = Object.freeze({
+  poke_balls: "Poké Ball", healing_items: "Strumenti curativi", evolution_stones: "Pietre evolutive",
+  medicinal_herbs: "Erbe medicinali", drinks: "Bevande", vitamins: "Vitamine", port_items: "Strumenti del Porto",
+  type_boosters: "Strumenti potenziatori", devon_items: "Devon SpA", incenses: "Aromi", flutes: "Flauti",
+  evolution_items: "Strumenti evolutivi", tms: "MT", rare_items: "Strumenti rari"
+});
+
+export function shoppingCenterSectionDisplayName(sectionKey) {
+  return SHOPPING_CENTER_SECTION_LABELS_IT[sectionKey] || String(sectionKey || "");
+}
+
+function shoppingCenterCategoryDisplayName(categoryKey) {
+  return SHOPPING_CENTER_CATEGORY_LABELS_IT[categoryKey] || String(categoryKey || "");
+}
 
 export var SHOPPING_CENTER_ITEMS = [
   shopItem(i.poke_ball, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.POKE_BALL, 200),
-  shopItem(i.mega_ball, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.POKE_BALL, 600),
+  shopItem(i.great_ball, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.POKE_BALL, 600),
   shopItem(i.ultra_ball, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.POKE_BALL, 1200),
-  shopItem(i.pozione, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 300),
-  shopItem(i.superpozione, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 700),
-  shopItem(i.iperpozione, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 2000),
-  shopItem(i.pozione_max, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 3500),
-  shopItem(i.ricarica_totale, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 4500),
-  shopItem(i.antidoto, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 100),
-  shopItem(i.antiparalisi, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 200),
-  shopItem(i.sveglia, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 250),
-  shopItem(i.antiscottatura, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 250),
-  shopItem(i.antigelo, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 250),
-  shopItem(i.cura_totale, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 600),
-  shopItem(i.elisir_chiarocielo, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 1000),
-  shopItem(i.revitalizzante, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 2000),
-  shopItem(i.revitalizzante_max, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 6000),
-  shopItem(i.pietrafocaia, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.EVOLUTION_STONES, 2500),
-  shopItem(i.pietratuono, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.EVOLUTION_STONES, 2500),
-  shopItem(i.pietraidrica, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.EVOLUTION_STONES, 2500),
-  shopItem(i.pietrafoglia, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.EVOLUTION_STONES, 2500),
-  shopItem(i.polvocura, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HERB, 300),
-  shopItem(i.polvenergia, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HERB, 500),
-  shopItem(i.radicenergia, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HERB, 1200),
-  shopItem(i.vitalerba, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HERB, 2800),
-  shopItem(i.acqua_fresca, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.DRINK, null),
-  shopItem(i.gassosa, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.DRINK, null),
-  shopItem(i.lemonsucco, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.DRINK, null),
-  shopItem(i.latte_mumu, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.DRINK, null),
-  shopItem(i.squama_cuore, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.RARE, null),
+  shopItem(i.potion, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 300),
+  shopItem(i.super_potion, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 700),
+  shopItem(i.hyper_potion, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 2000),
+  shopItem(i.max_potion, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 3500),
+  shopItem(i.full_restore, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 4500),
+  shopItem(i.antidote, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 100),
+  shopItem(i.paralyze_heal, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 200),
+  shopItem(i.awakening, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 250),
+  shopItem(i.burn_heal, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 250),
+  shopItem(i.ice_heal, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 250),
+  shopItem(i.full_heal, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 600),
+  shopItem(i.clear_sky_elixir, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 1000),
+  shopItem(i.revive, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 2000),
+  shopItem(i.max_revive, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HEALING, 6000),
+  shopItem(i.fire_stone, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.EVOLUTION_STONES, 2500),
+  shopItem(i.thunder_stone, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.EVOLUTION_STONES, 2500),
+  shopItem(i.water_stone, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.EVOLUTION_STONES, 2500),
+  shopItem(i.leaf_stone, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.EVOLUTION_STONES, 2500),
+  shopItem(i.heal_powder, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HERB, 300),
+  shopItem(i.energy_powder, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HERB, 500),
+  shopItem(i.energy_root, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HERB, 1200),
+  shopItem(i.revival_herb, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.HERB, 2800),
+  shopItem(i.fresh_water, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.DRINK, null),
+  shopItem(i.soda_pop, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.DRINK, null),
+  shopItem(i.lemonade, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.DRINK, null),
+  shopItem(i.moomoo_milk, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.DRINK, null),
+  shopItem(i.heart_scale, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.RARE, null),
 
-  shopItem(i.ps_su, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.VITAMIN, 10000),
-  shopItem(i.pp_su, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.VITAMIN, 10000),
+  shopItem(i.hp_up, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.VITAMIN, 10000),
+  shopItem(i.pp_up, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.VITAMIN, 10000),
   shopItem(i.pp_max, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.VITAMIN, 15000),
 
-  shopItem(i.bandana, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.COMPETITIVE, 8000),
-  shopItem(i.focalnastro, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.COMPETITIVE, 10000),
-  shopItem(i.luminpolvere, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.COMPETITIVE, 10000),
-  shopItem(i.roccia_di_re, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.COMPETITIVE, 12000),
+  shopItem(i.focus_band, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.COMPETITIVE, 8000),
+  shopItem(i.focus_sash, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.COMPETITIVE, 10000),
+  shopItem(i.bright_powder, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.COMPETITIVE, 10000),
+  shopItem(i.kings_rock, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.COMPETITIVE, 12000),
 
-  shopItem(i.acqua_magica, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.argenpolvere, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.beccaffilato, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.calamita, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.carbonella, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.cintura_nera, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.cucchiaio_torto, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.dente_di_drago, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.gelomai, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.metalcopertura, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.miracolseme, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.occhialineri, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.pietradura, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.piuma_fatata, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.sabbia_soffice, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.sciarpa_seta, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.spettrotarga, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.velenaculeo, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.elettropalla, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.gambo, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.fortunpugno, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
-  shopItem(i.osso_spesso, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.mystic_water, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.silver_powder, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.sharp_beak, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.magnet, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.charcoal, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.black_belt, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.twisted_spoon, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.dragon_fang, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.never_melt_ice, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.metal_coat, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.miracle_seed, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.black_glasses, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.hard_stone, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.fairy_feather, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.soft_sand, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.silk_scarf, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.spell_tag, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.poison_barb, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.light_ball, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.leek, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.lucky_punch, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
+  shopItem(i.thick_club, SHOPPING_CENTER_SECTIONS.PORT, SHOPPING_CENTER_CATEGORIES.TYPE_BOOSTERS, null),
 
-  shopItem(i.occhialoni, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 2000),
-  shopItem(i.spettrosonda, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 2000),
-  shopItem(i.scarponi_robusti, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 2000),
-  shopItem(i.conchinella, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 4000),
+  shopItem(i.go_goggles, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 2000),
+  shopItem(i.silph_scope, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 2000),
+  shopItem(i.heavy_duty_boots, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 2000),
+  shopItem(i.shell_bell, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 4000),
 
-  shopItem(i.assorbisfera, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 8000),
-  shopItem(i.plessimetro, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 8000),
-  shopItem(i.zoomlente, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 8000),
-  shopItem(i.copertura, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 10000),
-  shopItem(i.bitorzolelmo, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 10000),
-  shopItem(i.fiascopolizza, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 12000),
+  shopItem(i.life_orb, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 8000),
+  shopItem(i.metronome, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 8000),
+  shopItem(i.zoom_lens, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 8000),
+  shopItem(i.protector, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 10000),
+  shopItem(i.rocky_helmet, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 10000),
+  shopItem(i.blunder_policy, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.DEVON, 12000),
 
-  shopItem(i.distraroma, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
-  shopItem(i.fortunaroma, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
-  shopItem(i.puroaroma, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
-  shopItem(i.bizzoaroma, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
-  shopItem(i.gonfioaroma, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
-  shopItem(i.flauto_bianco, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.FLUTES, null),
-  shopItem(i.flauto_nero, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.FLUTES, null),
+  shopItem(i.lax_incense, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
+  shopItem(i.luck_incense, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
+  shopItem(i.pure_incense, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
+  shopItem(i.odd_incense, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
+  shopItem(i.full_incense, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.INCENSES, null),
+  shopItem(i.white_flute, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.FLUTES, null),
+  shopItem(i.black_flute, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.FLUTES, null),
   shopItem(i.master_ball, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.POKE_BALL, null),
-  shopItem(i.felixpietra, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
-  shopItem(i.pietralunare, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
-  shopItem(i.pietrasolare, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
-  shopItem(i.dente_abissi, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
-  shopItem(i.squamabissi, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
-  shopItem(i.squama_bella, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
+  shopItem(i.felix_stone, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
+  shopItem(i.moon_stone, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
+  shopItem(i.sun_stone, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
+  shopItem(i.deep_sea_tooth, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
+  shopItem(i.deep_sea_scale, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
+  shopItem(i.prism_scale, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
   shopItem(i.upgrade, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
-  shopItem(i.squama_drago, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
-  shopItem(i.filo_dell_unione, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null)
+  shopItem(i.dragon_scale, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null),
+  shopItem(i.linking_cord, SHOPPING_CENTER_SECTIONS.DEVON, SHOPPING_CENTER_CATEGORIES.EVOLUTION_ITEMS, null)
 ];
 
 var STOCK_RULES = [
-  { item: i.ps_su, stock: { kind: "fixed", limit: 10 } },
-  { item: i.pp_su, stock: { kind: "fixed", limit: 10 } },
+  { item: i.hp_up, stock: { kind: "fixed", limit: 10 } },
+  { item: i.pp_up, stock: { kind: "fixed", limit: 10 } },
   { item: i.pp_max, stock: { kind: "fixed", limit: 10 } },
-  { item: i.roccia_di_re, stock: { kind: "fixed", limit: 2 } },
-  { item: i.bandana, stock: { kind: "fixed", limit: 2 } },
-  { item: i.luminpolvere, stock: { kind: "fixed", limit: 2 } },
-  { item: i.focalnastro, stock: { kind: "fixed", limit: 2 } }
+  { item: i.kings_rock, stock: { kind: "fixed", limit: 2 } },
+  { item: i.focus_band, stock: { kind: "fixed", limit: 2 } },
+  { item: i.bright_powder, stock: { kind: "fixed", limit: 2 } },
+  { item: i.focus_sash, stock: { kind: "fixed", limit: 2 } }
 ];
 
 // A null purchase price is the canonical signal that an item is displayed but
@@ -144,8 +167,8 @@ export var SHOPPING_CENTER_UNPURCHASABLE_ITEMS = SHOPPING_CENTER_ITEMS
   .map(function (entry) { return entry.item; });
 
 export var SHOPPING_CENTER_UNSELLABLE_ITEMS = i.itemsSortedByIndex(i.ITEM_LIBRARY.filter(function (item) {
-  return item && item.category === i.ItemCategory.Mt;
-})).concat([i.occhialoni, i.spettrosonda, i.flauto_bianco, i.flauto_nero]);
+  return item && item.category === i.ItemCategory.TM;
+})).concat([i.go_goggles, i.silph_scope, i.white_flute, i.black_flute]);
 
 function itemIndex(item) {
   return item && item.index !== undefined && item.index !== null ? Number(item.index) : 0;
@@ -181,15 +204,15 @@ function getUnlockRule(item) {
   return ITEM_UNLOCK_RULES.find(function (rule) { return rule && itemIndex(rule.item) === idx; }) || null;
 }
 
-function isItemGymRewardMt(item) {
-  return Boolean(item && item.category === i.ItemCategory.Mt && GYM_REWARD_MT_ITEMS.indexOf(item.index) !== -1);
+function isItemGymRewardTM(item) {
+  return Boolean(item && item.category === i.ItemCategory.TM && GYM_REWARD_TM_ITEMS.indexOf(item.index) !== -1);
 }
 
 function isSinglePurchaseItem(item) {
   if (!item) return false;
   if (shoppingCenterIsUnsellableItem(item) && !shoppingCenterItemIsUnpurchasable(item)) return true;
   var rule = findStockRule(item);
-  return Boolean(rule && rule.stock && rule.stock.kind === "single-owned");
+  return Boolean(rule && rule.stock && rule.stock.kind === "single_owned");
 }
 
 function isItemAlreadyOwned(item, inventory) {
@@ -200,7 +223,7 @@ function isItemAlreadyOwned(item, inventory) {
 }
 
 function shoppingCenterItemUnlockBadges(item) {
-  if (item && item.category === i.ItemCategory.Mt) return mtUnlockBadges(item);
+  if (item && item.category === i.ItemCategory.TM) return tmUnlockBadges(item);
   var rule = getUnlockRule(item);
   return rule ? (rule.requirement.value || 0) : -1;
 }
@@ -219,16 +242,16 @@ function computeStockRemaining(item, state) {
 
 function itemAvailability(item, state) {
   var badges = normalizedBadges(state.trainerInfo && state.trainerInfo[2]);
-  if (shoppingCenterItemIsUnpurchasable(item) || isItemGymRewardMt(item)) {
+  if (shoppingCenterItemIsUnpurchasable(item) || isItemGymRewardTM(item)) {
     return { key: "unpurchasable", label: "Non acquistabile", canPurchase: false };
   }
   if (isItemAlreadyOwned(item, state.inventory)) {
-    return { key: "already-owned", label: item && item.category === i.ItemCategory.Mt ? "Già acquistata" : "Già acquistato", canPurchase: false };
+    return { key: "already_owned", label: item && item.category === i.ItemCategory.TM ? "Già acquistata" : "Già acquistato", canPurchase: false };
   }
   var unlockBadges = shoppingCenterItemUnlockBadges(item);
   if (unlockBadges < 0) return { key: "unknown", label: "Non acquistabile", canPurchase: false };
   if (badges < unlockBadges) {
-    return { key: "locked-badges", label: "Acquistabili con " + unlockBadges + (unlockBadges === 1 ? " Medaglia" : " Medaglie"), canPurchase: false };
+    return { key: "locked_badges", label: "Acquistabili con " + unlockBadges + (unlockBadges === 1 ? " Medaglia" : " Medaglie"), canPurchase: false };
   }
   return { key: "unlocked", label: "Acquistabili", canPurchase: true };
 }
@@ -280,6 +303,7 @@ function buildPurchaseGroups(entriesByCategory) {
   var groups = [];
   var ownedGroups = [];
   Object.keys(entriesByCategory).forEach(function (categoryName) {
+    var categoryLabel = shoppingCenterCategoryDisplayName(categoryName);
     var entries = entriesByCategory[categoryName];
     var unlocked = [];
     var owned = [];
@@ -288,32 +312,32 @@ function buildPurchaseGroups(entriesByCategory) {
 
     entries.forEach(function (entry) {
       if (entry.availability.key === "unlocked") unlocked.push(entry);
-      else if (entry.availability.key === "already-owned") owned.push(entry);
-      else if (entry.availability.key === "locked-badges") {
+      else if (entry.availability.key === "already_owned") owned.push(entry);
+      else if (entry.availability.key === "locked_badges") {
         if (!lockedByLabel[entry.availability.label]) lockedByLabel[entry.availability.label] = [];
         lockedByLabel[entry.availability.label].push(entry);
       } else unpurchasable.push(entry);
     });
 
-    pushGroup(groups, categoryName + " - Acquistabili", unlocked, true);
+    pushGroup(groups, categoryLabel + " - Acquistabili", unlocked, true);
     Object.keys(lockedByLabel).forEach(function (label) {
-      pushGroup(groups, categoryName + " - " + label, lockedByLabel[label], true);
+      pushGroup(groups, categoryLabel + " - " + label, lockedByLabel[label], true);
     });
-    pushGroup(groups, categoryName + " - Non acquistabili", unpurchasable, false);
-    pushGroup(ownedGroups, categoryName + (categoryName === SHOPPING_CENTER_CATEGORIES.MT ? " - Già acquistate" : " - Già acquistati"), owned, false);
+    pushGroup(groups, categoryLabel + " - Non acquistabili", unpurchasable, false);
+    pushGroup(ownedGroups, categoryLabel + (categoryName === SHOPPING_CENTER_CATEGORIES.TM ? " - Già acquistate" : " - Già acquistati"), owned, false);
   });
   return sortGroupsByUnlockBadges(groups).concat(sortGroupsByUnlockBadges(ownedGroups));
 }
 
-function buildMtGroups(state) {
+function buildTMGroups(state) {
   var byCategory = {};
   var groups;
-  var nonPurchasableTitle = SHOPPING_CENTER_CATEGORIES.MT + " - Non acquistabili";
-  var ownedTitle = SHOPPING_CENTER_CATEGORIES.MT + " - Già acquistate";
-  byCategory[SHOPPING_CENTER_CATEGORIES.MT] = [];
+  var nonPurchasableTitle = shoppingCenterCategoryDisplayName(SHOPPING_CENTER_CATEGORIES.TM) + " - Non acquistabili";
+  var ownedTitle = shoppingCenterCategoryDisplayName(SHOPPING_CENTER_CATEGORIES.TM) + " - Già acquistate";
+  byCategory[SHOPPING_CENTER_CATEGORIES.TM] = [];
   i.itemsSortedByIndex(i.ITEM_LIBRARY).forEach(function (item) {
-    if (item && item.category === i.ItemCategory.Mt) {
-      byCategory[SHOPPING_CENTER_CATEGORIES.MT].push(resolveShopEntry(item, state, { section: SHOPPING_CENTER_SECTIONS.MT, category: SHOPPING_CENTER_CATEGORIES.MT }));
+    if (item && item.category === i.ItemCategory.TM) {
+      byCategory[SHOPPING_CENTER_CATEGORIES.TM].push(resolveShopEntry(item, state, { section: SHOPPING_CENTER_SECTIONS.TM, category: SHOPPING_CENTER_CATEGORIES.TM }));
     }
   });
   groups = buildPurchaseGroups(byCategory);
@@ -337,13 +361,13 @@ export function getShoppingCenterSections() {
   SHOPPING_CENTER_ITEMS.forEach(function (entry) {
     if (sections.indexOf(entry.section) === -1) sections.push(entry.section);
   });
-  return sections.concat([SHOPPING_CENTER_SECTIONS.MT, SHOPPING_CENTER_SECTIONS.SELL]);
+  return sections.concat([SHOPPING_CENTER_SECTIONS.TM, SHOPPING_CENTER_SECTIONS.SELL]);
 }
 
 export function getShoppingCenterGroups(sectionName, state) {
   if (!sectionName) return [];
   if (sectionName === SHOPPING_CENTER_SECTIONS.SELL) return buildSellGroups(state);
-  if (sectionName === SHOPPING_CENTER_SECTIONS.MT) return buildMtGroups(state);
+  if (sectionName === SHOPPING_CENTER_SECTIONS.TM) return buildTMGroups(state);
   var byCategory = {};
   SHOPPING_CENTER_ITEMS.filter(function (entry) { return entry.section === sectionName; }).forEach(function (entry) {
     if (!byCategory[entry.category]) byCategory[entry.category] = [];
@@ -359,7 +383,7 @@ export function shoppingCenterItemCanBePurchased(item, state) {
 }
 
 export function shoppingCenterItemPrice(item) {
-  if (item && item.category === i.ItemCategory.Mt) return mtPrice(item);
+  if (item && item.category === i.ItemCategory.TM) return tmPrice(item);
   var entry = findShopItem(item);
   return entry ? entry.price : null;
 }
@@ -382,8 +406,8 @@ export function shoppingCenterItemIsUnpurchasable(item) {
   return itemInList(item, SHOPPING_CENTER_UNPURCHASABLE_ITEMS);
 }
 
-export function shoppingCenterItemIsGymRewardMt(item) {
-  return isItemGymRewardMt(item);
+export function shoppingCenterItemIsGymRewardTM(item) {
+  return isItemGymRewardTM(item);
 }
 
 export function shoppingCenterIsSellSection(sectionName) {

@@ -261,7 +261,7 @@ export function renderBattleScene(scene) {
     }).join("");
     return [
       '<div class="battle-ko-switch-overlay">',
-      '  <section class="battle-ko-switch-panel pokemon-choice-panel">',
+      '  <section class="battle-ko-switch-panel pokemon_choice-panel">',
       '    <h3>Scegli chi mandare in campo:</h3>',
       '    <div class="capture-starter-grid battle-switch-grid battle-switch-grid-count-' + Math.min(3, Math.max(1, availableCount)) + '">' + choices + "</div>",
       "  </section>",
@@ -375,7 +375,7 @@ export function renderBattleScene(scene) {
     function renderBattleInventoryItem(item, options) {
       options = options || {};
       var itemName = String(item.name || "");
-      var itemImageClass = item.category === ItemCategory.Mt ? "battle-zaino-item-image battle-zaino-item-image-mt" : "battle-zaino-item-image";
+      var itemImageClass = item.category === ItemCategory.TM ? "battle-zaino-item-image battle-zaino-item-image-mt" : "battle-zaino-item-image";
       var imageMarkup = item.image
         ? renderImage(getItemImage(item.image), item.name, itemImageClass)
         : '<span class="battle-zaino-item-image battle-zaino-item-image-empty"></span>';

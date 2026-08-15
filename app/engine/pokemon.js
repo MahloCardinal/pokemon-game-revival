@@ -61,7 +61,7 @@ export function Pokemon(data) {
 Pokemon.prototype.toJSON = function () {
   var data = {
     s: this.speciesKey,
-    g: this.gender === "Maschio" ? "M" : (this.gender === "Femmina" ? "F" : null),
+    g: this.gender,
     l: this.level,
     hp: this.maxHp,
     m: this.moves.map(function (move) {
@@ -107,7 +107,7 @@ Pokemon.fromJSON = function (data) {
     name: speciesEntry.name,
     ndex: speciesData.dexNumber,
     type: speciesData.type.slice(),
-    gender: data.g === "M" ? "Maschio" : (data.g === "F" ? "Femmina" : null),
+    gender: data.g || null,
     isShiny: Boolean(data.sh),
     isMega: Boolean(data.mg),
     level: level,
@@ -176,10 +176,10 @@ export function createStarterPokemon(speciesName, options) {
   options = options || {};
   var pokemon = createPokemonFromSpecies(speciesName, 5, {
     gender: options.gender,
-    moveDefs: [m.Azione]
+    moveDefs: [m.tackle]
   });
   pokemon.moves = [
-    createMove(m.Azione, {
+    createMove(m.tackle, {
       power: 4,
       stats: 0
     })

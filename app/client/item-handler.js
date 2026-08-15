@@ -33,12 +33,12 @@ function updateInventoryItemCard(card, item, isFlipped) {
     return;
   }
   imageSrc = getItemDisplayImage(item);
-  var itemImageClass = item.category === ItemCategory.Mt ? "inventory-item-image inventory-item-image-mt" : "inventory-item-image";
+  var itemImageClass = item.category === ItemCategory.TM ? "inventory-item-image inventory-item-image-mt" : "inventory-item-image";
   imageMarkup = imageSrc
     ? renderImage(imageSrc, item.name, itemImageClass)
     : '<span class="inventory-item-image inventory-item-image-empty"></span>';
   nameClass = card.classList.contains("battle-inventory-item-card") && String(item.name || "").length > 14 ? " is-long-name" : "";
-  quantityMarkup = item.category === ItemCategory.Mt ? "" : '  <span class="inventory-item-quantity">x' + escapeHtml(item.quantity) + "</span>";
+  quantityMarkup = item.category === ItemCategory.TM ? "" : '  <span class="inventory-item-quantity">x' + escapeHtml(item.quantity) + "</span>";
   setHtml(card, [
     imageMarkup,
     '  <span class="inventory-item-name' + nameClass + '">' + escapeHtml(item.name) + "</span>",

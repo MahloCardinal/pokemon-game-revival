@@ -617,7 +617,7 @@ function normalizeRewardResult(data, fallbackMessage) {
     rewardKind: String(data.rewardKind || data.reward_kind || ""),
     money: Number(data.money) || 0,
     badgeIndex: data.badgeIndex !== null && data.badgeIndex !== undefined ? Number(data.badgeIndex) : null,
-    mt: data.mt !== null && data.mt !== undefined ? Number(data.mt) : null,
+    tm: data.tm !== null && data.tm !== undefined ? Number(data.tm) : null,
     item: data.item !== null && data.item !== undefined ? Number(data.item) : null,
     profile: {
       pokedollars: Number(profile.pokedollars) || 0,

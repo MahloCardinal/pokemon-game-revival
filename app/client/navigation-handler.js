@@ -314,7 +314,7 @@ registerAction("open-admin-home", function(element) {
 registerAction("open-gym-city", function(element) {
     var cityKey = String(element.dataset.city || "");
     var leagueStatus = kantoEliteFourChallengeStatus(state.trainerInfo[2]);
-    if ((cityKey === "superquattro" || cityKey === "campione-kanto") && leagueStatus.state === "locked") {
+    if ((cityKey === "elite_four" || cityKey === "kanto_champion") && leagueStatus.state === "locked") {
       openClosedSectionRequirementPanel(element, leagueStatus.message);
       return;
     }

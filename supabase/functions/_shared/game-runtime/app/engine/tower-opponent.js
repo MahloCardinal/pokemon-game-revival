@@ -41,9 +41,9 @@ function eligibleSpecies(level) {
   var candidates = getAllSpecies().filter(function (species) {
     var minLevel = Number(species.minLevel) || 1;
     var maxLevel = Number(species.maxLevel) || 100;
-    return species.rarity !== "l" && encounterLevel >= minLevel && encounterLevel <= maxLevel;
+    return species.rarity !== "legendary" && encounterLevel >= minLevel && encounterLevel <= maxLevel;
   });
-  return candidates.length ? candidates : getAllSpecies().filter(function (species) { return species.rarity !== "l"; });
+  return candidates.length ? candidates : getAllSpecies().filter(function (species) { return species.rarity !== "legendary"; });
 }
 
 function playerLevelSummary(team) {

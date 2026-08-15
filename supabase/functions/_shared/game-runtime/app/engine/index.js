@@ -3,7 +3,7 @@ export { hpForLevel, powerForLevel, statsForLevel, randInt } from "./level-calc.
 export { weightedChoice } from "./species.js";
 export { createMove, moveFromJSON, buildMoveList, movePoolForLevel, formatDescription, formatCatalogDescription } from "./moves.js";
 export { Pokemon, createPokemonFromSpecies, createStarterPokemon, createWildPokemon } from "./pokemon.js";
-export { getAllSpecies, generationForDexNumber, findSpecies, itemEvolutionForPokemon, pokemonCanLearnMt, pokemonMoveTutorPool, getZoneTypes, searchWildPokemon, searchWildPokemonFromTypes } from "./species.js";
+export { getAllSpecies, generationForDexNumber, findSpecies, itemEvolutionForPokemon, pokemonCanLearnTM, pokemonMoveTutorPool, getZoneTypes, searchWildPokemon, searchWildPokemonFromTypes } from "./species.js";
 export { Combatant } from "./combatant.js";
 export { Team } from "./team.js";
 export { BattleManager } from "./battle-manager.js";

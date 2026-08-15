@@ -3,6 +3,7 @@ import { state } from "../client/game-state.js";
 import { escapeHtml, getTypeImage, renderImage } from "../client/asset-helpers.js";
 import { button, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
+import { typeDisplayName } from "../data/type-chart.js";
 
 function boxTypeOptions() {
   var seenTypes = {};
@@ -59,7 +60,7 @@ export function renderBoxScene() {
       return [
         '<label class="choice-menu-option' + selectedClass + '">',
         '  <input type="radio" name="box-filter-type" value="' + escapeHtml(typeName) + '" ' + (selectedType === typeName ? "checked" : "") + ">",
-        renderImage(getTypeImage(typeName), typeName, "type-label-image choice-menu-image"),
+        renderImage(getTypeImage(typeName), typeDisplayName(typeName), "type-label-image choice-menu-image"),
         "</label>"
       ].join("");
     }).join(""),

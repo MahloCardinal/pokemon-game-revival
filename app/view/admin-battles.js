@@ -4,8 +4,8 @@ import { button, sceneShell } from "../client/render-utils.js";
 
 function battleLabel(row) {
   var type = String(row && row.battle_type || "");
-  if (type === "gym_isola-cannella") { return "Palestra 7 - Isola Cannella"; }
-  if (type === "gym_smeraldopoli") { return "Palestra 8 - Smeraldopoli"; }
+  if (type === "gym_cinnabar_island") { return "Palestra 7 - Isola Cannella"; }
+  if (type === "gym_viridian_city") { return "Palestra 8 - Smeraldopoli"; }
   if (type === "training_debug") { return "Zona Allenamento - Debug"; }
   if (type === "kanto_league_champion") { return "Campione Kanto"; }
   if (/^kanto_league_[1-4]$/.test(type)) { return "Superquattro " + type.slice("kanto_league_".length); }

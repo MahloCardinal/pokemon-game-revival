@@ -10,7 +10,7 @@ function baseStarterSpecies() {
   if (!starterSpeciesCache) {
     starterSpeciesCache = Engine.getAllSpecies().filter(function (species) {
       var stage = species.evolution && species.evolution.stage;
-      return stage === "base" && ["s", "f", "m", "l"].indexOf(species.rarity) === -1;
+      return stage === "base" && ["super_rare", "fossil", "mythic", "legendary"].indexOf(species.rarity) === -1;
     }).sort(function (a, b) {
       return a.dexNumber - b.dexNumber;
     });
@@ -42,7 +42,7 @@ export function renderStarterPokemonGrid(setup) {
   return speciesList.filter(function (species) {
     return (Engine.generationForDexNumber(Number(species.dexNumber)) || 1) === activeGeneration;
   }).map(function (species) {
-    var selectedClass = species.speciesKey === selectedSpeciesName || species.name === selectedSpeciesName ? " is-selected" : "";
+    var selectedClass = species.speciesKey === selectedSpeciesName ? " is-selected" : "";
 
     function renderCard(source) {
       return [

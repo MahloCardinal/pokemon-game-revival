@@ -95,7 +95,7 @@ assert.match(battleHandler, /\["item", "switch"\]\.indexOf\(data\.command_type\)
 assert.match(battleHandler, /scene\.authoritativeCapture \? "Nella confusione perdi " : "Perdi "[\s\S]*Pokédollari/);
 assert.match(captureHandler, /await refreshCaptureEncounterState\(captureScene\)/);
 assert.match(captureHandler, /state\.ordinaryProgression[\s\S]*openActiveProgressionScene\(\)/);
-assert.match(inventoryViewHelpers, /SINGLE_COPY_INVENTORY_ITEM_INDEXES[\s\S]*occhialoni\.index[\s\S]*spettrosonda\.index[\s\S]*flauto_bianco\.index[\s\S]*flauto_nero\.index/);
+assert.match(inventoryViewHelpers, /SINGLE_COPY_INVENTORY_ITEM_INDEXES[\s\S]*go_goggles\.index[\s\S]*silph_scope\.index[\s\S]*white_flute\.index[\s\S]*black_flute\.index/);
 assert.match(teamView, /isSingleCopyInventoryItem\(item\) \? ""/);
 assert.match(recoveryEdge, /https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery/);
 assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RECOVERY_REDIRECT_URL/);
@@ -272,7 +272,22 @@ await engineIndexModule.evaluate();
 const engineExports = engineIndexModule.namespace;
 const moveDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/moves.js", import.meta.url)));
 const MoveDefinitions = moveDefinitionsModule.namespace;
+const itemDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/items.js", import.meta.url)));
+if (itemDefinitionsModule.status !== "evaluated") await itemDefinitionsModule.evaluate();
+const ItemDefinitions = itemDefinitionsModule.namespace;
 const { BattleManager, createMove, Pokemon, Team } = engineExports;
+
+function assertStableCatalogKeys(entries, expectedCount, label) {
+  const keys = entries.map((entry) => entry.key);
+  assert.equal(entries.length, expectedCount, `${label} catalog count changed unexpectedly`);
+  assert.equal(new Set(keys).size, keys.length, `${label} catalog keys must be unique`);
+  keys.forEach((key) => assert.match(key, /^[a-z][a-z0-9_]*$/, `${label} key must use lower snake_case`));
+}
+
+assertStableCatalogKeys(MoveDefinitions.MOVE_LIBRARY, 351, "move");
+assertStableCatalogKeys(ItemDefinitions.ITEM_LIBRARY, 164, "item");
+assert.equal(MoveDefinitions.doom_desire.name, "Desiderio Fatale");
+assert.equal(ItemDefinitions.leek.name, "Gambo");
 
 function pursuitTestPokemon(name, moves) {
   return new Pokemon({
@@ -280,7 +295,7 @@ function pursuitTestPokemon(name, moves) {
     speciesKey: name.toLowerCase(),
     ndex: 1,
     level: 10,
-    type: ["Normale"],
+    type: ["normal"],
     maxHp: 200,
     moves,
     expCurrent: 0,
@@ -290,11 +305,11 @@ function pursuitTestPokemon(name, moves) {
 
 function pursuitTestManager() {
   const playerTeam = new Team("Giocatore", [
-    pursuitTestPokemon("Caterpie", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })]),
-    pursuitTestPokemon("Butterfree", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })])
+    pursuitTestPokemon("Caterpie", [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })]),
+    pursuitTestPokemon("Butterfree", [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })])
   ], 0);
   const enemyTeam = new Team("Giovanni", [
-    pursuitTestPokemon("Dugtrio", [createMove(MoveDefinitions.Inseguimento, { power: 20, stats: 0 })])
+    pursuitTestPokemon("Dugtrio", [createMove(MoveDefinitions.pursuit, { power: 20, stats: 0 })])
   ], 0);
   return new BattleManager(playerTeam, enemyTeam);
 }
@@ -334,9 +349,9 @@ function pursuitTestManager() {
 
 {
   const team = new Team("Cambio", [
-    pursuitTestPokemon("Primo", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })]),
-    pursuitTestPokemon("Attivo", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })]),
-    pursuitTestPokemon("Terzo", [createMove(MoveDefinitions.Azione, { power: 20, stats: 0 })])
+    pursuitTestPokemon("Primo", [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })]),
+    pursuitTestPokemon("Attivo", [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })]),
+    pursuitTestPokemon("Terzo", [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })])
   ], 1);
   const originalRandom = Math.random;
   team.preferredSwitchIndex = null;

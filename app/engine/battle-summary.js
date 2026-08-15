@@ -1,3 +1,6 @@
+import { getItemByKey } from "../data/items.js";
+import { typeDisplayName } from "../data/type-chart.js";
+
 function conditionHard(combatant) {
   if (combatant.status === "par_block" || combatant.status === "par_free") {
     return "[Par]";
@@ -22,7 +25,7 @@ function conditionSoft(combatant) {
     return "[Conf " + combatant.confCounter + "/5]";
   }
   if (combatant.pendingDelayedStatus) {
-    if (combatant.pendingDelayedStatus.source === "Sbadiglio") {
+    if (combatant.pendingDelayedStatus.source === "yawn") {
       return "[Assopito]";
     }
     return "[Status in attesa " + combatant.pendingDelayedStatus.delay + "]";
@@ -43,10 +46,14 @@ function pokemonBuffs(combatant) {
 }
 
 function disabledMovesString(combatant) {
-  var names = combatant.disabledMoves || [];
-  if (!names.length || combatant.exclusiveActive) {
+  var keys = combatant.disabledMoves || [];
+  if (!keys.length || combatant.exclusiveActive) {
     return "";
   }
+  var names = keys.map(function (key) {
+    var move = combatant.pokemon.moves.find(function (candidate) { return candidate.key === key; });
+    return move ? move.name : key;
+  });
   return "[" + names.join(", ") + (names.length === 1 ? " bloccata]" : " bloccate]");
 }
 
@@ -74,14 +81,15 @@ function teamEffects(combatant) {
   if (team.sleepImmunityCounter > 0) {
     parts.push("No Add " + team.sleepImmunityCounter + "/5");
   }
-  if (team.punteActive) {
+  if (team.spikesActive) {
     parts.push("Punte");
   }
-  if (team.desiderioHealAmount > 0) {
+  if (team.wishHealAmount > 0) {
     parts.push("Desiderio colpirà tra 1 turno");
   }
   if (team.futureSight.active) {
-    var fsName = team.futureSight.moveName || team.futureSight.attackerName;
+    var futureMove = team.futureSight.moveKey ? team.combatantList.flatMap(function (entry) { return entry.pokemon.moves; }).find(function (move) { return move.key === team.futureSight.moveKey; }) : null;
+    var fsName = futureMove ? futureMove.name : team.futureSight.attackerName;
     parts.push(fsName + " colpirà tra " + team.futureSight.timer + " turni");
   }
   return parts.length ? "[" + parts.join(", ") + "]" : "";
@@ -108,18 +116,19 @@ function combatantString(combatant, isActive) {
     combatant.trappedTurns || combatant.trappedMoveIndex ? (combatant.trappedTurns >= 99 ? "[Trap]" : "[Trap " + combatant.trappedTurns + "/4]") : "",
     combatant.seedTarget ? "[Parassiseme (-" + combatant.seedValue + ")]" : "",
     combatant.perishSongTurns > 0 ? "[KO tra " + combatant.perishSongTurns + " turni]" : "",
-    JSON.stringify(combatant.type) !== JSON.stringify(combatant.pokemon.type) ? "[" + combatant.type.join("/") + "]" : "",
+    JSON.stringify(combatant.type) !== JSON.stringify(combatant.pokemon.type) ? "[" + combatant.type.map(typeDisplayName).join("/") + "]" : "",
     teamEffects(combatant)
   ].join("");
 }
 
 function usedItemsString(usedItems) {
-  var names = Object.keys(usedItems || {});
-  if (!names.length) {
+  var keys = Object.keys(usedItems || {});
+  if (!keys.length) {
     return "-";
   }
-  return names.map(function (name) {
-    return usedItems[name] + "x" + name;
+  return keys.map(function (key) {
+    var item = getItemByKey(key);
+    return usedItems[key] + "x" + (item ? item.name : key);
   }).join(", ");
 }
 

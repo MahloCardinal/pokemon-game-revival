@@ -35,7 +35,7 @@ export function getAllSpecies() {
       exp: entry.exp,
       spriteGendered: !!entry.spriteGendered,
       movesByLevel: entry.movesByLevel,
-      movesByMT: entry.movesByMT || [],
+      movesByTM: entry.movesByTM || [],
       encounter: {
         rarity: encounter.rarity !== undefined ? encounter.rarity : entry.rarity,
         minLevel: encounter.minLevel !== undefined ? encounter.minLevel : entry.minLevel,
@@ -57,12 +57,12 @@ export function generationForDexNumber(dexNumber) {
 export function findSpecies(speciesIdentifier) {
   var key = speciesIdentifier !== undefined && speciesIdentifier !== null ? String(speciesIdentifier).trim() : "";
   return getAllSpecies().find(function (entry) {
-    return entry.speciesKey === key || entry.name === key;
+    return entry.speciesKey === key;
   }) || null;
 }
 
 export function itemEvolutionForPokemon(pokemon, item) {
-  var entry = pokemon ? findSpecies(pokemon.speciesKey || pokemon.name) : null;
+  var entry = pokemon ? findSpecies(pokemon.speciesKey) : null;
   var evolutions = entry && entry.evolution && Array.isArray(entry.evolution.to) ? entry.evolution.to : [];
   return evolutions.find(function (evolution) {
     return evolution
@@ -81,22 +81,22 @@ function pokemonKnowsMove(pokemon, moveDef) {
   }));
 }
 
-export function pokemonCanLearnMt(pokemon, item) {
-  var entry = pokemon ? findSpecies(pokemon.speciesKey || pokemon.name) : null;
-  var mtPool = entry ? entry.movesByMT : [];
-  var mtMove = item && item.move;
+export function pokemonCanLearnTM(pokemon, item) {
+  var entry = pokemon ? findSpecies(pokemon.speciesKey) : null;
+  var tmPool = entry ? entry.movesByTM : [];
+  var tmMove = item && item.move;
   return Boolean(
     item
-      && item.category === ItemCategory.Mt
-      && mtMove
+      && item.category === ItemCategory.TM
+      && tmMove
       && pokemon
-      && mtPool.some(function (moveDef) { return moveDef && moveDef.index === mtMove.index; })
-      && !pokemonKnowsMove(pokemon, mtMove)
+      && tmPool.some(function (moveDef) { return moveDef && moveDef.index === tmMove.index; })
+      && !pokemonKnowsMove(pokemon, tmMove)
   );
 }
 
 export function pokemonMoveTutorPool(pokemon) {
-  var entry = pokemon ? findSpecies(pokemon.speciesKey || pokemon.name) : null;
+  var entry = pokemon ? findSpecies(pokemon.speciesKey) : null;
   var known = {};
   var seen = {};
   var moves = [];
@@ -118,7 +118,7 @@ export function pokemonMoveTutorPool(pokemon) {
       }
     });
   });
-  (entry.movesByMT || []).forEach(function (move) {
+  (entry.movesByTM || []).forEach(function (move) {
     var index = Number(move && move.index);
     if (move && Number.isFinite(index) && !known[index] && !seen[index]) {
       seen[index] = true;

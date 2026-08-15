@@ -1,33 +1,47 @@
 export var CAPTURE_ZONES = {
-  "Bosco Smeraldo": ["Erba", "Veleno", "Coleottero"],
-  "Monte Luna": ["Normale", "Acciaio", "Folletto"],
-  Mare: ["Acqua", "Ghiaccio"],
-  "Torre Fantasma": ["Psico", "Spettro", "Buio"],
-  Safari: ["Drago", "Lotta", "Volante"],
-  Palude: ["Elettro", "Fuoco"],
-  Deserto: ["Terra", "Roccia"]
+  viridian_forest: ["grass", "poison", "bug"],
+  mt_moon: ["normal", "steel", "fairy"],
+  sea: ["water", "ice"],
+  ghost_tower: ["psychic", "ghost", "dark"],
+  safari_zone: ["dragon", "fighting", "flying"],
+  swamp: ["electric", "fire"],
+  desert: ["ground", "rock"]
 };
 
+export var CAPTURE_ZONE_LABELS_IT = Object.freeze({
+  viridian_forest: "Bosco Smeraldo",
+  mt_moon: "Monte Luna",
+  sea: "Mare",
+  ghost_tower: "Torre Fantasma",
+  safari_zone: "Safari",
+  swamp: "Palude",
+  desert: "Deserto"
+});
+
+export function captureZoneDisplayName(zoneKey) {
+  return CAPTURE_ZONE_LABELS_IT[zoneKey] || String(zoneKey || "");
+}
+
 export var RARITY_WEIGHTS = {
-  t: 999999999, // test
-  c: 1000,   // common
-  u: 600,    // uncommon
-  r: 200,    // rare
-  s: 30,     // super rare
-  m: 5,      // mythic
-  f: 0,      // fossil
-  l: 0       // legendary
+  test: 999999999,
+  common: 1000,
+  uncommon: 600,
+  rare: 200,
+  super_rare: 30,
+  mythic: 5,
+  fossil: 0,
+  legendary: 0
 };
 
 export var CATCH_RARITY_MULTIPLIERS = {
-  t: 1.5,
-  c: 1.2,
-  u: 1.0,
-  r: 0.7,
-  s: 0.4,
-  m: 0.15,
-  f: 0.5,
-  l: 0.1
+  test: 1.5,
+  common: 1.2,
+  uncommon: 1.0,
+  rare: 0.7,
+  super_rare: 0.4,
+  mythic: 0.15,
+  fossil: 0.5,
+  legendary: 0.1
 };
 
 export var CATCH_HP_THRESHOLDS = [

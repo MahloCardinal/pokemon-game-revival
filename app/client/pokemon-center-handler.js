@@ -86,7 +86,7 @@ function syncPokemonCenterChoicePopup() {
   var candidates;
   clearPokemonCenterChoicePopup();
   if (!pending || !Number.isFinite(pokemonIndex)) return;
-  if (["choose-tutor-move", "replace-mt-move", "replace-tutor-move"].indexOf(pending.type) === -1) return;
+  if (["choose-tutor-move", "replace-tm-move", "replace-tutor-move"].indexOf(pending.type) === -1) return;
   card = root.querySelectorAll(".pokemon-center-card-frame > .pokemon-card")[pokemonIndex];
   pokemon = state.team[pokemonIndex];
   if (!card || !pokemon) return;
@@ -139,7 +139,7 @@ function renderPokemonCenter() {
 
 function pokemonCenterCompatibility(pokemon, item) {
   return {
-    canLearnMt: Engine.pokemonCanLearnMt(pokemon, item),
+    canLearnTM: Engine.pokemonCanLearnTM(pokemon, item),
     hasItemEvolution: Boolean(Engine.itemEvolutionForPokemon(pokemon, item))
   };
 }
@@ -347,7 +347,7 @@ function setPokemonCenterMode(mode) {
   if (!state.scene || state.scene.name !== "pokemon-center") {
     return;
   }
-  state.scene.centerMode = ["assign-held", "use-item", "use-mt"].indexOf(mode) !== -1 ? mode : "assign-held";
+  state.scene.centerMode = ["assign-held", "use-item", "use-tm"].indexOf(mode) !== -1 ? mode : "assign-held";
   state.scene.pokemonIndex = null;
   state.scene.moveIndex = null;
   state.scene.targetKind = "pokemon";
@@ -491,12 +491,12 @@ function applyPokemonCenterConfirmedSelection(mode, pokemonIndex, itemIndex, tar
   if (!pokemon || !item) {
     return;
   }
-  if (mode === "use-mt") {
+  if (mode === "use-tm") {
     if (targetKind === "move") {
-      replacePokemonCenterMtMoveInline(pokemon, item, moveIndex);
+      replacePokemonCenterTMMoveInline(pokemon, item, moveIndex);
       return;
     }
-    teachPokemonCenterMtInline(pokemon, item, pokemonIndex);
+    teachPokemonCenterTMInline(pokemon, item, pokemonIndex);
     return;
   }
   if (mode === "assign-held") {
@@ -525,8 +525,8 @@ function applyPokemonCenterConfirmedSelection(mode, pokemonIndex, itemIndex, tar
   }
 }
 
-function createPokemonCenterMtMove(item, pokemon) {
-  if (!item || item.category !== ItemCategory.Mt || !item.move || !pokemon) {
+function createPokemonCenterTMMove(item, pokemon) {
+  if (!item || item.category !== ItemCategory.TM || !item.move || !pokemon) {
     return null;
   }
   var maxPower = 0;
@@ -545,16 +545,16 @@ function createPokemonCenterMtMove(item, pokemon) {
   });
 }
 
-function teachPokemonCenterMtInline(pokemon, item, pokemonIndex) {
+function teachPokemonCenterTMInline(pokemon, item, pokemonIndex) {
   var scene = state.scene;
-  var move = createPokemonCenterMtMove(item, pokemon);
-  if (!move || !Engine.pokemonCanLearnMt(pokemon, item)) {
+  var move = createPokemonCenterTMMove(item, pokemon);
+  if (!move || !Engine.pokemonCanLearnTM(pokemon, item)) {
     clearPokemonCenterAfterAction(scene, item.name + " non può essere insegnata a " + pokemon.name + ".");
     updatePokemonCenterModeDom();
     return;
   }
   if (pokemon.moves.length < 4) {
-    runAuthoritativePokemonCenterCommand({ operation: "teach_mt", pokemon: pokemon, item: item }, pokemon.name + " impara " + move.name + ".");
+    runAuthoritativePokemonCenterCommand({ operation: "teach_tm", pokemon: pokemon, item: item }, pokemon.name + " impara " + move.name + ".");
     return;
   }
   if (pokemon.moves.length < 4) {
@@ -562,7 +562,7 @@ function teachPokemonCenterMtInline(pokemon, item, pokemonIndex) {
     clampToLimits(pokemon);
     markTeamRuntimeStateChanged();
     clearPokemonCenterAfterAction(scene, pokemon.name + " impara " + move.name + ".");
-    saveAfterStateChange("mt-use");
+    saveAfterStateChange("tm_use");
     renderPokemonCenter();
     return;
   }
@@ -571,21 +571,21 @@ function teachPokemonCenterMtInline(pokemon, item, pokemonIndex) {
   scene.moveIndex = null;
   scene.notice = "";
   scene.pendingAction = {
-    type: "replace-mt-move",
+    type: "replace-tm-move",
     pokemonIndex: Number(pokemonIndex),
     itemIndex: item.index
   };
   renderPokemonCenter();
 }
 
-function replacePokemonCenterMtMoveInline(pokemon, item, moveIndex) {
+function replacePokemonCenterTMMoveInline(pokemon, item, moveIndex) {
   var scene = state.scene;
   var oldMove = pokemon && pokemon.moves ? pokemon.moves[Number(moveIndex)] : null;
-  var newMove = createPokemonCenterMtMove(item, pokemon);
+  var newMove = createPokemonCenterTMMove(item, pokemon);
   if (
     !scene
       || !scene.pendingAction
-      || scene.pendingAction.type !== "replace-mt-move"
+      || scene.pendingAction.type !== "replace-tm-move"
       || !pokemon
       || !oldMove
       || !newMove
@@ -594,7 +594,7 @@ function replacePokemonCenterMtMoveInline(pokemon, item, moveIndex) {
     return;
   }
   runAuthoritativePokemonCenterCommand({
-    operation: "teach_mt",
+    operation: "teach_tm",
     pokemon: pokemon,
     item: item,
     replacementSlot: Number(moveIndex)
@@ -713,7 +713,7 @@ function useEvolutionItemOnPokemonInline(pokemon, item) {
   var evolution = item && pokemon ? Engine.itemEvolutionForPokemon(pokemon, item) : null;
   var targetEntry;
   var oldName = pokemon ? pokemon.name : "";
-  var sourceSpeciesKey = pokemon ? String(pokemon.speciesKey || pokemon.name || "") : "";
+  var sourceSpeciesKey = pokemon ? String(pokemon.speciesKey || "") : "";
   var scene = state.scene;
   if (!itemCanTriggerEvolution(item)) {
     return;
@@ -724,7 +724,7 @@ function useEvolutionItemOnPokemonInline(pokemon, item) {
     return;
   }
   var targets;
-  var source = Engine.findSpecies(pokemon.speciesKey || pokemon.name);
+  var source = Engine.findSpecies(pokemon.speciesKey);
   targets = source && source.evolution && Array.isArray(source.evolution.to)
     ? source.evolution.to.filter(function (entry) {
       return entry && entry.trigger && entry.trigger.kind === "item" && entry.trigger.item

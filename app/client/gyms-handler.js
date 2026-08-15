@@ -277,7 +277,7 @@ registerAction("kanto-league-start", function (element) {
   if (kantoLeagueStartPending) {
     return;
   }
-  if (state.scene && state.scene.name === "gym-city" && state.scene.cityKey === "superquattro") {
+  if (state.scene && state.scene.name === "gym-city" && state.scene.cityKey === "elite_four") {
     var playerPokemon = state.team.filter(Boolean);
     if (!playerPokemon.length) {
       openMessage(["Non hai Pokémon in squadra."], { title: "Lega Kanto" });

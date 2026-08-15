@@ -1,4 +1,4 @@
-import { poke_ball, pozione } from "../data/items.js";
+import { poke_ball, potion } from "../data/items.js";
 import { FLUTE_DAILY_USE_LIMIT } from "../data/progression.js";
 import { defaultTrainerIndex } from "../data/trainers.js";
 import { defaultPokefanMissionRows } from "../data/pokefan-missions.js";
@@ -12,7 +12,7 @@ export var STARTING_BATTLE_POINTS = 0;
 export var root = document.getElementById("app");
 
 var STARTING_INVENTORY_ITEMS = [
-  [pozione.index, 3], [poke_ball.index, 5]
+  [potion.index, 3], [poke_ball.index, 5]
 ];
 
 function createStartingInventory() {

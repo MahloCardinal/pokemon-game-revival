@@ -8,7 +8,7 @@ import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-car
 
 function pokemonCenterCompatibility(pokemon, item) {
   return {
-    canLearnMt: Engine.pokemonCanLearnMt(pokemon, item),
+    canLearnTM: Engine.pokemonCanLearnTM(pokemon, item),
     hasItemEvolution: Boolean(Engine.itemEvolutionForPokemon(pokemon, item))
   };
 }
@@ -84,7 +84,7 @@ export function renderPokemonCenterScene() {
   var actionButtons = [
     { label: "Assegna strumento", mode: "assign-held" },
     { label: "Usa strumento", mode: "use-item" },
-    { label: "Usa MT", mode: "use-mt" }
+    { label: "Usa MT", mode: "use-tm" }
   ].map(function (activity) {
     var selectedClass = activity.mode === centerMode ? " button-primary" : " button-ghost";
     return button(activity.label, "pokemon-center-mode", 'data-mode="' + escapeHtml(activity.mode) + '"', "button-slim" + selectedClass);

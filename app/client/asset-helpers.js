@@ -1,16 +1,8 @@
 import { ItemCategory } from "../data/items.js";
 import { GDR_DATA as DATA } from "../data/index.js";
 import { typeDisplayName } from "../data/type-chart.js";
+import { captureZoneAssetPaths } from "../data/asset-paths.js";
 
-var ZONE_IMAGE_MAP = {
-  viridian_forest: "bosco_smeraldo_bottone.webp",
-  mt_moon: "monte_luna_bottone.webp",
-  sea: "mare_bottone.webp",
-  ghost_tower: "torre_fantasma_bottone.webp",
-  safari_zone: "safari_bottone.webp",
-  swamp: "palude_bottone.webp",
-  desert: "deserto_bottone.webp"
-};
 var GENDER_IMAGE_MAP = {
   male: "maschio.webp",
   female: "femmina.webp"
@@ -127,7 +119,8 @@ export function musicPath(fileName) {
 }
 
 export function getZoneImage(zoneName) {
-  return assetPath("img_zone", ZONE_IMAGE_MAP[zoneName]);
+  var assets = captureZoneAssetPaths(zoneName);
+  return assets ? assets.card : "";
 }
 
 function pokemonSpeciesEntry(pokemon) {

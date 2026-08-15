@@ -54,7 +54,8 @@ export function preloadSceneBackground(scene) {
   var asset = backgroundAssetForKey(key);
   var mobile = mobileLayoutActive();
   var fileName = asset && (mobile ? asset.mobile : asset.desktop);
-  var url = fileName ? assetPath("img_zone", fileName) : "";
+  var url = fileName && String(fileName).startsWith("/") ? fileName
+    : fileName ? assetPath("img_zone", fileName) : "";
   if (!url || typeof Image === "undefined") {
     return Promise.resolve({ scene: scene || null, key: key, url: "", mobile: mobile, loaded: false });
   }

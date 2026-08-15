@@ -1,9 +1,9 @@
 import { KANTO_GYM_BADGE_IMAGES, KANTO_GYM_BADGE_NAMES, KANTO_GYM_CITIES, KANTO_ELITE_FOUR, KANTO_CHAMPION, adventurePhaseForGym, kantoGymChallengeStatus, kantoGymCityByKey, kantoGymLeaderByCity, kantoEliteFourChallengeStatus, kantoChampionChallengeStatus } from "../data/gyms.js";
-import { KANTO_TRAINER_FLAVOR_TEXTS, SCENE_PRESENTATION_TEXT, ZONE_CARD_DESCRIPTIONS } from "../data/zones-text.js";
+import { KANTO_TRAINER_FLAVOR_TEXTS, ZONE_CARD_DESCRIPTIONS } from "../data/zones-text.js";
 import { getItemByIndex } from "../data/items.js";
 import { state } from "../client/game-state.js";
 import { assetPath, escapeHtml, getItemDisplayImage, getTrainerImage, renderImage, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
-import { button, moneyMarkup, sceneShell } from "../client/render-utils.js";
+import { button, moneyMarkup, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard } from "../client/pokemon-card.js";
 import { adventurePhaseIsCompleted } from "../client/mission-runtime.js";
 
@@ -186,10 +186,6 @@ function renderSuperquattroScene() {
   var panels = KANTO_ELITE_FOUR.map(function (member, index) {
     return renderKantoLeagueTrainerPanel(member, index);
   });
-  var text = SCENE_PRESENTATION_TEXT.Superquattro || "Benvenuto al Superquattro";
-  var paragraphs = text.split("\n").filter(Boolean).map(function(para) {
-    return "    <p>" + escapeHtml(para) + "</p>";
-  }).join("\n");
   var battleAttrs = state.inBattle || state.activeBattle ? " disabled" : "";
   var e4Status = kantoEliteFourChallengeStatus(state.trainerInfo[2]);
   var leagueState = state.authoritativeLeagueState;
@@ -203,15 +199,7 @@ function renderSuperquattroScene() {
   }
   return sceneShell(
     "Superquattro", "",
-    '<section class="panel scene-info-panel e4-presentation-panel"><div class="panel-inner scene-info-panel-inner">' +
-    '<div class="scene-info-media">' +
-    renderImage(assetPath("img_zone", "start_presentazione"), "Presentatore Superquattro", "scene-info-trainer-image", 'loading="eager" decoding="async"') +
-    "</div>" +
-    '<div class="scene-info-copy">' +
-    paragraphs +
-    actionHtml +
-    "</div>" +
-    "</div></section>" +
+    renderScenePresentationPanel("elite_four", "e4-presentation-panel", actionHtml) +
     '<section class="team-scene-stack">' + panels.join("") + "</section>",
     "", "scene-content-gyms", "parent-back"
   );

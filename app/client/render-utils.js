@@ -4,7 +4,8 @@ import {
   assetPath,
   renderImage
 } from "./asset-helpers.js";
-import { SCENE_PRESENTATION_TEXT } from "../data/zones-text.js";
+import { scenePresentationAssetPath } from "../data/asset-paths.js";
+import { t } from "./i18n.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
 import { getRuntimeEnvironment } from "../api/supabase.js";
 
@@ -27,43 +28,22 @@ export function battlePointsMarkup(value) {
   return '<span class="battle-points-symbol">PL</span><span>' + escapeHtml(formatInteger(value)) + "</span>";
 }
 
-function normalizedScenePresentationName(sceneName) {
-  return String(sceneName || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-}
-
-function scenePresentationImageName(sceneName) {
-  return normalizedScenePresentationName(sceneName) + "_presentazione";
-}
-
-function scenePresentationText(sceneName) {
-  if (SCENE_PRESENTATION_TEXT[sceneName]) {
-    return SCENE_PRESENTATION_TEXT[sceneName];
-  }
-  var normalizedName = normalizedScenePresentationName(sceneName);
-  var matchingKey = Object.keys(SCENE_PRESENTATION_TEXT).find(function(key) {
-    return normalizedScenePresentationName(key) === normalizedName;
-  });
-  return matchingKey ? SCENE_PRESENTATION_TEXT[matchingKey] : "Benvenuto in " + sceneName;
-}
-
-export function renderScenePresentationPanel(sceneName, className) {
+export function renderScenePresentationPanel(presentationKey, className, extraMarkup) {
   var presentationClass = className ? " " + className : "";
-  var text = scenePresentationText(sceneName);
+  var sceneTitle = t("sceneTitles." + presentationKey, null, String(presentationKey || ""));
+  var text = t("scenePresentations." + presentationKey, null, "Benvenuto in " + sceneTitle);
+  var imagePath = scenePresentationAssetPath(presentationKey);
   var paragraphs = text.split("\n").filter(Boolean).map(function(para) {
     return "    <p>" + escapeHtml(para) + "</p>";
   }).join("\n");
   return [
     '<section class="panel scene-info-panel' + presentationClass + '"><div class="panel-inner scene-info-panel-inner">',
     '  <div class="scene-info-media">',
-    renderImage(assetPath("img_zone", scenePresentationImageName(sceneName)), "Presentatore " + sceneName, "scene-info-trainer-image", 'loading="eager" decoding="async"'),
+    renderImage(imagePath, t("accessibility.scenePresenter", { scene: sceneTitle }, "Presentatore: " + sceneTitle), "scene-info-trainer-image", 'loading="eager" decoding="async"'),
     "  </div>",
     '  <div class="scene-info-copy">',
     paragraphs,
+    extraMarkup || "",
     "  </div>",
     "</div></section>"
   ].join("");

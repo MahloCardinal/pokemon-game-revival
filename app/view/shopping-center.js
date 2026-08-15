@@ -193,7 +193,7 @@ export function renderShoppingCenterScene() {
   var total = computeCartTotal(entries);
   return sceneShell("Centro commerciale", "", [
     '<section class="shopping-center-layout">',
-    renderScenePresentationPanel("Centro commerciale", "shopping-center-info-panel"),
+    renderScenePresentationPanel("shopping_center", "shopping-center-info-panel"),
     '  <div class="shopping-center-top-row">',
     renderShoppingCenterSectionPanel(activeSection),
     renderShoppingCenterCartPanel(pokedollars, entries, total, isSell),

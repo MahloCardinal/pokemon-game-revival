@@ -83,7 +83,7 @@ export function renderStarterScene() {
   var content = [
     setup.error ? '<p class="auth-error starter-setup-error">' + escapeHtml(setup.error) + "</p>" : "",
     '<div class="starter-choice-stack">',
-    renderScenePresentationPanel("Start", "starter-info-panel"),
+    renderScenePresentationPanel("start", "starter-info-panel"),
     '<section class="panel starter-choice-panel"><div class="panel-inner">',
     '  <section class="starter-choice-section">',
     '    <h2 class="starter-section-title">Personaggio</h2>',

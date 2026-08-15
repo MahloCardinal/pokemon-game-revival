@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "216e8f2eae9c12059d25acaa74cc8af92241d940f215eabfc3f9faf9cd002349",
+  "bundleChecksum": "22a8c61426ae837e32b3e36222860644fd3cff521757fa76bb8fba8094936018",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -19,8 +19,8 @@
     },
     {
       "source": "app/data/capture-zones.js",
-      "sha256": "2c5f29be19fa04c58fc4546f258e53104b4449368716e3b21d4e7a43c238f9d8",
-      "bytes": 1195
+      "sha256": "7353860549a4868139b8236a1caf93d3470613738b4c8764f7c8f548c71f61b1",
+      "bytes": 844
     },
     {
       "source": "app/data/gyms.js",

@@ -52,7 +52,7 @@ export function renderBattleShopScene() {
   var offers = Array.isArray(state.battleShopOffers) ? state.battleShopOffers : [];
   var content = [
     '<section class="pokefan-layout battle-shop-layout">',
-    renderScenePresentationPanel("Negozio Lotta", "battle-shop-info-panel"),
+    renderScenePresentationPanel("battle_shop", "battle-shop-info-panel"),
     '  <section class="panel pokefan-missions-panel" data-render-region="battle-shop-offers"><div class="panel-inner">',
     renderOfferTable(offers),
     "  </div></section>",

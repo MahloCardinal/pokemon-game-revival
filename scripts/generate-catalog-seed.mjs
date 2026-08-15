@@ -493,11 +493,12 @@ async function zoneStatements(release) {
   const primary = "app/data/capture-zones.js";
   const data = await loadSourceModule(primary);
   const typeData = await loadSourceModule("app/data/type-chart.js");
+  const italianText = await loadSourceModule("app/data/i18n/it.js");
   const rows = [];
   const typeKeys = [...new Set(Object.values(data.CAPTURE_ZONES).flat())];
   typeKeys.forEach((typeKey, index) => rows.push(upsert("catalog_type", ["catalog_release_id", "type_key", "display_name", "sort_order"], [releaseId(release), typeKey, typeData.typeDisplayName(typeKey), index], ["catalog_release_id", "type_key"], ["display_name", "sort_order"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
   Object.entries(data.CAPTURE_ZONES).forEach(([zoneKey, types]) => {
-    rows.push(upsertJson("catalog_zone", ["catalog_release_id", "zone_key", "display_name", "rules"], [releaseId(release), zoneKey, data.captureZoneDisplayName(zoneKey), {}], new Set([3]), ["catalog_release_id", "zone_key"], ["display_name", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
+    rows.push(upsertJson("catalog_zone", ["catalog_release_id", "zone_key", "display_name", "rules"], [releaseId(release), zoneKey, italianText.IT_TRANSLATIONS.captureZones[zoneKey], {}], new Set([3]), ["catalog_release_id", "zone_key"], ["display_name", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
     types.forEach((typeKey, index) => rows.push(upsert("catalog_zone_type", ["catalog_release_id", "zone_key", "type_key", "type_order"], [releaseId(release), zoneKey, typeKey, index], ["catalog_release_id", "zone_key", "type_key"], ["type_order"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
   });
   Object.entries(data.RARITY_WEIGHTS).forEach(([key, weight]) => rows.push(upsert("catalog_rarity_rule", ["catalog_release_id", "rarity_key", "encounter_weight", "catch_multiplier"], [releaseId(release), key, weight, data.CATCH_RARITY_MULTIPLIERS[key]], ["catalog_release_id", "rarity_key"], ["encounter_weight", "catch_multiplier"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));

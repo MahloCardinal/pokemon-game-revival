@@ -129,7 +129,7 @@ export function renderPokemonCenterScene() {
   itemPanelClass += pokemonNotice ? " has-item-notice" : "";
   var body = [
     '<section class="pokemon-center-layout">',
-    renderScenePresentationPanel("Centro Pokémon", "pokemon-center-info-panel"),
+    renderScenePresentationPanel("pokemon_center", "pokemon-center-info-panel"),
     '  <div class="pokemon-center-top-row">',
     '    <section class="panel pokemon-center-sections-panel"><div class="panel-inner">',
     '      <h2 class="stack-title">Sezioni</h2>',

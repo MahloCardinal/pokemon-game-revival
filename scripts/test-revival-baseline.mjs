@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
@@ -33,6 +33,12 @@ const discordAudienceMigration = read("supabase/migrations/20260814131000_notify
 const discordTurnMigration = read("supabase/migrations/20260814132000_admin_battle_turn_discord_notifications.sql");
 const renderUtils = read("app/client/render-utils.js");
 const zoneTexts = read("app/data/zones-text.js");
+const assetPaths = read("app/data/asset-paths.js");
+const captureZonesData = read("app/data/capture-zones.js");
+const i18nRuntime = read("app/client/i18n.js");
+const i18nCatalogIndex = read("app/data/i18n/index.js");
+const i18nItalian = read("app/data/i18n/it.js");
+const i18nEnglish = read("app/data/i18n/en.js");
 const gymsView = read("app/view/gyms.js");
 const gymsHandler = read("app/client/gyms-handler.js");
 const battleHandler = read("app/client/battle-handler.js");
@@ -83,9 +89,21 @@ assert.match(battleEdgeHelpers, /Pokemon di livello superiore al limite consenti
 assert.match(renderer, /export function renderRegions\(regionNames, options\)/);
 assert.match(renderer, /data-render-region/);
 assert.match(renderer, /export function renderDialogLayer\(options\)/);
-assert.match(renderUtils, /\.normalize\("NFD"\)/);
-assert.match(zoneTexts, /"Centro Pokémon"/);
-assert.match(zoneTexts, /"Club Pokéfan"/);
+assert.match(renderUtils, /scenePresentationAssetPath\(presentationKey\)/);
+assert.doesNotMatch(renderUtils, /_presentazione|\.normalize\("NFD"\)/);
+assert.doesNotMatch(captureZonesData, /CAPTURE_ZONE_LABELS_IT|captureZoneDisplayName/);
+assert.doesNotMatch(zoneTexts, /SCENE_PRESENTATION_TEXT/);
+assert.match(i18nRuntime, /export function t\(/);
+assert.match(i18nRuntime, /export function setLocale\(/);
+assert.match(i18nCatalogIndex, /SUPPORTED_LOCALES = Object\.freeze\(\["it", "en"\]\)/);
+assert.match(i18nItalian, /scenePresentations/);
+assert.match(i18nEnglish, /ghost_tower: "Ghost Tower"/);
+assert.match(i18nEnglish, /safari_zone: "Safari Zone"/);
+const listedAssetPaths = Array.from(assetPaths.matchAll(/"\/assets\/([^"\r\n]+)"/g), (match) => match[1]);
+assert.ok(listedAssetPaths.length >= 30, "Expected an explicit presentation asset catalog");
+for (const relativeAssetPath of listedAssetPaths) {
+  assert.ok(existsSync(new URL("../assets/" + relativeAssetPath, import.meta.url)), `Missing listed asset: ${relativeAssetPath}`);
+}
 assert.doesNotMatch(gymsView, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
 assert.doesNotMatch(gymsHandler, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
 assert.match(gymsView, /Completa le Missioni avventura necessarie/);

@@ -135,7 +135,7 @@ function renderTeamPanel() {
 export function renderDaycareScene() {
   var content = [
     '<section class="team-scene-stack daycare-layout">',
-    renderScenePresentationPanel("Pensione", "daycare-info-panel"),
+    renderScenePresentationPanel("daycare", "daycare-info-panel"),
     renderDaycareSlotsPanel(),
     renderTeamPanel(),
     '</section>'

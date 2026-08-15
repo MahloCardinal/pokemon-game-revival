@@ -36,7 +36,7 @@ export function renderBattleTowerScene() {
   var disabled = canStart ? "" : "disabled";
   var content = [
     '<section class="team-scene-stack battle-tower-layout">',
-    renderScenePresentationPanel("Torre Lotta", "battle-tower-info-panel"),
+    renderScenePresentationPanel("battle_tower", "battle-tower-info-panel"),
     '  <section class="panel battle-tower-panel"><div class="panel-inner stack">',
     '    <h2 class="stack-title">La tua squadra</h2>',
     '    <div class="battle-tower-team-grid">' + towerTeamCards() + "</div>",

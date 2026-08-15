@@ -85,7 +85,7 @@ export function renderTrainingZoneScene() {
       : "";
   var content = [
     '<section class="team-scene-stack training-zone-layout">',
-    renderScenePresentationPanel("Zona allenamento", "training-zone-info-panel"),
+    renderScenePresentationPanel("training_zone", "training-zone-info-panel"),
     '  <section class="panel training-zone-panel"><div class="panel-inner stack">',
     '    <div class="training-zone-control-row">',
     '      <div class="training-zone-reward-grid">' + rewardCards + "</div>",

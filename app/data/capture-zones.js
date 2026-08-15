@@ -8,20 +8,6 @@ export var CAPTURE_ZONES = {
   desert: ["ground", "rock"]
 };
 
-export var CAPTURE_ZONE_LABELS_IT = Object.freeze({
-  viridian_forest: "Bosco Smeraldo",
-  mt_moon: "Monte Luna",
-  sea: "Mare",
-  ghost_tower: "Torre Fantasma",
-  safari_zone: "Safari",
-  swamp: "Palude",
-  desert: "Deserto"
-});
-
-export function captureZoneDisplayName(zoneKey) {
-  return CAPTURE_ZONE_LABELS_IT[zoneKey] || String(zoneKey || "");
-}
-
 export var RARITY_WEIGHTS = {
   test: 999999999,
   common: 1000,

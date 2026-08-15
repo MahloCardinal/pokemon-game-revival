@@ -6,7 +6,8 @@ import { escapeHtml, getItemDisplayImage, getTypeImage, renderImage } from "../c
 import { button, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard } from "../client/pokemon-card.js";
 import { typeDisplayName } from "../data/type-chart.js";
-import { captureZoneDisplayName } from "../data/capture-zones.js";
+import { captureZonePresentationKey } from "../data/asset-paths.js";
+import { t } from "../client/i18n.js";
 
 var CAPTURE_ZONE_THEME_CLASS = {
   viridian_forest: "capture-search-wrap-bosco-smeraldo",
@@ -124,7 +125,7 @@ export function renderCaptureScene(scene) {
   var form = [
     '<section class="capture-zone-layout">',
     '<section class="capture-search-wrap ' + zoneThemeClass + '">',
-    renderScenePresentationPanel(scene.zoneName, "capture-info-panel"),
+    renderScenePresentationPanel(captureZonePresentationKey(scene.zoneName), "capture-info-panel"),
     '  <div class="capture-search-grid">',
     '    <div class="capture-search-content">',
     '      <section class="panel capture-search-panel"><div class="panel-inner stack">',
@@ -150,5 +151,5 @@ export function renderCaptureScene(scene) {
     "</section>"
   ].join("");
 
-  return sceneShell(captureZoneDisplayName(scene.zoneName), "", form, "", "", "parent-back");
+  return sceneShell(t("captureZones." + scene.zoneName, null, scene.zoneName), "", form, "", "", "parent-back");
 }

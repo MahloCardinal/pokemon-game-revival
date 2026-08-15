@@ -218,7 +218,7 @@ function renderDailyBerryPanel() {
 export function renderGardenScene() {
   var content = [
     '<section class="garden-layout">',
-    renderScenePresentationPanel("Giardino", "garden-info-panel"),
+    renderScenePresentationPanel("garden", "garden-info-panel"),
     renderDailyBerryPanel(),
     renderPlotsPanel(),
     renderBerryCatalog(),

@@ -1,3 +1,5 @@
+import { CAPTURE_ZONE_ASSET_PATHS } from "./asset-paths.js";
+
 export var BACKGROUND_ASSETS = Object.freeze({
   home: Object.freeze({ desktop: "home_desktop.webp", mobile: "home_mobile.webp" }),
   "battle-area": Object.freeze({ desktop: "area_lotta_desktop.webp", mobile: "area_lotta_mobile.webp" }),
@@ -15,13 +17,13 @@ export var BACKGROUND_ASSETS = Object.freeze({
   team: Object.freeze({ desktop: "scheda_desktop.webp", mobile: "scheda_mobile.webp" }),
   box: Object.freeze({ desktop: "box_desktop.webp", mobile: "box_mobile.webp" }),
   gyms: Object.freeze({ desktop: "lega_kanto_desktop.webp", mobile: "lega_kanto_mobile.webp" }),
-  "capture:viridian_forest": Object.freeze({ desktop: "bosco_smeraldo_desktop.webp", mobile: "bosco_smeraldo_mobile.webp" }),
-  "capture:mt_moon": Object.freeze({ desktop: "monte_luna_desktop.webp", mobile: "monte_luna_mobile.webp" }),
-  "capture:sea": Object.freeze({ desktop: "mare_desktop.webp", mobile: "mare_mobile.webp" }),
-  "capture:ghost_tower": Object.freeze({ desktop: "torre_fantasma_desktop.webp", mobile: "torre_fantasma_mobile.webp" }),
-  "capture:safari_zone": Object.freeze({ desktop: "safari_desktop.webp", mobile: "safari_mobile.webp" }),
-  "capture:swamp": Object.freeze({ desktop: "palude_desktop.webp", mobile: "palude_mobile.webp" }),
-  "capture:desert": Object.freeze({ desktop: "deserto_desktop.webp", mobile: "deserto_mobile.webp" }),
+  "capture:viridian_forest": CAPTURE_ZONE_ASSET_PATHS.viridian_forest.background,
+  "capture:mt_moon": CAPTURE_ZONE_ASSET_PATHS.mt_moon.background,
+  "capture:sea": CAPTURE_ZONE_ASSET_PATHS.sea.background,
+  "capture:ghost_tower": CAPTURE_ZONE_ASSET_PATHS.ghost_tower.background,
+  "capture:safari_zone": CAPTURE_ZONE_ASSET_PATHS.safari_zone.background,
+  "capture:swamp": CAPTURE_ZONE_ASSET_PATHS.swamp.background,
+  "capture:desert": CAPTURE_ZONE_ASSET_PATHS.desert.background,
   "gym:pewter_city": Object.freeze({ desktop: "plumbeopoli_desktop.webp", mobile: "plumbeopoli_mobile.webp" }),
   "gym:cerulean_city": Object.freeze({ desktop: "celestopoli_desktop.webp", mobile: "celestopoli_mobile.webp" }),
   "gym:vermilion_city": Object.freeze({ desktop: "aranciopoli_desktop.webp", mobile: "aranciopoli_mobile.webp" }),

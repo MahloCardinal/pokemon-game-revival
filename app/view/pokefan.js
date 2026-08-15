@@ -150,7 +150,7 @@ export function renderPokefanScene() {
   var error = missionState.error ? '<p class="auth-error pokefan-error">' + escapeHtml(missionState.error) + "</p>" : "";
   var body = [
     '<section class="pokefan-layout">',
-    renderScenePresentationPanel("Club Pokéfan", "pokefan-info-panel"),
+    renderScenePresentationPanel("pokefan_club", "pokefan-info-panel"),
     '<div data-render-region="pokefan-content">',
     renderSectionTabs(activeSection),
     error,

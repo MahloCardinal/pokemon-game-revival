@@ -7,7 +7,8 @@ import "./action-bootstrap.js";
 import { initializeBattleRuntime, onBattleRuntimeChange } from "./battle-scene-lock.js";
 import { broadcastAuthoritativeRevision, initializeTeamBoxRuntime } from "./runtime-state.js";
 import { handleCaptureEncounterRuntimeInvalidation, initializeCaptureEncounterRuntime } from "./capture-handler.js";
-import { setScene } from "./renderer.js";
+import { render, setScene } from "./renderer.js";
+import { LOCALE_CHANGE_EVENT } from "./i18n.js";
 import { bindHistoryNavigation } from "./router.js";
 import { initializeSession } from "./session.js";
 import { getResolvedInventoryItem } from "../data/items.js";
@@ -37,6 +38,10 @@ function isPublicLegalScene(scene) {
 }
 
 initializeHeldItemTooltip(root);
+
+window.addEventListener(LOCALE_CHANGE_EVENT, function () {
+  render();
+});
 
 window.addEventListener(PLAYER_REVISION_SYNC_EVENT, function (event) {
   var detail = event && event.detail || {};

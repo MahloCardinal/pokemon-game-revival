@@ -20,7 +20,7 @@ function authFeedback() {
 function loadingText() {
   var loadState = state.playerLoadStatus || {};
   var message = loadState.state === "loading" && loadState.message ? loadState.message : t("ui.auth.connecting");
-  return state.auth.loading ? '<p class="stack-note auth-loading-message" role="status" aria-live="polite">' + escapeHtml(message) + '</p>' : "";
+  return state.auth.loading ? '<p class="stack-note auth-loading-message" role="status" aria-live="polite">' + escapeHtml(resolveText(message)) + '</p>' : "";
 }
 
 function authTabs(mode, disabled) {

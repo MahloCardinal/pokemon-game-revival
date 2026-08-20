@@ -12,6 +12,8 @@ import { applyPlayerSave, resetBoxFilter, root, state } from "./game-state.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { moveBoxPokemonToTeamAuthoritative, releaseBoxPokemonAuthoritative } from "../api/player-command.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
+import { pokemonDisplayName, teamViolationLines } from "./entity-text.js";
+import { messageDescriptor, textDescriptor } from "./i18n.js";
 var findPokemonJoinTeamViolation = Engine.findPokemonJoinTeamViolation;
 var authoritativeBoxCommandPending = false;
 
@@ -20,16 +22,16 @@ registerAction("box-to-team", async function(element) {
   var pokemonToTeam;
   var violation;
   var result;
-  if (blockActionDuringBattle(["Non puoi ritirare Pokemon durante un combattimento"], { title: "Box" })) {
+  if (blockActionDuringBattle([messageDescriptor("box.battleBlocked")], { title: textDescriptor("ui.box.sceneTitle") })) {
     return;
   }
   if (state.team.length >= TEAM_MAX) {
-    openInlineMessage(["Squadra piena!", "Rimuovi un Pokemon prima di spostarne un altro."], { title: "Box" });
+    openInlineMessage([messageDescriptor("box.teamFull"), messageDescriptor("box.removeFirst")], { title: textDescriptor("ui.box.sceneTitle") });
     return;
   }
   violation = findPokemonJoinTeamViolation(state.team, state.box[boxIndex]);
   if (violation) {
-    openMessage(violation.lines, { title: "Box" });
+    openMessage(teamViolationLines(violation), { title: textDescriptor("ui.box.sceneTitle") });
     return;
   }
   if (authoritativeBoxCommandPending || !state.box[boxIndex] || !state.box[boxIndex].instanceId) {
@@ -43,7 +45,7 @@ registerAction("box-to-team", async function(element) {
       targetSlot: state.team.length
     });
     if (!result.ok) {
-      openInlineMessage([result.message || "Ritiro dal Box non riuscito."], { title: "Box" });
+      openInlineMessage([messageDescriptor("box.withdrawFailed")], { title: textDescriptor("ui.box.sceneTitle") });
       return;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -57,7 +59,7 @@ registerAction("box-to-team", async function(element) {
 
 registerAction("box-release", function(element) {
     var releaseIndex = Number(element.dataset.index);
-    openInlineConfirm("Libera Pokemon", ["Vuoi davvero liberare " + state.box[releaseIndex].name + " dal Box?"], async function () {
+    openInlineConfirm(messageDescriptor("box.releaseTitle"), [messageDescriptor("box.releaseConfirm", { pokemon: pokemonDisplayName(state.box[releaseIndex]) })], async function () {
       var result;
       if (authoritativeBoxCommandPending || !state.box[releaseIndex] || !state.box[releaseIndex].instanceId) {
         return;
@@ -69,7 +71,7 @@ registerAction("box-release", function(element) {
           pokemonInstanceId: state.box[releaseIndex].instanceId
         });
         if (!result.ok) {
-          openInlineMessage([result.message || "Rilascio del Pokemon non riuscito."], { title: "Box" });
+          openInlineMessage([messageDescriptor("box.releaseFailed")], { title: textDescriptor("ui.box.sceneTitle") });
           return;
         }
         applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -95,7 +97,7 @@ registerAction("box-filter-apply", function(element) {
       type: selectedBoxType ? String(selectedBoxType.value || "") : "",
       minLevel: minLevelInput ? normalizeBoxLevelFilter(minLevelInput.value) : "",
       maxLevel: maxLevelInput ? normalizeBoxLevelFilter(maxLevelInput.value) : "",
-      name: nameInput ? String(nameInput.value || "").replace(/[^A-Za-z0-9-]/g, "").slice(0, 3).toLocaleLowerCase("it-IT") : "",
+      name: nameInput ? String(nameInput.value || "").replace(/[^A-Za-z0-9-]/g, "").slice(0, 3).toLocaleLowerCase("en-US") : "",
       heldItemOnly: heldItemInput ? heldItemInput.checked : false
     };
     renderRegions(["box-filter", "box-storage"]);

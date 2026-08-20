@@ -3,6 +3,8 @@ import { escapeHtml } from "../client/asset-helpers.js";
 import { button, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { levelLimitForBadges } from "../data/progression.js";
+import { speciesDisplayName } from "../client/entity-text.js";
+import { t } from "../client/i18n.js";
 
 function daycareSlots() {
   var slots = Array.isArray(state.daycare) ? state.daycare.slice(0, 2) : [];
@@ -15,16 +17,16 @@ function daycareSlots() {
 function pokemonDepositDisabledReason(pokemon) {
   var levelLimit = levelLimitForBadges(state.trainerInfo[2]);
   if (state.team.filter(Boolean).length <= 1) {
-    return "Non puoi depositare l'ultimo Pokemon in squadra.";
+    return "lastTeamMember";
   }
   if (!pokemon) {
-    return "Slot vuoto.";
+    return "emptySlot";
   }
   if (pokemon.level >= 100) {
-    return "Pokemon al Lv100.";
+    return "level100";
   }
   if (pokemon.level >= levelLimit) {
-    return "Pokemon al livello massimo gestibile.";
+    return "levelCap";
   }
   return "";
 }
@@ -43,28 +45,28 @@ function renderDaycareDepositMinimenu() {
     var reason = pokemonDepositDisabledReason(pokemon);
     var disabled = Boolean(reason);
     if (disabled) {
-      if (reason.indexOf("Lv100") === -1 && reason.indexOf("livello massimo") === -1) {
+      if (reason !== "level100" && reason !== "levelCap") {
         allAtLevelCap = false;
       }
     } else {
       anyEnabled = true;
       allAtLevelCap = false;
     }
-    buttons.push('<button type="button" class="capture-starter-slot battle-switch-choice' + (disabled ? ' is-ko' : '') + '" data-action="daycare-deposit-pokemon" data-team-index="' + index + '"' + (disabled ? ' disabled title="' + escapeHtml(reason) + '"' : '') + '>' + escapeHtml(pokemon.name) + '</button>');
+    buttons.push('<button type="button" class="capture-starter-slot battle-switch-choice' + (disabled ? ' is-ko' : '') + '" data-action="daycare-deposit-pokemon" data-team-index="' + index + '"' + (disabled ? ' disabled title="' + escapeHtml(t("ui.daycare.reasons." + reason)) + '"' : '') + '>' + escapeHtml(speciesDisplayName(pokemon)) + '</button>');
   });
 
   if (!buttons.length) {
-    return '<div class="daycare-placeholder-card"><span>Nessun Pokémon in squadra.</span></div>';
+    return '<div class="daycare-placeholder-card"><span>' + escapeHtml(t("ui.daycare.noTeamPokemon")) + '</span></div>';
   }
 
   if (!anyEnabled) {
     var msg;
     if (!hasMultipleMembers) {
-      msg = "Hai solo un Pokémon in squadra.";
+      msg = t("ui.daycare.onlyOnePokemon");
     } else if (allAtLevelCap) {
-      msg = "Tutti i tuoi Pokémon sono al livello massimo gestibile con le Medaglie attuali.";
+      msg = t("ui.daycare.allAtLevelCap");
     } else {
-      msg = "Nessun Pokémon può essere depositato in questo momento.";
+      msg = t("ui.daycare.noneAvailable");
     }
     return '<div class="daycare-placeholder-card" style="position:relative"><div class="battle-ko-switch-overlay"><section class="battle-ko-switch-panel"><h3>' + escapeHtml(msg) + '</h3></section></div></div>';
   }
@@ -72,7 +74,7 @@ function renderDaycareDepositMinimenu() {
   return '<div class="daycare-placeholder-card" style="position:relative;overflow:hidden">' +
     '<div class="battle-ko-switch-overlay">' +
     '  <section class="battle-ko-switch-panel">' +
-    '    <h3>Scegli il Pokémon da depositare</h3>' +
+    '    <h3>' + escapeHtml(t("ui.daycare.choosePokemon")) + '</h3>' +
     '    <div class="capture-starter-grid battle-switch-grid">' +
     buttons.join("") +
     '    </div>' +
@@ -85,13 +87,13 @@ function renderDaycareSlot(slot, index) {
   var isDepositTarget = state.scene.daycareDepositSlotIndex === index;
   var isPendingWithdraw = slot && slot.status === "withdraw_pending";
   var action = slot && slot.pokemon
-    ? button(isPendingWithdraw ? "Ritiro in corso" : "Ritira", isPendingWithdraw ? "open-pending-daycare-withdraw" : "daycare-withdraw", 'data-slot-index="' + escapeHtml(index) + '"' + (state.inBattle && !isPendingWithdraw ? " disabled" : ""), isPendingWithdraw ? "button-accent" : "button-accent")
-    : button(isDepositTarget ? "Annulla" : "Deposita", isDepositTarget ? "daycare-cancel-deposit" : "daycare-start-deposit", 'data-slot-index="' + escapeHtml(index) + '"' + (state.inBattle ? " disabled" : ""), isDepositTarget ? "button-dark" : "button-primary");
+    ? button(t(isPendingWithdraw ? "ui.daycare.withdrawPending" : "ui.daycare.withdraw"), isPendingWithdraw ? "open-pending-daycare-withdraw" : "daycare-withdraw", 'data-slot-index="' + escapeHtml(index) + '"' + (state.inBattle && !isPendingWithdraw ? " disabled" : ""), "button-accent")
+    : button(t(isDepositTarget ? "ui.daycare.cancel" : "ui.daycare.deposit"), isDepositTarget ? "daycare-cancel-deposit" : "daycare-start-deposit", 'data-slot-index="' + escapeHtml(index) + '"' + (state.inBattle ? " disabled" : ""), isDepositTarget ? "button-dark" : "button-primary");
   var card = slot && slot.pokemon
     ? renderPokemonCard(slot.pokemon, { className: "daycare-slot-pokemon-card" })
     : isDepositTarget
       ? renderDaycareDepositMinimenu()
-      : '<div class="daycare-placeholder-card"><span>Slot Pensione libero</span></div>';
+      : '<div class="daycare-placeholder-card"><span>' + escapeHtml(t("ui.daycare.freeSlot")) + '</span></div>';
   return [
     '<article class="daycare-slot">',
     '  <div class="daycare-slot-card">' + card + '</div>',
@@ -103,7 +105,7 @@ function renderDaycareSlot(slot, index) {
 function renderDaycareSlotsPanel() {
   return [
     '<section class="panel daycare-slots-panel"><div class="panel-inner stack">',
-    '  <h2 class="stack-title">Pokemon in pensione</h2>',
+    '  <h2 class="stack-title">' + escapeHtml(t("ui.daycare.depositedPokemon")) + '</h2>',
     '  <div class="daycare-slots-row">',
     daycareSlots().map(renderDaycareSlot).join(""),
     '  </div>',
@@ -123,10 +125,10 @@ function renderTeamPokemon(pokemon, index) {
 function renderTeamPanel() {
   var teamCards = state.team.length
     ? state.team.map(function (pokemon, index) { return renderTeamPokemon(pokemon, index); }).join("")
-    : '<div class="empty-state">La squadra e\' vuota.</div>';
+    : '<div class="empty-state">' + escapeHtml(t("ui.daycare.emptyTeam")) + '</div>';
   return [
     '<section class="panel daycare-team-panel"><div class="panel-inner daycare-team-inner">',
-    '  <h2 class="stack-title">Squadra</h2>',
+    '  <h2 class="stack-title">' + escapeHtml(t("ui.daycare.team")) + '</h2>',
     '  <div class="daycare-team-row">' + teamCards + '</div>',
     '</div></section>'
   ].join("");
@@ -140,5 +142,5 @@ export function renderDaycareScene() {
     renderTeamPanel(),
     '</section>'
   ].join("");
-  return sceneShell("Pensione", "", content, "", "scene-content-daycare", "parent-back");
+  return sceneShell(t("ui.daycare.sceneTitle"), "", content, "", "scene-content-daycare", "parent-back");
 }

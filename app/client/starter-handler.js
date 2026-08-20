@@ -1,7 +1,7 @@
 import { registerAction } from "./action-registry.js";
 
 import { render, setScene } from "./renderer.js";
-import { applyPlayerSave, root, state, STARTING_BADGES, STARTING_POKEDOLLARS, registerPokedexPokemon } from "./game-state.js";
+import { applyPlayerSave, root, state } from "./game-state.js";
 import * as Engine from "../engine/index.js";
 import { isTrainerIndex } from "../data/trainers.js";
 import { createInitialPlayerSave } from "../api/player.js";
@@ -11,6 +11,7 @@ import { renderDialog } from "../view/dialogs.js";
 import { renderStarterPokemonGrid } from "../view/starter.js";
 import { refreshMissionState } from "./mission-runtime.js";
 import { recordGlobalActivityEvent } from "./activity-feed-runtime.js";
+import { messageDescriptor, t } from "./i18n.js";
 
 registerAction("starter-pick", function(element) {
     var pickedSpeciesName = String(element.dataset.species || "");
@@ -165,9 +166,10 @@ function renderStarterGenderPicker(species, selectedGender) {
   if (!species || !species.gender || species.gender.length <= 1) {
     return "";
   }
-  return '<span class="starter-gender-picker" aria-label="Sesso Pokemon">' + species.gender.map(function (gender) {
+  return '<span class="starter-gender-picker" aria-label="' + escapeHtml(t("ui.starter.pokemonGender")) + '">' + species.gender.map(function (gender) {
     var selectedClass = gender === selectedGender ? " is-selected" : "";
-    return '<span role="button" tabindex="0" class="starter-gender-option' + selectedClass + '" data-action="starter-gender-pick" data-gender="' + escapeHtml(gender) + '" aria-label="' + escapeHtml(gender) + '">' + renderImage(getGenderImage(gender), gender, "starter-gender-icon") + "</span>";
+    var genderLabel = t("ui.starter.genders." + gender);
+    return '<span role="button" tabindex="0" class="starter-gender-option' + selectedClass + '" data-action="starter-gender-pick" data-gender="' + escapeHtml(gender) + '" aria-label="' + escapeHtml(genderLabel) + '">' + renderImage(getGenderImage(gender), genderLabel, "starter-gender-icon") + "</span>";
   }).join("") + "</span>";
 }
 
@@ -252,14 +254,13 @@ function openStarterConfirmIfReady() {
 }
 
 async function confirmStarterPick() {
-  var authoritative = true;
   var starterPokemon;
   var result;
   var setup = selectedStarterSetup();
 
   if (!isTrainerIndex(setup.trainerIndex) || !setup.speciesName || !isAllowedStarterSpecies(setup.speciesName)) {
     state.starterSetup = {
-      error: "Seleziona il personaggio e un Pokémon iniziale valido.",
+      error: messageDescriptor("starter.invalidSelection"),
       loading: false,
       trainerIndex: setup.trainerIndex,
       speciesName: setup.speciesName,
@@ -271,25 +272,6 @@ async function confirmStarterPick() {
     return;
   }
 
-  if (!authoritative) {
-    try {
-      starterPokemon = Engine.createStarterPokemon(setup.speciesName, {
-        gender: setup.gender || undefined
-      });
-    } catch (error) {
-      state.starterSetup = {
-        error: error.message || "Pokémon iniziale non valido.",
-        loading: false,
-        trainerIndex: setup.trainerIndex,
-        speciesName: setup.speciesName,
-        gender: setup.gender,
-        generation: setup.generation
-      };
-      state.dialog = null;
-      render();
-      return;
-    }
-  }
   state.starterSetup = {
     error: "",
     loading: true,
@@ -301,33 +283,19 @@ async function confirmStarterPick() {
   state.dialog = null;
   render();
 
-  if (!authoritative) {
-    state.trainerInfo = [setup.trainerIndex, STARTING_POKEDOLLARS, STARTING_BADGES, 0];
-    state.team = [starterPokemon];
-    state.box = [];
-    state.playerDex = [];
-    state.pokedexDirty = false;
-    registerPokedexPokemon(starterPokemon);
-  }
   try {
     result = await createInitialPlayerSave({
       expectedRevision: state.authoritativeRevision,
       trainerIndex: setup.trainerIndex,
       speciesKey: setup.speciesName,
       gender: setup.gender
-    }, authoritative ? null : state);
+    }, null);
   } catch (error) {
-    result = { ok: false, message: error.message };
+    result = { ok: false, code: "starter_save_failed" };
   }
   if (!result.ok) {
-    if (!authoritative) {
-      state.trainerInfo = [setup.trainerIndex, STARTING_POKEDOLLARS, STARTING_BADGES, 0];
-      state.team = [];
-      state.playerDex = [];
-      state.pokedexDirty = false;
-    }
     state.starterSetup = {
-      error: result.message,
+      error: messageDescriptor("starter.saveFailed"),
       loading: false,
       trainerIndex: setup.trainerIndex,
       speciesName: setup.speciesName,
@@ -338,15 +306,13 @@ async function confirmStarterPick() {
     return;
   }
 
-  if (authoritative) {
-    applyPlayerSave(result.save);
-    starterPokemon = state.team[0];
-  }
+  applyPlayerSave(result.save);
+  starterPokemon = state.team[0];
   // The starter is now persisted; later history navigation must not reopen it.
   state.playerLoadStatus = { state: "ready", message: "" };
   state.starterSetup = { error: "", loading: false };
   state.saveStatus = { state: "saved", message: "" };
-  await recordGlobalActivityEvent({ eventType: "starter", subjectName: starterPokemon.name });
+  await recordGlobalActivityEvent({ eventType: "starter", subjectName: String(starterPokemon.speciesKey) });
   refreshMissionState({ renderOnComplete: false });
   setScene({ name: "home" }, { history: "replace" });
 }

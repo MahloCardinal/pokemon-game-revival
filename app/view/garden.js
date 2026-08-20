@@ -3,6 +3,8 @@ import { assetPath, escapeHtml, getItemDisplayImage, renderImage } from "../clie
 import { button, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { state } from "../client/game-state.js";
 import { renderDebugButton } from "../client/debug-tools.js";
+import { itemDisplayDescription, itemDisplayName } from "../client/entity-text.js";
+import { t } from "../client/i18n.js";
 
 function getPlotStage(plot) {
   if (!plot) return "empty";
@@ -48,6 +50,7 @@ function inventoryQuantity(itemIndex) {
 
 function renderBerryCatalog() {
   function renderBerryCard(item) {
+    var itemName = itemDisplayName(item);
     var quantity = inventoryQuantity(item.index);
     var plantingPlotIndex = Number(state.garden.plantingPlotIndex);
     var isPlanting = state.garden.plantingPlotIndex !== null && Number.isInteger(plantingPlotIndex) && plantingPlotIndex >= 0;
@@ -59,7 +62,7 @@ function renderBerryCatalog() {
     var cardClass = "garden-berry-card";
     var debugButton = renderDebugButton("+50", "debug-add-item", 'data-item-index="' + escapeHtml(item.index) + '"', "button-ghost button-slim garden-berry-debug-add");
     var availabilityMarkup = quantity > 0
-      ? '<span class="garden-berry-availability">Disp. ' + escapeHtml(quantity) + "</span>"
+      ? '<span class="garden-berry-availability">' + escapeHtml(t("ui.garden.available", { count: quantity })) + "</span>"
       : '<span class="garden-berry-availability-placeholder" aria-hidden="true"></span>';
 
     if (isPlanting) {
@@ -74,15 +77,15 @@ function renderBerryCatalog() {
       "<" + tagName + ' class="' + cardClass + '"' + attrs + ">",
       '  <div class="garden-berry-side">',
       '    <div class="garden-berry-media">',
-      renderImage(getItemDisplayImage(item), item.name, "garden-berry-image"),
+      renderImage(getItemDisplayImage(item), itemName, "garden-berry-image"),
       "    </div>",
       '    <div class="garden-berry-availability-cell">',
       availabilityMarkup,
       "    </div>",
       "  </div>",
       '  <div class="garden-berry-copy">',
-      '    <h3 class="garden-berry-name">' + escapeHtml(item.name) + "</h3>",
-      '    <p class="garden-berry-description">' + escapeHtml(item.description) + "</p>",
+      '    <h3 class="garden-berry-name">' + escapeHtml(itemName) + "</h3>",
+      '    <p class="garden-berry-description">' + escapeHtml(itemDisplayDescription(item)) + "</p>",
       "  </div>",
       "</" + tagName + ">",
       debugButton ? '<div class="garden-berry-debug-actions">' + debugButton + "</div>" : "",
@@ -105,8 +108,8 @@ function renderBerryCatalog() {
 
   return [
     '<section class="garden-catalog">',
-    renderGroup("Ciclo normale (36h)", BERRY_NORMAL_CYCLE_ITEMS),
-    renderGroup("Ciclo lungo (60h)", BERRY_LONG_CYCLE_ITEMS),
+    renderGroup(t("ui.garden.normalCycle"), BERRY_NORMAL_CYCLE_ITEMS),
+    renderGroup(t("ui.garden.longCycle"), BERRY_LONG_CYCLE_ITEMS),
     "</section>"
   ].join("");
 }
@@ -122,13 +125,13 @@ function renderPlot(index) {
   var body = isPlantingTarget && !plot
     ? [
       '  <div class="garden-plot-visual garden-plot-selection-prompt">',
-      '    <span>Seleziona la bacca da piantare</span>',
+      '    <span>' + escapeHtml(t("ui.garden.selectBerry")) + '</span>',
       "  </div>",
       '  <div class="garden-plot-info">'
     ]
     : [
       '  <div class="garden-plot-visual">',
-      renderImage(assetPath("img_miscellaneous", plantImage), stage, "garden-plot-image"),
+      renderImage(assetPath("img_miscellaneous", plantImage), t("ui.garden.stages." + stage), "garden-plot-image"),
       "  </div>",
       '  <div class="garden-plot-info">'
     ];
@@ -137,26 +140,26 @@ function renderPlot(index) {
     nameLabel = getItemByIndex(harvestNotice.berryIndex);
     body = [
       '  <div class="garden-plot-info garden-harvest-notice">',
-      '    <span class="garden-plot-label">Hai ottenuto ' + escapeHtml(harvestNotice.quantity) + " " + escapeHtml(nameLabel ? nameLabel.name : "bacca") + "!</span>",
+      '    <span class="garden-plot-label">' + escapeHtml(t("ui.garden.harvested", { count: harvestNotice.quantity, berry: nameLabel ? itemDisplayName(nameLabel) : t("ui.garden.berryFallback") })) + "</span>",
       "  </div>",
       '  <div class="garden-plot-action">',
-      button("Ok", "garden-harvest-notice-ok", 'data-plot-index="' + index + '"', "button-primary"),
+      button(t("ui.pokemonCenter.ok"), "garden-harvest-notice-ok", 'data-plot-index="' + index + '"', "button-primary"),
       "  </div>"
     ];
   } else if (!plot) {
     if (!isPlantingTarget) {
-      body.push('    <span class="garden-plot-label">Vuoto</span>');
+      body.push('    <span class="garden-plot-label">' + escapeHtml(t("ui.garden.empty")) + '</span>');
     }
     body.push("  </div>");
     body.push('  <div class="garden-plot-action">');
-    body.push(button(isPlantingTarget ? "Annulla" : "Pianta", "garden-plant-plot", 'data-plot-index="' + index + '"' + (state.inBattle ? " disabled" : ""), isPlantingTarget ? "button-dark" : "button-primary"));
+    body.push(button(t(isPlantingTarget ? "ui.garden.cancel" : "ui.garden.plant"), "garden-plant-plot", 'data-plot-index="' + index + '"' + (state.inBattle ? " disabled" : ""), isPlantingTarget ? "button-dark" : "button-primary"));
     body.push("  </div>");
   } else {
-    body.push('    <span class="garden-plot-label">' + escapeHtml(nameLabel ? nameLabel.name : "") + "</span>");
+    body.push('    <span class="garden-plot-label">' + escapeHtml(nameLabel ? itemDisplayName(nameLabel) : "") + "</span>");
     body.push("  </div>");
     if (stage === "ready") {
       body.push('  <div class="garden-plot-action">');
-      body.push(button("Raccogli", "garden-harvest", 'data-plot-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-accent"));
+      body.push(button(t("ui.garden.harvest"), "garden-harvest", 'data-plot-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-accent"));
       body.push("  </div>");
     }
   }
@@ -176,7 +179,7 @@ function renderPlotsPanel() {
 
   return [
     '<section class="garden-plots-panel">',
-    '  <h2 class="garden-plots-title">Le tue piantagioni</h2>',
+    '  <h2 class="garden-plots-title">' + escapeHtml(t("ui.garden.plotsTitle")) + '</h2>',
     '  <div class="garden-plots-grid" data-garden-plots>',
     plotsHtml,
     "  </div>",
@@ -190,19 +193,20 @@ function renderDailyBerryPanel() {
   var content;
 
   if (rewardItem) {
+    var rewardName = itemDisplayName(rewardItem);
     content = [
-      '<span class="garden-daily-label">Hai ottenuto</span>',
-      renderImage(getItemDisplayImage(rewardItem), rewardItem.name, "garden-daily-reward-image"),
-      '<span class="garden-daily-label">' + escapeHtml(rewardItem.name) + "</span>"
+      '<span class="garden-daily-label">' + escapeHtml(t("ui.garden.obtained")) + '</span>',
+      renderImage(getItemDisplayImage(rewardItem), rewardName, "garden-daily-reward-image"),
+      '<span class="garden-daily-label">' + escapeHtml(rewardName) + "</span>"
     ].join("");
   } else if (dailyBerry.claimedToday) {
-    content = '<span class="garden-daily-label">Hai già ritirato la tua bacca per oggi</span>';
+    content = '<span class="garden-daily-label">' + escapeHtml(t("ui.garden.alreadyClaimed")) + '</span>';
   } else if (dailyBerry.loading) {
-    content = '<span class="garden-daily-label">Controllo premio giornaliero...</span>';
+    content = '<span class="garden-daily-label">' + escapeHtml(t("ui.garden.checkingReward")) + '</span>';
   } else {
     content = [
-      '    <span class="garden-daily-label">Ricevi la bacca regalo di oggi:</span>',
-      button("Ritira", "garden-daily-berry-claim", (state.inBattle || dailyBerry.claiming ? "disabled" : ""), "button-accent")
+      '    <span class="garden-daily-label">' + escapeHtml(t("ui.garden.dailyGift")) + '</span>',
+      button(t("ui.garden.claim"), "garden-daily-berry-claim", (state.inBattle || dailyBerry.claiming ? "disabled" : ""), "button-accent")
     ].join("");
   }
 
@@ -225,5 +229,5 @@ export function renderGardenScene() {
     "</section>"
   ].join("");
 
-  return sceneShell("Giardino", "", content, "", "scene-content-garden", "parent-back");
+  return sceneShell(t("ui.garden.sceneTitle"), "", content, "", "scene-content-garden", "parent-back");
 }

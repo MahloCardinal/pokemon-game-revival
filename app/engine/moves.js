@@ -1,14 +1,14 @@
-import { LOG_LIBRARY, MOVE_LIBRARY } from "../data/moves.js";
-import { formatCatalogDescription } from "../data/move-format.js";
+import { MOVE_LIBRARY } from "../data/moves.js";
 import { powerForLevel, statsForLevel } from "./level-calc.js";
+import { moveBattleEvent } from "./battle-events.js";
 var MOVE_BY_INDEX = {};
 
 MOVE_LIBRARY.forEach(function (move) {
   if (!move || !Number.isFinite(move.index) || move.index <= 0) {
-    throw new Error("Index mossa non valido: " + (move && move.name ? move.name : ""));
+    throw new Error("Invalid move index: " + (move && move.key ? move.key : ""));
   }
   if (MOVE_BY_INDEX[move.index]) {
-    throw new Error("Index mossa duplicato: " + move.index);
+    throw new Error("Duplicate move index: " + move.index);
   }
   MOVE_BY_INDEX[move.index] = move;
 });
@@ -46,7 +46,6 @@ function Move(moveDef, overrides) {
   this.setWeather = moveDef.setWeather || null;
   this.weatherLabel = moveDef.weatherLabel || null;
   this.bindTurns = moveDef.bindTurns || 0;
-  this.logMessage = "";
   this.forcedCopiedMoveIndex = null;
   this.resolvedMoveIndex = null;
   this.forcedResolvedType = null;
@@ -71,23 +70,14 @@ Move.prototype.after = function (attacker, defender, hit) {
   }
 };
 
-Move.prototype.prepareLog = function (attacker, defender, damage, efficacy) {
-  var formatter = LOG_LIBRARY[this.logKey];
-  if (!formatter) {
-    return null;
-  }
-  this.logMessage = formatter({
-    self: this,
+Move.prototype.prepareEvent = function (attacker, defender, damage, efficacy) {
+  return moveBattleEvent(this.logKey, {
     attacker: attacker,
     defender: defender,
     move: this,
     damage: damage,
     efficacy: efficacy
   });
-  if (damage === 1) {
-    this.logMessage = this.logMessage.replace("danni", "danno");
-  }
-  return this.logMessage;
 };
 
 Move.prototype.toJSON = function () {
@@ -97,7 +87,7 @@ Move.prototype.toJSON = function () {
 export function createMove(moveRef, overrides) {
   var moveDef = resolveMoveDefinition(moveRef);
   if (!moveDef) {
-    throw new Error("Mossa non trovata: " + (moveRef && moveRef.name ? moveRef.name : moveRef));
+    throw new Error("Move not found: " + (moveRef && moveRef.key ? moveRef.key : moveRef));
   }
   return new Move(moveDef, overrides);
 }
@@ -105,11 +95,11 @@ export function createMove(moveRef, overrides) {
 export function moveFromJSON(data) {
   var moveDef;
   if (!Array.isArray(data)) {
-    throw new Error("Formato mossa non valido.");
+    throw new Error("Invalid move format.");
   }
   moveDef = resolveMoveDefinition(Number(data[0]));
   if (!moveDef) {
-    throw new Error("Mossa non trovata per index: " + data[0]);
+    throw new Error("Move not found by index: " + data[0]);
   }
   return createMove(moveDef, {
     power: data[1] || 0,
@@ -140,12 +130,3 @@ export function movePoolForLevel(speciesData, level) {
     });
   return pool;
 }
-
-export function formatDescription(move) {
-  return String(move.description || "").replace(/\{(\w+)\}/g, function (_match, key) {
-    var value = key === "power" ? move.power : (key === "stats" || key === "buff") ? move.stats : undefined;
-    return value !== undefined ? value : "";
-  });
-}
-
-export { formatCatalogDescription };

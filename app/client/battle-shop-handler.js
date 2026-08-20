@@ -8,6 +8,7 @@ import { applyPlayerSave, root, state } from "./game-state.js";
 import { renderRegions } from "./renderer.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { battleShopChoiceName, battleShopOfferName, hydrateBattleShopOffers } from "./battle-shop-presentation.js";
+import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 
 var pendingBattleShopChoice = null;
 var battleShopChoiceCleanup = null;
@@ -34,7 +35,7 @@ function canAffordBattleShopOffer(offer) {
 }
 
 function showInsufficientBattlePoints() {
-  openMessage(["Non hai abbastanza PL per ritirare questo premio."], { title: "Negozio Lotta" });
+  openMessage([messageDescriptor("battleShop.insufficientPoints")], { title: textDescriptor("ui.sceneTitles.battleShop") });
 }
 
 function closeBattleShopChoiceMenu() {
@@ -61,7 +62,7 @@ function openBattleShopChoiceMenu(anchorElement, offer) {
   panel.style.top = "0";
   panel.style.visibility = "hidden";
   title.className = "pokefan-choice-title";
-  title.textContent = "Scegli il premio";
+  title.textContent = t("messages.battleShop.chooseReward");
   list.className = "pokefan-choice-list";
   (offer.choices || []).forEach(function(choice) {
     var choiceButton = document.createElement("button");
@@ -116,9 +117,8 @@ async function buyBattleShopOffer(offerKey, element) {
     });
     if (!result.ok) {
       state.battleShopPurchasePending = false;
-      openMessage([/insufficient Battle Points/i.test(String(result.message || ""))
-        ? "Non hai abbastanza PL per ritirare questo premio."
-        : result.message || "Ritiro del premio non riuscito."], { title: "Negozio Lotta" });
+      openMessage([messageDescriptor(/insufficient Battle Points/i.test(String(result.message || ""))
+        ? "battleShop.insufficientPoints" : "battleShop.claimFailed")], { title: textDescriptor("ui.sceneTitles.battleShop") });
       return;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -129,9 +129,9 @@ async function buyBattleShopOffer(offerKey, element) {
       return String(entry && entry.instanceId || "") === pokemonInstanceId;
     }) : null;
     var rewardName = selection.choice ? battleShopChoiceName(selection.choice) : battleShopOfferName(selection.offer);
-    openMessage(["Hai ritirato " + rewardName + "."], {
-      title: "Negozio Lotta",
-      closeLabel: "Ok",
+    openMessage([messageDescriptor("battleShop.claimed", { reward: rewardName })], {
+      title: textDescriptor("ui.sceneTitles.battleShop"),
+      closeLabel: textDescriptor("ui.dialogs.ok"),
       closeClass: "button-accent",
       pokemon: pokemon
     });
@@ -150,7 +150,7 @@ registerAction("battle-shop-buy", function(element) {
   });
   if (!requireNotInBattle()) return;
   if (!offer || !offer.eligible) {
-    openMessage(["Questo premio non può essere ritirato."], { title: "Negozio Lotta" });
+    openMessage([messageDescriptor("battleShop.unavailable")], { title: textDescriptor("ui.sceneTitles.battleShop") });
     return;
   }
   if (!canAffordBattleShopOffer(offer)) {
@@ -195,7 +195,7 @@ export async function refreshBattleShopOffers() {
   } else {
     state.battleShopOffers = [];
     state.battleShopOffersLoaded = false;
-    state.battleShopOffersError = result.message || "Impossibile caricare i premi del Negozio Lotta.";
+    state.battleShopOffersError = messageDescriptor("battleShop.loadFailed");
   }
   state.battleShopOffersLoading = false;
   if (state.scene && state.scene.name === "battle-shop") renderRegions(["battle-shop-offers"]);

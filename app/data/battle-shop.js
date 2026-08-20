@@ -16,37 +16,23 @@ var DRINKS = [
 ];
 
 export var BATTLE_SHOP_ITEM_OFFERS = []
-  .concat(Items.BERRY_NORMAL_CYCLE_ITEMS.map(function (item) { return itemOffer(item, 3, "Bacca a crescita veloce"); }))
-  .concat(Items.BERRY_LONG_CYCLE_ITEMS.map(function (item) { return itemOffer(item, 5, "Bacca a crescita lenta"); }))
-  .concat(DRINKS.map(function (entry) { return itemOffer(entry[0], entry[1], "Bevande"); }))
+  .concat(Items.BERRY_NORMAL_CYCLE_ITEMS.map(function (item) { return itemOffer(item, 3, "fast_growing_berries"); }))
+  .concat(Items.BERRY_LONG_CYCLE_ITEMS.map(function (item) { return itemOffer(item, 5, "slow_growing_berries"); }))
+  .concat(DRINKS.map(function (entry) { return itemOffer(entry[0], entry[1], "drinks"); }))
   .concat([
-    itemOffer(Items.heart_scale, 80, "Strumenti rari"),
-    itemOffer(Items.hp_up, 20, "Vitamine"),
-    itemOffer(Items.pp_up, 20, "Vitamine"),
-    itemOffer(Items.pp_max, 30, "Vitamine")
+    itemOffer(Items.heart_scale, 80, "rare_items"),
+    itemOffer(Items.hp_up, 20, "vitamins"),
+    itemOffer(Items.pp_up, 20, "vitamins"),
+    itemOffer(Items.pp_max, 30, "vitamins")
   ])
   .concat(Items.ITEM_LIBRARY.filter(function (item) { return item.category === Items.ItemCategory.TM; })
-    .map(function (item) { return itemOffer(item, 10, "MT"); }))
-  .concat(EVOLUTION_ITEMS.map(function (item) { return itemOffer(item, 10, "Strumenti evolutivi"); }))
-  .concat(AROMAS.map(function (item) { return itemOffer(item, 100, "Aromi"); }))
+    .map(function (item) { return itemOffer(item, 10, "tms"); }))
+  .concat(EVOLUTION_ITEMS.map(function (item) { return itemOffer(item, 10, "evolution_items"); }))
+  .concat(AROMAS.map(function (item) { return itemOffer(item, 100, "incenses"); }))
   .concat(Items.ITEM_LIBRARY.filter(function (item) { return Boolean(item.boostType); })
-    .map(function (item) { return itemOffer(item, 100, "Strumenti potenziatore Tipo"); }));
+    .map(function (item) { return itemOffer(item, 100, "type_boosters"); }));
 
 export var BATTLE_SHOP_POKEMON_OFFERS = [
   { key: "pokemon_100", price: 100, excludeFossils: true },
   { key: "pokemon_500", price: 500, excludeFossils: false }
 ];
-
-export var BATTLE_SHOP_CHOICE_LABELS = Object.freeze({
-  "choice_berry_fast": "Bacca a crescita veloce a scelta",
-  "choice_berry_slow": "Bacca a crescita lenta a scelta",
-  "choice_tm": "MT acquistabile a scelta",
-  "choice_evolution": "Strumento evolutivo a scelta",
-  "choice_incense": "Aroma a scelta",
-  "choice_type_booster": "Strumento potenziatore del Tipo a scelta"
-});
-
-export var BATTLE_SHOP_POKEMON_LABELS = Object.freeze({
-  "pokemon_100": "Pokémon a scelta max Lv allenabile (no Fossile, no Legend)",
-  "pokemon_500": "Pokémon a scelta max Lv allenabile (no Legend)"
-});

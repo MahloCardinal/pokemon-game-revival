@@ -8,6 +8,7 @@ import { listAdminControlledBattles, loadAdminControlledBattle, resolveAuthorita
 import { appendAdminGlobalActivityMessage } from "../api/activity-feed.js";
 import { getSupabaseClient } from "../api/supabase.js";
 import { getInventoryItemByIndex } from "../data/items.js";
+import { messageDescriptor } from "./i18n.js";
 
 var activeAdminBattleRealtimeChannel = null;
 var activeAdminBattleRealtimePlayerId = "";
@@ -40,7 +41,7 @@ export function refreshAdminBattles(options) {
   return listAdminControlledBattles().then(function (result) {
     state.adminBattles.loading = false;
     if (!result.ok) {
-      state.adminBattles.error = result.message || "Impossibile caricare le sfide.";
+      state.adminBattles.error = messageDescriptor("admin.loadBattlesFailed");
       state.adminBattles.rows = [];
       if (state.scene && state.scene.name === "admin-battles") {
         render();
@@ -54,7 +55,7 @@ export function refreshAdminBattles(options) {
     return result;
   }).catch(function (error) {
     state.adminBattles.loading = false;
-    state.adminBattles.error = error.message || "Impossibile caricare le sfide.";
+    state.adminBattles.error = messageDescriptor("admin.loadBattlesFailed");
     if (state.scene && state.scene.name === "admin-battles") {
       render();
     }
@@ -122,7 +123,7 @@ registerAction("admin-dashboard-message-send", function () {
     notice: ""
   };
   if (!text) {
-    state.adminDashboardMessage.error = "Inserisci un testo da inviare.";
+    state.adminDashboardMessage.error = messageDescriptor("admin.enterAnnouncement");
     render();
     return;
   }
@@ -131,7 +132,7 @@ registerAction("admin-dashboard-message-send", function () {
   appendAdminGlobalActivityMessage(text).then(function (result) {
     state.adminDashboardMessage.sending = false;
     if (!result.ok) {
-      state.adminDashboardMessage.error = result.message || "Impossibile inviare la comunicazione.";
+      state.adminDashboardMessage.error = messageDescriptor("admin.sendAnnouncementFailed");
       state.adminDashboardMessage.notice = "";
       render();
       return result;
@@ -140,13 +141,13 @@ registerAction("admin-dashboard-message-send", function () {
       text: "",
       sending: false,
       error: "",
-      notice: "Comunicazione inviata."
+      notice: messageDescriptor("admin.announcementSent")
     };
     render();
     return result;
   }).catch(function (error) {
     state.adminDashboardMessage.sending = false;
-    state.adminDashboardMessage.error = error.message || "Impossibile inviare la comunicazione.";
+    state.adminDashboardMessage.error = messageDescriptor("admin.sendAnnouncementFailed");
     state.adminDashboardMessage.notice = "";
     render();
   });
@@ -207,7 +208,7 @@ function refreshAuthoritativeAdminBattle(playerAuthUserId, battleId) {
   }).then(function (result) {
     if (generation === activeAdminBattleRefreshGeneration && state.scene === scene) {
       if (result.ok && !result.battle) { handleAdminBattleDeleted(playerAuthUserId); }
-      else if (!result.ok) { state.saveStatus = { state: "error", message: result.message || "Impossibile aggiornare la sfida." }; }
+      else if (!result.ok) { state.saveStatus = { state: "error", message: messageDescriptor("admin.updateBattleFailed") }; }
       render({ scrollBattleLogToBottom: true });
     }
     return result;
@@ -215,7 +216,7 @@ function refreshAuthoritativeAdminBattle(playerAuthUserId, battleId) {
 }
 
 function refreshOpenAdminBattle(playerAuthUserId, battleId) {
-  if (!battleId) { return Promise.resolve({ ok: false, message: "Identificativo battaglia mancante." }); }
+  if (!battleId) { return Promise.resolve({ ok: false, code: "missing_battle_id" }); }
   if (activeAdminBattleRefresh) { activeAdminBattleRefreshDirty = true; return activeAdminBattleRefresh; }
   var generation = activeAdminBattleRefreshGeneration;
   function drainNotifications() {
@@ -286,7 +287,7 @@ export function openAdminBattle(playerAuthUserId, battleId) {
   loadAuthoritativeAdminBattlePages(playerAuthUserId, battleId, 0).then(function (result) {
     var scene;
     if (!result.ok || !result.battle) {
-      openMessage([result.message || "Sfida non trovata."], { title: "Sfide in corso" });
+      openMessage([messageDescriptor("admin.battleNotFound")], { title: messageDescriptor("admin.activeBattlesTitle") });
       setScene({ name: "admin-battles" }, { history: "replace" });
       return;
     }
@@ -294,7 +295,7 @@ export function openAdminBattle(playerAuthUserId, battleId) {
     setScene(scene, { history: "replace" });
     syncAdminBattleRealtime(scene.playerAuthUserId, scene.authoritativeBattleId);
   }).catch(function (error) {
-    openMessage([error.message || "Impossibile aprire la sfida."], { title: "Sfide in corso" });
+    openMessage([messageDescriptor("admin.openBattleFailed")], { title: messageDescriptor("admin.activeBattlesTitle") });
     setScene({ name: "admin-battles" }, { history: "replace" });
   });
 }
@@ -320,7 +321,7 @@ function runAuthoritativeAdminAction(scene, commandType, payload, operation) {
   var canonicalPayload = JSON.stringify({ commandType: commandType, payload: payload });
   var pending = scene.authoritativeAdminRetryCommand;
   if (pending && pending.canonicalPayload !== canonicalPayload) {
-    openMessage(["Esiste un comando admin con esito incerto. Riprova la stessa azione oppure aggiorna la sfida."], { title: "Sfide in corso" });
+    openMessage([messageDescriptor("admin.pendingUncertainCommand")], { title: messageDescriptor("admin.activeBattlesTitle") });
     return Promise.resolve({ ok: false, uncertain: true });
   }
   pending = pending || {
@@ -342,9 +343,9 @@ function runAuthoritativeAdminAction(scene, commandType, payload, operation) {
         refreshOpenAdminBattle(scene.playerAuthUserId, scene.authoritativeBattleId);
         return result;
       }
-      openMessage([result.uncertain
-        ? "Esito del comando incerto. Riprova la stessa azione per recuperare la ricevuta."
-        : result.message || "Azione admin non riuscita."], { title: "Sfide in corso" });
+      openMessage([messageDescriptor(result.uncertain ? "admin.uncertainReceipt" : "admin.actionFailed")], {
+        title: messageDescriptor("admin.activeBattlesTitle")
+      });
       render();
       return result;
     }
@@ -364,7 +365,7 @@ function runAuthoritativeAdminAction(scene, commandType, payload, operation) {
     return result;
   }).catch(function (error) {
     scene.authoritativeCommandPending = false;
-    openMessage([error.message || "Esito del comando incerto. Riprova la stessa azione."], { title: "Sfide in corso" });
+    openMessage([messageDescriptor("admin.uncertainAction")], { title: messageDescriptor("admin.activeBattlesTitle") });
     render();
     return { ok: false, message: error.message };
   });

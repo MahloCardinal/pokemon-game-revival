@@ -1,4 +1,4 @@
-import { LOG_LIBRARY, MOVE_LIBRARY } from "./moves.js";
+import { MOVE_LIBRARY } from "./moves.js";
 import { ITEM_LIBRARY, itemsSortedByIndex } from "./items.js";
 import { SPECIES_LIBRARY as SPECIES_LIBRARY_I } from "./species_I.js";
 import { SPECIES_LIBRARY as SPECIES_LIBRARY_II } from "./species_II.js";
@@ -10,7 +10,6 @@ const ITEM_LIBRARY_BY_INDEX = itemsSortedByIndex(ITEM_LIBRARY);
 import { HP_BY_LEVEL, PW_BY_LEVEL, STATS_BY_LEVEL, STAT_CAP_LEVELS, maxHpForLevel, maxPowerForLevel, maxStatsForLevel, clampToLimits } from "./stat-tables.js";
 
 export const GDR_DATA = {
-  logLibrary: LOG_LIBRARY,
   moveLibrary: MOVE_LIBRARY,
   itemLibrary: ITEM_LIBRARY_BY_INDEX,
   speciesLibrary: SPECIES_LIBRARY,
@@ -25,7 +24,6 @@ export const GDR_DATA = {
 
 export {
   ITEM_LIBRARY,
-  LOG_LIBRARY,
   MOVE_LIBRARY,
   SPECIES_LIBRARY,
   CAPTURE_ZONES as ZONES,

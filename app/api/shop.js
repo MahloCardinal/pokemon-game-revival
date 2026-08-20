@@ -19,7 +19,7 @@ async function userAndClient() {
   var client = getSupabaseClient();
   var user;
   if (!client) {
-    return { ok: false, message: "Configurazione Supabase mancante." };
+    return { ok: false, message: "Missing Supabase configuration." };
   }
   user = await currentUserId(client);
   if (!user.ok) {

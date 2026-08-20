@@ -366,10 +366,10 @@ export function applyPlayerSave(save) {
     return slot && slot.status === "withdraw_pending";
   });
   state.pendingActivity = state.ordinaryProgression
-    ? { type: "ordinary_progression", label: "Progressione battaglia in corso" }
+    ? { type: "ordinary_progression" }
     : state.trainingProgression
-    ? { type: "training_progression", label: "Premio Zona Allenamento in corso" }
-    : pendingDaycareSlot ? { type: "daycare_withdraw", label: "Ritiro Pokemon in corso", slotIndex: pendingDaycareSlot.slotIndex } : null;
+    ? { type: "training_progression" }
+    : pendingDaycareSlot ? { type: "daycare_withdraw", slotIndex: pendingDaycareSlot.slotIndex } : null;
   resetBoxFilter();
   state.pendingBoxUpserts = [];
   state.pendingBoxDeletes = [];

@@ -2,6 +2,7 @@ import { root, state } from "./game-state.js";
 import { renderConfirmDialog, renderMessageDialog } from "../view/dialogs.js";
 import { renderDialogLayer } from "./renderer.js";
 import { registerAction } from "./action-registry.js";
+import { textDescriptor } from "./i18n.js";
 
 export function openMessage(lines, options) {
   options = options || {};
@@ -9,7 +10,7 @@ export function openMessage(lines, options) {
     type: "message",
     title: options.title || "",
     lines: lines,
-    closeLabel: options.closeLabel || "Chiudi",
+    closeLabel: options.closeLabel || textDescriptor("ui.dialogs.close"),
     closeClass: options.closeClass || "button-primary",
     onClose: options.onClose || null,
     pokemon: options.pokemon || null,
@@ -25,7 +26,7 @@ export function openConfirm(title, lines, onConfirm, options) {
     type: "confirm",
     title: title,
     lines: lines,
-    confirmLabel: options.confirmLabel || "Conferma",
+    confirmLabel: options.confirmLabel || textDescriptor("ui.dialogs.confirm"),
     confirmClass: options.confirmClass || "button-danger",
     onConfirm: onConfirm,
     requireButtonClose: !!options.requireButtonClose
@@ -49,7 +50,7 @@ export function openInlineConfirm(title, lines, onConfirm, options) {
     inline: true,
     title: title,
     lines: lines,
-    confirmLabel: options.confirmLabel || "Conferma",
+    confirmLabel: options.confirmLabel || textDescriptor("ui.dialogs.confirm"),
     confirmClass: options.confirmClass || "button-danger",
     onConfirm: onConfirm
   };
@@ -64,7 +65,7 @@ export function openInlineMessage(lines, options) {
     inline: true,
     title: options.title || "",
     lines: lines,
-    closeLabel: options.closeLabel || "Chiudi",
+    closeLabel: options.closeLabel || textDescriptor("ui.dialogs.close"),
     closeClass: options.closeClass || "button-primary"
   };
   root.insertAdjacentHTML("beforeend", renderMessageDialog(state.dialog));

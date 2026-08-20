@@ -1,10 +1,30 @@
 // Presentation assets are listed explicitly. Display labels and locale data must
 // never be used to derive a file name.
 
+export var TYPE_ASSET_PATHS = Object.freeze({
+  normal: "/assets/img_type/normale.webp",
+  fire: "/assets/img_type/fuoco.webp",
+  water: "/assets/img_type/acqua.webp",
+  electric: "/assets/img_type/elettro.webp",
+  grass: "/assets/img_type/erba.webp",
+  ice: "/assets/img_type/ghiaccio.webp",
+  fighting: "/assets/img_type/lotta.webp",
+  poison: "/assets/img_type/veleno.webp",
+  ground: "/assets/img_type/terra.webp",
+  flying: "/assets/img_type/volante.webp",
+  psychic: "/assets/img_type/psico.webp",
+  bug: "/assets/img_type/coleottero.webp",
+  rock: "/assets/img_type/roccia.webp",
+  ghost: "/assets/img_type/spettro.webp",
+  dragon: "/assets/img_type/drago.webp",
+  dark: "/assets/img_type/buio.webp",
+  steel: "/assets/img_type/acciaio.webp",
+  fairy: "/assets/img_type/folletto.webp"
+});
+
 export var CAPTURE_ZONE_ASSET_PATHS = Object.freeze({
   viridian_forest: Object.freeze({
     card: "/assets/img_zone/bosco_smeraldo_bottone.webp",
-    presentationKey: "capture.viridian_forest",
     presentation: "/assets/img_zone/bosco_smeraldo_presentazione.webp",
     background: Object.freeze({
       desktop: "/assets/img_zone/bosco_smeraldo_desktop.webp",
@@ -13,7 +33,6 @@ export var CAPTURE_ZONE_ASSET_PATHS = Object.freeze({
   }),
   mt_moon: Object.freeze({
     card: "/assets/img_zone/monte_luna_bottone.webp",
-    presentationKey: "capture.mt_moon",
     presentation: "/assets/img_zone/monte_luna_presentazione.webp",
     background: Object.freeze({
       desktop: "/assets/img_zone/monte_luna_desktop.webp",
@@ -22,7 +41,6 @@ export var CAPTURE_ZONE_ASSET_PATHS = Object.freeze({
   }),
   sea: Object.freeze({
     card: "/assets/img_zone/mare_bottone.webp",
-    presentationKey: "capture.sea",
     presentation: "/assets/img_zone/mare_presentazione.webp",
     background: Object.freeze({
       desktop: "/assets/img_zone/mare_desktop.webp",
@@ -31,7 +49,6 @@ export var CAPTURE_ZONE_ASSET_PATHS = Object.freeze({
   }),
   ghost_tower: Object.freeze({
     card: "/assets/img_zone/torre_fantasma_bottone.webp",
-    presentationKey: "capture.ghost_tower",
     presentation: "/assets/img_zone/torre_fantasma_presentazione.webp",
     background: Object.freeze({
       desktop: "/assets/img_zone/torre_fantasma_desktop.webp",
@@ -40,7 +57,6 @@ export var CAPTURE_ZONE_ASSET_PATHS = Object.freeze({
   }),
   safari_zone: Object.freeze({
     card: "/assets/img_zone/safari_bottone.webp",
-    presentationKey: "capture.safari_zone",
     presentation: "/assets/img_zone/safari_presentazione.webp",
     background: Object.freeze({
       desktop: "/assets/img_zone/safari_desktop.webp",
@@ -49,7 +65,6 @@ export var CAPTURE_ZONE_ASSET_PATHS = Object.freeze({
   }),
   swamp: Object.freeze({
     card: "/assets/img_zone/palude_bottone.webp",
-    presentationKey: "capture.swamp",
     presentation: "/assets/img_zone/palude_presentazione.webp",
     background: Object.freeze({
       desktop: "/assets/img_zone/palude_desktop.webp",
@@ -58,7 +73,6 @@ export var CAPTURE_ZONE_ASSET_PATHS = Object.freeze({
   }),
   desert: Object.freeze({
     card: "/assets/img_zone/deserto_bottone.webp",
-    presentationKey: "capture.desert",
     presentation: "/assets/img_zone/deserto_presentazione.webp",
     background: Object.freeze({
       desktop: "/assets/img_zone/deserto_desktop.webp",
@@ -84,20 +98,15 @@ export function captureZoneAssetPaths(zoneKey) {
   return CAPTURE_ZONE_ASSET_PATHS[String(zoneKey || "")] || null;
 }
 
-export function captureZonePresentationKey(zoneKey) {
-  var assets = captureZoneAssetPaths(zoneKey);
-  return assets ? assets.presentationKey : "";
-}
-
 export function scenePresentationAssetPath(presentationKey) {
   var key = String(presentationKey || "");
   var directPath = SCENE_PRESENTATION_ASSET_PATHS[key];
-  var zoneKey;
   if (directPath) {
     return directPath;
   }
-  zoneKey = Object.keys(CAPTURE_ZONE_ASSET_PATHS).find(function(candidate) {
-    return CAPTURE_ZONE_ASSET_PATHS[candidate].presentationKey === key;
-  });
-  return zoneKey ? CAPTURE_ZONE_ASSET_PATHS[zoneKey].presentation : "";
+  if (key.indexOf("capture.") === 0) {
+    var zoneAssets = captureZoneAssetPaths(key.slice("capture.".length));
+    return zoneAssets ? zoneAssets.presentation : "";
+  }
+  return "";
 }

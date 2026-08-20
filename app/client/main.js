@@ -8,7 +8,7 @@ import { initializeBattleRuntime, onBattleRuntimeChange } from "./battle-scene-l
 import { broadcastAuthoritativeRevision, initializeTeamBoxRuntime } from "./runtime-state.js";
 import { handleCaptureEncounterRuntimeInvalidation, initializeCaptureEncounterRuntime } from "./capture-handler.js";
 import { render, setScene } from "./renderer.js";
-import { LOCALE_CHANGE_EVENT } from "./i18n.js";
+import { LOCALE_CHANGE_EVENT, t } from "./i18n.js";
 import { bindHistoryNavigation } from "./router.js";
 import { initializeSession } from "./session.js";
 import { getResolvedInventoryItem } from "../data/items.js";
@@ -314,7 +314,7 @@ root.addEventListener("change", function (event) {
       } else {
         var placeholder = document.createElement("span");
         placeholder.className = "choice-menu-placeholder";
-        placeholder.textContent = state.scene.name === "capture" ? "Tipo" : "Tutti";
+        placeholder.textContent = t(state.scene.name === "capture" ? "ui.capture.type" : "ui.box.all");
         summary.appendChild(placeholder);
       }
     }

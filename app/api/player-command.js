@@ -1,4 +1,4 @@
-import { getSupabaseClient, translateSupabaseErrorMessage } from "./supabase.js";
+import { getSupabaseClient } from "./supabase.js";
 
 var PENDING_COMMAND_STORAGE_KEY = "pokemon-game-revival:pending-player-commands";
 var PLAYER_REVISION_CONFLICT_COOLDOWN_MS = 1500;
@@ -36,15 +36,15 @@ async function runRpc(name, params) {
   var client = getSupabaseClient();
   var result;
   if (!client) {
-    return { ok: false, message: "Configurazione Supabase mancante." };
+    return { ok: false, code: "missing_configuration" };
   }
   try {
     result = await client.rpc(name, params);
   } catch (error) {
-    return { ok: false, message: translateSupabaseErrorMessage(error && error.message || "Comando giocatore non riuscito.") };
+    return { ok: false, code: "player_rpc_failed", detail: error && error.message || "" };
   }
   if (result.error) {
-    return { ok: false, message: translateSupabaseErrorMessage(result.error.message || "Comando giocatore non riuscito.") };
+    return { ok: false, code: result.error.code || "player_rpc_failed", detail: result.error.message || "" };
   }
   return { ok: true, projection: result.data };
 }
@@ -113,7 +113,6 @@ async function revisionConflictResult(expectedRevision, message, currentRevision
   var response = {
     ok: false,
     applied: false,
-    message: message || "Lo stato del giocatore è cambiato. Dati aggiornati: riprova il comando.",
     code: "revision_conflict",
     uncertain: false,
     projection: projection,
@@ -140,7 +139,7 @@ async function executePlayerCommand(name, params, key) {
   try {
     result = await client.rpc(name, Object.assign({ p_command_id: commandId }, params));
   } catch (error) {
-    return { ok: false, message: translateSupabaseErrorMessage(error && error.message || "Comando giocatore non riuscito."), uncertain: true };
+    return { ok: false, code: "player_command_transport_failed", detail: error && error.message || "", uncertain: true };
   }
   if (result.error) {
     if (result.error.code) {
@@ -149,14 +148,14 @@ async function executePlayerCommand(name, params, key) {
     if (String(result.error.code || "") === "40001") {
       return revisionConflictResult(
         params.p_expected_revision,
-        "Lo stato del giocatore è cambiato. Dati aggiornati: riprova il comando.",
+        "player revision conflict",
         0
       );
     }
     return {
       ok: false,
-      message: translateSupabaseErrorMessage(result.error.message || "Comando giocatore non riuscito."),
       code: result.error.code || "",
+      detail: result.error.message || "",
       uncertain: !result.error.code
     };
   }
@@ -164,7 +163,7 @@ async function executePlayerCommand(name, params, key) {
   if (result.data && result.data.ok === false && result.data.conflict === "player_revision") {
     return revisionConflictResult(
       params.p_expected_revision,
-      "Lo stato del giocatore è cambiato. Dati aggiornati: riprova il comando.",
+      "player revision conflict",
       result.data.player_revision
     );
   }
@@ -178,7 +177,7 @@ export async function runPlayerCommand(name, params) {
   var operation;
   var expectedRevision = Math.max(0, Number(params && params.p_expected_revision) || 0);
   if (!client) {
-    return { ok: false, message: "Configurazione Supabase mancante." };
+    return { ok: false, code: "missing_configuration" };
   }
   if (playerRevisionConflictCooldown && playerRevisionConflictCooldown.expectedRevision === expectedRevision
     && Date.now() < playerRevisionConflictCooldown.until) {

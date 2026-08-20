@@ -2,12 +2,10 @@ import { getInventoryItemByIndex, go_goggles, silph_scope } from "./items.js";
 
 var ZONE_ACCESS_REQUIREMENTS = {
   ghost_tower: {
-    item: silph_scope,
-    message: "Ti serve la Spettrosonda!"
+    item: silph_scope
   },
   desert: {
-    item: go_goggles,
-    message: "Ti servono gli Occhialoni!"
+    item: go_goggles
   }
 };
 

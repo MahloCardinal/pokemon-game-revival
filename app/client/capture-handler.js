@@ -1,4 +1,6 @@
 import { registerAction } from "./action-registry.js";
+import { pokemonDisplayName, teamViolationLines } from "./entity-text.js";
+import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 import {
   battleTypeForCapture,
   ensureFinalBattleDisplaySnapshot,
@@ -75,7 +77,7 @@ function pendingCaptureStart(userId, input) {
     pending = { userId: userId, encounterId: encounterId, commandId: globalThis.crypto.randomUUID(),
       input: normalizedInput, payload: captureStartPayload(normalizedInput) };
     try { window.sessionStorage.setItem(storageKey, JSON.stringify(pending)); } catch (error) {
-      throw new Error("Impossibile memorizzare l'avvio della battaglia di cattura.");
+      throw new Error("Unable to persist the pending capture battle start.");
     }
   }
   return Object.assign({ storageKey: storageKey }, pending);
@@ -147,9 +149,9 @@ registerAction("capture-search", async function(element) {
   });
   authoritativeCaptureCommandPending = false;
   if (!authoritativeResult.ok) {
-    var searchMessage = String(authoritativeResult.message || "");
-    openMessage([/complete the active battle before searching for a Pokemon|Completa l'attività in corso prima di cercare Pokémon/i.test(searchMessage)
-      ? "Completa l'attività in corso prima di cercare Pokémon" : searchMessage || "Ricerca non riuscita."], { title: "Ricerca" });
+    openMessage([messageDescriptor(authoritativeResult.code === "activity_in_progress" ? "capture.activeBattle" : "capture.searchFailed")], {
+      title: messageDescriptor("capture.searchTitle")
+    });
     return;
   }
   applyPlayerSave(saveFromAuthoritativeProjection(authoritativeResult.projection));
@@ -174,7 +176,7 @@ registerAction("capture-start-fight", function(element) {
   var available = state.team.filter(function(p) { return p != null; });
   violation = findTeamCompositionViolation(available);
   if (violation) {
-    openMessage(violation.lines, { title: "Cattura" });
+    openMessage(teamViolationLines(violation), { title: textDescriptor("ui.zoneCards.zones.title") });
     return;
   }
   if (available.length === 1) {
@@ -221,7 +223,7 @@ registerAction("capture-flee", async function() {
       return;
     }
     if (result.code === "rate_limited") {
-      openMessage([result.message || "Troppe richieste. Attendi prima di riprovare."], { title: "Fuga" });
+      openMessage([messageDescriptor("capture.rateLimited")], { title: messageDescriptor("capture.fleeTitle") });
       return;
     }
     refreshed = await refreshCaptureEncounterState(captureScene);
@@ -230,7 +232,7 @@ registerAction("capture-flee", async function() {
       return;
     }
     if (result.uncertain || !refreshed || captureEncounterForScene(captureScene)) {
-      openMessage([result.message || "Impossibile verificare la fuga dal Pokémon selvatico."], { title: "Fuga" });
+      openMessage([messageDescriptor("capture.fleeFailed")], { title: messageDescriptor("capture.fleeTitle") });
     }
   } finally {
     authoritativeCaptureCommandPending = false;
@@ -252,7 +254,7 @@ function updateCaptureSearchResultInline(scene, options) {
     state.captureWildCard = null;
     setHtml(wildCardWrap, wildPokemon
       ? renderPokemonCard(wildPokemon)
-      : '<div class="empty-state capture-wild-placeholder">Nessun Pokémon selvatico è ancora apparso</div>');
+      : '<div class="empty-state capture-wild-placeholder">' + t("ui.capture.noWildPokemon") + '</div>');
     wildCardWrap.classList.remove("wild-card-wrap--appearing");
     if (shouldAnimate) {
       void wildCardWrap.offsetWidth;
@@ -268,11 +270,12 @@ function updateCaptureSearchResultInline(scene, options) {
 
 function renderCaptureSearchActions(scene) {
   var wildPokemon = captureWildPokemonForScene(scene);
+  var wildPokemonName = wildPokemon ? pokemonDisplayName(wildPokemon) : "";
   return [
-    button("Cerca", "capture-search", wildPokemon ? "disabled" : "", "button-accent capture-search-button"),
-    button("Fuggi", "capture-flee", wildPokemon ? "" : "disabled", "button-ghost capture-flee-button"),
+    button(t("ui.capture.search"), "capture-search", wildPokemon ? "disabled" : "", "button-accent capture-search-button"),
+    button(t("ui.capture.flee"), "capture-flee", wildPokemon ? "" : "disabled", "button-ghost capture-flee-button"),
     button(
-      wildPokemon ? "Combatti contro " + wildPokemon.name : "Combatti",
+      wildPokemon ? t("ui.capture.fightPokemon", { pokemon: wildPokemonName }) : t("ui.capture.fight"),
       "capture-start-fight",
       wildPokemon ? "" : "disabled",
       "button-primary capture-fight-button"
@@ -435,13 +438,11 @@ export function updateCaptureTeamRuntimeInline() {
 
 async function buildBattleScene(captureScene, rosterIndex) {
   var violation = findTeamCompositionViolation(state.team.filter(Boolean));
-  var playerName = String(state.playerName || state.auth.userLabel || "").trim() || "Giocatore";
-  var wildPokemonName = captureScene.wildPokemon && captureScene.wildPokemon.name ? captureScene.wildPokemon.name : "Pokémon selvatico";
   if (enforceBattleRuntimeSceneLock()) {
     return;
   }
   if (violation) {
-    openMessage(violation.lines, { title: "Cattura" });
+    openMessage(teamViolationLines(violation), { title: textDescriptor("ui.zoneCards.zones.title") });
     return;
   }
   syncCaptureSceneToActiveEncounter(captureScene);
@@ -451,21 +452,21 @@ async function buildBattleScene(captureScene, rosterIndex) {
   var pending = null;
   try {
     var client = getSupabaseClient();
-    var user = client ? await currentUserId(client) : { ok: false, message: "Configurazione Supabase mancante." };
-    if (!user.ok) { throw new Error(user.message || "Sessione utente non disponibile."); }
+    var user = client ? await currentUserId(client) : { ok: false, code: "missing_supabase_config" };
+    if (!user.ok) { throw new Error("capture_user_unavailable"); }
     if (!await refreshCaptureEncounterState(captureScene)) {
-      throw new Error("Impossibile aggiornare lo stato prima della battaglia di cattura.");
+      throw new Error("capture_refresh_failed");
     }
     if (state.ordinaryProgression) {
       authoritativeCaptureCommandPending = false;
       if (!openActiveProgressionScene()) {
-        openMessage(["Completa prima la progressione della battaglia precedente."], { title: "Cattura" });
+        openMessage([messageDescriptor("capture.previousProgression")], { title: messageDescriptor("capture.title") });
       }
       return;
     }
     if (!captureScene.encounterId) {
       authoritativeCaptureCommandPending = false;
-      openMessage(["L'incontro non è più disponibile."], { title: "Cattura" });
+      openMessage([messageDescriptor("capture.encounterUnavailable")], { title: messageDescriptor("capture.title") });
       return;
     }
     var input = { expectedPlayerRevision: state.authoritativeRevision, runtimeOwnerId: ownerId,
@@ -490,13 +491,13 @@ async function buildBattleScene(captureScene, rosterIndex) {
     }
     await clearPendingCaptureStart(pending);
     authoritativeCaptureCommandPending = false;
-    openMessage([result.message || "Impossibile avviare la battaglia di cattura."], { title: "Cattura" });
+    openMessage([messageDescriptor("capture.startFailed")], { title: messageDescriptor("capture.title") });
   } catch (error) {
     authoritativeCaptureCommandPending = false;
     if (pending) {
       await recoverAuthoritativeCaptureStart({ uncertain: true, message: error.message }, pending, captureScene);
     } else {
-      openMessage([error.message || "Impossibile avviare la battaglia di cattura."], { title: "Cattura" });
+      openMessage([messageDescriptor("capture.startFailed")], { title: messageDescriptor("capture.title") });
     }
   }
   return;
@@ -521,9 +522,9 @@ async function recoverAuthoritativeCaptureStart(startResult, pending, captureSce
       return;
     }
     if (!readResult.uncertain) { await clearPendingCaptureStart(pending); }
-    openMessage([startResult.message || "Impossibile verificare l'avvio della battaglia di cattura."], { title: "Cattura" });
+    openMessage([messageDescriptor("capture.verifyStartFailed")], { title: messageDescriptor("capture.title") });
   } catch (error) {
     authoritativeCaptureCommandPending = false;
-    openMessage([startResult.message || "Impossibile verificare l'avvio della battaglia di cattura."], { title: "Cattura" });
+    openMessage([messageDescriptor("capture.verifyStartFailed")], { title: messageDescriptor("capture.title") });
   }
 }

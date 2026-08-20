@@ -1,5 +1,6 @@
-import { getItemByIndex, itemDisplayDescription } from "../data/items.js";
-import { formatDescription } from "../engine/index.js";
+import { getItemByIndex } from "../data/items.js";
+import { itemDisplayDescription, itemDisplayName, moveDisplayDescription, moveDisplayName, speciesDisplayName } from "./entity-text.js";
+import { t } from "./i18n.js";
 import {
   escapeHtml,
   renderImage,
@@ -36,8 +37,8 @@ function itemByIndex(itemIndex) {
 }
 
 function renderPokemonCardMove(move) {
-  var description = formatDescription(move);
-  return '<button type="button" class="move-button pokemon-move-line" disabled><span class="move-name">' + escapeHtml(move.name) + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span></button>";
+  var description = moveDisplayDescription(move);
+  return '<button type="button" class="move-button pokemon-move-line" disabled><span class="move-name">' + escapeHtml(moveDisplayName(move)) + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span></button>";
 }
 
 function pokemonCardTypeStyle(types) {
@@ -65,24 +66,25 @@ export function renderPokemonCard(pokemon, options) {
   var imageAttrs = options.imageAttrs || "";
   var extraContent = options.extraContent || "";
   var currentHp = options.currentHp !== undefined ? options.currentHp : pokemon.maxHp;
-  var vitalsText = "Lv: " + pokemon.level + "\u00a0\u00a0\u00a0\u00a0PS: " + currentHp;
-  var expText = "Exp: " + pokemon.expCurrent + "/" + pokemon.expCap;
+  var vitalsText = t("common.units.levelShort") + ": " + pokemon.level + "\u00a0\u00a0\u00a0\u00a0" + t("common.units.hpShort") + ": " + currentHp;
+  var expText = t("common.units.experienceShort") + ": " + pokemon.expCurrent + "/" + pokemon.expCap;
   var heldItemDescription = heldItem ? itemDisplayDescription(heldItem) : "";
+  var heldItemName = heldItem ? itemDisplayName(heldItem) : "";
   var heldItemClass = "pokemon-card-held-item" + (heldItemDescription ? " has-held-item-tooltip" : "");
   var heldItemAttrs = heldItemDescription
-    ? ' tabindex="0" aria-label="' + escapeHtml(heldItem.name + ": " + heldItemDescription) + '" data-held-item-tooltip="' + escapeHtml(heldItemDescription) + '"'
+    ? ' tabindex="0" aria-label="' + escapeHtml(heldItemName + ": " + heldItemDescription) + '" data-held-item-tooltip="' + escapeHtml(heldItemDescription) + '"'
     : "";
   var heldItemMarkup = heldItem
     ? [
       '      <p class="' + heldItemClass + '"' + heldItemAttrs + ">",
-      heldItem.image ? renderImage(getItemImage(heldItem.image), heldItem.name, "pokemon-card-held-item-image", imageAttrs) : "",
-      '        <span>' + escapeHtml(heldItem.name) + "</span>",
+      heldItem.image ? renderImage(getItemImage(heldItem.image), heldItemName, "pokemon-card-held-item-image", imageAttrs) : "",
+      '        <span>' + escapeHtml(heldItemName) + "</span>",
       "      </p>"
     ].join("")
     : [
       '      <p class="pokemon-card-held-item pokemon-card-held-item-empty" aria-hidden="true">',
       '        <span class="pokemon-card-held-item-image pokemon-card-held-item-image-empty"></span>',
-      "        <span>Nessuno</span>",
+      "        <span>" + escapeHtml(t("common.actions.none")) + "</span>",
       "      </p>"
     ].join("");
   var cardClassName = "pokemon-card " + (options.className || "");
@@ -95,7 +97,7 @@ export function renderPokemonCard(pokemon, options) {
     "    </div>",
     '    <div class="pokemon-card-main">',
     '      <div class="pokemon-card-name-row">',
-    '        <h3 class="pokemon-card-name">' + escapeHtml(pokemon.name) + "</h3>",
+    '        <h3 class="pokemon-card-name">' + escapeHtml(speciesDisplayName(pokemon)) + "</h3>",
     pokemon.gender ? renderImage(getGenderImage(pokemon.gender), pokemon.gender, "gender-icon", imageAttrs) : "",
     "      </div>",
     '      <div class="pokemon-card-type-row">',

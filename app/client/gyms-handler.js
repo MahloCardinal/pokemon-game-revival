@@ -18,8 +18,9 @@ import * as Engine from "../engine/index.js";
 import { adventurePhaseIsCompleted } from "./mission-runtime.js";
 import { authoritativeBattleRuntimeOwnerId, getAuthoritativeBattle, startAuthoritativeGymBattle, startAuthoritativeLeagueBattle } from "../api/battle.js";
 import { isAdminControlledBattleType } from "../data/admin-battles.js";
+import { pokemonDisplayName, teamViolationLines } from "./entity-text.js";
+import { messageDescriptor } from "./i18n.js";
 
-var ADVENTURE_MISSION_REQUIREMENT = "Completa le Missioni avventura necessarie";
 var gymBattleStartPending = false;
 
 function officialChallengeOverCapPokemon(team) {
@@ -34,7 +35,7 @@ function blockOfficialChallengeIfOverCap(team, title) {
   if (!pokemon) {
     return false;
   }
-  openMessage([pokemon.name + " è sopra il livello massimo consentito dalle Medaglie attuali e non può partecipare a sfide ufficiali."], { title: title || "Sfida ufficiale" });
+  openMessage([messageDescriptor("gyms.overLevelCap", { pokemon: pokemonDisplayName(pokemon) })], { title: title || messageDescriptor("gyms.officialTitle") });
   return true;
 }
 
@@ -43,7 +44,7 @@ function blockChallengeIfTeamCompositionInvalid(team, title) {
   if (!violation) {
     return false;
   }
-  openMessage(violation.lines, { title: title || "Sfida" });
+  openMessage(teamViolationLines(violation), { title: title });
   return true;
 }
 
@@ -53,7 +54,7 @@ function blockGymChallengeIfPortItemsInvalid(team, cityKey, title) {
   if (!violation) {
     return false;
   }
-  openMessage(violation.lines, { title: title || "Palestra" });
+  openMessage(teamViolationLines(violation), { title: title });
   return true;
 }
 
@@ -67,7 +68,7 @@ function blockGymChallengeIfSuperEffectivePokemonInvalid(team, cityKey, leader, 
   if (!violation) {
     return false;
   }
-  openMessage(violation.lines, { title: title || "Palestra" });
+  openMessage(teamViolationLines(violation), { title: title });
   return true;
 }
 
@@ -76,7 +77,7 @@ function blockKantoLeagueIfPortItemsInvalid(team, title) {
   if (!violation) {
     return false;
   }
-  openMessage(violation.lines, { title: title || "Lega Kanto" });
+  openMessage(teamViolationLines(violation), { title: title });
   return true;
 }
 
@@ -85,7 +86,7 @@ function blockOfficialChallengeIfOhkoMovesInvalid(team, title) {
   if (!violation) {
     return false;
   }
-  openMessage(violation.lines, { title: title || "Sfida ufficiale" });
+  openMessage(teamViolationLines(violation), { title: title });
   return true;
 }
 
@@ -106,38 +107,38 @@ registerAction("gym-leader-start", function (element) {
     playerPokemon = state.team.filter(Boolean);
     challengeStatus = kantoGymChallengeStatus(resolvedCityKey, state.trainerInfo[2]);
     if (challengeStatus.state === "completed") {
-      openMessage(["Hai già sconfitto questo capopalestra."], { title: "Palestra" });
+      openMessage([messageDescriptor("gyms.alreadyDefeated")], { title: messageDescriptor("gyms.gymTitle") });
       return;
     }
     if (challengeStatus.state === "locked") {
-      openMessage([challengeStatus.message], { title: "Palestra" });
+      openMessage([messageDescriptor("gyms.previousBadgeRequired")], { title: messageDescriptor("gyms.gymTitle") });
       return;
     }
     if (!leader || !leader.team.length) {
-      openMessage(["Questa palestra non è ancora pronta per la sfida."], { title: "Palestra" });
+      openMessage([messageDescriptor("gyms.gymUnavailable")], { title: messageDescriptor("gyms.gymTitle") });
       return;
     }
     if (!playerPokemon.length) {
-      openMessage(["Non hai Pokémon in squadra."], { title: "Palestra" });
+      openMessage([messageDescriptor("gyms.emptyTeam")], { title: messageDescriptor("gyms.gymTitle") });
       return;
     }
-    if (blockChallengeIfTeamCompositionInvalid(playerPokemon, "Palestra")) {
+    if (blockChallengeIfTeamCompositionInvalid(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
       return;
     }
-    if (blockOfficialChallengeIfOverCap(playerPokemon, "Palestra")) {
+    if (blockOfficialChallengeIfOverCap(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
       return;
     }
-    if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, "Palestra")) {
+    if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
       return;
     }
-    if (blockGymChallengeIfPortItemsInvalid(playerPokemon, resolvedCityKey, "Palestra")) {
+    if (blockGymChallengeIfPortItemsInvalid(playerPokemon, resolvedCityKey, messageDescriptor("gyms.gymTitle"))) {
       return;
     }
     if (!adventurePhaseIsCompleted(adventurePhaseForGym(resolvedCityKey))) {
-      openMessage([ADVENTURE_MISSION_REQUIREMENT + " prima di affrontare questa palestra."], { title: "Palestra" });
+      openMessage([messageDescriptor("gyms.adventureRequired")], { title: messageDescriptor("gyms.gymTitle") });
       return;
     }
-    if (blockGymChallengeIfSuperEffectivePokemonInvalid(playerPokemon, resolvedCityKey, leader, "Palestra")) {
+    if (blockGymChallengeIfSuperEffectivePokemonInvalid(playerPokemon, resolvedCityKey, leader, messageDescriptor("gyms.gymTitle"))) {
       return;
     }
     if (playerPokemon.length > 1) {
@@ -181,38 +182,38 @@ function buildGymLeaderBattleScene(gymScene, cityKey, activeIndex) {
   var battleType;
 
   if (challengeStatus.state === "completed") {
-    openMessage(["Hai già sconfitto questo capopalestra."], { title: "Palestra" });
+    openMessage([messageDescriptor("gyms.alreadyDefeated")], { title: messageDescriptor("gyms.gymTitle") });
     return Promise.resolve(false);
   }
   if (challengeStatus.state === "locked") {
-    openMessage([challengeStatus.message], { title: "Palestra" });
+    openMessage([messageDescriptor("gyms.previousBadgeRequired")], { title: messageDescriptor("gyms.gymTitle") });
     return Promise.resolve(false);
   }
   if (!leader || !leader.team.length) {
-    openMessage(["Questa palestra non è ancora pronta per la sfida."], { title: "Palestra" });
+    openMessage([messageDescriptor("gyms.gymUnavailable")], { title: messageDescriptor("gyms.gymTitle") });
     return Promise.resolve(false);
   }
   if (!playerPokemon.length) {
-    openMessage(["Non hai Pokémon in squadra."], { title: "Palestra" });
+    openMessage([messageDescriptor("gyms.emptyTeam")], { title: messageDescriptor("gyms.gymTitle") });
     return Promise.resolve(false);
   }
-  if (blockChallengeIfTeamCompositionInvalid(playerPokemon, "Palestra")) {
+  if (blockChallengeIfTeamCompositionInvalid(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
     return Promise.resolve(false);
   }
-  if (blockOfficialChallengeIfOverCap(playerPokemon, "Palestra")) {
+  if (blockOfficialChallengeIfOverCap(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
     return Promise.resolve(false);
   }
-  if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, "Palestra")) {
+  if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
     return Promise.resolve(false);
   }
-  if (blockGymChallengeIfPortItemsInvalid(playerPokemon, resolvedCityKey, "Palestra")) {
+  if (blockGymChallengeIfPortItemsInvalid(playerPokemon, resolvedCityKey, messageDescriptor("gyms.gymTitle"))) {
     return Promise.resolve(false);
   }
   if (!adventurePhaseIsCompleted(adventurePhaseForGym(resolvedCityKey))) {
-    openMessage([ADVENTURE_MISSION_REQUIREMENT + " prima di affrontare questa palestra."], { title: "Palestra" });
+    openMessage([messageDescriptor("gyms.adventureRequired")], { title: messageDescriptor("gyms.gymTitle") });
     return Promise.resolve(false);
   }
-  if (blockGymChallengeIfSuperEffectivePokemonInvalid(playerPokemon, resolvedCityKey, leader, "Palestra")) {
+  if (blockGymChallengeIfSuperEffectivePokemonInvalid(playerPokemon, resolvedCityKey, leader, messageDescriptor("gyms.gymTitle"))) {
     return Promise.resolve(false);
   }
 
@@ -253,16 +254,16 @@ function startAuthoritativeGym(cityKey, activeSlot) {
           openAuthoritativeBattleProjection(battle, readResult.events, { history: "push" });
           return true;
         }
-        openMessage([result.message || "Lo stato autoritativo è cambiato. Aggiorna la scena e riprova."], { title: "Palestra" });
+        openMessage([messageDescriptor("gyms.stateChanged")], { title: messageDescriptor("gyms.gymTitle") });
         render();
         return false;
       });
     }
-    openMessage([result.message || "Impossibile avviare la sfida in palestra."], { title: "Palestra" });
+    openMessage([messageDescriptor("gyms.gymStartFailed")], { title: messageDescriptor("gyms.gymTitle") });
     render();
     return false;
   }).catch(function (error) {
-    openMessage([error.message || "Impossibile avviare la sfida in palestra."], { title: "Palestra" });
+    openMessage([messageDescriptor("gyms.gymStartFailed")], { title: messageDescriptor("gyms.gymTitle") });
     render();
     return false;
   });
@@ -280,16 +281,16 @@ registerAction("kanto-league-start", function (element) {
   if (state.scene && state.scene.name === "gym-city" && state.scene.cityKey === "elite_four") {
     var playerPokemon = state.team.filter(Boolean);
     if (!playerPokemon.length) {
-      openMessage(["Non hai Pokémon in squadra."], { title: "Lega Kanto" });
+      openMessage([messageDescriptor("gyms.emptyTeam")], { title: messageDescriptor("gyms.leagueTitle") });
       return;
     }
-    if (blockChallengeIfTeamCompositionInvalid(playerPokemon, "Lega Kanto")) {
+    if (blockChallengeIfTeamCompositionInvalid(playerPokemon, messageDescriptor("gyms.leagueTitle"))) {
       return;
     }
-    if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, "Lega Kanto")) {
+    if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, messageDescriptor("gyms.leagueTitle"))) {
       return;
     }
-    if (blockKantoLeagueIfPortItemsInvalid(playerPokemon, "Lega Kanto")) {
+    if (blockKantoLeagueIfPortItemsInvalid(playerPokemon, messageDescriptor("gyms.leagueTitle"))) {
       return;
     }
     startKantoLeagueBattle(0, element);
@@ -353,18 +354,18 @@ export function startAuthoritativeLeague(activeSlot, expectedMemberIndex, elemen
         if (readResult.ok && readResult.projection && readResult.projection.league_state) {
           state.authoritativeLeagueState = readResult.projection.league_state;
         }
-        openMessage([result.message || "Lo stato della Lega è cambiato. Aggiorna la scena e riprova."], { title: "Lega Kanto" });
+        openMessage([messageDescriptor("gyms.leagueStateChanged")], { title: messageDescriptor("gyms.leagueTitle") });
         render();
         return false;
       });
     }
-    openMessage([result.message || "Impossibile avviare la sfida della Lega."], { title: "Lega Kanto" });
+    openMessage([messageDescriptor("gyms.leagueStartFailed")], { title: messageDescriptor("gyms.leagueTitle") });
     render();
     return false;
   }).catch(function (error) {
     kantoLeagueStartPending = false;
     if (element && element.isConnected) { element.disabled = false; }
-    openMessage([error.message || "Impossibile avviare la sfida della Lega."], { title: "Lega Kanto" });
+    openMessage([messageDescriptor("gyms.leagueStartFailed")], { title: messageDescriptor("gyms.leagueTitle") });
     render();
     return false;
   });

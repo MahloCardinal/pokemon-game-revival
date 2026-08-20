@@ -1,7 +1,7 @@
 import { ItemCategory } from "../data/items.js";
 import { GDR_DATA as DATA } from "../data/index.js";
-import { typeDisplayName } from "../data/type-chart.js";
-import { captureZoneAssetPaths } from "../data/asset-paths.js";
+import { TYPE_ASSET_PATHS, captureZoneAssetPaths } from "../data/asset-paths.js";
+import { speciesDisplayName, typeDisplayName } from "./entity-text.js";
 
 var GENDER_IMAGE_MAP = {
   male: "maschio.webp",
@@ -296,7 +296,7 @@ export function getItemDisplayImage(item) {
 }
 
 export function getTypeImage(typeName) {
-  return assetPath("img_type", lowerSnakeAssetName(typeDisplayName(typeName)));
+  return TYPE_ASSET_PATHS[String(typeName || "")] || "";
 }
 
 export function getGenderImage(gender) {
@@ -351,7 +351,9 @@ export function renderImage(src, alt, className, extraAttrs) {
 }
 
 export function renderPokemonSprite(pokemon, className, extraAttrs) {
-  var pokemonName = pokemonNameForSprite(pokemon);
+  var pokemonName = pokemon && typeof pokemon === "object" && pokemon.speciesKey
+    ? speciesDisplayName(pokemon)
+    : pokemonNameForSprite(pokemon);
   return renderImage(getPokemonImage(pokemon), pokemonName, withPokemonSpriteClass(className || "pokemon-sprite", pokemon), withPokemonSpriteAttrs(pokemon, extraAttrs));
 }
 

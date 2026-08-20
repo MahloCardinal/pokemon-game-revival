@@ -15,14 +15,6 @@ export var SHOPPING_CENTER_SECTIONS = {
   SELL: "sell"
 };
 
-export var SHOPPING_CENTER_SECTION_LABELS_IT = Object.freeze({
-  market: "Market",
-  port_market: "Mercato del Porto",
-  devon_corporation: "Devon SpA",
-  tm_shop: "Negozio MT",
-  sell: "Vendi"
-});
-
 export var SHOPPING_CENTER_CATEGORIES = {
   POKE_BALL: "poke_balls",
   HEALING: "healing_items",
@@ -39,21 +31,6 @@ export var SHOPPING_CENTER_CATEGORIES = {
   TM: "tms",
   RARE: "rare_items"
 };
-
-export var SHOPPING_CENTER_CATEGORY_LABELS_IT = Object.freeze({
-  poke_balls: "Poké Ball", healing_items: "Strumenti curativi", evolution_stones: "Pietre evolutive",
-  medicinal_herbs: "Erbe medicinali", drinks: "Bevande", vitamins: "Vitamine", port_items: "Strumenti del Porto",
-  type_boosters: "Strumenti potenziatori", devon_items: "Devon SpA", incenses: "Aromi", flutes: "Flauti",
-  evolution_items: "Strumenti evolutivi", tms: "MT", rare_items: "Strumenti rari"
-});
-
-export function shoppingCenterSectionDisplayName(sectionKey) {
-  return SHOPPING_CENTER_SECTION_LABELS_IT[sectionKey] || String(sectionKey || "");
-}
-
-function shoppingCenterCategoryDisplayName(categoryKey) {
-  return SHOPPING_CENTER_CATEGORY_LABELS_IT[categoryKey] || String(categoryKey || "");
-}
 
 export var SHOPPING_CENTER_ITEMS = [
   shopItem(i.poke_ball, SHOPPING_CENTER_SECTIONS.MARKET, SHOPPING_CENTER_CATEGORIES.POKE_BALL, 200),
@@ -243,17 +220,17 @@ function computeStockRemaining(item, state) {
 function itemAvailability(item, state) {
   var badges = normalizedBadges(state.trainerInfo && state.trainerInfo[2]);
   if (shoppingCenterItemIsUnpurchasable(item) || isItemGymRewardTM(item)) {
-    return { key: "unpurchasable", label: "Non acquistabile", canPurchase: false };
+    return { key: "unpurchasable", canPurchase: false };
   }
   if (isItemAlreadyOwned(item, state.inventory)) {
-    return { key: "already_owned", label: item && item.category === i.ItemCategory.TM ? "Già acquistata" : "Già acquistato", canPurchase: false };
+    return { key: "already_owned", canPurchase: false };
   }
   var unlockBadges = shoppingCenterItemUnlockBadges(item);
-  if (unlockBadges < 0) return { key: "unknown", label: "Non acquistabile", canPurchase: false };
+  if (unlockBadges < 0) return { key: "unknown", canPurchase: false };
   if (badges < unlockBadges) {
-    return { key: "locked_badges", label: "Acquistabili con " + unlockBadges + (unlockBadges === 1 ? " Medaglia" : " Medaglie"), canPurchase: false };
+    return { key: "locked_badges", requiredBadges: unlockBadges, canPurchase: false };
   }
-  return { key: "unlocked", label: "Acquistabili", canPurchase: true };
+  return { key: "unlocked", canPurchase: true };
 }
 
 function resolveShopEntry(item, state, fallbackGroup) {
@@ -282,9 +259,11 @@ function groupUnlockBadges(entries) {
   }, Infinity);
 }
 
-function pushGroup(groups, title, entries, purchasable) {
+function pushGroup(groups, categoryKey, availabilityKey, entries, purchasable, requiredBadges) {
   if (entries.length) groups.push({
-    title: title,
+    categoryKey: categoryKey,
+    availabilityKey: availabilityKey,
+    requiredBadges: Number(requiredBadges) || 0,
     items: entries,
     purchasable: purchasable,
     unlockBadges: groupUnlockBadges(entries),
@@ -303,28 +282,28 @@ function buildPurchaseGroups(entriesByCategory) {
   var groups = [];
   var ownedGroups = [];
   Object.keys(entriesByCategory).forEach(function (categoryName) {
-    var categoryLabel = shoppingCenterCategoryDisplayName(categoryName);
     var entries = entriesByCategory[categoryName];
     var unlocked = [];
     var owned = [];
     var unpurchasable = [];
-    var lockedByLabel = {};
+    var lockedByBadgeCount = {};
 
     entries.forEach(function (entry) {
       if (entry.availability.key === "unlocked") unlocked.push(entry);
       else if (entry.availability.key === "already_owned") owned.push(entry);
       else if (entry.availability.key === "locked_badges") {
-        if (!lockedByLabel[entry.availability.label]) lockedByLabel[entry.availability.label] = [];
-        lockedByLabel[entry.availability.label].push(entry);
+        var requiredBadges = String(entry.availability.requiredBadges || 0);
+        if (!lockedByBadgeCount[requiredBadges]) lockedByBadgeCount[requiredBadges] = [];
+        lockedByBadgeCount[requiredBadges].push(entry);
       } else unpurchasable.push(entry);
     });
 
-    pushGroup(groups, categoryLabel + " - Acquistabili", unlocked, true);
-    Object.keys(lockedByLabel).forEach(function (label) {
-      pushGroup(groups, categoryLabel + " - " + label, lockedByLabel[label], true);
+    pushGroup(groups, categoryName, "unlocked", unlocked, true);
+    Object.keys(lockedByBadgeCount).forEach(function (requiredBadges) {
+      pushGroup(groups, categoryName, "locked_badges", lockedByBadgeCount[requiredBadges], true, requiredBadges);
     });
-    pushGroup(groups, categoryLabel + " - Non acquistabili", unpurchasable, false);
-    pushGroup(ownedGroups, categoryLabel + (categoryName === SHOPPING_CENTER_CATEGORIES.TM ? " - Già acquistate" : " - Già acquistati"), owned, false);
+    pushGroup(groups, categoryName, "unpurchasable", unpurchasable, false);
+    pushGroup(ownedGroups, categoryName, "already_owned", owned, false);
   });
   return sortGroupsByUnlockBadges(groups).concat(sortGroupsByUnlockBadges(ownedGroups));
 }
@@ -332,8 +311,6 @@ function buildPurchaseGroups(entriesByCategory) {
 function buildTMGroups(state) {
   var byCategory = {};
   var groups;
-  var nonPurchasableTitle = shoppingCenterCategoryDisplayName(SHOPPING_CENTER_CATEGORIES.TM) + " - Non acquistabili";
-  var ownedTitle = shoppingCenterCategoryDisplayName(SHOPPING_CENTER_CATEGORIES.TM) + " - Già acquistate";
   byCategory[SHOPPING_CENTER_CATEGORIES.TM] = [];
   i.itemsSortedByIndex(i.ITEM_LIBRARY).forEach(function (item) {
     if (item && item.category === i.ItemCategory.TM) {
@@ -341,9 +318,9 @@ function buildTMGroups(state) {
     }
   });
   groups = buildPurchaseGroups(byCategory);
-  return groups.filter(function (group) { return group.title !== nonPurchasableTitle && group.title !== ownedTitle; })
-    .concat(groups.filter(function (group) { return group.title === nonPurchasableTitle; }))
-    .concat(groups.filter(function (group) { return group.title === ownedTitle; }));
+  return groups.filter(function (group) { return group.availabilityKey !== "unpurchasable" && group.availabilityKey !== "already_owned"; })
+    .concat(groups.filter(function (group) { return group.availabilityKey === "unpurchasable"; }))
+    .concat(groups.filter(function (group) { return group.availabilityKey === "already_owned"; }));
 }
 
 function buildSellGroups(state) {
@@ -352,7 +329,7 @@ function buildSellGroups(state) {
     if (!shoppingCenterIsUnsellableItem(item)) sellable.push(item);
   });
   var groups = [];
-  pushGroup(groups, "Inserisci nel carrello gli oggetti da vendere", sellable, true);
+  pushGroup(groups, "sell_cart", "sell", sellable, true);
   return groups;
 }
 

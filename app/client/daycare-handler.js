@@ -16,6 +16,8 @@ import { replaceTeamRuntimeState } from "./runtime-state.js";
 import { recordMissionEvent } from "./mission-runtime.js";
 import { clearPendingActivityRuntime, requireNotInBattle, setPendingActivityRuntime } from "./battle-scene-lock.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
+import { pokemonDisplayName, teamViolationLines, teamViolationMessage } from "./entity-text.js";
+import { messageDescriptor, textDescriptor } from "./i18n.js";
 
 var DAYCARE_LEVEL_INTERVAL_MS = 3600000;
 var daycareDepositPending = false;
@@ -114,7 +116,7 @@ function moveNameByIndex(moveIndex, fallback) {
   var move = (DATA.moveLibrary || []).find(function (entry) {
     return Number(entry && entry.index) === Number(moveIndex);
   });
-  return move && move.name || fallback || "Mossa " + moveIndex;
+  return move && move.name || fallback || "Move " + moveIndex;
 }
 
 function speciesChoice(targetSpeciesKey, pokemon) {
@@ -145,7 +147,7 @@ function submitAuthoritativeDaycareResolution(targetSpeciesKey) {
     }
   }).then(function (result) {
     if (!result.ok) {
-      throw new Error(result.message || "Completamento del ritiro non riuscito.");
+      throw new Error("daycare_resolution_failed");
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
     replaceTeamRuntimeState(state.team);
@@ -155,11 +157,11 @@ function submitAuthoritativeDaycareResolution(targetSpeciesKey) {
     });
     activeDaycareResolution = null;
     state.saveStatus = { state: "saved", message: "" };
-    openMessage(["Il Pokemon è tornato in squadra."], { title: "Pensione" });
+    openMessage([messageDescriptor("daycare.returnedToTeam")], { title: textDescriptor("ui.daycare.sceneTitle") });
   }).catch(function (error) {
     activeDaycareResolution = null;
-    state.saveStatus = { state: "error", message: error.message || "Completamento del ritiro non riuscito." };
-    openMessage([state.saveStatus.message], { title: "Pensione" });
+    state.saveStatus = { state: "error", message: messageDescriptor("daycare.resolutionFailed") };
+    openMessage([state.saveStatus.message], { title: textDescriptor("ui.daycare.sceneTitle") });
   }).finally(function () {
     authoritativeDaycareCommandPending = false;
   });
@@ -215,7 +217,7 @@ function startAuthoritativeDaycareResolution(slot) {
   var resolution = pendingResolutionForSlot(slot);
   var options;
   if (!resolution) {
-    openMessage(["La risoluzione del ritiro non è disponibile. Ricarica la Pensione."], { title: "Pensione" });
+    openMessage([messageDescriptor("daycare.resolutionUnavailable")], { title: textDescriptor("ui.daycare.sceneTitle") });
     return;
   }
   if (authoritativeDaycareCommandPending) {
@@ -266,7 +268,6 @@ function setDaycareWithdrawPending(slot) {
   }
   setPendingActivityRuntime({
     type: "daycare_withdraw",
-    label: "Ritiro Pokémon in corso",
     slotIndex: slot.slotIndex
   });
 }
@@ -278,13 +279,13 @@ function completePendingDaycareWithdraw(slot, pokemon) {
     return;
   }
   if (state.team.length >= TEAM_MAX) {
-    state.saveStatus = { state: "error", message: "La squadra è piena. Libera uno slot per completare il ritiro." };
+    state.saveStatus = { state: "error", message: messageDescriptor("daycare.teamFullToComplete") };
     render();
     return;
   }
   violation = daycareWithdrawJoinViolation(slot, pokemon);
   if (violation) {
-    state.saveStatus = { state: "error", message: violation.message };
+    state.saveStatus = { state: "error", message: teamViolationMessage(violation) };
     render();
     return;
   }
@@ -293,7 +294,7 @@ function completePendingDaycareWithdraw(slot, pokemon) {
   state.saveStatus = { state: "saving", message: "daycare-withdraw" };
   completeDaycareWithdraw(slot.slotIndex, nextTeam, state).then(function (result) {
     if (!result.ok) {
-      state.saveStatus = { state: "error", message: result.message || "Ritiro non riuscito." };
+      state.saveStatus = { state: "error", message: messageDescriptor("daycare.withdrawFailed") };
       render();
       return;
     }
@@ -312,7 +313,7 @@ function completePendingDaycareWithdraw(slot, pokemon) {
     });
     render();
   }).catch(function (error) {
-    state.saveStatus = { state: "error", message: error.message || "Ritiro non riuscito." };
+    state.saveStatus = { state: "error", message: messageDescriptor("daycare.withdrawFailed") };
     render();
   });
 }
@@ -332,7 +333,7 @@ export function resumePendingDaycareWithdraw() {
 export function refreshDaycare() {
   return loadPlayerDaycare().then(function (result) {
     if (!result.ok) {
-      state.saveStatus = { state: "error", message: result.message || "Errore durante il caricamento della Pensione." };
+      state.saveStatus = { state: "error", message: messageDescriptor("daycare.loadFailed") };
       render();
       return result;
     }
@@ -377,11 +378,11 @@ registerAction("daycare-deposit-pokemon", function (element) {
   }
   if (!requireNotInBattle()) return;
   if (daycareSlot(slotIndex)) {
-    openMessage(["Questo slot della Pensione è già occupato."], { title: "Pensione" });
+    openMessage([messageDescriptor("daycare.occupiedSlot")], { title: textDescriptor("ui.daycare.sceneTitle") });
     return;
   }
   if (!pokemonCanBeDeposited(pokemon)) {
-    openMessage(["Questo Pokemon non può essere depositato in Pensione."], { title: "Pensione" });
+    openMessage([messageDescriptor("daycare.cannotDeposit")], { title: textDescriptor("ui.daycare.sceneTitle") });
     return;
   }
   if (authoritativeDaycareCommandPending || !pokemon.instanceId) {
@@ -395,7 +396,7 @@ registerAction("daycare-deposit-pokemon", function (element) {
     slotIndex: slotIndex
   }).then(function (result) {
     if (!result.ok) {
-      openMessage([result.message || "Deposito non riuscito."], { title: "Pensione" });
+      openMessage([messageDescriptor("daycare.depositFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
       return;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -403,7 +404,7 @@ registerAction("daycare-deposit-pokemon", function (element) {
     replaceTeamRuntimeState(state.team);
     render();
   }).catch(function (error) {
-    openMessage([error.message || "Deposito non riuscito."], { title: "Pensione" });
+    openMessage([messageDescriptor("daycare.depositFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
   }).finally(function () {
     authoritativeDaycareCommandPending = false;
     setDaycareDepositPending(false);
@@ -427,40 +428,40 @@ registerAction("daycare-withdraw", function (element) {
   }
   if (!requireNotInBattle()) return;
   if (state.team.length >= TEAM_MAX) {
-    openMessage(["La squadra è piena, ritorna con un posto libero per poter ritirare " + pokemon.name], { title: "Pensione" });
+    openMessage([messageDescriptor("daycare.teamFullForPokemon", { pokemon: pokemonDisplayName(pokemon) })], { title: textDescriptor("ui.daycare.sceneTitle") });
     return;
   }
   violation = daycareWithdrawJoinViolation(slot, pokemon);
   if (violation) {
-    openMessage(violation.lines, { title: "Pensione" });
+    openMessage(teamViolationLines(violation), { title: textDescriptor("ui.daycare.sceneTitle") });
     return;
   }
   levelsGained = daycareLevelGain(slot);
   cost = daycareWithdrawCost(levelsGained, slot);
   if ((Number(state.trainerInfo[1]) || 0) < cost) {
     openMessage([
-        "Servono " + moneyText(cost) + " per ritirare " + pokemon.name + ".",
-        "Te ne mancano ancora un po'."
-      ], { title: "Pensione" });
+        messageDescriptor("daycare.insufficientFunds", { cost: moneyText(cost), pokemon: pokemonDisplayName(pokemon) }),
+        messageDescriptor("daycare.insufficientFundsHint")
+      ], { title: textDescriptor("ui.daycare.sceneTitle") });
     return;
   }
   var hoursPassed = Math.max(0, Math.floor(Number(slot.elapsedIntervals) || 0));
-  var hoursPhrase = hoursPassed === 1 ? "È passata 1 ora." : "Sono passate " + hoursPassed + " ore.";
-  openConfirm("Pensione", [hoursPhrase, "Vuoi davvero ritirare " + pokemon.name + " e pagare " + moneyText(cost) + "?"], function () {
+  var hoursPhrase = messageDescriptor(hoursPassed === 1 ? "daycare.elapsedHour" : "daycare.elapsedHours", { hours: hoursPassed });
+  openConfirm(textDescriptor("ui.daycare.sceneTitle"), [hoursPhrase, messageDescriptor("daycare.withdrawConfirm", { pokemon: pokemonDisplayName(pokemon), cost: moneyText(cost) })], function () {
     if (state.team.length >= TEAM_MAX) {
-      openMessage([
-          "Servono " + moneyText(cost) + " per ritirare " + pokemon.name + ".",
-          "Te ne mancano ancora un po'."
-        ], { title: "Pensione" });
+      openMessage([messageDescriptor("daycare.teamFullToComplete")], { title: textDescriptor("ui.daycare.sceneTitle") });
       return;
     }
     violation = daycareWithdrawJoinViolation(slot, pokemon);
     if (violation) {
-      openMessage(violation.lines, { title: "Pensione" });
+      openMessage(teamViolationLines(violation), { title: textDescriptor("ui.daycare.sceneTitle") });
       return;
     }
     if ((Number(state.trainerInfo[1]) || 0) < cost) {
-      openMessage(["Servono " + moneyText(cost) + " per ritirare " + pokemon.name + ",\nte ne mancano ancora un po'."], { title: "Pensione" });
+      openMessage([
+        messageDescriptor("daycare.insufficientFunds", { cost: moneyText(cost), pokemon: pokemonDisplayName(pokemon) }),
+        messageDescriptor("daycare.insufficientFundsHint")
+      ], { title: textDescriptor("ui.daycare.sceneTitle") });
       return;
     }
     if (authoritativeDaycareCommandPending || !pokemon.instanceId) {
@@ -472,7 +473,7 @@ registerAction("daycare-withdraw", function (element) {
       pokemonInstanceId: pokemon.instanceId
     }).then(function (result) {
       if (!result.ok) {
-        openMessage([result.message || "Ritiro non riuscito."], { title: "Pensione" });
+        openMessage([messageDescriptor("daycare.withdrawFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
         return;
       }
       applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -484,12 +485,12 @@ registerAction("daycare-withdraw", function (element) {
       }
       render();
     }).catch(function (error) {
-      openMessage([error.message || "Ritiro non riuscito."], { title: "Pensione" });
+      openMessage([messageDescriptor("daycare.withdrawFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
     }).finally(function () {
       authoritativeDaycareCommandPending = false;
     });
     return;
-  }, { confirmLabel: "Ritira", confirmClass: "button-accent", requireButtonClose: true });
+  }, { confirmLabel: textDescriptor("ui.daycare.withdraw"), confirmClass: "button-accent", requireButtonClose: true });
 });
 
 registerAction("open-pending-daycare-withdraw", function () {

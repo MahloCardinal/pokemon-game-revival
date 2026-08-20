@@ -4,7 +4,7 @@ import { MAX_TRAINING_LEVELS_PER_POKEMON, TRAINING_DIFFICULTIES, authoritativeTr
 import { state } from "./game-state.js";
 
 export var TRAINING_ZONE_DIFFICULTIES = TRAINING_DIFFICULTIES;
-export var TRAINING_ZONE_DEBUG_DIFFICULTY = { key: "debug", label: "Debug", levelDelta: 0, minLevel: 5, maxLevel: 100, reward: 0, expLevels: 0, debug: true };
+export var TRAINING_ZONE_DEBUG_DIFFICULTY = { key: "debug", levelDelta: 0, minLevel: 5, maxLevel: 100, reward: 0, expLevels: 0, debug: true };
 
 export function trainingDifficultyConfig(key) {
   var dailyState = state.trainingDaily && state.trainingDaily[key];
@@ -50,7 +50,7 @@ export function normalizeTrainingOpponentProfile(profile) {
     gender = "m";
   }
   if (!name) {
-    name = "Sfidante";
+    name = "Challenger";
   }
 
   return {

@@ -12,6 +12,7 @@ import {
   pokefanMissionsForMode
 } from "../data/pokefan-missions.js";
 import { state } from "./game-state.js";
+import { messageDescriptor } from "./i18n.js";
 import { render } from "./renderer.js";
 import { replaceInventoryRuntimeState, replaceTrainerMoneyRuntimeState } from "./runtime-state.js";
 import { applyLocalDailyReset } from "./mission-reset.js";
@@ -224,7 +225,7 @@ export function refreshMissionState(options) {
           broadcastMissionState();
         }
       } else {
-        missionState.error = result.message || "Impossibile aggiornare le missioni.";
+        missionState.error = messageDescriptor("missions.refreshFailed");
       }
       if (renderOnComplete) {
         render();
@@ -232,11 +233,11 @@ export function refreshMissionState(options) {
       return result;
     }).catch(function (error) {
       missionState.loading = false;
-      missionState.error = error.message || "Impossibile aggiornare le missioni.";
+      missionState.error = messageDescriptor("missions.refreshFailed");
       if (renderOnComplete) {
         render();
       }
-      return { ok: false, message: missionState.error };
+      return { ok: false, code: "mission_refresh_failed" };
     });
   });
 }
@@ -341,7 +342,8 @@ export function claimMission(missionIndex, selectedReward) {
     : null;
   var missionState = ensureMissionState();
   if (!mission || !reward) {
-    return Promise.resolve({ ok: false, message: "Missione o ricompensa non valida." });
+    missionState.error = messageDescriptor("missions.invalidReward");
+    return Promise.resolve({ ok: false, code: "invalid_mission_reward" });
   }
   missionState.claimingMissionIndex = mission.missionIndex;
   missionState.error = "";
@@ -356,7 +358,7 @@ export function claimMission(missionIndex, selectedReward) {
     ).then(function (result) {
       missionState.claimingMissionIndex = null;
       if (!result.ok) {
-        missionState.error = result.message || "Riscossione non riuscita.";
+        missionState.error = messageDescriptor("pokefan.claimFailed");
         return result;
       }
       if (Array.isArray(result.items)) {
@@ -381,8 +383,8 @@ export function claimMission(missionIndex, selectedReward) {
       return result;
     }).catch(function (error) {
       missionState.claimingMissionIndex = null;
-      missionState.error = error.message || "Riscossione non riuscita.";
-      return { ok: false, message: missionState.error };
+      missionState.error = messageDescriptor("pokefan.claimFailed");
+      return { ok: false, code: "mission_claim_failed" };
     });
   });
 }

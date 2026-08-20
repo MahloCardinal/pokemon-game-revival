@@ -1,5 +1,6 @@
-import { TYPE_CHART, typeDisplayName } from "./type-chart.js";
+import { TYPE_CHART } from "./type-chart.js";
 import { random } from "../engine/deterministic-rng.js";
+import { battleEvent, battleTeamRef, moveBattleEvent } from "../engine/battle-events.js";
 
 function buildMoveLibrary(entries) {
   var library = [];
@@ -11,26 +12,25 @@ function buildMoveLibrary(entries) {
     var definition;
 
     if (!Number.isFinite(index) || index <= 0) {
-      throw new Error("Index mossa non valido: " + (config && config.name ? config.name : index));
+      throw new Error("Invalid move index: " + (config && config.key ? config.key : index));
     }
 
     if (usedIndexes[index]) {
-      throw new Error("Index mossa duplicato: " + index);
+      throw new Error("Duplicate move index: " + index);
     }
 
     usedIndexes[index] = true;
 
     config.key = key;
+    config.name = key;
+    delete config.description;
     definition = Object.assign({}, config, {
       key: key,
+      name: key,
       index: index,
       effect_before: config.effect_before || config.before || null,
       effect_after: config.effect_after || config.after || null
     });
-
-    if (!definition.name) {
-      throw new Error("Nome mossa mancante per index: " + index);
-    }
 
     library.push(Object.freeze(definition));
   });
@@ -118,7 +118,7 @@ function simpleNegatePercentageMove(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "La percentuale avversaria diventa negativa",
+    description: "Makes the opponent's percentage negative",
     after: function (_attacker, defender, hit) {
       if (hit) {
         setTeamPercentageNegative(defender.team);
@@ -155,7 +155,7 @@ function blockStatBoostMove(name, description, turns) {
   return {
     name: name,
     damagingMove: false,
-    description: description || "Protegge la squadra dai boost delle mosse avversarie",
+    description: description || "Protects the team from opposing move boosts",
     after: function (attacker) {
       var startPerc = consumeMovePercentage(attacker.team);
       if (startPerc) {
@@ -196,7 +196,7 @@ function chargeBuffMove(name, description) {
   return {
     name: name,
     damagingMove: false,
-    description: description || "+Lv Difesa, x2 al danno nel prossimo turno",
+    description: description || "+Level Defense and x2 damage on the next turn",
     before: function () {
       this.damagingMove = false;
     },
@@ -209,7 +209,7 @@ function chargeBuffMove(name, description) {
 function twoTurnDefenseDamageMove(name, description) {
   return {
     name: name,
-    description: description || "1° turno +{stats} Difesa, 2° turno -{power}",
+    description: description || "Turn 1: +{stats} Defense; turn 2: -{power}",
     before: function (attacker, _defender, hit) {
       if (attacker.pendingMove === this && attacker.pendingMoveTurns > 0) {
         this.damagingMove = Boolean(hit);
@@ -249,7 +249,7 @@ function conditionX2Move(name, description, conditionFn) {
 function repeatLastTurnDamageMove(name) {
   return {
     name: name,
-    description: "-{power}, x1.5 se già usata nell'ultimo turno",
+    description: "-{power}, x1.5 if it was also used on the previous turn",
     before: function (attacker, _defender, hit) {
       this.damagingMove = Boolean(hit);
       if (hit) {
@@ -271,7 +271,7 @@ function confuseBuffEnemyMove(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "Confonde, +{stats} Attacco avversario",
+    description: "Confuses the opponent and raises its Attack by {stats}",
     after: function (_attacker, defender, hit) {
       if (hit) {
         applyStatusEffect(defender, "cnf_block");
@@ -356,7 +356,7 @@ function damageRecoveryMove(name, description, fraction) {
 function recoilDamageMove(name) {
   return {
     name: name,
-    description: "-{power}, contraccolpo PS di 1/4 del danno inflitto",
+    description: "-{power}, recoil equal to 1/4 of the damage dealt",
     before: function (_attacker, _defender, hit) {
       this.damagingMove = Boolean(hit);
     },
@@ -373,7 +373,7 @@ function recoilDamageMove(name) {
 function rechargeDamageMove(name) {
   return {
     name: name,
-    description: "1° turno -{power} x2, 2° ricarica",
+    description: "Turn 1: -{power} x2; turn 2: recharge",
     before: function (attacker, _defender, hit) {
       if (attacker.pendingMove === this && attacker.pendingMoveTurns > 0) {
         this.damagingMove = false;
@@ -396,7 +396,7 @@ function rechargeDamageMove(name) {
 function forcedTripleHitConfusionMove(name) {
   return {
     name: name,
-    description: "-{power}, da usare altri 2 turni, poi Confonde l'utilizzatore",
+    description: "-{power}, must be used for 2 more turns, then confuses the user",
     before: function (attacker, _defender, hit) {
       if (attacker.pendingMove === this) {
         attacker.pendingMoveTurns += 1;
@@ -436,13 +436,11 @@ function instantiateMoveFromLibrary(moveIndex, overrides) {
     power: overrides.power !== undefined ? overrides.power : 0,
     stats: overrides.stats !== undefined ? overrides.stats : 0,
     damagingMove: config.damagingMove !== undefined ? config.damagingMove : true,
-    description: config.description || "",
     logKey: config.logKey || null,
     requestsBattleFlee: false,
     requestsBattleSwitch: Boolean(config.requestsBattleSwitch),
     setWeather: config.setWeather || null,
     weatherLabel: config.weatherLabel || null,
-    logMessage: "",
     forcedCopiedMoveIndex: null,
     resolvedMoveIndex: null,
     forcedResolvedType: null,
@@ -466,23 +464,14 @@ function instantiateMoveFromLibrary(moveIndex, overrides) {
         this._after.call(this, attacker, defender, hit);
       }
     },
-    prepareLog: function (attacker, defender, damage, efficacy) {
-      var formatter = LOG_LIBRARY[this.logKey];
-      if (!formatter) {
-        return null;
-      }
-      this.logMessage = formatter({
-        self: this,
+    prepareEvent: function (attacker, defender, damage, efficacy) {
+      return moveBattleEvent(this.logKey, {
         attacker: attacker,
         defender: defender,
         move: this,
         damage: damage,
         efficacy: efficacy
       });
-      if (damage === 1) {
-        this.logMessage = this.logMessage.replace("danni", "danno");
-      }
-      return this.logMessage;
     }
   };}
 function ohkoMove(name) {
@@ -490,7 +479,7 @@ function ohkoMove(name) {
     name: name,
     damagingMove: false,
     isOhkoMove: true,
-    description: "50% manda l'avversario KO",
+    description: "50% chance to knock out the opponent",
     before: function (attacker, defender, hit) {
       var startPerc = consumeMovePercentage(attacker.team);
       if (startPerc) {
@@ -509,7 +498,7 @@ function preventDefRaiseMove(name, description) {
   return {
     name: name,
     damagingMove: false,
-    description: description || "L'avversario non può aumentare la propria Difesa finché l'utilizzatore è in campo",
+    description: description || "The opponent cannot raise its Defense while the user remains active",
     after: function (_attacker, defender, hit) {
       if (hit) {
         defender.defRaiseBlocked = true;
@@ -523,13 +512,13 @@ function disableLastMoveMove(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "Disattiva l'ultima mossa dell'avversario fino al suo cambio o KO",
+    description: "Disables the opponent's last move until it switches out or is knocked out",
     after: function (_attacker, defender, hit) {
       var lastMove = defender.turnBeforeMoveUsed;
       if (hit && lastMove !== null && lastMove.key !== "struggle") {
         defender.disableMoveInhibit(lastMove.key);
         this.logKey = "inhibit";
-        this.txt = lastMove.name;
+        this.relatedMoveKey = lastMove.key;
       } else {
         this.logKey = "fail";
       }
@@ -539,7 +528,7 @@ function selfBuffDebuffMove(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "-{stats} Difesa, +2x{stats} Attacco",
+    description: "-{stats} Defense, +2x{stats} Attack",
     after: function (attacker) {
       attacker.nerfSelfDef(this.stats);
       attacker.buffSelfAtk(this.stats * 2);
@@ -549,7 +538,7 @@ function selfBuffDebuffMove(name) {
 function semiInvulnerableDamageMove(name, description, invulnerabilityLogKey, onHit) {
   return {
     name: name,
-    description: description || "1° turno diventa non bersagliabile, 2° turno -{power}",
+    description: description || "Turn 1: becomes untargetable; turn 2: -{power}",
     before: function (attacker, _defender, hit) {
       if (attacker.pendingMove === this && attacker.pendingMoveTurns > 0) {
         this.damagingMove = Boolean(hit);
@@ -576,7 +565,7 @@ function simpleConfusionMove(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "Confonde l'avversario",
+    description: "Confuses the opponent",
     after: function (_attacker, defender, hit) {
       if (hit) {
         if (applyStatusEffect(defender, "cnf_block")) {
@@ -603,7 +592,7 @@ function simpleDamage(name, description) {
 function missingHpDamageMove(name) {
   return {
     name: name,
-    description: "-{power}, danni pari alla differenza tra PS max e PS attuali",
+    description: "-{power}, damage equals the difference between maximum and current HP",
     before: function (attacker, _defender, hit) {
       this.damagingMove = Boolean(hit);
       if (hit) {
@@ -618,7 +607,7 @@ function simpleEnemyAttackNerf(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "-{stats} Attacco avversario",
+    description: "Lowers the opponent's Attack by {stats}",
     after: function (_attacker, defender, hit) {
       if (hit && defender.team.teamMistCounter === 0) {
         defender.nerfSelfAtk(this.stats);
@@ -632,7 +621,7 @@ function simpleEnemyDefenseNerf(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "-{stats} Difesa avversaria",
+    description: "Lowers the opponent's Defense by {stats}",
     after: function (_attacker, defender, hit) {
       if (hit && defender.team.teamMistCounter === 0) {
         defender.nerfSelfDef(this.stats);
@@ -646,7 +635,7 @@ function simpleEnemyAtkDefNerf(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "-{stats} Attacco e Difesa avversario",
+    description: "Lowers the opponent's Attack and Defense by {stats}",
     after: function (_attacker, defender, hit) {
       if (hit && defender.team.teamMistCounter === 0) {
         defender.nerfSelfAtk(this.stats);
@@ -661,7 +650,7 @@ function simpleHalfRecovery(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "Recupera metà dei PS massimi",
+    description: "Restores half of maximum HP",
     logKey: "rest_hp",
     after: function (attacker) {
       this.restored = Math.floor(attacker.pokemon.maxHp / 2);
@@ -672,7 +661,7 @@ function simpleParalysisMove(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "Paralizza l'avversario",
+    description: "Paralyzes the opponent",
     after: function (_attacker, defender, hit) {
       if (hit) {
         if (applyStatusEffect(defender, "par_block")) {
@@ -689,7 +678,7 @@ function simpleBurnMove(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "Scotta l'avversario",
+    description: "Burns the opponent",
     after: function (_attacker, defender, hit) {
       if (hit) {
         if (applyStatusEffect(defender, "brn")) {
@@ -706,7 +695,7 @@ function simpleSelfAttackBuff(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "+{stats} Attacco",
+    description: "+{stats} Attack",
     logKey: "buff_self_atk",
     after: function (attacker) {
       attacker.buffSelfAtk(this.stats);
@@ -716,7 +705,7 @@ function simpleSelfAttackBigBuff(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "+2x{stats} Attacco",
+    description: "+2x{stats} Attack",
     logKey: "buff_self_atk_big",
     after: function (attacker) {
       buffSelfAttackGreatly(attacker, this);
@@ -726,7 +715,7 @@ function simpleSelfAttackDefenseBuff(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "+{stats} Attacco e Difesa",
+    description: "+{stats} Attack and Defense",
     logKey: "buff_self_atk_def",
     after: function (attacker) {
       attacker.buffSelfAtk(this.stats);
@@ -737,7 +726,7 @@ function simpleSelfDefenseBuff(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "+{stats} Difesa",
+    description: "+{stats} Defense",
     logKey: "buff_self_def",
     after: function (attacker) {
       attacker.buffSelfDef(this.stats);
@@ -747,7 +736,7 @@ function simpleSleepMove(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "Addormenta l'avversario",
+    description: "Puts the opponent to sleep",
     after: function (_attacker, defender, hit) {
       if (hit) {
         if (applyStatusEffect(defender, "slp")) {
@@ -764,7 +753,7 @@ function simpleTeamAttackBuff(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "+{stats} Attacco della squadra per 5 turni",
+    description: "+{stats} team Attack for 5 turns",
     after: function (attacker) {
       if (attacker.team.buffAtkCounter === 0) {
         attacker.team.buffTeamAtk(this.stats);
@@ -779,7 +768,7 @@ function simpleTeamDefenseBuff(name) {
   return {
     name: name,
     damagingMove: false,
-    description: "+{stats} Difesa della squadra per 5 turni",
+    description: "+{stats} team Defense for 5 turns",
     after: function (attacker) {
       if (attacker.team.buffDefCounter === 0) {
         attacker.team.buffTeamDef(this.stats);
@@ -794,7 +783,7 @@ function teamStatusCureMove(name, description) {
   return {
     name: name,
     damagingMove: false,
-    description: description || "Risolve tutti i problemi di stato della squadra",
+    description: description || "Cures every status condition affecting the team",
     after: function (attacker) {
       var count = 0;
       attacker.team.combatantList.forEach(function (c) {
@@ -849,7 +838,7 @@ function trapMove(name, description) {
   return {
     name: name,
     damagingMove: false,
-    description: description || "L'avversario non può scappare",
+    description: description || "The opponent cannot escape",
     after: function (_attacker, defender, hit) {
       if (hit && defender.trappedTurns === 0 && defender.trappedMoveIndex === 0) {
         defender.trappedTurns = 99;
@@ -862,7 +851,7 @@ function trapMove(name, description) {
 function targetTypeDoubleDamageMove(name, targetType) {
   return {
     name: name,
-    description: "-{power}, x2 contro Pokémon " + targetType,
+    description: "-{power}, x2 against " + targetType + "-type Pokémon",
     before: function (_attacker, defender, hit) {
       this.damagingMove = Boolean(hit);
       if (hit) {
@@ -901,7 +890,7 @@ function weatherRecoveryMove(name, description) {
 function futureSightMove(name) {
   return {
     name: name,
-    description: "-{power}, colpisce dopo 3 mosse totali, non riutilizzabile finché non si conclude",
+    description: "-{power}, strikes after 3 total moves and cannot be reused until it resolves",
     before: function (_attacker, _defender, hit) {
       this.damagingMove = false;
     },
@@ -911,7 +900,7 @@ function futureSightMove(name) {
         attacker.team.futureSight.timer = 3;
         attacker.team.futureSight.power = this.power || 1;
         attacker.team.futureSight.attackerTypes = attacker.type.slice();
-        attacker.team.futureSight.attackerName = attacker.pokemon.name;
+        attacker.team.futureSight.attackerSpeciesKey = attacker.pokemon.speciesKey;
         attacker.team.futureSight.moveKey = this.key;
         attacker.team.futureSight.targetIndex = defender.team.combatantList.indexOf(defender);
         this.logKey = "future_sight_set";
@@ -935,140 +924,18 @@ function isNotCopyableMoveIndex(moveIndex) {
   var move = moveDefinitionFromIndex(moveIndex);
   return Boolean(move && NOT_COPYABLE_MOVE_INDEXES.has(move.index));}
 
-function capitalizedDamageText(text) {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-function damageLog(ctx, text) {
-  var base = ctx.attacker.pokemon.name + " usa " + ctx.move.name;
-  if (ctx.efficacy > 1) {
-    return base + ", è superefficace! " + capitalizedDamageText(text);
-  }
-  if (ctx.efficacy < 1) {
-    return base + ", non è molto efficace. " + capitalizedDamageText(text);
-  }
-  return base + ", " + text;
-}
-
-export var LOG_LIBRARY = {
-  "1HKO": function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " KO"; },
-  baton_pass: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", passa le alterazioni al nuovo Pokemon!"; },
-  buff_debuff_self: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", -" + ctx.move.stats + " Difesa, +" + (ctx.move.stats * 2) + " Attacco"; },
-  buff_self_atk: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", +" + ctx.move.stats + " Attacco"; },
-  buff_self_atk_big: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", +" + (ctx.move.stats * 2) + " Attacco"; },
-  buff_self_atk_def: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", +" + ctx.move.stats + " Attacco e Difesa"; },
-  buff_self_def: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", +" + ctx.move.stats + " Difesa"; },
-  buff_self_def_burn: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", +" + ctx.move.stats + " Difesa, immune alla Scottatura"; },
-  brn: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " è scottato"; },
-  buff_team_atk: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", +" + ctx.move.stats + " Attacco della squadra per 5 turni"; },
-  buff_team_def: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", +" + ctx.move.stats + " Difesa della squadra per 5 turni"; },
-  charge: function (ctx) { return ctx.attacker.pokemon.name + " si sta caricando"; },
-  cnf: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " è confuso"; },
-  cnf_buff_enem: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", confonde e aumenta l'Attacco di " + ctx.defender.pokemon.name; },
-  convers: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", diventa di Tipo " + ctx.move.txt; },
-  copy_stats: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", copia le alterazioni delle statistiche di " + ctx.defender.pokemon.name; },
-  cure_status: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", risolve i suoi problemi di stato"; },
-  cure_status_team: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", risolve i problemi di stato della squadra"; },
-  def_raise_block: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " non può aumentare la Difesa!"; },
-  destiny_bond: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", se nel prossimo turno va KO, manderà KO anche l'avversario"; },
-  dmg: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni"); },
-  dmg_1hp: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " resiste con 1 PS!"; },
-  dmg_bind: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e impedisce il cambio di " + ctx.defender.pokemon.name + " per " + ctx.move.bindTurns + " turni"); },
-  dmg_brn: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e brucia " + ctx.defender.pokemon.name); },
-  dmg_cnf: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e confonde " + ctx.defender.pokemon.name); },
-  dmg_double: function (ctx) { return damageLog(ctx, "la potenza raddoppia e infligge " + ctx.damage + " danni"); },
-  dmg_enem_atk: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni, -" + ctx.move.stats + " Attacco " + ctx.defender.pokemon.name); },
-  dmg_enem_def: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni, -" + ctx.move.stats + " Difesa " + ctx.defender.pokemon.name); },
-  dmg_frz: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e congela " + ctx.defender.pokemon.name); },
-  dmg_los_hp: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni ma perde " + ctx.move.recoil + " PS"); },
-  dmg_los_perc: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni, non si attiva l'effetto ma perde la percentuale"); },
-  dmg_one_half: function (ctx) { return damageLog(ctx, "si attiva l'effetto e infligge " + ctx.damage + " danni"); },
-  dmg_par: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e paralizza " + ctx.defender.pokemon.name); },
-  dmg_psn: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e avvelena " + ctx.defender.pokemon.name); },
-  dmg_pursuit_switch: function (ctx) { return damageLog(ctx, "colpisce " + ctx.defender.pokemon.name + " in ritirata e infligge " + ctx.damage + " danni"); },
-  dmg_rec_hp: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e recupera " + ctx.move.absorbed + " PS"); },
-  dmg_rec_perc: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e recupera la percentuale"); },
-  dmg_seed: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni, " + ctx.defender.pokemon.name + " è pieno di semi"); },
-  dmg_self_cnf: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni ed è Confuso"); },
-  dmg_self_cnf_fail: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", ma fallisce. " + ctx.attacker.pokemon.name + " è Confuso"; },
-  dmg_snatch_buffs: function (ctx) {
-    var parts = [];
-    if (ctx.move.stolenAtkBuff) { parts.push("+" + ctx.move.stolenAtkBuff + " Attacco"); }
-    if (ctx.move.stolenDefBuff) { parts.push("+" + ctx.move.stolenDefBuff + " Difesa"); }
-    return damageLog(ctx, "infligge " + ctx.damage + " danni e ruba " + parts.join(" e ") + " a " + ctx.defender.pokemon.name);
-  },
-  dmg_sleep_immunity: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni, la squadra è immune al sonno x5 turni"); },
-  dmg_suppress_boost: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni, i boost dell'avversario vengono annullati il prossimo turno"); },
-  dmg_status_uproar: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni, ma " + ctx.defender.pokemon.name + " è protetto da Baraonda"); },
-  dmg_status_delayed: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e Distraroma ritarda " + ctx.move.delayedStatusName + " di " + ctx.move.delayedStatusTargetName); },
-  dmg_status_safeguard: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni, ma " + ctx.defender.pokemon.name + " è protetto da Salvaguardia"); },
-  dmg_status_waiting: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni ma " + ctx.move.delayedStatusTargetName + " ha già uno status in attesa"); },
-  embargo: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " non può usare oggetti!"; },
-  endeavor: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", i PS di " + ctx.defender.pokemon.name + " diventano " + ctx.defender.hp; },
-  endure: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", si prepara e resistere"; },
-  fail: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", ma fallisce"; },
-  flee: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + " e fugge dalla lotta"; },
-  future_sight_set: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", colpirà tra 2 turni"; },
-  gain_self_perc: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", recupera la percentuale"; },
-  grudge: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", se viene mandato KO inibirà la mossa avversaria!"; },
-  imprison: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", blocca le mosse in comune con " + ctx.defender.pokemon.name; },
-  inhibit: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", disabilita " + ctx.move.txt + " avversaria"; },
-  invul_dig: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", si nasconde sotto terra"; },
-  invul_fly: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", vola alto nel cielo"; },
-  invul_sub: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", diventa temporaneamente non bersagliabile"; },
-  lose_enem_perc: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", la percentuale avversaria diventa negativa"; },
-  lose_self_perc: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", perde la percentuale"; },
-  magic_coat: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", rifletterà gli status nemici!"; },
-  mimic: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + " e copia l'ultima mossa usata dall'avversario"; },
-  nerf_enem_atk: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", -" + ctx.move.stats + " Attacco " + ctx.defender.pokemon.name; },
-  nerf_enem_atk_def: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", -" + ctx.move.stats + " Attacco e Difesa " + ctx.defender.pokemon.name; },
-  nerf_enem_def: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", -" + ctx.move.stats + " Difesa " + ctx.defender.pokemon.name; },
-  nightmare_dmg: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " perde PS a causa dell'Incubo!"; },
-  no_move_boost_team: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", squadra protetta dai boost delle mosse avversarie x5 turni"; },
-  no_stat_nerf_team: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", squadra protetta da modifiche stats avversarie x5 turni"; },
-  nube: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", annulla ogni modifica di stats delle squadre"; },
-  pain_split: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", i PS di " + ctx.attacker.pokemon.name + " e " + ctx.defender.pokemon.name + " vengono divisi equamente"; },
-  par: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " è paralizzato"; },
-  perish_song: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", tutti andranno KO tra 3 turni!"; },
-  present_heal: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " recupera 1/4 dei PS!"; },
-  psn: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " è avvelenato"; },
-  spikes_set: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", chi entra subisce danni pari al livello"; },
-  rapid_spin: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni e rimuove gli effetti sul proprio terreno!"); },
-  recharge: function (ctx) { return ctx.attacker.pokemon.name + " deve ricaricarsi"; },
-  repeat: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " deve ripetere " + ctx.move.txt + " x3 turni!"; },
-  rest: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", si addormenta e recupera tutti i PS"; },
-  rest_hp: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", recupera " + ctx.move.restored + " PS"; },
-  recycle_item: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", ricrea lo strumento assegnato a inizio battaglia"; },
-  roar: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + "! " + ctx.move.txt; },
-  selfdestruct: function (ctx) { return damageLog(ctx, "infligge " + ctx.damage + " danni ma va KO"); },
-  sleep_delayed: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " si addormenterà alla fine del prossimo turno"; },
-  slp: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " è addormentato"; },
-  smp_move: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name; },
-  status_delayed: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", Distraroma ritarda " + ctx.move.delayedStatusName + " di " + ctx.move.delayedStatusTargetName; },
-  status_uproar: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", ma fallisce perché " + ctx.defender.pokemon.name + " è protetto da Baraonda"; },
-  status_not_done: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", ma fallisce perché " + ctx.defender.pokemon.name + " ha già uno status"; },
-  status_protect: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", squadra protetta da problemi di stato x5 turni"; },
-  status_safeguard: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", ma fallisce perché " + ctx.defender.pokemon.name + " è protetto da Salvaguardia"; },
-  status_waiting: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", ma fallisce perché " + ctx.move.delayedStatusTargetName + " ha già uno status in attesa"; },
-  steal_item: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", ruba lo strumento di " + ctx.defender.pokemon.name; },
-  suppress_boost: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", i boost dell'avversario vengono annullati il prossimo turno"; },
-  transform: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", si trasforma nell'avversario"; },
-  trick_item: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", scambia lo strumento con " + ctx.defender.pokemon.name; },
-  trap: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + ", " + ctx.defender.pokemon.name + " non può scappare!"; },
-  weather_set: function (ctx) { return ctx.attacker.pokemon.name + " usa " + ctx.move.name + " e modifica il meteo"; }
-};
-export const luster_purge = Object.assign(createToggleDamageMove("Abbagliante", "-{power}, 50% +{stats} Attacco", function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 1 });
-export const fissure = Object.assign(ohkoMove("Abisso"), { index: 2 });
-export const stockpile = { index: 3, name: "Accumulo", damagingMove: false, description: "+{stats} Difesa, prepara Introenergia e Sfoghenergia", logKey: "buff_self_def", before: function(attacker) { attacker.buffSelfDef(this.stats); attacker.stockpileUsed = true; } };
-export const acid = Object.assign(createToggleDamageMove("Acido", "-{power}, 50% -{stats} Difesa avversaria", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 4 });
-export const flatter = Object.assign(confuseBuffEnemyMove("Adulazione"), { index: 5 });
-export const air_cutter = Object.assign(simpleDamage("Aerasoio"), { index: 6 });
-export const aerial_ace = Object.assign(targetTypeDoubleDamageMove("Aeroassalto", "fighting"), { index: 7 });
-export const sky_attack = Object.assign(simpleDamage("Aeroattacco"), { index: 8 });
+export const luster_purge = Object.assign(createToggleDamageMove("Luster Purge", "-{power}, 50% chance to raise Attack by {stats}", function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 1 });
+export const fissure = Object.assign(ohkoMove("Fissure"), { index: 2 });
+export const stockpile = { index: 3, name: "Stockpile", damagingMove: false, description: "+{stats} Defense; prepares Swallow and Spit Up", logKey: "buff_self_def", before: function(attacker) { attacker.buffSelfDef(this.stats); attacker.stockpileUsed = true; } };
+export const acid = Object.assign(createToggleDamageMove("Acid", "-{power}, 50% chance to lower the opponent's Defense by {stats}", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 4 });
+export const flatter = Object.assign(confuseBuffEnemyMove("Flatter"), { index: 5 });
+export const air_cutter = Object.assign(simpleDamage("Air Cutter"), { index: 6 });
+export const aerial_ace = Object.assign(targetTypeDoubleDamageMove("Aerial Ace", "fighting"), { index: 7 });
+export const sky_attack = Object.assign(simpleDamage("Sky Attack"), { index: 8 });
 export const aeroblast = {
         index: 9,
-        name: "Aerocolpo",
-        description: "-{power}, ignora buff Difesa avversari",
+        name: "Aeroblast",
+        description: "-{power}, ignores the opponent's Defense boosts",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           this.defMult = 0;
@@ -1078,16 +945,16 @@ export const aeroblast = {
           this.logKey = hit ? "dmg" : "fail";
         }
       };
-export const sharpen = Object.assign(simpleSelfAttackBuff("Affilatore"), { index: 10 });
-export const agility = Object.assign(simpleSelfAttackBuff("Agilità"), { index: 11 });
-export const steel_wing = Object.assign(createToggleDamageMove("Alacciaio", "-{power}, 50% +{stats} Difesa", function(attacker) { attacker.buffSelfDef(this.stats); this.logKey = "buff_self_def"; }), { index: 12 });
-export const helping_hand = Object.assign(simpleTeamAttackBuff("Altruismo"), { index: 13 });
+export const sharpen = Object.assign(simpleSelfAttackBuff("Sharpen"), { index: 10 });
+export const agility = Object.assign(simpleSelfAttackBuff("Agility"), { index: 11 });
+export const steel_wing = Object.assign(createToggleDamageMove("Steel Wing", "-{power}, 50% chance to raise Defense by {stats}", function(attacker) { attacker.buffSelfDef(this.stats); this.logKey = "buff_self_def"; }), { index: 12 });
+export const helping_hand = Object.assign(simpleTeamAttackBuff("Helping Hand"), { index: 13 });
 export const amnesia = Object.assign(simpleSelfDefenseBuff("Amnesia"), { index: 14 });
-export const aromatherapy = Object.assign(teamStatusCureMove("Aromaterapia", "Risolve tutti i problemi di stato della squadra"), { index: 15 });
+export const aromatherapy = Object.assign(teamStatusCureMove("Aromatherapy", "Cures every status condition affecting the team"), { index: 15 });
 export const assist = {
         index: 16,
-        name: "Assistente",
-        description: "Usa una mossa a caso della squadra (potenza: {power}, stats: {stats})",
+        name: "Assist",
+        description: "Uses a random move known by the team (power: {power}, stats: {stats})",
         copiedMove: null,
         before: function (attacker) {
           var teamMoveIndexes = [];
@@ -1122,16 +989,16 @@ export const assist = {
           }
         }
       };
-export const absorb = Object.assign(damageRecoveryMove("Assorbimento", "-{power}, PS +1/8 del danno inflitto", 1/8), { index: 17 });
-export const torment = Object.assign(disableLastMoveMove("Attaccalite"), { index: 18 });
-export const wing_attack = Object.assign(simpleDamage("Attacco d'Ala"), { index: 19 });
-export const barrage = Object.assign(simpleDamage("Attacco Pioggia"), { index: 20 });
-export const quick_attack = Object.assign(simpleDamage("Attacco Rapido"), { index: 21 });
-export const attract = Object.assign(simpleEnemyAttackNerf("Attrazione"), { index: 22 });
+export const absorb = Object.assign(damageRecoveryMove("Absorb", "-{power}, restores HP equal to 1/8 of the damage dealt", 1/8), { index: 17 });
+export const torment = Object.assign(disableLastMoveMove("Torment"), { index: 18 });
+export const wing_attack = Object.assign(simpleDamage("Wing Attack"), { index: 19 });
+export const barrage = Object.assign(simpleDamage("Barrage"), { index: 20 });
+export const quick_attack = Object.assign(simpleDamage("Quick Attack"), { index: 21 });
+export const attract = Object.assign(simpleEnemyAttackNerf("Attract"), { index: 22 });
 export const self_destruct = {
         index: 23,
-        name: "Autodistruzione",
-        description: "-2xPS max utilizzatore, che va KO",
+        name: "Self-Destruct",
+        description: "Deals twice the user's maximum HP; the user is knocked out",
         before: function (attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           this.power = attacker.pokemon.maxHp;
@@ -1143,12 +1010,12 @@ export const self_destruct = {
           this.logKey = hit ? "selfdestruct" : "fail";
         }
       };
-export const wrap = Object.assign(bindDamageMove("Avvolgibotta", "-{power}, l'avversario non può essere sostituito x4 turni", 4), { index: 24 });
-export const tackle = Object.assign(simpleDamage("Azione"), { index: 25 });
+export const wrap = Object.assign(bindDamageMove("Wrap", "-{power}, prevents the opponent from switching for 4 turns", 4), { index: 24 });
+export const tackle = Object.assign(simpleDamage("Tackle"), { index: 25 });
 export const uproar = {
         index: 26,
-        name: "Baraonda",
-        description: "-{power}, i Pokemon alleati non possono essere Addormentati x5 turni",
+        name: "Uproar",
+        description: "-{power}, allied Pokémon cannot be put to sleep for 5 turns",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
         },
@@ -1161,34 +1028,35 @@ export const uproar = {
           }
         }
       };
-export const barrier = Object.assign(simpleSelfDefenseBuff("Barriera"), { index: 27 });
-export const peck = Object.assign(simpleDamage("Beccata"), { index: 28 });
-export const block = Object.assign(trapMove("Blocco", "L'avversario non può essere sostituito"), { index: 29 });
+export const barrier = Object.assign(simpleSelfDefenseBuff("Barrier"), { index: 27 });
+export const peck = Object.assign(simpleDamage("Peck"), { index: 28 });
+export const block = Object.assign(trapMove("Block", "The opponent cannot be switched out"), { index: 29 });
 export const roar = {
         index: 30,
-        name: "Boato",
+        name: "Roar",
         damagingMove: false,
-        description: "L'avversario viene sostituito",
+        description: "Forces the opponent to switch",
         logKey: "roar",
         after: function (_attacker, defender, hit) {
           if (hit) {
-            this.txt = defender.team.switchRandom();
-            this.logKey = "roar";
+            var switchResult = defender.team.switchRandom();
+            this.switchEvents = switchResult.events || [];
+            this.logKey = switchResult.ok ? "roar" : "fail";
           } else {
             this.logKey = "fail";
           }
         }
       };
-export const bubble = Object.assign(simpleDamage("Bolla"), { index: 31 });
-export const bubble_beam = Object.assign(simpleDamage("Bollaraggio"), { index: 32 });
-export const blizzard = Object.assign(toggleSecondaryStatus("Bora", "-{power}, 50% Congela l'avversario", "frz", "dmg_frz"), { index: 33 });
-export const pound = Object.assign(simpleDamage("Botta"), { index: 34 });
-export const headbutt = Object.assign(simpleDamage("Bottintesta"), { index: 35 });
-export const ember = Object.assign(simpleDamage("Braciere"), { index: 36 });
+export const bubble = Object.assign(simpleDamage("Bubble"), { index: 31 });
+export const bubble_beam = Object.assign(simpleDamage("Bubble Beam"), { index: 32 });
+export const blizzard = Object.assign(toggleSecondaryStatus("Blizzard", "-{power}, 50% chance to freeze the opponent", "frz", "dmg_frz"), { index: 33 });
+export const pound = Object.assign(simpleDamage("Pound"), { index: 34 });
+export const headbutt = Object.assign(simpleDamage("Headbutt"), { index: 35 });
+export const ember = Object.assign(simpleDamage("Ember"), { index: 36 });
 export const brick_break = {
         index: 37,
-        name: "Breccia",
-        description: "-{power}, prima distrugge gli schermi difensivi avversari",
+        name: "Brick Break",
+        description: "-{power}, destroys the opponent's defensive screens before dealing damage",
         before: function (attacker, defender, hit) {
           this.damagingMove = Boolean(hit);
           if (hit) {
@@ -1197,7 +1065,7 @@ export const brick_break = {
               defender.team.teamDefBuff = 0;
               defender.team.buffDefCounter = 0;
               if (manager) {
-                manager.emit({ log: "Breccia distrugge gli schermi di " + defender.team.name });
+                manager.emit(battleEvent("move.brickBreakScreens", { team: battleTeamRef(defender.team) }));
               }
             }
             this.logKey = "dmg";
@@ -1206,58 +1074,58 @@ export const brick_break = {
           }
         }
       };
-export const fake_out = Object.assign(simpleDamage("Bruciapelo"), { index: 38 });
-export const swagger = Object.assign(confuseBuffEnemyMove("Bullo"), { index: 39 });
-export const milk_drink = Object.assign(simpleHalfRecovery("Buonlatte"), { index: 40 });
-export const rock_blast = Object.assign(simpleDamage("Cadutamassi"), { index: 41 });
-export const blaze_kick = Object.assign(simpleDamage("Calciardente"), { index: 42 });
-export const high_jump_kick = Object.assign(simpleDamage("Calcinvolo"), { index: 43 });
-export const rolling_kick = Object.assign(simpleDamage("Calciorullo"), { index: 44 });
-export const jump_kick = Object.assign(simpleDamage("Calciosalto"), { index: 45 });
-export const calm_mind = Object.assign(simpleSelfAttackDefenseBuff("Calmamente"), { index: 46 });
+export const fake_out = Object.assign(simpleDamage("Fake Out"), { index: 38 });
+export const swagger = Object.assign(confuseBuffEnemyMove("Swagger"), { index: 39 });
+export const milk_drink = Object.assign(simpleHalfRecovery("Milk Drink"), { index: 40 });
+export const rock_blast = Object.assign(simpleDamage("Rock Blast"), { index: 41 });
+export const blaze_kick = Object.assign(simpleDamage("Blaze Kick"), { index: 42 });
+export const high_jump_kick = Object.assign(simpleDamage("High Jump Kick"), { index: 43 });
+export const rolling_kick = Object.assign(simpleDamage("Rolling Kick"), { index: 44 });
+export const jump_kick = Object.assign(simpleDamage("Jump Kick"), { index: 45 });
+export const calm_mind = Object.assign(simpleSelfAttackDefenseBuff("Calm Mind"), { index: 46 });
 export const camouflage = {
         index: 47,
-        name: "Camuffamento",
+        name: "Camouflage",
         damagingMove: false,
-        description: "Chi la usa diventa dello stesso tipo dell'avversario",
+        description: "Changes the user to the opponent's type",
         after: function (attacker, defender, hit) {
           if (hit) {
             attacker.type = defender.type.slice();
             attacker.pokemon.type = defender.pokemon.type.slice();
-            this.txt = defender.type.map(typeDisplayName).join("/");
+            this.resolvedType = defender.type[0] || null;
             this.logKey = "convers";
           } else {
             this.logKey = "fail";
           }
         }
       };
-export const sing = Object.assign(simpleSleepMove("Canto"), { index: 48 });
-export const skull_bash = Object.assign(twoTurnDefenseDamageMove("Capocciata"), { index: 49 });
-export const waterfall = Object.assign(targetTypeDoubleDamageMove("Cascata", "flying"), { index: 50 });
-export const focus_punch = Object.assign(conditionX2Move("Centripugno", "-{power}, x2 se l'utilizzatore non ha subito danni nel turno precedente", function(a) { return a.prevTurnActive && !a.prevTurnDamaged; }), { index: 51 });
-export const kinesis = Object.assign(simpleEnemyAttackNerf("Cinèsi"), { index: 52 });
-export const iron_tail = Object.assign(createToggleDamageMove("Codacciaio", "-{power}, 50% -{stats} Difesa avversaria", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 53 });
-export const tail_glow = Object.assign(simpleSelfAttackBigBuff("Codadiluce"), { index: 54 });
-export const thrash = Object.assign(forcedTripleHitConfusionMove("Colpo"), { index: 55 });
-export const low_kick = Object.assign(targetTypeDoubleDamageMove("Colpo Basso", "normal"), { index: 56 });
-export const tail_whip = Object.assign(simpleEnemyDefenseNerf("Colpocoda"), { index: 57 });
-export const mud_shot = Object.assign(simpleDamage("Colpodifango"), { index: 58 });
-export const karate_chop = Object.assign(targetTypeDoubleDamageMove("Colpokarate", "dark"), { index: 59 });
-export const comet_punch = Object.assign(simpleDamage("Cometapugno"), { index: 60 });
-export const swift = Object.assign(simpleDamage("Comete", "-{power}, colpisce anche avversari semi-invulnerabili"), { index: 61 });
-export const confusion = Object.assign(simpleDamage("Confusione"), { index: 62 });
-export const counter = Object.assign(counterMove("Contrattacco", "Danno base pari al doppio del danno subito nel turno precedente"), { index: 63 });
-export const reversal = Object.assign(missingHpDamageMove("Contropiede"), { index: 64 });
+export const sing = Object.assign(simpleSleepMove("Sing"), { index: 48 });
+export const skull_bash = Object.assign(twoTurnDefenseDamageMove("Skull Bash"), { index: 49 });
+export const waterfall = Object.assign(targetTypeDoubleDamageMove("Waterfall", "flying"), { index: 50 });
+export const focus_punch = Object.assign(conditionX2Move("Focus Punch", "-{power}, x2 if the user took no damage on the previous turn", function(a) { return a.prevTurnActive && !a.prevTurnDamaged; }), { index: 51 });
+export const kinesis = Object.assign(simpleEnemyAttackNerf("Kinesis"), { index: 52 });
+export const iron_tail = Object.assign(createToggleDamageMove("Iron Tail", "-{power}, 50% chance to lower the opponent's Defense by {stats}", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 53 });
+export const tail_glow = Object.assign(simpleSelfAttackBigBuff("Tail Glow"), { index: 54 });
+export const thrash = Object.assign(forcedTripleHitConfusionMove("Thrash"), { index: 55 });
+export const low_kick = Object.assign(targetTypeDoubleDamageMove("Low Kick", "normal"), { index: 56 });
+export const tail_whip = Object.assign(simpleEnemyDefenseNerf("Tail Whip"), { index: 57 });
+export const mud_shot = Object.assign(simpleDamage("Mud Shot"), { index: 58 });
+export const karate_chop = Object.assign(targetTypeDoubleDamageMove("Karate Chop", "dark"), { index: 59 });
+export const comet_punch = Object.assign(simpleDamage("Comet Punch"), { index: 60 });
+export const swift = Object.assign(simpleDamage("Swift", "-{power}, also hits semi-invulnerable opponents"), { index: 61 });
+export const confusion = Object.assign(simpleDamage("Confusion"), { index: 62 });
+export const counter = Object.assign(counterMove("Counter", "Base damage equals twice the damage taken on the previous turn"), { index: 63 });
+export const reversal = Object.assign(missingHpDamageMove("Reversal"), { index: 64 });
 export const conversion = {
         index: 65,
-        name: "Conversione",
+        name: "Conversion",
         damagingMove: false,
-        description: "Per il resto della battaglia ottiene il Tipo dell'avversario",
+        description: "Takes the opponent's type for the rest of the battle",
         logKey: "convers",
         after: function (attacker, defender, hit) {
           if (hit) {
             attacker.type = defender.type.slice();
-            this.txt = defender.type.map(typeDisplayName).join("/");
+            this.resolvedType = defender.type[0] || null;
           } else {
             this.logKey = "fail";
           }
@@ -1265,9 +1133,9 @@ export const conversion = {
       };
 export const conversion_2 = {
         index: 66,
-        name: "Conversione2",
+        name: "Conversion 2",
         damagingMove: false,
-        description: "Diventa di un Tipo casuale resistente in totale ai Tipi dell'avversario",
+        description: "Changes to a random type that resists all of the opponent's types",
         after: function (attacker, defender, hit) {
           var candidates;
           var chosenType;
@@ -1295,37 +1163,36 @@ export const conversion_2 = {
           }
           attacker.type = [chosenType];
           attacker.pokemon.type = [chosenType];
-          this.txt = chosenType;
           this.logKey = "convers";
         }
       };
-export const body_slam = Object.assign(toggleSecondaryStatus("Corposcontro", "-{power}, 50% Paralizza l'avversario", "par_block", "dmg_par"), { index: 67 });
-export const cosmic_power = Object.assign(simpleSelfDefenseBuff("Cosmoforza"), { index: 68 });
-export const cotton_spore = Object.assign(simpleEnemyAttackNerf("Cottonspora"), { index: 69 });
-export const soft_boiled = Object.assign(simpleHalfRecovery("Covauova"), { index: 70 });
-export const growth = Object.assign(simpleSelfAttackDefenseBuff("Crescita"), { index: 71 });
-export const feather_dance = Object.assign(simpleEnemyAttackNerf("Danzadipiume"), { index: 72 });
-export const swords_dance = Object.assign(simpleSelfAttackBigBuff("Danzaspada"), { index: 73 });
-export const lovely_kiss = Object.assign(simpleSleepMove("Demonbacio"), { index: 74 });
-export const wish = { index: 75, name: "Desiderio", damagingMove: false, description: "Alla fine del prossimo turno il Pokémon in campo recupera 1/2 PS max di chi ha usato Desiderio", after: function(attacker) { this.restored = Math.floor(attacker.pokemon.maxHp / 2); attacker.team.wishHealAmount += this.restored; attacker.team.wishSourceName = attacker.pokemon.name; this.logKey = "wish"; } };
+export const body_slam = Object.assign(toggleSecondaryStatus("Body Slam", "-{power}, 50% chance to paralyze the opponent", "par_block", "dmg_par"), { index: 67 });
+export const cosmic_power = Object.assign(simpleSelfDefenseBuff("Cosmic Power"), { index: 68 });
+export const cotton_spore = Object.assign(simpleEnemyAttackNerf("Cotton Spore"), { index: 69 });
+export const soft_boiled = Object.assign(simpleHalfRecovery("Soft-Boiled"), { index: 70 });
+export const growth = Object.assign(simpleSelfAttackDefenseBuff("Growth"), { index: 71 });
+export const feather_dance = Object.assign(simpleEnemyAttackNerf("Feather Dance"), { index: 72 });
+export const swords_dance = Object.assign(simpleSelfAttackBigBuff("Swords Dance"), { index: 73 });
+export const lovely_kiss = Object.assign(simpleSleepMove("Lovely Kiss"), { index: 74 });
+export const wish = { index: 75, name: "Wish", damagingMove: false, description: "At the end of the next turn, the active Pokémon restores half the maximum HP of the Wish user", after: function(attacker) { this.restored = Math.floor(attacker.pokemon.maxHp / 2); attacker.team.wishHealAmount += this.restored; attacker.team.wishSourceSpeciesKey = attacker.pokemon.speciesKey; this.logKey = "wish"; } };
 export const destiny_bond = {
         index: 76,
-        name: "Destinobbligato",
+        name: "Destiny Bond",
         damagingMove: false,
-        description: "Se chi la usa va KO durante la prossima mossa avversaria, manda KO anche l'avversario",
+        description: "If the user is knocked out by the opponent's next move, the opponent is knocked out too",
         after: function (attacker) {
           attacker.destinyBondActive = true;
           this.logKey = "destiny_bond";
         }
       };
-export const dynamic_punch = Object.assign(damagePlusAlwaysStatus("Dinamipugno", "-{power}, Confonde l'avversario", "cnf_block", "dmg_cnf"), { index: 77 });
-export const spite = Object.assign(simpleNegatePercentageMove("Dispetto"), { index: 78 });
-export const future_sight = Object.assign(futureSightMove("Divinazione"), { index: 79 });
+export const dynamic_punch = Object.assign(damagePlusAlwaysStatus("Dynamic Punch", "-{power}, confuses the opponent", "cnf_block", "dmg_cnf"), { index: 77 });
+export const spite = Object.assign(simpleNegatePercentageMove("Spite"), { index: 78 });
+export const future_sight = Object.assign(futureSightMove("Future Sight"), { index: 79 });
 export const water_sport = {
         index: 80,
-        name: "Docciascudo",
+        name: "Water Sport",
         damagingMove: false,
-        description: "+{stats} Difesa, previene la Scottatura",
+        description: "+{stats} Defense and prevents burns",
         after: function (attacker) {
           attacker.buffSelfDef(this.stats);
           clearStatusEffect(attacker, "brn");
@@ -1333,20 +1200,20 @@ export const water_sport = {
           this.logKey = "buff_self_def_burn";
         }
       };
-export const sweet_kiss = Object.assign(simpleConfusionMove("Dolcebacio"), { index: 81 });
-export const double_slap = Object.assign(simpleDamage("Doppiasberla"), { index: 82 });
-export const twineedle = Object.assign(toggleSecondaryStatus("Doppio Ago", "-{power}, 50% Avvelena l'avversario", "psn", "dmg_psn"), { index: 83 });
-export const double_kick = Object.assign(repeatLastTurnDamageMove("Doppiocalcio"), { index: 84 });
-export const double_team = Object.assign(simpleSelfDefenseBuff("Doppioteam"), { index: 85 });
-export const dragon_claw = Object.assign(simpleDamage("Dragartigli"), { index: 86 });
-export const dragon_dance = Object.assign(simpleSelfAttackDefenseBuff("Dragodanza"), { index: 87 });
-export const dragon_breath = Object.assign(toggleSecondaryStatus("Dragospiro", "-{power}, 50% Paralizza l'avversario", "par_block", "dmg_par"), { index: 88 });
-export const eruption = Object.assign(conditionX2Move("Eruzione", "-{power}, x2 se chi la usa ha più di metà PS", function(a) { return a.hp > a.pokemon.maxHp / 2; }), { index: 89 });
+export const sweet_kiss = Object.assign(simpleConfusionMove("Sweet Kiss"), { index: 81 });
+export const double_slap = Object.assign(simpleDamage("Double Slap"), { index: 82 });
+export const twineedle = Object.assign(toggleSecondaryStatus("Twineedle", "-{power}, 50% chance to poison the opponent", "psn", "dmg_psn"), { index: 83 });
+export const double_kick = Object.assign(repeatLastTurnDamageMove("Double Kick"), { index: 84 });
+export const double_team = Object.assign(simpleSelfDefenseBuff("Double Team"), { index: 85 });
+export const dragon_claw = Object.assign(simpleDamage("Dragon Claw"), { index: 86 });
+export const dragon_dance = Object.assign(simpleSelfAttackDefenseBuff("Dragon Dance"), { index: 87 });
+export const dragon_breath = Object.assign(toggleSecondaryStatus("Dragon Breath", "-{power}, 50% chance to paralyze the opponent", "par_block", "dmg_par"), { index: 88 });
+export const eruption = Object.assign(conditionX2Move("Eruption", "-{power}, x2 if the user has more than half HP", function(a) { return a.hp > a.pokemon.maxHp / 2; }), { index: 89 });
 export const imprison = {
         index: 90,
-        name: "Esclusiva",
+        name: "Imprison",
         damagingMove: false,
-        description: "Blocca le mosse dell'avversario identiche a quelle di chi la usa",
+        description: "Blocks the opponent's moves that are also known by the user",
         after: function (attacker, defender, hit) {
           if (hit) {
             var keys = attacker.pokemon.moves.map(function (m) { return m.key; });
@@ -1371,8 +1238,8 @@ export const imprison = {
       };
 export const explosion = {
         index: 91,
-        name: "Esplosione",
-        description: "-2xPS max utilizzatore, che va KO",
+        name: "Explosion",
+        description: "Deals twice the user's maximum HP; the user is knocked out",
         before: function (attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           this.power = attacker.pokemon.maxHp;
@@ -1384,12 +1251,12 @@ export const explosion = {
           this.logKey = hit ? "selfdestruct" : "fail";
         }
       };
-export const extreme_speed = Object.assign(simpleDamage("Extrarapido"), { index: 92 });
-export const extrasensory = Object.assign(simpleDamage("Extrasenso"), { index: 93 });
+export const extreme_speed = Object.assign(simpleDamage("Extreme Speed"), { index: 92 });
+export const extrasensory = Object.assign(simpleDamage("Extrasensory"), { index: 93 });
 export const facade = {
         index: 94,
-        name: "Facciata",
-        description: "-{power}, x2 se chi la usa ha uno status",
+        name: "Facade",
+        description: "-{power}, x2 if the user has a status condition",
         before: function (attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           if (hit) {
@@ -1407,12 +1274,12 @@ export const facade = {
           this.moveMult = 1;
         }
       };
-export const zap_cannon = Object.assign(damagePlusAlwaysStatus("Falcecannone", "-{power}, Paralizza l'avversario", "par_block", "dmg_par"), { index: 95 });
-export const fake_tears = Object.assign(simpleEnemyDefenseNerf("Falselacrime"), { index: 96 });
+export const zap_cannon = Object.assign(damagePlusAlwaysStatus("Zap Cannon", "-{power}, paralyzes the opponent", "par_block", "dmg_par"), { index: 95 });
+export const fake_tears = Object.assign(simpleEnemyDefenseNerf("Fake Tears"), { index: 96 });
 export const false_swipe = {
         index: 97,
-        name: "Falsofinale",
-        description: "-{power}, lascia almeno 1 PS all'avversario",
+        name: "False Swipe",
+        description: "-{power}, always leaves the opponent with at least 1 HP",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
         },
@@ -1431,28 +1298,28 @@ export const false_swipe = {
           }
         }
       };
-export const mud_sport = Object.assign(simpleEnemyAttackNerf("Fangata"), { index: 98 });
-export const muddy_water = Object.assign(simpleDamage("Fanghiglia"), { index: 99 });
-export const sludge = Object.assign(toggleSecondaryStatus("Fango", "-{power}, 50% Avvelena l'avversario", "psn", "dmg_psn"), { index: 100 });
-export const sludge_bomb = Object.assign(targetTypeDoubleDamageMove("Fangobomba", "fairy"), { index: 101 });
-export const mud_slap = Object.assign(targetTypeDoubleDamageMove("Fangosberla", "electric"), { index: 102 });
-export const charm = Object.assign(simpleEnemyAttackNerf("Fascino"), { index: 103 });
-export const leaf_blade = Object.assign(simpleDamage("Fendifoglia"), { index: 104 });
-export const metal_claw = Object.assign(createToggleDamageMove("Ferrartigli", "-{power}, 50% +{stats} Attacco", function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 105 });
-export const iron_defense = Object.assign(simpleSelfDefenseBuff("Ferroscudo"), { index: 106 });
-export const metal_sound = Object.assign(simpleEnemyDefenseNerf("Ferrostrido"), { index: 107 });
-export const feint_attack = Object.assign(targetTypeDoubleDamageMove("Finta", "ghost"), { index: 108 });
-export const flail = Object.assign(missingHpDamageMove("Flagello"), { index: 109 });
+export const mud_sport = Object.assign(simpleEnemyAttackNerf("Mud Sport"), { index: 98 });
+export const muddy_water = Object.assign(simpleDamage("Muddy Water"), { index: 99 });
+export const sludge = Object.assign(toggleSecondaryStatus("Sludge", "-{power}, 50% chance to poison the opponent", "psn", "dmg_psn"), { index: 100 });
+export const sludge_bomb = Object.assign(targetTypeDoubleDamageMove("Sludge Bomb", "fairy"), { index: 101 });
+export const mud_slap = Object.assign(targetTypeDoubleDamageMove("Mud Slap", "electric"), { index: 102 });
+export const charm = Object.assign(simpleEnemyAttackNerf("Charm"), { index: 103 });
+export const leaf_blade = Object.assign(simpleDamage("Leaf Blade"), { index: 104 });
+export const metal_claw = Object.assign(createToggleDamageMove("Metal Claw", "-{power}, 50% chance to raise Attack by {stats}", function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 105 });
+export const iron_defense = Object.assign(simpleSelfDefenseBuff("Iron Defense"), { index: 106 });
+export const metal_sound = Object.assign(simpleEnemyDefenseNerf("Metal Sound"), { index: 107 });
+export const feint_attack = Object.assign(targetTypeDoubleDamageMove("Feint Attack", "ghost"), { index: 108 });
+export const flail = Object.assign(missingHpDamageMove("Flail"), { index: 109 });
 export const flash = Object.assign(simpleNegatePercentageMove("Flash"), { index: 110 });
-export const focus_energy = Object.assign(simpleTeamAttackBuff("Focalenergia"), { index: 111 });
-export const magical_leaf = Object.assign(simpleDamage("Fogliamagica"), { index: 112 });
-export const razor_leaf = Object.assign(simpleDamage("Foglielama"), { index: 113 });
-export const strength = Object.assign(simpleDamage("Forza"), { index: 114 });
-export const ancient_power = Object.assign(createToggleDamageMove("Forzantica", "-{power}, 50% +{stats} Attacco e Difesa", function(attacker) { attacker.buffSelfAtk(this.stats); attacker.buffSelfDef(this.stats); this.logKey = "buff_self_atk_def"; }), { index: 115 });
+export const focus_energy = Object.assign(simpleTeamAttackBuff("Focus Energy"), { index: 111 });
+export const magical_leaf = Object.assign(simpleDamage("Magical Leaf"), { index: 112 });
+export const razor_leaf = Object.assign(simpleDamage("Razor Leaf"), { index: 113 });
+export const strength = Object.assign(simpleDamage("Strength"), { index: 114 });
+export const ancient_power = Object.assign(createToggleDamageMove("Ancient Power", "-{power}, 50% chance to raise Attack and Defense by {stats}", function(attacker) { attacker.buffSelfAtk(this.stats); attacker.buffSelfDef(this.stats); this.logKey = "buff_self_atk_def"; }), { index: 115 });
 export const secret_power = {
         index: 116,
-        name: "Forzasegreta",
-        description: "-{power}, effetto aggiuntivo dipendente dal meteo",
+        name: "Secret Power",
+        description: "-{power}, with an additional effect based on the weather",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
         },
@@ -1477,64 +1344,64 @@ export const secret_power = {
           }
         }
       };
-export const mist_ball = Object.assign(createToggleDamageMove("Foschisfera", "-{power}, 50% +{stats} Difesa", function(attacker) { attacker.buffSelfDef(this.stats); this.logKey = "buff_self_def"; }), { index: 117 });
-export const dig = Object.assign(semiInvulnerableDamageMove("Fossa", "1° turno diventa non bersagliabile, 2° turno -{power}", "invul_dig"), { index: 118 });
-export const rock_slide = Object.assign(targetTypeDoubleDamageMove("Frana", "bug"), { index: 119 });
-export const vine_whip = Object.assign(simpleDamage("Frustata"), { index: 120 });
-export const frustration = Object.assign(simpleDamage("Frustrazione"), { index: 121 });
-export const thunderbolt = Object.assign(toggleSecondaryStatus("Fulmine", "-{power}, 50% Paralizza l'avversario", "par_block", "dmg_par"), { index: 122 });
-export const leer = Object.assign(simpleEnemyDefenseNerf("Fulmisguardo"), { index: 123 });
-export const fire_blast = Object.assign(toggleSecondaryStatus("Fuocobomba", "-{power}, 50% Brucia l'avversario", "brn", "dmg_brn"), { index: 124 });
-export const will_o_wisp = Object.assign(simpleBurnMove("Fuocofatuo"), { index: 125 });
-export const fire_punch = Object.assign(targetTypeDoubleDamageMove("Fuocopugno", "steel"), { index: 126 });
-export const fury_attack = Object.assign(repeatLastTurnDamageMove("Furia"), { index: 127 });
-export const thief = Object.assign(createToggleDamageMove("Furto", "-{power}, 50% se chi la usa non ha uno strumento, ruba quello dell'avversario", function(attacker, defender) {
+export const mist_ball = Object.assign(createToggleDamageMove("Mist Ball", "-{power}, 50% chance to raise Defense by {stats}", function(attacker) { attacker.buffSelfDef(this.stats); this.logKey = "buff_self_def"; }), { index: 117 });
+export const dig = Object.assign(semiInvulnerableDamageMove("Dig", "Turn 1: becomes untargetable; turn 2: -{power}", "invul_dig"), { index: 118 });
+export const rock_slide = Object.assign(targetTypeDoubleDamageMove("Rock Slide", "bug"), { index: 119 });
+export const vine_whip = Object.assign(simpleDamage("Vine Whip"), { index: 120 });
+export const frustration = Object.assign(simpleDamage("Frustration"), { index: 121 });
+export const thunderbolt = Object.assign(toggleSecondaryStatus("Thunderbolt", "-{power}, 50% chance to paralyze the opponent", "par_block", "dmg_par"), { index: 122 });
+export const leer = Object.assign(simpleEnemyDefenseNerf("Leer"), { index: 123 });
+export const fire_blast = Object.assign(toggleSecondaryStatus("Fire Blast", "-{power}, 50% chance to burn the opponent", "brn", "dmg_brn"), { index: 124 });
+export const will_o_wisp = Object.assign(simpleBurnMove("Will-O-Wisp"), { index: 125 });
+export const fire_punch = Object.assign(targetTypeDoubleDamageMove("Fire Punch", "steel"), { index: 126 });
+export const fury_attack = Object.assign(repeatLastTurnDamageMove("Fury Attack"), { index: 127 });
+export const thief = Object.assign(createToggleDamageMove("Thief", "-{power}, 50% chance to steal the opponent's item if the user holds none", function(attacker, defender) {
     var manager = attacker.team && attacker.team.battleManager;
     this.logKey = manager && manager.stealHeldItem(attacker, defender) ? "steal_item" : "dmg_los_perc";
   }), { index: 128 });
-export const icicle_spear = Object.assign(simpleDamage("Gelolancia"), { index: 129 });
-export const ice_punch = Object.assign(targetTypeDoubleDamageMove("Gelopugno", "dragon"), { index: 130 });
-export const ice_beam = Object.assign(toggleSecondaryStatus("Geloraggio", "-{power}, 50% Congela l'avversario", "frz", "dmg_frz"), { index: 131 });
-export const guillotine = Object.assign(ohkoMove("Ghigliottina"), { index: 132 });
-export const giga_drain = Object.assign(damageRecoveryMove("Gigassorbimento", "-{power}, PS +1/2 del danno inflitto", 1/2), { index: 133 });
+export const icicle_spear = Object.assign(simpleDamage("Icicle Spear"), { index: 129 });
+export const ice_punch = Object.assign(targetTypeDoubleDamageMove("Ice Punch", "dragon"), { index: 130 });
+export const ice_beam = Object.assign(toggleSecondaryStatus("Ice Beam", "-{power}, 50% chance to freeze the opponent", "frz", "dmg_frz"), { index: 131 });
+export const guillotine = Object.assign(ohkoMove("Guillotine"), { index: 132 });
+export const giga_drain = Object.assign(damageRecoveryMove("Giga Drain", "-{power}, restores HP equal to half the damage dealt", 1/2), { index: 133 });
 export const sunny_day = {
         index: 134,
-        name: "Giornodisole",
+        name: "Sunny Day",
         damagingMove: false,
-        description: "Fa splendere il sole",
+        description: "Makes the sunlight strong",
         logKey: "weather_set",
-        weatherLabel: "Giornodisole",
+        weatherLabel: "Sunny Day",
         setWeather: "sun",
         after: function () {
           this.logKey = "weather_set";
         }
       };
-export const pay_day = Object.assign(simpleDamage("Giornopaga"), { index: 135 });
-export const scratch = Object.assign(simpleDamage("Graffio"), { index: 136 });
+export const pay_day = Object.assign(simpleDamage("Pay Day"), { index: 135 });
+export const scratch = Object.assign(simpleDamage("Scratch"), { index: 136 });
 export const hail = {
         index: 137,
-        name: "Grandine",
+        name: "Hail",
         damagingMove: false,
-        description: "Causa una grandinata",
+        description: "Starts a hailstorm",
         logKey: "weather_set",
-        weatherLabel: "Grandine",
+        weatherLabel: "Hail",
         setWeather: "hail",
         after: function () {
           this.logKey = "weather_set";
         }
       };
-export const bulk_up = Object.assign(simpleSelfAttackDefenseBuff("Granfisico"), { index: 138 });
-export const hyper_voice = Object.assign(simpleDamage("Granvoce"), { index: 139 });
-export const howl = Object.assign(simpleSelfAttackBuff("Gridodilotta"), { index: 140 });
-export const hydro_pump = Object.assign(simpleDamage("Idropompa"), { index: 141 });
-export const water_pulse = Object.assign(toggleSecondaryStatus("Idropulsar", "-{power}, 50% Confonde l'avversario", "cnf_block", "dmg_cnf"), { index: 142 });
-export const horn_attack = Object.assign(simpleDamage("Incornata"), { index: 143 });
-export const cross_chop = Object.assign(simpleDamage("Incrocolpo"), { index: 144 });
+export const bulk_up = Object.assign(simpleSelfAttackDefenseBuff("Bulk Up"), { index: 138 });
+export const hyper_voice = Object.assign(simpleDamage("Hyper Voice"), { index: 139 });
+export const howl = Object.assign(simpleSelfAttackBuff("Howl"), { index: 140 });
+export const hydro_pump = Object.assign(simpleDamage("Hydro Pump"), { index: 141 });
+export const water_pulse = Object.assign(toggleSecondaryStatus("Water Pulse", "-{power}, 50% chance to confuse the opponent", "cnf_block", "dmg_cnf"), { index: 142 });
+export const horn_attack = Object.assign(simpleDamage("Horn Attack"), { index: 143 });
+export const cross_chop = Object.assign(simpleDamage("Cross Chop"), { index: 144 });
 export const nightmare = {
         index: 145,
-        name: "Incubo",
+        name: "Nightmare",
         damagingMove: false,
-        description: "Se l'avversario è Addormentato perde 1/3 dei PS max a fine turno",
+        description: "If the opponent is asleep, it loses 1/3 of maximum HP at the end of the turn",
         after: function (_attacker, defender, hit) {
           if (hit && defender.status === "slp") {
             defender.hp = Math.max(0, defender.hp - Math.floor(defender.pokemon.maxHp / 3));
@@ -1546,12 +1413,12 @@ export const nightmare = {
           }
         }
       };
-export const detect = Object.assign(blockStatBoostMove("Individua", "50% protegge la squadra dai moltiplicatori delle mosse avversarie x5 turni", 5), { index: 146 });
-export const disable = Object.assign(disableLastMoveMove("Inibitore"), { index: 147 });
+export const detect = Object.assign(blockStatBoostMove("Detect", "50% chance to protect the team from opposing move multipliers for 5 turns", 5), { index: 146 });
+export const disable = Object.assign(disableLastMoveMove("Disable"), { index: 147 });
 export const pursuit = {
         index: 148,
-        name: "Inseguimento",
-        description: "-{power}, se l'avversario è appena stato sostituito questo attacco colpisce invece lui con danno x1.5",
+        name: "Pursuit",
+        description: "-{power}, if the opponent just switched, hits the withdrawn Pokémon for x1.5 damage instead",
         before: function (attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           if (hit && this.isSwitchReaction) {
@@ -1565,11 +1432,11 @@ export const pursuit = {
           this.moveMult = 1;
         }
       };
-export const swallow = { index: 149, name: "Introenergia", damagingMove: false, description: "Recupera tutti i PS se Accumulo è stato usato in precedenza", after: function(attacker) { if (attacker.stockpileUsed) { attacker.hp = attacker.pokemon.maxHp; this.logKey = "rest_hp"; } else { this.logKey = "fail"; } } };
+export const swallow = { index: 149, name: "Swallow", damagingMove: false, description: "Fully restores HP if Stockpile was used previously", after: function(attacker) { if (attacker.stockpileUsed) { attacker.hp = attacker.pokemon.maxHp; this.logKey = "rest_hp"; } else { this.logKey = "fail"; } } };
 export const hidden_power = {
         index: 150,
-        name: "Introforza",
-        description: "-{power}, il prossimo turno non valgono i boost delle mosse dell'avversario",
+        name: "Hidden Power",
+        description: "-{power}, suppresses the opponent's move boosts on the next turn",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
         },
@@ -1586,25 +1453,25 @@ export const hidden_power = {
           }
         }
       };
-export const hyper_beam = Object.assign(rechargeDamageMove("Iper Raggio"), { index: 151 });
-export const hyper_fang = Object.assign(simpleDamage("Iperzanna"), { index: 152 });
-export const hypnosis = Object.assign(simpleSleepMove("Ipnosi"), { index: 153 });
-export const rage = Object.assign(conditionX2Move("Ira", "-{power}, x2 se chi la usa non ha tutti i PS", function(a) { return a.hp < a.pokemon.maxHp; }), { index: 154 });
-export const dragon_rage = Object.assign(simpleDamage("Ira di Drago"), { index: 155 });
-export const slash = Object.assign(simpleDamage("Lacerazione"), { index: 156 });
-export const flamethrower = Object.assign(toggleSecondaryStatus("Lanciafiamme", "-{power}, 50% Brucia l'avversario", "brn", "dmg_brn"), { index: 157 });
-export const lick = Object.assign(toggleSecondaryStatus("Leccata", "-{power}, 50% Paralizza l'avversario", "par_block", "dmg_par"), { index: 158 });
-export const bind = Object.assign(bindDamageMove("Legatutto", "-{power}, l'avversario non può essere sostituito x4 turni", 4), { index: 159 });
-export const mind_reader = Object.assign(chargeBuffMove("Leggimente"), { index: 160 });
-export const constrict = Object.assign(simpleDamage("Limitazione"), { index: 161 });
-export const lock_on = Object.assign(chargeBuffMove("Localizza"), { index: 162 });
-export const moonlight = Object.assign(simpleHalfRecovery("Lucelunare"), { index: 163 });
-export const sacred_fire = { index: 164, name: "Magifuoco", description: "-{power}, scongela chi lo usa e Scotta l'avversario", before: function(_attacker, _defender, hit) { this.damagingMove = Boolean(hit); }, after: function(attacker, defender, hit) { if (hit) { clearStatusEffect(attacker, "frz"); applyStatusEffect(defender, "brn"); this.logKey = "dmg_brn"; } else { this.logKey = "fail"; } } };
+export const hyper_beam = Object.assign(rechargeDamageMove("Hyper Beam"), { index: 151 });
+export const hyper_fang = Object.assign(simpleDamage("Hyper Fang"), { index: 152 });
+export const hypnosis = Object.assign(simpleSleepMove("Hypnosis"), { index: 153 });
+export const rage = Object.assign(conditionX2Move("Rage", "-{power}, x2 if the user is not at full HP", function(a) { return a.hp < a.pokemon.maxHp; }), { index: 154 });
+export const dragon_rage = Object.assign(simpleDamage("Dragon Rage"), { index: 155 });
+export const slash = Object.assign(simpleDamage("Slash"), { index: 156 });
+export const flamethrower = Object.assign(toggleSecondaryStatus("Flamethrower", "-{power}, 50% chance to burn the opponent", "brn", "dmg_brn"), { index: 157 });
+export const lick = Object.assign(toggleSecondaryStatus("Lick", "-{power}, 50% chance to paralyze the opponent", "par_block", "dmg_par"), { index: 158 });
+export const bind = Object.assign(bindDamageMove("Bind", "-{power}, prevents the opponent from switching for 4 turns", 4), { index: 159 });
+export const mind_reader = Object.assign(chargeBuffMove("Mind Reader"), { index: 160 });
+export const constrict = Object.assign(simpleDamage("Constrict"), { index: 161 });
+export const lock_on = Object.assign(chargeBuffMove("Lock-On"), { index: 162 });
+export const moonlight = Object.assign(simpleHalfRecovery("Moonlight"), { index: 163 });
+export const sacred_fire = { index: 164, name: "Sacred Fire", description: "-{power}, thaws the user and burns the opponent", before: function(_attacker, _defender, hit) { this.damagingMove = Boolean(hit); }, after: function(attacker, defender, hit) { if (hit) { clearStatusEffect(attacker, "frz"); applyStatusEffect(defender, "brn"); this.logKey = "dmg_brn"; } else { this.logKey = "fail"; } } };
 export const magic_coat = {
         index: 165,
-        name: "Magivelo",
+        name: "Magic Coat",
         damagingMove: false,
-        description: "Riflette gli status subiti sull'attaccante finché chi la usa resta in campo",
+        description: "Reflects incoming status conditions onto the attacker while the user remains active",
         after: function (attacker, _defender, hit) {
           if (hit) {
             attacker.magicCoatActive = true;
@@ -1614,12 +1481,12 @@ export const magic_coat = {
           }
         }
       };
-export const magnitude = Object.assign(conditionX2Move("Magnitudo", "-{power}, x2 se l'avversario sta usando Fossa", function(a, d) { return d.semiInvulnerable !== null && d.semiInvulnerable === "dig"; }), { index: 166 });
+export const magnitude = Object.assign(conditionX2Move("Magnitude", "-{power}, x2 if the opponent is using Dig", function(a, d) { return d.semiInvulnerable !== null && d.semiInvulnerable === "dig"; }), { index: 166 });
 export const pain_split = {
         index: 167,
-        name: "Malcomune",
+        name: "Pain Split",
         damagingMove: false,
-        description: "Distribuisce in parti uguali i PS di chi la usa e del bersaglio",
+        description: "Splits the user's and target's combined HP equally",
         after: function (attacker, defender, hit) {
           if (hit) {
             var avg = Math.floor((attacker.hp + defender.hp) / 2);
@@ -1631,12 +1498,12 @@ export const pain_split = {
           }
         }
       };
-export const curse = Object.assign(selfBuffDebuffMove("Maledizione"), { index: 168 });
-export const mean_look = Object.assign(trapMove("Malosguardo", "L'avversario non può scappare"), { index: 169 });
+export const curse = Object.assign(selfBuffDebuffMove("Curse"), { index: 168 });
+export const mean_look = Object.assign(trapMove("Mean Look", "The opponent cannot escape"), { index: 169 });
 export const dream_eater = {
         index: 170,
-        name: "Mangiasogni",
-        description: "Solo se l'avversario è Addormentato: -{power}, PS +1/2 del danno inflitto",
+        name: "Dream Eater",
+        description: "Only works on a sleeping opponent: -{power}, restores half the damage dealt",
         before: function (_attacker, defender, hit) {
           this.damagingMove = Boolean(hit && defender.status === "slp");
           this.logKey = this.damagingMove ? "dmg_rec_hp" : "fail";
@@ -1654,8 +1521,8 @@ export const dream_eater = {
       };
 export const smelling_salts = {
         index: 171,
-        name: "Maniereforti",
-        description: "-{power}, x2 se l'avversario è Paralizzato ma ne cura la Paralisi",
+        name: "Smelling Salts",
+        description: "-{power}, x2 if the opponent is paralyzed, but cures its paralysis",
         before: function (_attacker, defender, hit) {
           this.damagingMove = Boolean(hit);
           if (hit) {
@@ -1678,21 +1545,21 @@ export const smelling_salts = {
           this.moveMult = 1;
         }
       };
-export const crabhammer = Object.assign(simpleDamage("Martellata"), { index: 172 });
-export const morning_sun = Object.assign(weatherRecoveryMove("Mattindoro", "Recupera 1/2 PS max, 1/4 con meteo avverso, tutti con sole"), { index: 173 });
-export const meditate = Object.assign(simpleSelfAttackBuff("Meditazione"), { index: 174 });
-export const mega_kick = Object.assign(simpleDamage("Megacalcio"), { index: 175 });
-export const megahorn = Object.assign(targetTypeDoubleDamageMove("Megacorno", "psychic"), { index: 176 });
-export const mega_punch = Object.assign(simpleDamage("Megapugno"), { index: 177 });
-export const mega_drain = Object.assign(damageRecoveryMove("Megassorbimento", "-{power}, PS +1/4 del danno inflitto", 1/4), { index: 178 });
-export const grass_whistle = Object.assign(simpleSleepMove("Meloderba"), { index: 179 });
+export const crabhammer = Object.assign(simpleDamage("Crabhammer"), { index: 172 });
+export const morning_sun = Object.assign(weatherRecoveryMove("Morning Sun", "Restores 1/2 maximum HP, 1/4 in adverse weather, or all HP in sunlight"), { index: 173 });
+export const meditate = Object.assign(simpleSelfAttackBuff("Meditate"), { index: 174 });
+export const mega_kick = Object.assign(simpleDamage("Mega Kick"), { index: 175 });
+export const megahorn = Object.assign(targetTypeDoubleDamageMove("Megahorn", "psychic"), { index: 176 });
+export const mega_punch = Object.assign(simpleDamage("Mega Punch"), { index: 177 });
+export const mega_drain = Object.assign(damageRecoveryMove("Mega Drain", "-{power}, restores HP equal to 1/4 of the damage dealt", 1/4), { index: 178 });
+export const grass_whistle = Object.assign(simpleSleepMove("Grass Whistle"), { index: 179 });
 export const memento = Object.assign(simpleEnemyAtkDefNerf("Memento"), { index: 180 });
-export const meteor_mash = Object.assign(createToggleDamageMove("Meteorpugno", "-{power}, 50% +{stats} Attacco", function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 181 });
+export const meteor_mash = Object.assign(createToggleDamageMove("Meteor Mash", "-{power}, 50% chance to raise Attack by {stats}", function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 181 });
 export const metronome = {
         index: 182,
-        name: "Metronomo",
+        name: "Metronome",
         damagingMove: false,
-        description: "Utilizza una mossa casuale (potenza: {power}, stats: {stats})",
+        description: "Uses a random move (power: {power}, stats: {stats})",
         copiedMove: null,
         before: function (attacker) {
           this.copiedMove = null;
@@ -1717,12 +1584,12 @@ export const metronome = {
           }
         }
       };
-export const string_shot = Object.assign(simpleEnemyAttackNerf("Millebave"), { index: 183 });
+export const string_shot = Object.assign(simpleEnemyAttackNerf("String Shot"), { index: 183 });
 export const mimic = {
         index: 184,
-        name: "Mimica",
+        name: "Mimic",
         damagingMove: false,
-        description: "Diventa l'ultima mossa dell'avversario fino al proprio cambio o KO (potenza: {power}, stats: {stats})",
+        description: "Becomes the opponent's last move until the user switches or is knocked out (power: {power}, stats: {stats})",
         after: function (attacker, defender) {
           var src = defender.turnBeforeMoveUsed;
           var copied;
@@ -1761,13 +1628,13 @@ export const mimic = {
           this.logKey = "mimic";
         }
       };
-export const minimize = Object.assign(simpleSelfDefenseBuff("Minimizzato"), { index: 185 });
-export const pin_missile = Object.assign(repeatLastTurnDamageMove("Missilspillo"), { index: 186 });
-export const bite = Object.assign(simpleDamage("Morso"), { index: 187 });
+export const minimize = Object.assign(simpleSelfDefenseBuff("Minimize"), { index: 185 });
+export const pin_missile = Object.assign(repeatLastTurnDamageMove("Pin Missile"), { index: 186 });
+export const bite = Object.assign(simpleDamage("Bite"), { index: 187 });
 export const seismic_toss = {
         index: 188,
-        name: "Movimento Sismico",
-        description: "-PS attuali",
+        name: "Seismic Toss",
+        description: "Deals damage equal to current HP",
         before: function (attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           this.power = attacker.hp;
@@ -1776,14 +1643,14 @@ export const seismic_toss = {
           this.logKey = hit ? "dmg" : "fail";
         }
       };
-export const whirlpool = Object.assign(bindDamageMove("Mulinello", "-{power}, l'avversario non può essere sostituito x4 turni", 4), { index: 189 });
-export const smokescreen = Object.assign(simpleEnemyAttackNerf("Muro di Fumo"), { index: 190 });
-export const nature_power = Object.assign(conditionX2Move("Naturforza", "-{power}, x2 se è attiva una mossa meteorologica", function(a) { return a.team.battleManager && a.team.battleManager.weather !== null; }), { index: 191 });
+export const whirlpool = Object.assign(bindDamageMove("Whirlpool", "-{power}, prevents the opponent from switching for 4 turns", 4), { index: 189 });
+export const smokescreen = Object.assign(simpleEnemyAttackNerf("Smokescreen"), { index: 190 });
+export const nature_power = Object.assign(conditionX2Move("Nature Power", "-{power}, x2 while a weather move is active", function(a) { return a.team.battleManager && a.team.battleManager.weather !== null; }), { index: 191 });
 export const mist = {
         index: 192,
-        name: "Nebbia",
+        name: "Mist",
         damagingMove: false,
-        description: "Previene la riduzione di Attacco/Difesa della propria squadra x5 turni",
+        description: "Prevents the team's Attack and Defense from being lowered for 5 turns",
         after: function (attacker) {
           if (attacker.team.teamMistCounter === 0) {
             attacker.team.teamMistCounter = 1;
@@ -1795,9 +1662,9 @@ export const mist = {
       };
 export const haze = {
         index: 193,
-        name: "Nube",
+        name: "Haze",
         damagingMove: false,
-        description: "Annulla le modifiche di stats di ogni squadra",
+        description: "Clears every team's stat changes",
         after: function (attacker, defender) {
           var teams = [attacker.team, defender.team];
           teams.forEach(function (team) {
@@ -1816,13 +1683,13 @@ export const haze = {
           this.logKey = "nube";
         }
       };
-export const doom_desire = Object.assign(futureSightMove("Desiderio Fatale"), { index: 194 });
-export const octazooka = Object.assign(createToggleDamageMove("Octazooka", "-{power}, 50% -{stats} Attacco avversario", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfAtk(this.stats); this.logKey = "nerf_enem_atk"; } }), { index: 195 });
-export const outrage = Object.assign(forcedTripleHitConfusionMove("Oltraggio"), { index: 196 });
+export const doom_desire = Object.assign(futureSightMove("Doom Desire"), { index: 194 });
+export const octazooka = Object.assign(createToggleDamageMove("Octazooka", "-{power}, 50% chance to lower the opponent's Attack by {stats}", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfAtk(this.stats); this.logKey = "nerf_enem_atk"; } }), { index: 195 });
+export const outrage = Object.assign(forcedTripleHitConfusionMove("Outrage"), { index: 196 });
 export const night_shade = {
         index: 197,
-        name: "Ombra Notturna",
-        description: "-PS attuali",
+        name: "Night Shade",
+        description: "Deals damage equal to current HP",
         before: function (attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           this.power = attacker.hp;
@@ -1831,12 +1698,12 @@ export const night_shade = {
           this.logKey = hit ? "dmg" : "fail";
         }
       };
-export const heat_wave = Object.assign(simpleDamage("Ondacalda"), { index: 198 });
-export const shock_wave = Object.assign(simpleDamage("Ondashock"), { index: 199 });
+export const heat_wave = Object.assign(simpleDamage("Heat Wave"), { index: 198 });
+export const shock_wave = Object.assign(simpleDamage("Shock Wave"), { index: 199 });
 export const bone_club = {
         index: 200,
-        name: "Ossoclava",
-        description: "-{power}, ignora buff Difesa avversari",
+        name: "Bone Club",
+        description: "-{power}, ignores the opponent's Defense boosts",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           this.defMult = 0;
@@ -1846,17 +1713,17 @@ export const bone_club = {
           this.logKey = hit ? "dmg" : "fail";
         }
       };
-export const bonemerang = Object.assign(simpleDamage("Ossomerang"), { index: 201 });
-export const bone_rush = Object.assign(simpleDamage("Ossoraffica"), { index: 202 });
-export const weather_ball = Object.assign(conditionX2Move("Palla Clima", "-{power}, x2 se è attivo un cambiamento climatico", function(attacker) { return Boolean(attacker.team.battleManager && attacker.team.battleManager.weather); }), { index: 203 });
-export const ice_ball = Object.assign(simpleDamage("Palla Gelo"), { index: 204 });
-export const shadow_ball = Object.assign(createToggleDamageMove("Palla Ombra", "-{power}, 50% -{stats} Difesa avversaria", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 205 });
-export const belly_drum = Object.assign(selfBuffDebuffMove("Panciamburo"), { index: 206 });
-export const stun_spore = Object.assign(simpleParalysisMove("Paralizzante"), { index: 207 });
+export const bonemerang = Object.assign(simpleDamage("Bonemerang"), { index: 201 });
+export const bone_rush = Object.assign(simpleDamage("Bone Rush"), { index: 202 });
+export const weather_ball = Object.assign(conditionX2Move("Weather Ball", "-{power}, x2 while the weather has been changed", function(attacker) { return Boolean(attacker.team.battleManager && attacker.team.battleManager.weather); }), { index: 203 });
+export const ice_ball = Object.assign(simpleDamage("Ice Ball"), { index: 204 });
+export const shadow_ball = Object.assign(createToggleDamageMove("Shadow Ball", "-{power}, 50% chance to lower the opponent's Defense by {stats}", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 205 });
+export const belly_drum = Object.assign(selfBuffDebuffMove("Belly Drum"), { index: 206 });
+export const stun_spore = Object.assign(simpleParalysisMove("Stun Spore"), { index: 207 });
 export const leech_seed = {
         index: 208,
-        name: "Parassiseme",
-        description: "-{power}, a fine turno il Pokémon attivo assorbe 1/8 dei PS max dell'avversario",
+        name: "Leech Seed",
+        description: "-{power}, at the end of the turn the active Pokémon drains 1/8 of the opponent's maximum HP",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
         },
@@ -1870,33 +1737,33 @@ export const leech_seed = {
           }
         }
       };
-export const bide = Object.assign(twoTurnDefenseDamageMove("Pazienza"), { index: 209 });
-export const drill_peck = Object.assign(simpleDamage("Perforbecco"), { index: 210 });
-export const horn_drill = Object.assign(ohkoMove("Perforcorno"), { index: 211 });
-export const stomp = Object.assign(simpleDamage("Pestone"), { index: 212 });
-export const petal_dance = Object.assign(forcedTripleHitConfusionMove("Petalodanza"), { index: 213 });
-export const beat_up = Object.assign(conditionX2Move("Picchiaduro", "-{power}, x2 se un compagno è appena andato KO", function(a) { if (a.team.teamKOTracker) { a.team.teamKOTracker = false; return true; } return false; }), { index: 214 });
-export const slack_off = Object.assign(simpleHalfRecovery("Pigro"), { index: 215 });
+export const bide = Object.assign(twoTurnDefenseDamageMove("Bide"), { index: 209 });
+export const drill_peck = Object.assign(simpleDamage("Drill Peck"), { index: 210 });
+export const horn_drill = Object.assign(ohkoMove("Horn Drill"), { index: 211 });
+export const stomp = Object.assign(simpleDamage("Stomp"), { index: 212 });
+export const petal_dance = Object.assign(forcedTripleHitConfusionMove("Petal Dance"), { index: 213 });
+export const beat_up = Object.assign(conditionX2Move("Beat Up", "-{power}, x2 if an ally was just knocked out", function(a) { if (a.team.teamKOTracker) { a.team.teamKOTracker = false; return true; } return false; }), { index: 214 });
+export const slack_off = Object.assign(simpleHalfRecovery("Slack Off"), { index: 215 });
 export const rain_dance = {
         index: 216,
-        name: "Pioggiadanza",
+        name: "Rain Dance",
         damagingMove: false,
-        description: "Causa un acquazzone",
+        description: "Starts heavy rain",
         logKey: "weather_set",
-        weatherLabel: "Pioggiadanza",
+        weatherLabel: "Rain Dance",
         setWeather: "rain",
         after: function () {
           this.logKey = "weather_set";
         }
       };
-export const water_gun = Object.assign(simpleDamage("Pistolacqua"), { index: 217 });
-export const powder_snow = Object.assign(simpleDamage("Polneve"), { index: 218 });
-export const vise_grip = Object.assign(simpleDamage("Presa"), { index: 219 });
-export const foresight = Object.assign(preventDefRaiseMove("Preveggenza"), { index: 220 });
+export const water_gun = Object.assign(simpleDamage("Water Gun"), { index: 217 });
+export const powder_snow = Object.assign(simpleDamage("Powder Snow"), { index: 218 });
+export const vise_grip = Object.assign(simpleDamage("Vise Grip"), { index: 219 });
+export const foresight = Object.assign(preventDefRaiseMove("Foresight"), { index: 220 });
 export const knock_off = {
         index: 221,
-        name: "Privazione",
-        description: "-{power}, l'avversario non può usare l'oggetto tenuto fino al KO",
+        name: "Knock Off",
+        description: "-{power}, prevents the opponent from using its held item until it is knocked out",
         before: function (_attacker, _defender, hit) {
             this.damagingMove = Boolean(hit);
           },
@@ -1909,14 +1776,14 @@ export const knock_off = {
           }
         }
       };
-export const sweet_scent = Object.assign(simpleEnemyDefenseNerf("Profumino"), { index: 222 });
-export const protect = Object.assign(blockStatBoostMove("Protezione", "50% protegge la squadra dai moltiplicatori delle mosse avversarie x5 turni", 5), { index: 223 });
-export const taunt = Object.assign(disableLastMoveMove("Provocazione"), { index: 224 });
+export const sweet_scent = Object.assign(simpleEnemyDefenseNerf("Sweet Scent"), { index: 222 });
+export const protect = Object.assign(blockStatBoostMove("Protect", "50% chance to protect the team from opposing move multipliers for 5 turns", 5), { index: 223 });
+export const taunt = Object.assign(disableLastMoveMove("Taunt"), { index: 224 });
 export const psych_up = {
         index: 225,
-        name: "Psicamisù",
+        name: "Psych Up",
         damagingMove: false,
-        description: "Copia le alterazioni delle statistiche del bersaglio",
+        description: "Copies the target's stat changes",
         after: function (attacker, defender) {
           attacker.atkBuff = Math.max(attacker.atkBuff, defender.atkBuff);
           attacker.defBuff = Math.max(attacker.defBuff, defender.defBuff);
@@ -1925,11 +1792,11 @@ export const psych_up = {
           this.logKey = "copy_stats";
         }
       };
-export const psychic = Object.assign(createToggleDamageMove("Psichico", "-{power}, 50% -{stats} Difesa avversaria", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 226 });
+export const psychic = Object.assign(createToggleDamageMove("Psychic", "-{power}, 50% chance to lower the opponent's Defense by {stats}", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 226 });
 export const psywave = {
         index: 227,
-        name: "Psiconda",
-        description: "Danno base pari a 1.5xLv",
+        name: "Psywave",
+        description: "Base damage equals 1.5 times the user's level",
         before: function (attacker, _defender, hit) {
           this.power = attacker.pokemon.level * 1.5;
           this.damagingMove = Boolean(hit);
@@ -1938,16 +1805,16 @@ export const psywave = {
           this.logKey = hit ? "dmg" : "fail";
         }
       };
-export const psybeam = Object.assign(targetTypeDoubleDamageMove("Psicoraggio", "poison"), { index: 228 });
-export const psycho_boost = Object.assign(simpleDamage("Psicoslancio"), { index: 229 });
-export const shadow_punch = Object.assign(simpleDamage("Pugnodombra"), { index: 230 });
-export const mach_punch = Object.assign(simpleDamage("Pugnorapido"), { index: 231 });
-export const needle_arm = Object.assign(simpleDamage("Pugnospine"), { index: 232 });
+export const psybeam = Object.assign(targetTypeDoubleDamageMove("Psybeam", "poison"), { index: 228 });
+export const psycho_boost = Object.assign(simpleDamage("Psycho Boost"), { index: 229 });
+export const shadow_punch = Object.assign(simpleDamage("Shadow Punch"), { index: 230 });
+export const mach_punch = Object.assign(simpleDamage("Mach Punch"), { index: 231 });
+export const needle_arm = Object.assign(simpleDamage("Needle Arm"), { index: 232 });
 export const spikes = {
         index: 233,
-        name: "Punte",
+        name: "Spikes",
         damagingMove: false,
-        description: "Infligge danni pari al livello al Pokemon avversario che entra in campo",
+        description: "Entering opposing Pokémon take damage equal to their level",
         after: function (attacker, _defender, hit) {
           if (hit) {
             var opponent = (attacker.team === attacker.team.battleManager.playerTeam) ? attacker.team.battleManager.enemyTeam : attacker.team.battleManager.playerTeam;
@@ -1959,16 +1826,16 @@ export const spikes = {
           }
         }
       };
-export const sheer_cold = Object.assign(ohkoMove("Purogelo"), { index: 234 });
-export const ingrain = { index: 235, name: "Radicamento", damagingMove: false, description: "Recupera 1/2 PS max dopo ogni mossa, non puo essere ritirato", after: function(attacker) { attacker.rooted = true; this.logKey = "root"; } };
-export const gust = Object.assign(conditionX2Move("Raffica", "-{power}, x2 se l'avversario sta usando Volo", function(_a, d) { return d.semiInvulnerable === "fly"; }), { index: 236 });
-export const harden = Object.assign(simpleSelfDefenseBuff("Rafforzatore"), { index: 237 });
-export const aurora_beam = Object.assign(createToggleDamageMove("Raggiaurora", "-{power}, 50% -{stats} Attacco avversario", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfAtk(this.stats); this.logKey = "nerf_enem_atk"; } }), { index: 238 });
+export const sheer_cold = Object.assign(ohkoMove("Sheer Cold"), { index: 234 });
+export const ingrain = { index: 235, name: "Ingrain", damagingMove: false, description: "Restores half of maximum HP after every move; the user cannot be withdrawn", after: function(attacker) { attacker.rooted = true; this.logKey = "root"; } };
+export const gust = Object.assign(conditionX2Move("Gust", "-{power}, x2 if the opponent is using Fly", function(_a, d) { return d.semiInvulnerable === "fly"; }), { index: 236 });
+export const harden = Object.assign(simpleSelfDefenseBuff("Harden"), { index: 237 });
+export const aurora_beam = Object.assign(createToggleDamageMove("Aurora Beam", "-{power}, 50% chance to lower the opponent's Attack by {stats}", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfAtk(this.stats); this.logKey = "nerf_enem_atk"; } }), { index: 238 });
 export const trick = {
         index: 239,
-        name: "Raggiro",
+        name: "Trick",
         damagingMove: false,
-        description: "Scambia il proprio strumento con quello dell'avversario",
+        description: "Swaps the user's held item with the opponent's",
         after: function (attacker, defender, hit) {
           var manager = attacker.team && attacker.team.battleManager;
           if (hit && manager && manager.swapHeldItems(attacker, defender)) {
@@ -1978,12 +1845,12 @@ export const trick = {
           }
         }
       };
-export const spider_web = Object.assign(trapMove("Ragnatela", "L'avversario non può scappare"), { index: 240 });
+export const spider_web = Object.assign(trapMove("Spider Web", "The opponent cannot escape"), { index: 240 });
 export const grudge = {
         index: 241,
-        name: "Rancore",
+        name: "Grudge",
         damagingMove: false,
-        description: "Se chi la usa viene mandato KO da una mossa avversaria, la blocca",
+        description: "If the user is knocked out by an opposing move, that move is disabled",
         after: function (attacker) {
           attacker.grudgeActive = true;
           this.logKey = "grudge";
@@ -1991,8 +1858,8 @@ export const grudge = {
       };
 export const rapid_spin = {
         index: 242,
-        name: "Rapigiro",
-        description: "-{power}, rimuove Punte, Parassiseme e blocchi multiturno",
+        name: "Rapid Spin",
+        description: "-{power}, removes Spikes, Leech Seed, and multi-turn traps",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
         },
@@ -2025,8 +1892,8 @@ export const rapid_spin = {
       };
 export const present = {
         index: 243,
-        name: "Regalino",
-        description: "-{power}, 50% l'avversario recupera 1/4 dei PS max",
+        name: "Present",
+        description: "-{power}, 50% chance to restore 1/4 of the opponent's maximum HP",
         before: function (attacker, _defender, hit) {
           this._healTarget = consumeMovePercentage(attacker.team);
           this.damagingMove = Boolean(hit);
@@ -2044,12 +1911,12 @@ export const present = {
           delete this._healTarget;
         }
       };
-export const endure = { index: 244, name: "Resistenza", damagingMove: false, description: "Resiste al turno successivo con almeno 1 PS", after: function(attacker) { attacker.endure = true; this.logKey = "endure"; } };
+export const endure = { index: 244, name: "Endure", damagingMove: false, description: "Survives the next turn with at least 1 HP", after: function(attacker) { attacker.endure = true; this.logKey = "endure"; } };
 export const defense_curl = {
         index: 245,
-        name: "Ricciolscudo",
+        name: "Defense Curl",
         damagingMove: false,
-        description: "+{stats} Difesa",
+        description: "+{stats} Defense",
         logKey: "buff_self_def",
         before: function (attacker) {
           attacker.buffSelfDef(this.stats);
@@ -2058,26 +1925,26 @@ export const defense_curl = {
       };
 export const recycle = {
         index: 246,
-        name: "Riciclo",
+        name: "Recycle",
         damagingMove: false,
-        description: "Ricrea lo strumento assegnato a inizio battaglia",
+        description: "Restores the item assigned at the start of the battle",
         after: function (attacker) {
           var manager = attacker.team && attacker.team.battleManager;
           this.logKey = manager && manager.recycleHeldItem(attacker) ? "recycle_item" : "fail";
         }
       };
-export const take_down = Object.assign(recoilDamageMove("Riduttore"), { index: 247 });
-export const reflect = Object.assign(simpleTeamDefenseBuff("Riflesso"), { index: 248 });
-export const bounce = Object.assign(semiInvulnerableDamageMove("Rimbalzo", "1° turno diventa non bersagliabile, 2° turno -{power} e Paralizza", "invul_fly", function (_attacker, defender) {
+export const take_down = Object.assign(recoilDamageMove("Take Down"), { index: 247 });
+export const reflect = Object.assign(simpleTeamDefenseBuff("Reflect"), { index: 248 });
+export const bounce = Object.assign(semiInvulnerableDamageMove("Bounce", "Turn 1: becomes untargetable; turn 2: -{power} and paralyzes", "invul_fly", function (_attacker, defender) {
         if (applyStatusEffect(defender, "par_block")) {
           this.logKey = "dmg_par";
         }
       }), { index: 249 });
 export const endeavor = {
         index: 250,
-        name: "Rimonta",
+        name: "Endeavor",
         damagingMove: false,
-        description: "Riduce i PS dell'avversario pari a quelli di chi lo usa",
+        description: "Reduces the opponent's HP to match the user's HP",
         after: function (attacker, defender, hit) {
           if (hit) {
             defender.hp = Math.min(defender.hp, attacker.hp);
@@ -2087,13 +1954,13 @@ export const endeavor = {
           }
         }
       };
-export const refresh = { index: 251, name: "Rinfrescata", damagingMove: false, description: "Risolve tutti i problemi di stato di chi lo usa", after: function(attacker) { if (attacker.status || attacker.sleepCounter || attacker.confCounter || attacker.pendingDelayedStatus) { attacker.status = null; attacker.sleepCounter = 0; attacker.sleepDuration = 3; attacker.confCounter = 0; attacker.pendingDelayedStatus = null; this.logKey = "cure_status"; } else { this.logKey = "fail"; } } };
-export const heal_bell = Object.assign(teamStatusCureMove("Rintoccasana", "Risolve tutti i problemi di stato della squadra"), { index: 252 });
+export const refresh = { index: 251, name: "Refresh", damagingMove: false, description: "Cures every status condition affecting the user", after: function(attacker) { if (attacker.status || attacker.sleepCounter || attacker.confCounter || attacker.pendingDelayedStatus) { attacker.status = null; attacker.sleepCounter = 0; attacker.sleepDuration = 3; attacker.confCounter = 0; attacker.pendingDelayedStatus = null; this.logKey = "cure_status"; } else { this.logKey = "fail"; } } };
+export const heal_bell = Object.assign(teamStatusCureMove("Heal Bell", "Cures every status condition affecting the team"), { index: 252 });
 export const encore = {
         index: 253,
-        name: "Ripeti",
+        name: "Encore",
         damagingMove: false,
-        description: "L'avversario ripete l'ultima mossa usata x3 turni",
+        description: "Makes the opponent repeat its last move for 3 turns",
         after: function (_attacker, defender, hit) {
           var lastMove = defender.turnBeforeMoveUsed;
           var forcedMove;
@@ -2112,7 +1979,7 @@ export const encore = {
             defender.activatePending(forcedMove);
             defender.pendingMoveTurns = 1;
             this.logKey = "repeat";
-            this.txt = lastMove.name;
+            this.relatedMoveKey = lastMove.key;
           } else {
             this.logKey = "fail";
           }
@@ -2120,9 +1987,9 @@ export const encore = {
       };
 export const rest = {
         index: 254,
-        name: "Riposo",
+        name: "Rest",
         damagingMove: false,
-        description: "Chi la usa dorme per 2 turni e recupera tutti i PS",
+        description: "The user sleeps for 2 turns and fully restores its HP",
         before: function (attacker) {
           if (attacker.status !== null || attacker.hp !== attacker.pokemon.maxHp) {
             attacker.status = null;
@@ -2142,20 +2009,20 @@ export const rest = {
           }
         }
       };
-export const recover = Object.assign(simpleHalfRecovery("Ripresa"), { index: 255 });
-export const withdraw = Object.assign(simpleSelfDefenseBuff("Ritirata"), { index: 256 });
-export const return_move = Object.assign(simpleDamage("Ritorno"), { index: 257 });
-export const rock_tomb = Object.assign(createToggleDamageMove("Rocciotomba", "-{power}, 50% +{stats} Difesa", function(attacker) { attacker.buffSelfDef(this.stats); this.logKey = "buff_self_def"; }), { index: 258 });
-export const rollout = Object.assign(conditionX2Move("Rotolamento", "-{power}, x2 se chi lo usa ha attivo Ricciolscudo", function(a) { return a.defenseCurlUsed; }), { index: 259 });
-export const growl = Object.assign(simpleEnemyAttackNerf("Ruggito"), { index: 260 });
-export const flame_wheel = { index: 261, name: "Ruotafuoco", description: "-{power}, scongela chi lo usa", before: function(_attacker, _defender, hit) { this.damagingMove = Boolean(hit); }, after: function(attacker, _defender, hit) { if (hit) { clearStatusEffect(attacker, "frz"); this.logKey = "dmg"; } else { this.logKey = "fail"; } } };
-export const snore = { index: 262, name: "Russare", description: "-{power}, utilizzabile solo mentre si dorme", before: function(attacker, _defender, hit) { if (attacker.status !== "slp") { this.damagingMove = false; return; } this.damagingMove = Boolean(hit); }, after: function(_attacker, _defender, hit) { this.logKey = this.damagingMove && hit ? "dmg" : "fail"; } };
-export const sand_tomb = Object.assign(bindDamageMove("Sabbiotomba", "-{power}, l'avversario non può essere sostituito x4 turni", 4), { index: 263 });
+export const recover = Object.assign(simpleHalfRecovery("Recover"), { index: 255 });
+export const withdraw = Object.assign(simpleSelfDefenseBuff("Withdraw"), { index: 256 });
+export const return_move = Object.assign(simpleDamage("Return"), { index: 257 });
+export const rock_tomb = Object.assign(createToggleDamageMove("Rock Tomb", "-{power}, 50% chance to raise Defense by {stats}", function(attacker) { attacker.buffSelfDef(this.stats); this.logKey = "buff_self_def"; }), { index: 258 });
+export const rollout = Object.assign(conditionX2Move("Rollout", "-{power}, x2 if the user has Defense Curl active", function(a) { return a.defenseCurlUsed; }), { index: 259 });
+export const growl = Object.assign(simpleEnemyAttackNerf("Growl"), { index: 260 });
+export const flame_wheel = { index: 261, name: "Flame Wheel", description: "-{power}, thaws the user", before: function(_attacker, _defender, hit) { this.damagingMove = Boolean(hit); }, after: function(attacker, _defender, hit) { if (hit) { clearStatusEffect(attacker, "frz"); this.logKey = "dmg"; } else { this.logKey = "fail"; } } };
+export const snore = { index: 262, name: "Snore", description: "-{power}, can only be used while asleep", before: function(attacker, _defender, hit) { if (attacker.status !== "slp") { this.damagingMove = false; return; } this.damagingMove = Boolean(hit); }, after: function(_attacker, _defender, hit) { this.logKey = this.damagingMove && hit ? "dmg" : "fail"; } };
+export const sand_tomb = Object.assign(bindDamageMove("Sand Tomb", "-{power}, prevents the opponent from switching for 4 turns", 4), { index: 263 });
 export const safeguard = {
         index: 264,
-        name: "Salvaguardia",
+        name: "Safeguard",
         damagingMove: false,
-        description: "50% protegge la squadra dai problemi di stato x5 turni",
+        description: "50% chance to protect the team from status conditions for 5 turns",
         after: function (attacker) {
           var startPerc = consumeMovePercentage(attacker.team);
           if (startPerc) {
@@ -2166,13 +2033,13 @@ export const safeguard = {
           }
         }
       };
-export const leech_life = Object.assign(damageRecoveryMove("Sanguisuga", "-{power}, PS +1/4 del danno inflitto", 1/4), { index: 265 });
-export const rock_throw = Object.assign(targetTypeDoubleDamageMove("Sassata", "ice"), { index: 266 });
+export const leech_life = Object.assign(damageRecoveryMove("Leech Life", "-{power}, restores HP equal to 1/4 of the damage dealt", 1/4), { index: 265 });
+export const rock_throw = Object.assign(targetTypeDoubleDamageMove("Rock Throw", "ice"), { index: 266 });
 export const yawn = {
         index: 267,
-        name: "Sbadiglio",
+        name: "Yawn",
         damagingMove: false,
-        description: "Addormenta l'avversario alla fine del turno successivo",
+        description: "Puts the opponent to sleep at the end of the next turn",
         after: function (_attacker, defender, hit) {
           if (hit) {
             if (!defender) {
@@ -2198,14 +2065,14 @@ export const yawn = {
           }
         }
       };
-export const arm_thrust = Object.assign(simpleDamage("Sberletese"), { index: 268 });
-export const light_screen = Object.assign(simpleTeamDefenseBuff("Schermoluce"), { index: 269 });
-export const slam = Object.assign(simpleDamage("Schianto"), { index: 270 });
+export const arm_thrust = Object.assign(simpleDamage("Arm Thrust"), { index: 268 });
+export const light_screen = Object.assign(simpleTeamDefenseBuff("Light Screen"), { index: 269 });
+export const slam = Object.assign(simpleDamage("Slam"), { index: 270 });
 export const sketch = {
         index: 271,
-        name: "Schizzo",
+        name: "Sketch",
         damagingMove: false,
-        description: "Copia permanentemente l'ultima mossa usata dall'avversario",
+        description: "Permanently copies the opponent's last move",
         after: function (attacker, defender, hit) {
           if (hit) {
             var src = defender.turnBeforeMoveUsed;
@@ -2237,11 +2104,11 @@ export const sketch = {
           }
         }
       };
-export const spark = Object.assign(toggleSecondaryStatus("Scintilla", "-{power}, 50% Paralizza l'avversario", "par_block", "dmg_par"), { index: 272 });
+export const spark = Object.assign(toggleSecondaryStatus("Spark", "-{power}, 50% chance to paralyze the opponent", "par_block", "dmg_par"), { index: 272 });
 export const snatch = {
         index: 273,
-        name: "Scippo",
-        description: "-{power}, 50% ruba i buff statistiche non multiturno dell'avversario",
+        name: "Snatch",
+        description: "-{power}, 50% chance to steal the opponent's non-multi-turn stat boosts",
         stolenAtkBuff: 0,
         stolenDefBuff: 0,
         before: function (_attacker, _defender, hit) {
@@ -2273,16 +2140,16 @@ export const snatch = {
           this.logKey = this.stolenAtkBuff || this.stolenDefBuff ? "dmg_snatch_buffs" : "dmg";
         }
       };
-export const struggle = Object.assign(recoilDamageMove("Scontro"), { index: 274 });
-export const acid_armor = Object.assign(simpleSelfDefenseBuff("Scudo Acido"), { index: 275 });
-export const double_edge = Object.assign(recoilDamageMove("Sdoppiatore"), { index: 276 });
-export const signal_beam = Object.assign(toggleSecondaryStatus("Segnoraggio", "-{power}, 50% Confonde l'avversario", "cnf_block", "dmg_cnf"), { index: 277 });
-export const odor_sleuth = Object.assign(preventDefRaiseMove("Segugio"), { index: 278 });
-export const bullet_seed = Object.assign(simpleDamage("Semitraglia"), { index: 279 });
+export const struggle = Object.assign(recoilDamageMove("Struggle"), { index: 274 });
+export const acid_armor = Object.assign(simpleSelfDefenseBuff("Acid Armor"), { index: 275 });
+export const double_edge = Object.assign(recoilDamageMove("Double-Edge"), { index: 276 });
+export const signal_beam = Object.assign(toggleSecondaryStatus("Signal Beam", "-{power}, 50% chance to confuse the opponent", "cnf_block", "dmg_cnf"), { index: 277 });
+export const odor_sleuth = Object.assign(preventDefRaiseMove("Odor Sleuth"), { index: 278 });
+export const bullet_seed = Object.assign(simpleDamage("Bullet Seed"), { index: 279 });
 export const spit_up = {
         index: 280,
-        name: "Sfoghenergia",
-        description: "-{power}, x2 se Accumulo è stato usato in precedenza",
+        name: "Spit Up",
+        description: "-{power}, x2 if Stockpile was used previously",
         before: function (attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
           if (hit && attacker.stockpileUsed) {
@@ -2296,16 +2163,16 @@ export const spit_up = {
           this.moveMult = 1;
         }
       };
-export const fury_swipes = Object.assign(simpleDamage("Sfuriate"), { index: 281 });
-export const astonish = Object.assign(simpleDamage("Sgomento"), { index: 282 });
-export const crunch = Object.assign(createToggleDamageMove("Sgranocchio", "-{power}, 50% -{stats} Difesa avversaria", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 283 });
-export const glare = Object.assign(simpleParalysisMove("Sguardo Feroce"), { index: 284 });
-export const synthesis = Object.assign(weatherRecoveryMove("Sintesi", "Recupera 1/2 PS max, 1/4 con meteo avverso, tutti con sole"), { index: 285 });
-export const smog = Object.assign(toggleSecondaryStatus("Smog", "-{power}, 50% Avvelena l'avversario", "psn", "dmg_psn"), { index: 286 });
+export const fury_swipes = Object.assign(simpleDamage("Fury Swipes"), { index: 281 });
+export const astonish = Object.assign(simpleDamage("Astonish"), { index: 282 });
+export const crunch = Object.assign(createToggleDamageMove("Crunch", "-{power}, 50% chance to lower the opponent's Defense by {stats}", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 283 });
+export const glare = Object.assign(simpleParalysisMove("Glare"), { index: 284 });
+export const synthesis = Object.assign(weatherRecoveryMove("Synthesis", "Restores 1/2 maximum HP, 1/4 in adverse weather, or all HP in sunlight"), { index: 285 });
+export const smog = Object.assign(toggleSecondaryStatus("Smog", "-{power}, 50% chance to poison the opponent", "psn", "dmg_psn"), { index: 286 });
 export const solar_beam = {
         index: 287,
-        name: "Solarraggio",
-        description: "1° turno carica, 2° -{power} x2, con Giornodisole attacca subito",
+        name: "Solar Beam",
+        description: "Turn 1: charge; turn 2: -{power} x2; attacks immediately in sunlight",
         before: function (attacker, _defender, hit) {
           var weather = attacker.team.battleManager && attacker.team.battleManager.weather;
 
@@ -2335,14 +2202,14 @@ export const solar_beam = {
           this.moveMult = 1;
         }
       };
-export const tickle = Object.assign(simpleEnemyAtkDefNerf("Solletico"), { index: 288 });
-export const sonic_boom = Object.assign(simpleDamage("Sonicboom"), { index: 289 });
-export const sleep_powder = Object.assign(simpleSleepMove("Sonnifero"), { index: 290 });
+export const tickle = Object.assign(simpleEnemyAtkDefNerf("Tickle"), { index: 288 });
+export const sonic_boom = Object.assign(simpleDamage("Sonic Boom"), { index: 289 });
+export const sleep_powder = Object.assign(simpleSleepMove("Sleep Powder"), { index: 290 });
 export const sleep_talk = {
         index: 291,
-        name: "Sonnolalia",
+        name: "Sleep Talk",
         damagingMove: false,
-        description: "Usabile solo se chi la usa è addormentato, usa una mossa a caso tra quelle conosciute",
+        description: "Can only be used while asleep; uses a random known move",
         copiedMove: null,
         before: function (attacker, _defender, hit) {
           var candidates;
@@ -2372,25 +2239,25 @@ export const sleep_talk = {
       };
 export const substitute = {
         index: 292,
-        name: "Sostituto",
+        name: "Substitute",
         damagingMove: false,
-        description: "Resiste al turno successivo con almeno 1 PS",
+        description: "Survives the next turn with at least 1 HP",
         after: function (attacker) {
           attacker.endure = true;
           this.logKey = "endure";
         }
       };
-export const charge = Object.assign(chargeBuffMove("Sottocarica"), { index: 293 });
-export const dive = Object.assign(semiInvulnerableDamageMove("Sub", "1° turno diventa non bersagliabile, 2° turno -{power}", "invul_sub"), { index: 294 });
-export const submission = Object.assign(recoilDamageMove("Sottomissione"), { index: 295 });
-export const rock_smash = Object.assign(targetTypeDoubleDamageMove("Spaccaroccia", "rock"), { index: 296 });
-export const spike_cannon = Object.assign(repeatLastTurnDamageMove("Sparalance"), { index: 297 });
-export const mirror_coat = Object.assign(counterMove("Specchiovelo", "Danno base pari al doppio del danno subito nel turno precedente"), { index: 298 });
+export const charge = Object.assign(chargeBuffMove("Charge"), { index: 293 });
+export const dive = Object.assign(semiInvulnerableDamageMove("Dive", "Turn 1: becomes untargetable; turn 2: -{power}", "invul_sub"), { index: 294 });
+export const submission = Object.assign(recoilDamageMove("Submission"), { index: 295 });
+export const rock_smash = Object.assign(targetTypeDoubleDamageMove("Rock Smash", "rock"), { index: 296 });
+export const spike_cannon = Object.assign(repeatLastTurnDamageMove("Spike Cannon"), { index: 297 });
+export const mirror_coat = Object.assign(counterMove("Mirror Coat", "Base damage equals twice the damage taken on the previous turn"), { index: 298 });
 export const mirror_move = {
         index: 299,
-        name: "Speculmossa",
+        name: "Mirror Move",
         damagingMove: false,
-        description: "Utilizza l'ultima mossa utilizzata dall'avversario (potenza: {power}, stats: {stats})",
+        description: "Uses the opponent's last move (power: {power}, stats: {stats})",
         copiedMove: null,
         before: function (attacker, defender) {
           var src = defender.turnBeforeMoveUsed;
@@ -2425,18 +2292,18 @@ export const splash = {
         index: 300,
         name: "Splash",
         damagingMove: false,
-        description: "*Parte la sigla di Paperissima*",
+        description: "Does nothing",
         after: function () {
           this.logKey = "smp_move";
         }
       };
-export const spore = Object.assign(simpleSleepMove("Spora"), { index: 301 });
+export const spore = Object.assign(simpleSleepMove("Spore"), { index: 301 });
 export const baton_pass = {
         index: 302,
-        name: "Staffetta",
+        name: "Baton Pass",
         damagingMove: false,
         requestsBattleSwitch: true,
-        description: "Chi la usa è sostituito e passa le alterazioni al nuovo Pokemon",
+        description: "Switches out the user and passes its stat changes to the new Pokémon",
         after: function (attacker, _defender, hit) {
           if (hit) {
             var team = attacker.team;
@@ -2465,16 +2332,16 @@ export const baton_pass = {
           }
         }
       };
-export const dizzy_punch = Object.assign(toggleSecondaryStatus("Stordipugno", "-{power}, 50% Confonde l'avversario", "cnf_block", "dmg_cnf"), { index: 303 });
-export const confuse_ray = Object.assign(simpleConfusionMove("Stordiraggio"), { index: 304 });
-export const sky_uppercut = Object.assign(conditionX2Move("Stramontante", "-{power}, x2 se l'avversario sta usando Volo", function(_a, d) { return d.semiInvulnerable === "fly"; }), { index: 305 });
-export const teeter_dance = Object.assign(simpleConfusionMove("Strampadanza"), { index: 306 });
-export const screech = Object.assign(simpleEnemyDefenseNerf("Stridio"), { index: 307 });
-export const supersonic = Object.assign(simpleConfusionMove("Supersuono"), { index: 308 });
+export const dizzy_punch = Object.assign(toggleSecondaryStatus("Dizzy Punch", "-{power}, 50% chance to confuse the opponent", "cnf_block", "dmg_cnf"), { index: 303 });
+export const confuse_ray = Object.assign(simpleConfusionMove("Confuse Ray"), { index: 304 });
+export const sky_uppercut = Object.assign(conditionX2Move("Sky Uppercut", "-{power}, x2 if the opponent is using Fly", function(_a, d) { return d.semiInvulnerable === "fly"; }), { index: 305 });
+export const teeter_dance = Object.assign(simpleConfusionMove("Teeter Dance"), { index: 306 });
+export const screech = Object.assign(simpleEnemyDefenseNerf("Screech"), { index: 307 });
+export const supersonic = Object.assign(simpleConfusionMove("Supersonic"), { index: 308 });
 export const super_fang = {
         index: 309,
-        name: "Superzanna",
-        description: "Dimezza i PS avversari (almeno 1 danno)",
+        name: "Super Fang",
+        description: "Halves the opponent's HP, dealing at least 1 damage",
         before: function (_attacker, defender, hit) {
           if (hit) {
             defender.hp = Math.floor(defender.hp / 2);
@@ -2484,42 +2351,42 @@ export const super_fang = {
           this.logKey = hit ? "dmg" : "fail";
         }
       };
-export const covet = Object.assign(createToggleDamageMove("Supplica", "-{power}, 50% se chi la usa non ha uno strumento, ruba quello dell'avversario", function(attacker, defender) {
+export const covet = Object.assign(createToggleDamageMove("Covet", "-{power}, 50% chance to steal the opponent's item if the user holds none", function(attacker, defender) {
     var manager = attacker.team && attacker.team.battleManager;
     this.logKey = manager && manager.stealHeldItem(attacker, defender) ? "steal_item" : "dmg_los_perc";
   }), { index: 310 });
 export const surf = Object.assign(targetTypeDoubleDamageMove("Surf", "ground"), { index: 311 });
-export const cut = Object.assign(targetTypeDoubleDamageMove("Taglio", "grass"), { index: 312 });
-export const fury_cutter = Object.assign(repeatLastTurnDamageMove("Tagliofuria"), { index: 313 });
+export const cut = Object.assign(targetTypeDoubleDamageMove("Cut", "grass"), { index: 312 });
+export const fury_cutter = Object.assign(repeatLastTurnDamageMove("Fury Cutter"), { index: 313 });
 export const teleport = {
         index: 314,
-        name: "Teletrasporto",
+        name: "Teleport",
         damagingMove: false,
-        description: "Fugge dal Pokémon selvatico",
+        description: "Escapes from a wild Pokémon",
         logKey: "fail",
         after: function () {
           this.requestsBattleFlee = true;
         }
       };
-export const clamp = Object.assign(bindDamageMove("Tenaglia", "-{power}, l'avversario non può essere sostituito x4 turni", 4), { index: 315 });
-export const earthquake = Object.assign(targetTypeDoubleDamageMove("Terremoto", "fire"), { index: 316 });
+export const clamp = Object.assign(bindDamageMove("Clamp", "-{power}, prevents the opponent from switching for 4 turns", 4), { index: 315 });
+export const earthquake = Object.assign(targetTypeDoubleDamageMove("Earthquake", "fire"), { index: 316 });
 export const sandstorm = {
         index: 317,
-        name: "Terrempesta",
+        name: "Sandstorm",
         damagingMove: false,
-        description: "Causa una tempesta di sabbia",
+        description: "Starts a sandstorm",
         logKey: "weather_set",
-        weatherLabel: "Terrempesta",
+        weatherLabel: "Sandstorm",
         setWeather: "sand",
         after: function () {
           this.logKey = "weather_set";
         }
       };
-export const twister = Object.assign(conditionX2Move("Tornado", "-{power}, x2 se l'avversario sta usando Volo", function(_a, d) { return d.semiInvulnerable === "fly"; }), { index: 318 });
+export const twister = Object.assign(conditionX2Move("Twister", "-{power}, x2 if the opponent is using Fly", function(_a, d) { return d.semiInvulnerable === "fly"; }), { index: 318 });
 export const toxic = {
         index: 319,
-        name: "Tossina",
-        description: "-{power}, Avvelena l'avversario",
+        name: "Toxic",
+        description: "-{power}, poisons the opponent",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
         },
@@ -2537,9 +2404,9 @@ export const toxic = {
       };
 export const transform = {
         index: 320,
-        name: "Trasformazione",
+        name: "Transform",
         damagingMove: false,
-        description: "Copia Tipo e mosse avversari (potenza: {power}, stats: {stats})",
+        description: "Copies the opponent's type and moves (power: {power}, stats: {stats})",
         after: function (attacker, defender, hit) {
           var origMoves;
           var transformedMoves;
@@ -2582,14 +2449,14 @@ export const transform = {
           this.logKey = "transform";
         }
       };
-export const tri_attack = Object.assign(simpleDamage("Tripletta"), { index: 321 });
-export const triple_kick = Object.assign(simpleDamage("Triplocalcio"), { index: 322 });
-export const crush_claw = Object.assign(createToggleDamageMove("Tritartigli", "-{power}, 50% +{stats} Attacco", function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 323 });
-export const superpower = Object.assign(buffLossMove("Troppoforte", "-{power}, x2 se chi la usa ha l'attacco alzato ma lo perde"), { index: 324 });
+export const tri_attack = Object.assign(simpleDamage("Tri Attack"), { index: 321 });
+export const triple_kick = Object.assign(simpleDamage("Triple Kick"), { index: 322 });
+export const crush_claw = Object.assign(createToggleDamageMove("Crush Claw", "-{power}, 50% chance to raise Attack by {stats}", function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 323 });
+export const superpower = Object.assign(buffLossMove("Superpower", "-{power}, x2 if the user's Attack is raised, then removes that boost"), { index: 324 });
 export const thunder = {
         index: 325,
-        name: "Tuono",
-        description: "-{power}, 50% Paralizza, se piove Paralizza senza modificare la %",
+        name: "Thunder",
+        description: "-{power}, 50% chance to paralyze; in rain, paralyzes without changing the percentage",
         before: function (_attacker, _defender, hit) {
           this.damagingMove = Boolean(hit);
         },
@@ -2616,31 +2483,32 @@ export const thunder = {
           }
         }
       };
-export const thunder_wave = Object.assign(simpleParalysisMove("Tuononda"), { index: 326 });
-export const thunder_punch = Object.assign(targetTypeDoubleDamageMove("Tuonopugno", "water"), { index: 327 });
-export const thunder_shock = Object.assign(simpleDamage("Tuonoshock"), { index: 328 });
+export const thunder_wave = Object.assign(simpleParalysisMove("Thunder Wave"), { index: 326 });
+export const thunder_punch = Object.assign(targetTypeDoubleDamageMove("Thunder Punch", "water"), { index: 327 });
+export const thunder_shock = Object.assign(simpleDamage("Thunder Shock"), { index: 328 });
 export const whirlwind = {
         index: 329,
-        name: "Turbine",
+        name: "Whirlwind",
         damagingMove: false,
-        description: "L'avversario viene sostituito",
+        description: "Forces the opponent to switch",
         logKey: "roar",
         after: function (_attacker, defender, hit) {
           if (hit) {
-            this.txt = defender.team.switchRandom();
-            this.logKey = "roar";
+            var switchResult = defender.team.switchRandom();
+            this.switchEvents = switchResult.events || [];
+            this.logKey = switchResult.ok ? "roar" : "fail";
           } else {
             this.logKey = "fail";
           }
         }
       };
-export const fire_spin = Object.assign(bindDamageMove("Turbofuoco", "-{power}, l'avversario non può essere sostituito x4 turni", 4), { index: 330 });
-export const sand_attack = Object.assign(simpleEnemyAttackNerf("Turbosabbia"), { index: 331 });
+export const fire_spin = Object.assign(bindDamageMove("Fire Spin", "-{power}, prevents the opponent from switching for 4 turns", 4), { index: 330 });
+export const sand_attack = Object.assign(simpleEnemyAttackNerf("Sand Attack"), { index: 331 });
 export const perish_song = {
         index: 332,
-        name: "Ultimocanto",
+        name: "Perish Song",
         damagingMove: false,
-        description: "Ogni Pokemon in campo va KO alla fine di 3 turni se non viene sostituito",
+        description: "Every active Pokémon is knocked out after 3 turns unless switched out",
         after: function (attacker, _defender, hit) {
           if (hit) {
             var bm = attacker.team.battleManager;
@@ -2658,15 +2526,15 @@ export const perish_song = {
           }
         }
       };
-export const egg_bomb = Object.assign(simpleDamage("Uovobomba"), { index: 333 });
-export const overheat = Object.assign(buffLossMove("Vampata", "-{power}, x2 se chi la usa ha l'attacco alzato ma lo perde"), { index: 334 });
-export const poison_tail = Object.assign(simpleDamage("Velenocoda"), { index: 335 });
-export const poison_fang = Object.assign(toggleSecondaryStatus("Velenodenti", "-{power}, 50% Avvelena l'avversario", "psn", "dmg_psn"), { index: 336 });
+export const egg_bomb = Object.assign(simpleDamage("Egg Bomb"), { index: 333 });
+export const overheat = Object.assign(buffLossMove("Overheat", "-{power}, x2 if the user's Attack is raised, then removes that boost"), { index: 334 });
+export const poison_tail = Object.assign(simpleDamage("Poison Tail"), { index: 335 });
+export const poison_fang = Object.assign(toggleSecondaryStatus("Poison Fang", "-{power}, 50% chance to poison the opponent", "psn", "dmg_psn"), { index: 336 });
 export const poison_gas = {
         index: 337,
-        name: "Velenogas",
+        name: "Poison Gas",
         damagingMove: false,
-        description: "Avvelena l'avversario",
+        description: "Poisons the opponent",
         after: function (_attacker, defender, hit) {
           if (hit) {
             if (applyStatusEffect(defender, "psn")) {
@@ -2679,12 +2547,12 @@ export const poison_gas = {
           }
         }
       };
-export const poison_sting = Object.assign(simpleDamage("Velenospina"), { index: 338 });
+export const poison_sting = Object.assign(simpleDamage("Poison Sting"), { index: 338 });
 export const poison_powder = {
         index: 339,
-        name: "Velenpolvere",
+        name: "Poison Powder",
         damagingMove: false,
-        description: "Avvelena l'avversario",
+        description: "Poisons the opponent",
         after: function (_attacker, defender, hit) {
           if (hit) {
             if (applyStatusEffect(defender, "psn")) {
@@ -2697,11 +2565,11 @@ export const poison_powder = {
           }
         }
       };
-export const revenge = Object.assign(conditionX2Move("Vendetta", "-{power}, x2 se chi la usa non ha tutti i PS", function(a) { return a.hp < a.pokemon.maxHp; }), { index: 340 });
+export const revenge = Object.assign(conditionX2Move("Revenge", "-{power}, x2 if the user is not at full HP", function(a) { return a.hp < a.pokemon.maxHp; }), { index: 340 });
 export const razor_wind = {
         index: 341,
-        name: "Ventagliente",
-        description: "1° turno carica, 2° -{power} ignorando buff Difesa avversari",
+        name: "Razor Wind",
+        description: "Turn 1: charge; turn 2: -{power}, ignoring the opponent's Defense boosts",
         before: function (attacker, _defender, hit) {
           if (attacker.pendingMove === this && attacker.pendingMoveTurns > 0) {
             this.damagingMove = Boolean(hit);
@@ -2727,16 +2595,16 @@ export const razor_wind = {
           }
         }
       };
-export const silver_wind = Object.assign(createToggleDamageMove("Ventargenteo", "-{power}, 50% +{stats} Attacco e Difesa", function(attacker) { attacker.buffSelfAtk(this.stats); attacker.buffSelfDef(this.stats); this.logKey = "buff_self_atk_def"; }), { index: 342 });
-export const icy_wind = Object.assign(createToggleDamageMove("Ventogelato", "-{power}, 50% -{stats} Attacco avversario", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfAtk(this.stats); this.logKey = "nerf_enem_atk"; } }), { index: 343 });
-export const scary_face = Object.assign(simpleEnemyAttackNerf("Visotruce"), { index: 344 });
-export const vital_throw = Object.assign(simpleDamage("Vitaltiro"), { index: 345 });
-export const fly = Object.assign(semiInvulnerableDamageMove("Volo", "1° turno diventa non bersagliabile, 2° turno -{power}", "invul_fly"), { index: 346 });
-export const water_spout = Object.assign(conditionX2Move("Zampillo", "-{power}, x2 se chi la usa ha più di metà PS", function(a) { return a.hp > a.pokemon.maxHp / 2; }), { index: 347 });
-export const volt_tackle = Object.assign(recoilDamageMove("Locomovolt"), { index: 348 });
-export const hydro_cannon = Object.assign(rechargeDamageMove("Idrocannone"), { index: 349 });
-export const blast_burn = Object.assign(rechargeDamageMove("Incendio"), { index: 350 });
-export const frenzy_plant = Object.assign(rechargeDamageMove("Radicalbero"), { index: 351 });
+export const silver_wind = Object.assign(createToggleDamageMove("Silver Wind", "-{power}, 50% chance to raise Attack and Defense by {stats}", function(attacker) { attacker.buffSelfAtk(this.stats); attacker.buffSelfDef(this.stats); this.logKey = "buff_self_atk_def"; }), { index: 342 });
+export const icy_wind = Object.assign(createToggleDamageMove("Icy Wind", "-{power}, 50% chance to lower the opponent's Attack by {stats}", function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfAtk(this.stats); this.logKey = "nerf_enem_atk"; } }), { index: 343 });
+export const scary_face = Object.assign(simpleEnemyAttackNerf("Scary Face"), { index: 344 });
+export const vital_throw = Object.assign(simpleDamage("Vital Throw"), { index: 345 });
+export const fly = Object.assign(semiInvulnerableDamageMove("Fly", "Turn 1: becomes untargetable; turn 2: -{power}", "invul_fly"), { index: 346 });
+export const water_spout = Object.assign(conditionX2Move("Water Spout", "-{power}, x2 if the user has more than half HP", function(a) { return a.hp > a.pokemon.maxHp / 2; }), { index: 347 });
+export const volt_tackle = Object.assign(recoilDamageMove("Volt Tackle"), { index: 348 });
+export const hydro_cannon = Object.assign(rechargeDamageMove("Hydro Cannon"), { index: 349 });
+export const blast_burn = Object.assign(rechargeDamageMove("Blast Burn"), { index: 350 });
+export const frenzy_plant = Object.assign(rechargeDamageMove("Frenzy Plant"), { index: 351 });
 export const MOVE_LIBRARY = buildMoveLibrary({
   luster_purge,
   fissure,

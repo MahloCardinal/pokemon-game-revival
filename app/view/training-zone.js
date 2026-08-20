@@ -7,12 +7,16 @@ var TEAM_MAX = Engine.TEAM_MAX;
 import { escapeHtml, getTrainerImage, renderImage, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
 import { battlePointsMarkup, button, moneyMarkup, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
+import { t } from "../client/i18n.js";
 
 export function renderTrainingZoneScene() {
   var selectedDifficulty = state.scene.trainingDifficulty || "";
   var selectedConfig = trainingDifficultyConfig(selectedDifficulty);
   var opponentTeam = Array.isArray(state.scene.trainingOpponentTeam) ? state.scene.trainingOpponentTeam : [];
   var opponentProfile = normalizeTrainingOpponentProfile(state.scene.trainingOpponent);
+  var opponentDisplayName = opponentProfile.name === "Challenger"
+    ? t("ui.trainingZone.defaultChallenger")
+    : opponentProfile.name;
   var debugTrainingEnabled = isDebugUser();
   var isDebugTraining = debugTrainingEnabled && selectedDifficulty === TRAINING_ZONE_DEBUG_DIFFICULTY.key;
   var availableDifficulties = TRAINING_ZONE_DIFFICULTIES.concat(debugTrainingEnabled ? [TRAINING_ZONE_DEBUG_DIFFICULTY] : []);
@@ -25,17 +29,17 @@ export function renderTrainingZoneScene() {
       ? ""
       : [
         '  <span class="training-zone-prize-section">',
-        '    <span class="training-zone-prize-title">' + (displayDifficulty.fullRewardAvailable ? "Premio pieno giornaliero" : "Ricompensa ripetuta") + '</span>',
+        '    <span class="training-zone-prize-title">' + escapeHtml(t(displayDifficulty.fullRewardAvailable ? "ui.trainingZone.fullDailyReward" : "ui.trainingZone.repeatedReward")) + '</span>',
         '    <span class="training-zone-prize-list">',
-        '      <span class="gym-badge-row training-zone-prize-row">Livelli: +' + escapeHtml(assignableLevels) + "</span>",
+        '      <span class="gym-badge-row training-zone-prize-row">' + escapeHtml(t("ui.trainingZone.levels", { count: assignableLevels })) + "</span>",
         '      <span class="gym-badge-row training-zone-prize-row">' + (battlePointsMarkup(displayDifficulty.battlePoints)) + "</span>",
         "    </span>",
         "  </span>"
       ].join("");
     return [
       '<button type="button" class="training-zone-reward-card' + activeClass + '" data-action="training-zone-difficulty" data-difficulty="' + escapeHtml(difficulty.key) + '" aria-pressed="' + (difficulty.key === selectedDifficulty ? "true" : "false") + '" ' + (state.battleStartPending ? "disabled" : "") + '>',
-      '  <span class="training-zone-difficulty-title">Difficolt&agrave;: ' + escapeHtml(difficulty.label) + "</span>",
-      '  <span class="training-zone-difficulty-level">' + (difficulty.debug ? "Team avversario personalizzato" : "Livello Pokémon avversari: " + escapeHtml(targetLevel)) + "</span>",
+      '  <span class="training-zone-difficulty-title">' + escapeHtml(t("ui.trainingZone.difficulty", { difficulty: t("ui.trainingZone.difficulties." + difficulty.key) })) + "</span>",
+      '  <span class="training-zone-difficulty-level">' + escapeHtml(difficulty.debug ? t("ui.trainingZone.customOpponentTeam") : t("ui.trainingZone.opponentLevel", { level: targetLevel })) + "</span>",
       prizeSection,
       "</button>"
     ].join("");
@@ -47,11 +51,11 @@ export function renderTrainingZoneScene() {
   var debugPokemonCreator = isDebugTraining && hasOpponent
     ? renderDebugPokemonCreatorPanel({
       action: "training-zone-debug-add-pokemon",
-      buttonLabel: "Aggiungi Pokemon",
+      buttonLabel: t("ui.trainingZone.addPokemon"),
       className: "training-zone-debug-pokemon-panel",
       count: opponentTeam.length,
       max: TEAM_MAX,
-      title: "Pokemon sfidante"
+      title: t("ui.trainingZone.challengerPokemon")
     })
     : "";
   var opponentCards = opponentTeam.map(function (pokemon, index) {
@@ -61,27 +65,27 @@ export function renderTrainingZoneScene() {
       imageAttrs: 'loading="eager" decoding="async"'
     });
     return isDebugTraining && hasOpponent
-      ? renderPokemonCardFrame(card, { actions: button("Togli Pokémon", "training-zone-debug-remove-pokemon", 'data-index="' + escapeHtml(index) + '"', "button-dark button-slim") })
+      ? renderPokemonCardFrame(card, { actions: button(t("ui.trainingZone.removePokemon"), "training-zone-debug-remove-pokemon", 'data-index="' + escapeHtml(index) + '"', "button-dark button-slim") })
       : card;
   }).join("");
   if (isDebugTraining && hasOpponent && !opponentCards) {
-    opponentCards = '<div class="empty-state">Aggiungi almeno un Pokémon allo sfidante.</div>';
+    opponentCards = '<div class="empty-state">' + escapeHtml(t("ui.trainingZone.addAtLeastOne")) + "</div>";
   }
   var challenger = opponentTeam.length || (isDebugTraining && hasOpponent)
     ? [
       '  <section class="panel training-zone-challenger-panel"><div class="panel-inner training-zone-challenger">',
       '    <div class="training-zone-trainer-cell">',
       '      <div class="trainer-profile-media training-zone-trainer-media">',
-      renderImage(getTrainerImage(opponentProfile.sprite), opponentProfile.name, withTrainerSpriteClass("trainer-profile-image", opponentProfile.sprite), withTrainerSpriteAttrs(opponentProfile.sprite, 'loading="eager" decoding="async"')),
+      renderImage(getTrainerImage(opponentProfile.sprite), opponentDisplayName, withTrainerSpriteClass("trainer-profile-image", opponentProfile.sprite), withTrainerSpriteAttrs(opponentProfile.sprite, 'loading="eager" decoding="async"')),
       "      </div>",
-      '      <h2 class="stack-title">' + escapeHtml(opponentProfile.name) + "</h2>",
+      '      <h2 class="stack-title">' + escapeHtml(opponentDisplayName) + "</h2>",
       "    </div>",
       '    <div class="training-zone-team-grid">' + opponentCards + "</div>",
       debugPokemonCreator,
       "  </div></section>"
     ].join("")
     : state.scene.trainingAuthoritativeReady
-      ? '<section class="panel training-zone-challenger-panel"><div class="panel-inner"><p class="empty-state">Lo sfidante e la sua squadra saranno generati dal motore autoritativo all\'avvio.</p></div></section>'
+      ? '<section class="panel training-zone-challenger-panel"><div class="panel-inner"><p class="empty-state">' + escapeHtml(t("ui.trainingZone.authoritativeOpponent")) + "</p></div></section>"
       : "";
   var content = [
     '<section class="team-scene-stack training-zone-layout">',
@@ -89,12 +93,12 @@ export function renderTrainingZoneScene() {
     '  <section class="panel training-zone-panel"><div class="panel-inner stack">',
     '    <div class="training-zone-control-row">',
     '      <div class="training-zone-reward-grid">' + rewardCards + "</div>",
-    '      <div class="training-zone-combat-row">' + button("Cerca sfidante", "training-zone-search", searchAttrs, "button-accent") + button("Combatti", "training-zone-start", battleAttrs, "button-primary") + "</div>",
+    '      <div class="training-zone-combat-row">' + button(t("ui.trainingZone.search"), "training-zone-search", searchAttrs, "button-accent") + button(t("ui.trainingZone.fight"), "training-zone-start", battleAttrs, "button-primary") + "</div>",
     "    </div>",
     "  </div></section>",
     challenger,
     "</section>"
   ].join("");
 
-  return sceneShell("Zona allenamento", "", content, "", "scene-content-training-zone", "parent-back");
+  return sceneShell(t("ui.sceneTitles.trainingZone"), "", content, "", "scene-content-training-zone", "parent-back");
 }

@@ -4,8 +4,11 @@ import { ensureBattleBindings } from "../client/battle-scene-lock.js";
 import { escapeHtml, getItemImage, getTrainerImage, renderImage } from "../client/asset-helpers.js";
 import { button, hpMarkup, renderSummary, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
-import { resolveInventoryItems, itemDisplayDescription, isPlayerBattleInventoryItem, ItemCategory } from "../data/items.js";
+import { resolveInventoryItems, isPlayerBattleInventoryItem, ItemCategory } from "../data/items.js";
 import { isAdminRewardBattleType } from "../data/admin-battles.js";
+import { itemDisplayDescription, itemDisplayName, moveDisplayDescription, moveDisplayName, pokemonDisplayName, typeDisplayName } from "../client/entity-text.js";
+import { t } from "../client/i18n.js";
+import { localizeBattleSummary, resolveBattleEvent } from "../client/battle-text.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
 
@@ -16,19 +19,19 @@ function renderMiniCombatant(combatant, isActive, options) {
   var actions = "";
   if (isActive) {
     className += " is-active";
-    statusLabel = "Attivo";
+    statusLabel = t("ui.battle.active");
   }
   if (combatant.isFainted()) {
     className += " is-ko";
     statusLabel = statusLabel ? statusLabel + " - KO" : "KO";
   }
   if (options.canSwitch && (!isActive || options.allowActiveSwitch) && !combatant.isFainted()) {
-    actions = '<button type="button" class="button button-primary button-slim" data-action="' + escapeHtml(options.switchAction || "battle-switch") + '" data-index="' + escapeHtml(options.index) + '">' + escapeHtml(options.switchLabel || "Cambia") + '</button>';
+    actions = '<button type="button" class="button button-primary button-slim" data-action="' + escapeHtml(options.switchAction || "battle-switch") + '" data-index="' + escapeHtml(options.index) + '">' + escapeHtml(options.switchLabel || t("ui.battle.switch")) + '</button>';
   }
   var frameClassName = "battle-roster-entry";
   if (options.reserveFooter && !statusLabel && !actions) {
     frameClassName += " battle-roster-entry-footer-placeholder";
-    statusLabel = "Attivo";
+    statusLabel = t("ui.battle.active");
   }
 
   return renderPokemonCardFrame(renderPokemonCard(combatant.pokemon, {
@@ -57,15 +60,15 @@ function renderBattleSlot(combatant, title, showMoves, options) {
   if (!combatant) {
     return renderSlot([
       '<article class="pokemon-card pokemon-card-battle pokemon-card-battle-active battle-empty-slot">',
-      '  <p class="battle-empty-slot-message">' + escapeHtml(options.placeholderText || "In attesa della scelta dell'admin") + "</p>",
+      '  <p class="battle-empty-slot-message">' + escapeHtml(options.placeholderText || t("ui.battle.waitingForAdminChoice")) + "</p>",
       options.overlayContent || "",
       "</article>"
     ].join(""));
   }
   if (moveStates.length) {
     moveMarkup = moveStates.map(function (stateEntry, index) {
-      var description = Engine.formatDescription(stateEntry.move);
-      var moveContent = '<span class="move-name">' + escapeHtml(stateEntry.move.name) + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span>";
+      var description = moveDisplayDescription(stateEntry.move);
+      var moveContent = '<span class="move-name">' + escapeHtml(moveDisplayName(stateEntry.move)) + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span>";
       var weatherBlocked = options.manager && options.manager.isWeatherMoveBlocked(options.moveActor, stateEntry.move);
       var disabled = !stateEntry.enabled || weatherBlocked;
 
@@ -86,43 +89,9 @@ function renderBattleSlot(combatant, title, showMoves, options) {
   }));
 }
 
-function battleLogDisplayNames(scene) {
-  var playerTeam = scene && scene.playerTeam;
-  var playerName = String(playerTeam && playerTeam.name || "").trim();
-  var enemyTeam = scene && scene.enemyTeam;
-  var enemyActive = enemyTeam && enemyTeam.getActive ? enemyTeam.getActive() : null;
-  var enemyName = String(enemyTeam && enemyTeam.name || "").trim();
-  if (!playerName || playerName === "Giocatore") {
-    playerName = playerBattleSummaryName(scene);
-  }
-  if ((!enemyName || enemyName === "Pokemon selvatico") && enemyActive && enemyActive.pokemon) {
-    enemyName = enemyActive.pokemon.name;
-  }
-  return {
-    player: playerName,
-    enemy: enemyName || "Avversario"
-  };
-}
-
-function normalizeBattleLogLine(line, names) {
-  if (line === "Giocatore") {
-    return names.player;
-  }
-  if (line.indexOf("Giocatore ") === 0) {
-    return names.player + line.slice("Giocatore".length);
-  }
-  if (line === "Pokemon selvatico" || line === "Sfidante") {
-    return names.enemy;
-  }
-  return line;
-}
-
 function renderBattleLog(logEntries, scene) {
   var groups = [];
   var currentGroup = null;
-  var turnHeaderPattern = /^--- Turno (\d+):\s*(.+)$/;
-  var forcedEntryPattern = /^(?:Entra in campo .+|.+ ritirato, entra in campo .+)$/;
-  var names = battleLogDisplayNames(scene);
 
   function flushGroup() {
     if (currentGroup) {
@@ -131,28 +100,27 @@ function renderBattleLog(logEntries, scene) {
     }
   }
 
-  logEntries.forEach(function (line) {
-    var turnHeaderMatch = line.match(turnHeaderPattern);
-
-    if (line === "\u200b") {
+  logEntries.forEach(function (entry) {
+    if (!entry || typeof entry.key !== "string") {
+      return;
+    }
+    if (entry.divider || entry.key === "turn.divider") {
       flushGroup();
       groups.push({ divider: true });
       return;
     }
-
-    if (turnHeaderMatch) {
-      if (!currentGroup || currentGroup.turn !== turnHeaderMatch[1]) {
+    if (entry.group === "turn" || entry.key === "turn.started") {
+      if (!currentGroup || currentGroup.turn !== String(entry.turn || entry.params && entry.params.number || "")) {
         flushGroup();
         currentGroup = {
-          turn: turnHeaderMatch[1],
-          title: "TURNO " + turnHeaderMatch[1],
+          turn: String(entry.turn || entry.params && entry.params.number || ""),
+          title: t("ui.battle.turn", { number: entry.turn || entry.params && entry.params.number || "" }),
           lines: []
         };
       }
-      currentGroup.lines.push(normalizeBattleLogLine(turnHeaderMatch[2], names));
+      currentGroup.lines.push(resolveBattleEvent(entry, scene));
       return;
     }
-
     if (!currentGroup) {
       currentGroup = {
         turn: "",
@@ -160,34 +128,10 @@ function renderBattleLog(logEntries, scene) {
         lines: []
       };
     }
-    currentGroup.lines.push(normalizeBattleLogLine(line, names));
+    currentGroup.lines.push(resolveBattleEvent(entry, scene));
   });
 
   flushGroup();
-
-  groups = groups.reduce(function (merged, group) {
-    var previousGroup = merged[merged.length - 1];
-    var previousDivider = previousGroup && previousGroup.divider ? previousGroup : null;
-    var previousTurnGroup = previousDivider ? merged[merged.length - 2] : previousGroup;
-    var isForcedEntryGroup = group
-      && !group.divider
-      && !group.title
-      && group.lines.length > 0
-      && group.lines.every(function (line) {
-        return forcedEntryPattern.test(line);
-      });
-
-    if (isForcedEntryGroup && previousTurnGroup && !previousTurnGroup.divider) {
-      previousTurnGroup.lines = previousTurnGroup.lines.concat(group.lines);
-      if (previousDivider) {
-        merged.pop();
-      }
-      return merged;
-    }
-
-    merged.push(group);
-    return merged;
-  }, []);
 
   return groups.map(function (group) {
     if (group.divider) {
@@ -198,7 +142,7 @@ function renderBattleLog(logEntries, scene) {
       '<div class="log-line log-turn-group">',
       group.title ? '<p class="log-turn-title">' + escapeHtml(group.title) + "</p>" : "",
       group.lines.map(function (line, index) {
-        var className = index === 0 || line === names.player || line === names.enemy
+        var className = index === 0
           ? "log-turn-entry log-turn-team"
           : "log-turn-entry";
         return '<p class="' + className + '">' + escapeHtml(line) + "</p>";
@@ -208,40 +152,11 @@ function renderBattleLog(logEntries, scene) {
   }).join("");
 }
 
-function playerBattleSummaryName(scene) {
-  if (scene && scene.adminBattle && scene.playerUsername) {
-    return String(scene.playerUsername || "").trim() || "Giocatore";
-  }
-  return String(state.playerName || state.auth.userLabel || "").trim() || "Giocatore";
-}
-
-function opponentBattleSummaryName(scene, currentName) {
-  var battleType = String(scene && (scene.battleType || scene.manager && scene.manager.battleType) || "");
-  var name = String(currentName || "").trim();
-  if (battleType.indexOf("capture_") === 0 || !name || name === "Sfidante" || name === "Pokemon selvatico") {
-    return "Avversario";
-  }
-  return name;
-}
-
-function applyBattleSummaryNames(lines, scene) {
-  var teamIndex = 0;
-  return lines.map(function (entry) {
-    if (!entry || entry.kind !== "team") {
-      return entry;
-    }
-    teamIndex += 1;
-    return Object.assign({}, entry, {
-      text: teamIndex === 1 ? playerBattleSummaryName(scene) : opponentBattleSummaryName(scene, entry.text)
-    });
-  });
-}
-
 export function renderBattleScene(scene) {
   var renderScene = scene.finalBattleDisplayScene || scene;
   ensureBattleBindings(renderScene);
 
-  var summaryLines = applyBattleSummaryNames(Engine.buildBattleSummary(renderScene.playerTeam, renderScene.enemyTeam, renderScene.manager.usedItems, renderScene.manager.enemyUsedItems, renderScene.manager), renderScene);
+  var summaryLines = localizeBattleSummary(Engine.buildBattleSummary(renderScene.playerTeam, renderScene.enemyTeam, renderScene.manager.usedItems, renderScene.manager.enemyUsedItems, renderScene.manager), renderScene);
   var logLines = renderBattleLog(renderScene.manager.log, renderScene);
   var battleInfoPanel = scene.battleInfoPanel === "summary" ? "summary" : "log";
   var battleBottomPanel = scene.battleBottomPanel === "teams" ? "teams" : scene.battleBottomPanel === "items" ? "items" : "info";
@@ -256,13 +171,13 @@ export function renderBattleScene(scene) {
       }
       var isKo = combatant.isFainted();
       var disabled = isKo || index === activeIndex;
-      var label = combatant.pokemon.name;
+      var label = pokemonDisplayName(combatant.pokemon);
       return '<button type="button" class="capture-starter-slot battle-switch-choice' + (isKo ? " is-ko" : "") + '" data-action="' + escapeHtml(switchAction || "battle-switch") + '" data-index="' + escapeHtml(index) + '" ' + (disabled ? "disabled" : "") + ">" + escapeHtml(label) + "</button>";
     }).join("");
     return [
       '<div class="battle-ko-switch-overlay">',
       '  <section class="battle-ko-switch-panel pokemon_choice-panel">',
-      '    <h3>Scegli chi mandare in campo:</h3>',
+      '    <h3>' + escapeHtml(t("ui.battle.chooseFieldPokemon")) + '</h3>',
       '    <div class="capture-starter-grid battle-switch-grid battle-switch-grid-count-' + Math.min(3, Math.max(1, availableCount)) + '">' + choices + "</div>",
       "  </section>",
       "</div>"
@@ -304,50 +219,52 @@ export function renderBattleScene(scene) {
   var opponentSlotOptions = opponentNeedsSwitch ? { className: "has-fainted-overlay" } : {};
   var authoritativeRefresh = scene.authoritativeBattle && waitingForAdmin && !scene.adminBattle;
   var authoritativeUncertaintyMessage = scene.authoritativeCommandUncertain
-    ? '<p class="battle-authoritative-uncertain-message">' + escapeHtml(scene.authoritativeUncertaintyMessage || "Il comando è ancora in verifica. Riprova prima di inviare altre azioni.") + "</p>"
+    ? '<p class="battle-authoritative-uncertain-message">' + escapeHtml(scene.authoritativeUncertaintyMessage || t("ui.battle.commandUncertain")) + "</p>"
     : "";
   var battleInfoFooter = scene.authoritativeCommandUncertain
     ? '<div class="battle-info-actions">' + authoritativeUncertaintyMessage
-      + button("Riprova", "battle-authoritative-retry", scene.authoritativeCommandPending ? "disabled" : "", "button-accent button-slim")
-      + button("Cancella sfida", "battle-authoritative-cancel", scene.authoritativeCommandPending ? "disabled" : "", "button-danger button-slim") + "</div>"
+      + button(t("ui.battle.retry"), "battle-authoritative-retry", scene.authoritativeCommandPending ? "disabled" : "", "button-accent button-slim")
+      + button(t("ui.battle.cancelBattle"), "battle-authoritative-cancel", scene.authoritativeCommandPending ? "disabled" : "", "button-danger button-slim") + "</div>"
     : scene.authoritativeCommandPending
-      ? '<div class="battle-info-actions" data-battle-abandon-inline>' + button("Abbandona scontro", "battle-abandon-open", "disabled", "button-danger button-slim") + "</div>"
+      ? '<div class="battle-info-actions" data-battle-abandon-inline>' + button(t("ui.battle.abandon"), "battle-abandon-open", "disabled", "button-danger button-slim") + "</div>"
     : authoritativeRefresh
-    ? '<div class="battle-info-actions battle-abandon-actions" data-battle-abandon-inline>' + button("Abbandona scontro", "battle-abandon-open", "", "button-danger button-slim") + "</div>"
+    ? '<div class="battle-info-actions battle-abandon-actions" data-battle-abandon-inline>' + button(t("ui.battle.abandon"), "battle-abandon-open", "", "button-danger button-slim") + "</div>"
     : authoritativeAdminEntryChoice
-      ? '<div class="battle-info-actions"><p class="battle-admin-thinking-log">Scegli l\'effetto dello strumento tenuto.</p>'
+      ? '<div class="battle-info-actions"><p class="battle-admin-thinking-log">' + escapeHtml(t("ui.battle.chooseHeldEffect")) + '</p>'
         + (authoritativeAdminEntryChoice.entries || []).map(function (entry) {
-          return button(entry.name, "admin-battle-entry-choice", 'data-index="' + escapeHtml(entry.index) + '"', "button-ghost button-slim");
+          var label = authoritativeAdminEntryChoice.kind === "type" ? typeDisplayName(entry.key || entry.typeName)
+            : authoritativeAdminEntryChoice.kind === "move" ? moveDisplayName(entry) : entry.name;
+          return button(label, "admin-battle-entry-choice", 'data-index="' + escapeHtml(entry.index) + '"', "button-ghost button-slim");
         }).join("") + "</div>"
     : canFinalizeAdminReward
-    ? '<div class="battle-info-actions">' + button("Registra premi", "admin-battle-finalize-reward", "", "button-accent button-slim") + "</div>"
+    ? '<div class="battle-info-actions">' + button(t("ui.battle.registerRewards"), "admin-battle-finalize-reward", "", "button-accent button-slim") + "</div>"
     : scene.terminalExitReady
-      ? '<div class="battle-info-actions">' + button("Esci", "battle-terminal-exit", "", "button-primary button-slim") + "</div>"
+      ? '<div class="battle-info-actions">' + button(t("ui.battle.exit"), "battle-terminal-exit", "", "button-primary button-slim") + "</div>"
     : scene.adminBattle && scene.rewardFinalized
-      ? '<div class="battle-info-actions"><p class="battle-admin-thinking-log">Premi già registrati.</p></div>'
+      ? '<div class="battle-info-actions"><p class="battle-admin-thinking-log">' + escapeHtml(t("ui.battle.rewardsRegistered")) + '</p></div>'
       : renderScene.manager.battleOver || scene.adminBattle || (playerActionLocked && !waitingForAdmin)
         ? ""
-        : '<div class="battle-info-actions" data-battle-abandon-inline>' + button("Abbandona scontro", "battle-abandon-open", "", "button-danger button-slim") + "</div>";
+        : '<div class="battle-info-actions" data-battle-abandon-inline>' + button(t("ui.battle.abandon"), "battle-abandon-open", "", "button-danger button-slim") + "</div>";
   var waitingLogLine = "";
   if (waitingForAdmin && !scene.adminBattle) {
-    waitingLogLine = '<div class="log-line battle-admin-thinking-log">' + escapeHtml((renderScene.enemyTeam.name || "L'avversario") + (scene.pendingAdminEntryChoice ? " sta scegliendo chi mandare in campo..." : " sta pensando alla mossa da fare...")) + "</div>";
+    waitingLogLine = '<div class="log-line battle-admin-thinking-log">' + escapeHtml(t(scene.pendingAdminEntryChoice ? "ui.battle.choosingFieldPokemon" : "ui.battle.thinking", { name: renderScene.enemyTeam.name || t("ui.battle.opponent") })) + "</div>";
   } else if (adminEntryChoiceActive) {
-    waitingLogLine = '<div class="log-line battle-admin-thinking-log">Scegli il Pokémon da mandare in campo.</div>';
+    waitingLogLine = '<div class="log-line battle-admin-thinking-log">' + escapeHtml(t("ui.battle.choosePokemon")) + '</div>';
   } else if (scene.adminBattle && renderScene.manager.waitingFor === "player" && !renderScene.manager.battleOver) {
-    waitingLogLine = '<div class="log-line battle-admin-thinking-log">' + escapeHtml((scene.playerUsername || "Il giocatore") + " sta pensando alla mossa da fare...") + "</div>";
+    waitingLogLine = '<div class="log-line battle-admin-thinking-log">' + escapeHtml(t("ui.battle.thinking", { name: scene.playerUsername || t("ui.battle.playerArticle") })) + "</div>";
   }
   var infoCard = [
     '    <section class="panel battle-info-card" data-battle-info-card data-battle-panel-section="info"><div class="panel-inner stack battle-info-inner">',
-    '      <div class="battle-info-tabs" role="tablist" aria-label="Informazioni battaglia">',
-    button("Log", "battle-info-tab", 'data-panel="log" aria-selected="' + (battleInfoPanel === "log" ? "true" : "false") + '"', "button-slim battle-info-tab" + (battleInfoPanel === "log" ? " button-primary" : " button-ghost")),
-    button("Riassunto", "battle-info-tab", 'data-panel="summary" aria-selected="' + (battleInfoPanel === "summary" ? "true" : "false") + '"', "button-slim battle-info-tab" + (battleInfoPanel === "summary" ? " button-primary" : " button-ghost")),
+    '      <div class="battle-info-tabs" role="tablist" aria-label="' + escapeHtml(t("ui.battle.infoAria")) + '">',
+    button(t("ui.battle.log"), "battle-info-tab", 'data-panel="log" aria-selected="' + (battleInfoPanel === "log" ? "true" : "false") + '"', "button-slim battle-info-tab" + (battleInfoPanel === "log" ? " button-primary" : " button-ghost")),
+    button(t("ui.battle.summary"), "battle-info-tab", 'data-panel="summary" aria-selected="' + (battleInfoPanel === "summary" ? "true" : "false") + '"', "button-slim battle-info-tab" + (battleInfoPanel === "summary" ? " button-primary" : " button-ghost")),
     "      </div>",
     '      <div class="battle-info-body">',
     '        <div class="battle-info-pane battle-summary-pane' + (battleInfoPanel === "summary" ? " is-active" : "") + '" data-battle-info-pane="summary" aria-hidden="' + (battleInfoPanel === "summary" ? "false" : "true") + '">',
     '          <div class="summary-list" data-battle-summary-measure>' + renderSummary(summaryLines) + "</div>",
     "        </div>",
     '        <div class="battle-info-pane battle-log-pane' + (battleInfoPanel === "log" ? " is-active" : "") + '" data-battle-info-pane="log" aria-hidden="' + (battleInfoPanel === "log" ? "false" : "true") + '">',
-    '          <div class="log-panel" data-scroll-key="battle-log"><div class="log-list">' + (logLines || '<div class="log-line">Nessun turno ancora eseguito.</div>') + waitingLogLine + "</div></div>",
+    '          <div class="log-panel" data-scroll-key="battle-log"><div class="log-list">' + (logLines || '<div class="log-line">' + escapeHtml(t("ui.battle.noTurns")) + '</div>') + waitingLogLine + "</div></div>",
     "        </div>",
     "      </div>",
     battleInfoFooter,
@@ -357,9 +274,9 @@ export function renderBattleScene(scene) {
   var battleItemsPanel = "";
   var towerOpponentPanel = scene.battleTower && renderScene.authoritativePresentation
     ? '<section class="battle-tower-opponent-panel"><div class="battle-tower-opponent-media">'
-      + renderImage(getTrainerImage(renderScene.authoritativePresentation.sprite), renderScene.authoritativePresentation.name || "Sfidante", "battle-tower-opponent-sprite")
-      + '</div><p>Sfida ' + escapeHtml(scene.authoritativeTowerChallenge || 1) + '</p><h2>'
-      + escapeHtml(renderScene.authoritativePresentation.name || "Sfidante") + "</h2></section>"
+      + renderImage(getTrainerImage(renderScene.authoritativePresentation.sprite), renderScene.authoritativePresentation.name || t("ui.battle.challenger"), "battle-tower-opponent-sprite")
+      + '</div><p>' + escapeHtml(t("ui.battle.towerChallenge", { number: scene.authoritativeTowerChallenge || 1 })) + '</p><h2>'
+      + escapeHtml(renderScene.authoritativePresentation.name || t("ui.battle.challenger")) + "</h2></section>"
     : "";
   if (!renderScene.manager.battleOver && !scene.battleTower && state && (scene.adminBattle || Array.isArray(scene.playerInventory) || (!scene.authoritativeBattle && state.inventory))) {
     var playerInventory = Array.isArray(scene.playerInventory) ? scene.playerInventory : state.inventory;
@@ -374,13 +291,13 @@ export function renderBattleScene(scene) {
     }
     function renderBattleInventoryItem(item, options) {
       options = options || {};
-      var itemName = String(item.name || "");
+      var itemName = itemDisplayName(item);
       var itemImageClass = item.category === ItemCategory.TM ? "battle-zaino-item-image battle-zaino-item-image-mt" : "battle-zaino-item-image";
       var imageMarkup = item.image
-        ? renderImage(getItemImage(item.image), item.name, itemImageClass)
+        ? renderImage(getItemImage(item.image), itemName, itemImageClass)
         : '<span class="battle-zaino-item-image battle-zaino-item-image-empty"></span>';
       var availabilityMarkup = '<div class="battle-zaino-item-availability"><span class="battle-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
-      var useButton = '<button type="button" class="button button-primary button-slim battle-inventory-use" data-action="' + (scene.adminBattle ? "admin-battle-item-use" : "battle-item-use") + '" data-item-index="' + escapeHtml(item.index) + '"' + (options.readonly ? " disabled" : "") + ">Usa</button>";
+      var useButton = '<button type="button" class="button button-primary button-slim battle-inventory-use" data-action="' + (scene.adminBattle ? "admin-battle-item-use" : "battle-item-use") + '" data-item-index="' + escapeHtml(item.index) + '"' + (options.readonly ? " disabled" : "") + ">" + escapeHtml(t("ui.battle.use")) + "</button>";
       var itemCard = [
         '<article class="battle-zaino-item-card' + (options.readonly ? " battle-inventory-item-readonly" : "") + '">',
         '  <div class="battle-zaino-item-media">',
@@ -420,11 +337,11 @@ export function renderBattleScene(scene) {
       ].join("");
     }
     var battleInventorySections = [
-      { key: "battle", title: "Strumenti battaglia" },
-      { key: "berries", title: "Bacche" }
+      { key: "battle", title: t("ui.battle.inventorySections.battle") },
+      { key: "berries", title: t("ui.battle.inventorySections.berries") }
     ];
     if (!renderScene.trainingBattle && String(renderScene.battleType || "").indexOf("gym_") !== 0) {
-      battleInventorySections.push({ key: "balls", title: "Pok\u00e9 Ball" });
+      battleInventorySections.push({ key: "balls", title: t("ui.battle.inventorySections.balls") });
     }
     function getAvailableBattleInventoryItems(inventoryItems) {
       return inventoryItems.filter(function (item) {
@@ -438,14 +355,14 @@ export function renderBattleScene(scene) {
         ? battleInventorySections.filter(function (section) {
           return inventoryItems.some(function (item) { return getBattleInventorySectionKey(item) === section.key; });
         }).map(function (section) { return renderBattleInventorySection(section, inventoryItems, options); }).join("")
-        : '<p class="battle-zaino-empty">Nessuno strumento disponibile.</p>';
+        : '<p class="battle-zaino-empty">' + escapeHtml(t("ui.battle.noItems")) + '</p>';
     }
     function renderMobileBattleInventoryStack(inventoryItems, options) {
       var availableItems = getAvailableBattleInventoryItems(inventoryItems);
 
       return availableItems.length
-        ? renderBattleInventorySection({ key: "all", title: "Strumenti" }, inventoryItems, Object.assign({}, options, { items: availableItems }))
-        : '<p class="battle-zaino-empty">Nessuno strumento disponibile.</p>';
+        ? renderBattleInventorySection({ key: "all", title: t("ui.battle.inventorySections.all") }, inventoryItems, Object.assign({}, options, { items: availableItems }))
+        : '<p class="battle-zaino-empty">' + escapeHtml(t("ui.battle.noItems")) + '</p>';
     }
     battleItemsPanel = '<section class="panel battle-inventory-panel" data-battle-panel-section="items"><div class="battle-inventory-stack battle-zaino-stack battle-inventory-desktop-stack">' +
       renderBattleInventoryStack(ownInventoryItems, { readonly: playerItemsReadonly }) +
@@ -453,7 +370,7 @@ export function renderBattleScene(scene) {
       renderMobileBattleInventoryStack(ownInventoryItems, { readonly: playerItemsReadonly }) +
       "</div></section>";
     if (scene.adminBattle) {
-      battleItemsPanel += '<section class="panel battle-inventory-panel battle-opponent-inventory-panel" data-battle-panel-section="items"><h2 class="stack-title">Zaino avversario</h2><div class="battle-inventory-stack battle-zaino-stack battle-inventory-desktop-stack">' +
+      battleItemsPanel += '<section class="panel battle-inventory-panel battle-opponent-inventory-panel" data-battle-panel-section="items"><h2 class="stack-title">' + escapeHtml(t("ui.battle.opponentBag")) + '</h2><div class="battle-inventory-stack battle-zaino-stack battle-inventory-desktop-stack">' +
         renderBattleInventoryStack(opponentInventoryItems, { readonly: true }) +
         '</div><div class="battle-inventory-stack battle-zaino-stack battle-inventory-mobile-stack">' +
         renderMobileBattleInventoryStack(opponentInventoryItems, { readonly: true }) +
@@ -462,26 +379,26 @@ export function renderBattleScene(scene) {
   }
 
   return sceneShell(
-    scene.battleTower ? "Torre Lotta" : "Battaglia",
+    t(scene.battleTower ? "ui.battle.towerTitle" : "ui.battle.sceneTitle"),
     "",
     [
       '<section class="battle-layout" data-battle-active-panel="' + battleBottomPanel + '">',
       towerOpponentPanel,
       '  <div class="battle-stage">',
       '    <div class="panel battle-field-panel">',
-      renderBattleSlot(!adminPerspective && pendingAdminEntryChoice ? null : opponentTeam.getActive(), adminPerspective ? "Pokémon del giocatore" : "Pokémon avversario", false, Object.assign({ ownTeam: ownTeam }, opponentSlotOptions, { placeholderText: (opponentTeam.name || "L'avversario") + " sta scegliendo il Pokémon da mandare in campo" })),
-      renderBattleSlot(adminEntryChoiceActive ? null : ownTeam.getActive(), adminPerspective ? "Pokémon avversario" : "Pokémon del giocatore", ownActionEnabled, Object.assign({ ownTeam: ownTeam, manager: renderScene.manager, moveActor: adminPerspective ? "npc" : "player" }, ownSlotOptions, { placeholderText: (ownTeam.name || "L'admin") + " sta scegliendo il Pokémon da mandare in campo" })),
+      renderBattleSlot(!adminPerspective && pendingAdminEntryChoice ? null : opponentTeam.getActive(), t(adminPerspective ? "ui.battle.playerPokemon" : "ui.battle.opponentPokemon"), false, Object.assign({ ownTeam: ownTeam }, opponentSlotOptions, { placeholderText: t("ui.battle.choosingFieldPokemon", { name: opponentTeam.name || t("ui.battle.opponent") }) })),
+      renderBattleSlot(adminEntryChoiceActive ? null : ownTeam.getActive(), t(adminPerspective ? "ui.battle.opponentPokemon" : "ui.battle.playerPokemon"), ownActionEnabled, Object.assign({ ownTeam: ownTeam, manager: renderScene.manager, moveActor: adminPerspective ? "npc" : "player" }, ownSlotOptions, { placeholderText: t("ui.battle.choosingFieldPokemon", { name: ownTeam.name || t("ui.battle.adminFallback") }) })),
       "    </div>",
       '      <div class="battle-mobile-tabs" data-battle-mobile-tabs>',
-      button("Info lotta", "battle-bottom-tab", 'data-panel="info"', "button-slim battle-mobile-tab" + (battleBottomPanel === "info" ? " button-primary" : " button-ghost")),
-      button("Squadre", "battle-bottom-tab", 'data-panel="teams"', "button-slim battle-mobile-tab" + (battleBottomPanel === "teams" ? " button-primary" : " button-ghost")),
-      button("Strumenti", "battle-bottom-tab", 'data-panel="items"', "button-slim battle-mobile-tab" + (battleBottomPanel === "items" ? " button-primary" : " button-ghost")),
+      button(t("ui.battle.info"), "battle-bottom-tab", 'data-panel="info"', "button-slim battle-mobile-tab" + (battleBottomPanel === "info" ? " button-primary" : " button-ghost")),
+      button(t("ui.battle.teams"), "battle-bottom-tab", 'data-panel="teams"', "button-slim battle-mobile-tab" + (battleBottomPanel === "teams" ? " button-primary" : " button-ghost")),
+      button(t("ui.battle.items"), "battle-bottom-tab", 'data-panel="items"', "button-slim battle-mobile-tab" + (battleBottomPanel === "items" ? " button-primary" : " button-ghost")),
       "      </div>",
       infoCard,
       "  </div>",
       '  <div class="battle-rosters" data-battle-panel-section="teams">',
       '    <section class="panel battle-roster-card battle-enemy-roster-card"><div class="panel-inner stack">',
-      '      <h2 class="stack-title">Squadra avversaria</h2>',
+      '      <h2 class="stack-title">' + escapeHtml(t("ui.battle.opponentTeam")) + '</h2>',
       '      <div class="mini-roster" data-scroll-key="battle-enemy-roster">' + opponentTeam.combatantList.map(function (combatant, index) {
         return renderMiniCombatant(combatant, !pendingAdminEntryChoice && index === opponentTeam.activeIndex, {
           reserveFooter: true
@@ -489,12 +406,12 @@ export function renderBattleScene(scene) {
       }).join("") + "</div>",
       "    </div></section>",
       '    <section class="panel battle-roster-card battle-player-roster-card"><div class="panel-inner stack">',
-      '      <h2 class="stack-title">Squadra del giocatore</h2>',
+      '      <h2 class="stack-title">' + escapeHtml(t("ui.battle.playerTeam")) + '</h2>',
       '      <div class="mini-roster" data-scroll-key="battle-player-roster">' + ownTeam.combatantList.map(function (combatant, index) {
         return renderMiniCombatant(combatant, !adminEntryChoiceActive && index === ownTeam.activeIndex, {
           canSwitch: adminEntryChoiceActive || (adminPerspective ? adminActionEnabled : !renderScene.manager.battleOver && !playerActionLocked),
           switchAction: adminEntryChoiceActive ? "admin-battle-entry" : ownSwitchAction,
-          switchLabel: adminEntryChoiceActive ? "Scegli" : "Cambia",
+          switchLabel: t(adminEntryChoiceActive ? "ui.battle.choose" : "ui.battle.switch"),
           allowActiveSwitch: adminEntryChoiceActive,
           reserveFooter: true,
           index: index
@@ -513,9 +430,9 @@ export function renderBattleScene(scene) {
 
 export function renderBattleRestoreScene() {
   return sceneShell(
-    "Battaglia",
+    t("ui.battle.sceneTitle"),
     "",
-    '<div class="empty-state">Caricamento battaglia in corso...</div>',
+    '<div class="empty-state">' + escapeHtml(t("ui.battle.loading")) + '</div>',
     "",
     "",
     "parent-back"

@@ -1,5 +1,4 @@
 ﻿import * as m from "./moves.js";
-import { formatCatalogDescription } from "./move-format.js";
 
 function defineItemClassification(key) {
   return Object.freeze({ key: key });
@@ -37,7 +36,6 @@ function defineTM(config) {
   return {
     index: config.index,
     name: "MT" + number + " " + config.move.name,
-    description: "Insegna la mossa " + config.move.name,
     category: ItemCategory.TM,
     move: config.move,
     tier: config.tier
@@ -88,7 +86,6 @@ export function normalizeItemDefinition(item) {
 export const poke_ball = normalizeItemDefinition({
     index: 100,
     name: "Poké Ball",
-    description: "Per catturare Pokémon selvatici",
     image: "poke_ball.webp",
     category: ItemCategory.Ball,
     value: 50
@@ -96,8 +93,7 @@ export const poke_ball = normalizeItemDefinition({
 
 export const great_ball = normalizeItemDefinition({
     index: 101,
-    name: "Mega Ball",
-    description: "Per catturare Pokémon selvatici. Più efficace della Poké Ball",
+    name: "Great Ball",
     image: "mega_ball.webp",
     category: ItemCategory.Ball,
     value: 75
@@ -106,7 +102,6 @@ export const great_ball = normalizeItemDefinition({
 export const ultra_ball = normalizeItemDefinition({
     index: 102,
     name: "Ultra Ball",
-    description: "Per catturare Pokémon selvatici. Più efficace della Mega Ball",
     image: "ultra_ball.webp",
     category: ItemCategory.Ball,
     value: 90
@@ -114,8 +109,7 @@ export const ultra_ball = normalizeItemDefinition({
 
 export const potion = normalizeItemDefinition({
     index: 103,
-    name: "Pozione",
-    description: "Cura il Pokémon di 20 PS",
+    name: "Potion",
     image: "pozione.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -124,8 +118,7 @@ export const potion = normalizeItemDefinition({
 
 export const super_potion = normalizeItemDefinition({
     index: 104,
-    name: "Superpozione",
-    description: "Cura il Pokémon di 50 PS",
+    name: "Super Potion",
     image: "superpozione.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -134,8 +127,7 @@ export const super_potion = normalizeItemDefinition({
 
 export const hyper_potion = normalizeItemDefinition({
     index: 105,
-    name: "Iperpozione",
-    description: "Cura il Pokémon di 200 PS",
+    name: "Hyper Potion",
     image: "iperpozione.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -144,8 +136,7 @@ export const hyper_potion = normalizeItemDefinition({
 
 export const max_potion = normalizeItemDefinition({
     index: 106,
-    name: "Pozione Max",
-    description: "Cura il Pokémon di tutti i PS mancanti",
+    name: "Max Potion",
     image: "pozione_max.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -154,8 +145,7 @@ export const max_potion = normalizeItemDefinition({
 
 export const full_restore = normalizeItemDefinition({
     index: 107,
-    name: "Ricarica Totale",
-    description: "Cura il Pokémon di tutti i PS mancanti e ogni Status",
+    name: "Full Restore",
     image: "ricarica_totale.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealFull,
@@ -164,8 +154,7 @@ export const full_restore = normalizeItemDefinition({
 
 export const antidote = normalizeItemDefinition({
     index: 108,
-    name: "Antidoto",
-    description: "Cura dall'avvelenamento",
+    name: "Antidote",
     image: "antidoto.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
@@ -174,8 +163,7 @@ export const antidote = normalizeItemDefinition({
 
 export const paralyze_heal = normalizeItemDefinition({
     index: 109,
-    name: "Antiparalisi",
-    description: "Cura dalla paralisi",
+    name: "Paralyze Heal",
     image: "antiparalisi.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
@@ -184,8 +172,7 @@ export const paralyze_heal = normalizeItemDefinition({
 
 export const awakening = normalizeItemDefinition({
     index: 110,
-    name: "Sveglia",
-    description: "Cura dal sonno",
+    name: "Awakening",
     image: "sveglia.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
@@ -194,8 +181,7 @@ export const awakening = normalizeItemDefinition({
 
 export const burn_heal = normalizeItemDefinition({
     index: 111,
-    name: "Antiscottatura",
-    description: "Cura dalla scottatura",
+    name: "Burn Heal",
     image: "antiscottatura.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
@@ -204,8 +190,7 @@ export const burn_heal = normalizeItemDefinition({
 
 export const ice_heal = normalizeItemDefinition({
     index: 112,
-    name: "Antigelo",
-    description: "Cura dal congelamento",
+    name: "Ice Heal",
     image: "antigelo.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
@@ -214,8 +199,7 @@ export const ice_heal = normalizeItemDefinition({
 
 export const full_heal = normalizeItemDefinition({
     index: 113,
-    name: "Cura Totale",
-    description: "Cura ogni status",
+    name: "Full Heal",
     image: "cura_totale.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
@@ -224,8 +208,7 @@ export const full_heal = normalizeItemDefinition({
 
 export const fresh_water = normalizeItemDefinition({
     index: 114,
-    name: "Acqua fresca",
-    description: "Cura il Pokémon di 50 PS",
+    name: "Fresh Water",
     image: "acqua_fresca.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -234,8 +217,7 @@ export const fresh_water = normalizeItemDefinition({
 
 export const soda_pop = normalizeItemDefinition({
     index: 115,
-    name: "Gassosa",
-    description: "Cura il Pokémon di 60 PS",
+    name: "Soda Pop",
     image: "gassosa.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -244,8 +226,7 @@ export const soda_pop = normalizeItemDefinition({
 
 export const lemonade = normalizeItemDefinition({
     index: 116,
-    name: "Lemonsucco",
-    description: "Cura il Pokémon di 80 PS",
+    name: "Lemonade",
     image: "lemonsucco.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -254,8 +235,7 @@ export const lemonade = normalizeItemDefinition({
 
 export const moomoo_milk = normalizeItemDefinition({
     index: 117,
-    name: "Latte Mumu",
-    description: "Cura il Pokémon di 100 PS",
+    name: "Moomoo Milk",
     image: "latte_mumu.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -264,8 +244,7 @@ export const moomoo_milk = normalizeItemDefinition({
 
 export const clear_sky_elixir = normalizeItemDefinition({
     index: 118,
-    name: "Elisir Chiarocielo",
-    description: "Rimuove ogni meteo attivo",
+    name: "Clear Sky Elixir",
     image: "elisir_chiarocielo.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.Weather
@@ -273,8 +252,7 @@ export const clear_sky_elixir = normalizeItemDefinition({
 
 export const revive = normalizeItemDefinition({
     index: 119,
-    name: "Revitalizzante",
-    description: "Rianima un Pokémon ko con metà dei PS max",
+    name: "Revive",
     image: "revitalizzante.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealKo,
@@ -283,8 +261,7 @@ export const revive = normalizeItemDefinition({
 
 export const max_revive = normalizeItemDefinition({
     index: 120,
-    name: "Revitalizzante Max",
-    description: "Rianima un Pokémon ko con tutti i PS",
+    name: "Max Revive",
     image: "revitalizzante_max.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealKo,
@@ -293,8 +270,7 @@ export const max_revive = normalizeItemDefinition({
 
 export const heal_powder = normalizeItemDefinition({
     index: 121,
-    name: "Polvocura",
-    description: "Cura ogni status",
+    name: "Heal Powder",
     image: "polvocura.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
@@ -303,8 +279,7 @@ export const heal_powder = normalizeItemDefinition({
 
 export const energy_powder = normalizeItemDefinition({
     index: 122,
-    name: "Polvenergia",
-    description: "Cura il Pokémon di 50 PS",
+    name: "Energy Powder",
     image: "polvenergia.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -313,8 +288,7 @@ export const energy_powder = normalizeItemDefinition({
 
 export const energy_root = normalizeItemDefinition({
     index: 123,
-    name: "Radicenergia",
-    description: "Cura il Pokémon di 200 PS",
+    name: "Energy Root",
     image: "radicenergia.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
@@ -323,8 +297,7 @@ export const energy_root = normalizeItemDefinition({
 
 export const revival_herb = normalizeItemDefinition({
     index: 124,
-    name: "Vitalerba",
-    description: "Rianima un Pokémon ko con metà dei PS max",
+    name: "Revival Herb",
     image: "vitalerba.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealKo,
@@ -333,8 +306,7 @@ export const revival_herb = normalizeItemDefinition({
 
 export const mystic_water = normalizeItemDefinition({
     index: 200,
-    name: "Acqua magica",
-    description: "Aumenta di 1/4 i danni dei Pokémon Acqua",
+    name: "Mystic Water",
     image: "acqua_magica.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -344,8 +316,7 @@ export const mystic_water = normalizeItemDefinition({
 
 export const silver_powder = normalizeItemDefinition({
     index: 201,
-    name: "Argenpolvere",
-    description: "Aumenta di 1/4 i danni dei Pokémon Coleottero",
+    name: "Silver Powder",
     image: "argenpolvere.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -355,8 +326,7 @@ export const silver_powder = normalizeItemDefinition({
 
 export const sharp_beak = normalizeItemDefinition({
     index: 202,
-    name: "Beccaffilato",
-    description: "Aumenta di 1/4 i danni dei Pokémon Volante",
+    name: "Sharp Beak",
     image: "beccaffilato.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -366,8 +336,7 @@ export const sharp_beak = normalizeItemDefinition({
 
 export const magnet = normalizeItemDefinition({
     index: 203,
-    name: "Calamita",
-    description: "Aumenta di 1/4 i danni dei Pokémon Elettro",
+    name: "Magnet",
     image: "calamita.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -377,8 +346,7 @@ export const magnet = normalizeItemDefinition({
 
 export const charcoal = normalizeItemDefinition({
     index: 204,
-    name: "Carbonella",
-    description: "Aumenta di 1/4 i danni dei Pokémon Fuoco",
+    name: "Charcoal",
     image: "carbonella.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -388,8 +356,7 @@ export const charcoal = normalizeItemDefinition({
 
 export const black_belt = normalizeItemDefinition({
     index: 205,
-    name: "Cintura nera",
-    description: "Aumenta di 1/4 i danni dei Pokémon Lotta",
+    name: "Black Belt",
     image: "cintura_nera.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -399,8 +366,7 @@ export const black_belt = normalizeItemDefinition({
 
 export const twisted_spoon = normalizeItemDefinition({
     index: 206,
-    name: "Cucchiaio torto",
-    description: "Aumenta di 1/4 i danni dei Pokémon Psico",
+    name: "Twisted Spoon",
     image: "cucchiaio_torto.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -410,8 +376,7 @@ export const twisted_spoon = normalizeItemDefinition({
 
 export const dragon_fang = normalizeItemDefinition({
     index: 207,
-    name: "Dente di drago",
-    description: "Aumenta di 1/4 i danni dei Pokémon Drago",
+    name: "Dragon Fang",
     image: "dente_di_drago.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -421,8 +386,7 @@ export const dragon_fang = normalizeItemDefinition({
 
 export const never_melt_ice = normalizeItemDefinition({
     index: 208,
-    name: "Gelomai",
-    description: "Aumenta di 1/4 i danni dei Pokémon Ghiaccio",
+    name: "Never-Melt Ice",
     image: "gelomai.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -432,8 +396,7 @@ export const never_melt_ice = normalizeItemDefinition({
 
 export const metal_coat = normalizeItemDefinition({
     index: 209,
-    name: "Metalcopertura",
-    description: "Aumenta di 1/4 i danni dei Pokémon Acciaio",
+    name: "Metal Coat",
     image: "metalcopertura.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -443,8 +406,7 @@ export const metal_coat = normalizeItemDefinition({
 
 export const miracle_seed = normalizeItemDefinition({
     index: 210,
-    name: "Miracolseme",
-    description: "Aumenta di 1/4 i danni dei Pokémon Erba",
+    name: "Miracle Seed",
     image: "miracolseme.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -454,8 +416,7 @@ export const miracle_seed = normalizeItemDefinition({
 
 export const black_glasses = normalizeItemDefinition({
     index: 211,
-    name: "Occhialineri",
-    description: "Aumenta di 1/4 i danni dei Pokémon Buio",
+    name: "Black Glasses",
     image: "occhialineri.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -465,8 +426,7 @@ export const black_glasses = normalizeItemDefinition({
 
 export const hard_stone = normalizeItemDefinition({
     index: 212,
-    name: "Pietradura",
-    description: "Aumenta di 1/4 i danni dei Pokémon Roccia",
+    name: "Hard Stone",
     image: "pietradura.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -476,8 +436,7 @@ export const hard_stone = normalizeItemDefinition({
 
 export const fairy_feather = normalizeItemDefinition({
     index: 213,
-    name: "Piuma fatata",
-    description: "Aumenta di 1/4 i danni dei Pokémon Folletto",
+    name: "Fairy Feather",
     image: "piuma_fatata.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -487,8 +446,7 @@ export const fairy_feather = normalizeItemDefinition({
 
 export const soft_sand = normalizeItemDefinition({
     index: 214,
-    name: "Sabbia soffice",
-    description: "Aumenta di 1/4 i danni dei Pokémon Terra",
+    name: "Soft Sand",
     image: "sabbia_soffice.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -498,8 +456,7 @@ export const soft_sand = normalizeItemDefinition({
 
 export const silk_scarf = normalizeItemDefinition({
     index: 215,
-    name: "Sciarpa seta",
-    description: "Aumenta di 1/4 i danni dei Pokémon Normale",
+    name: "Silk Scarf",
     image: "sciarpa_seta.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -509,8 +466,7 @@ export const silk_scarf = normalizeItemDefinition({
 
 export const spell_tag = normalizeItemDefinition({
     index: 216,
-    name: "Spettrotarga",
-    description: "Aumenta di 1/4 i danni dei Pokémon Spettro",
+    name: "Spell Tag",
     image: "spettrotarga.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -520,8 +476,7 @@ export const spell_tag = normalizeItemDefinition({
 
 export const poison_barb = normalizeItemDefinition({
     index: 217,
-    name: "Velenaculeo",
-    description: "Aumenta di 1/4 i danni dei Pokémon Veleno",
+    name: "Poison Barb",
     image: "velenaculeo.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
@@ -531,8 +486,7 @@ export const poison_barb = normalizeItemDefinition({
 
 export const protector = normalizeItemDefinition({
     index: 218,
-    name: "Copertura",
-    description: "Chi la tiene subisce metà danni se è affetto da status",
+    name: "Protector",
     image: "copertura.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -541,8 +495,7 @@ export const protector = normalizeItemDefinition({
 
 export const heavy_duty_boots = normalizeItemDefinition({
     index: 219,
-    name: "Scarponi robusti",
-    description: "Chi li tiene non subisce danni da trappole come Punte e da mosse multiturno",
+    name: "Heavy-Duty Boots",
     image: "scarponi_robusti.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.Misc,
@@ -551,8 +504,7 @@ export const heavy_duty_boots = normalizeItemDefinition({
 
 export const lax_incense = normalizeItemDefinition({
     index: 220,
-    name: "Distraroma",
-    description: "Ritarda di 2 turni il prossimo status che il Pokémon subirebbe",
+    name: "Lax Incense",
     image: "distraroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
@@ -561,8 +513,7 @@ export const lax_incense = normalizeItemDefinition({
 
 export const luck_incense = normalizeItemDefinition({
     index: 221,
-    name: "Fortunaroma",
-    description: "Chi lo tiene infligge gli status ignorando Distraroma avversario",
+    name: "Luck Incense",
     image: "fortunaroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
@@ -571,8 +522,7 @@ export const luck_incense = normalizeItemDefinition({
 
 export const pure_incense = normalizeItemDefinition({
     index: 222,
-    name: "Puroaroma",
-    description: "Chi lo tiene ignora le modifiche alle proprie statistiche",
+    name: "Pure Incense",
     image: "puroaroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatsItem,
@@ -581,8 +531,7 @@ export const pure_incense = normalizeItemDefinition({
 
 export const odd_incense = normalizeItemDefinition({
     index: 223,
-    name: "Bizzoaroma",
-    description: "Tenuto da un Pokémon Psico, blocca una mossa avversaria quando entra in campo",
+    name: "Odd Incense",
     image: "bizzoaroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.Misc,
@@ -592,8 +541,7 @@ export const odd_incense = normalizeItemDefinition({
 
 export const full_incense = normalizeItemDefinition({
     index: 224,
-    name: "Gonfioaroma",
-    description: "Tenuto da un Pokémon Normale, aggiunge un secondo Tipo fino alla fine della sfida",
+    name: "Full Incense",
     image: "gonfioaroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.Misc,
@@ -604,8 +552,7 @@ export const full_incense = normalizeItemDefinition({
 
 export const light_ball = normalizeItemDefinition({
     index: 225,
-    name: "Elettropalla",
-    description: "Tenuta da Pikachu, aumenta i danni di 1/3",
+    name: "Light Ball",
     image: "elettropalla.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -616,8 +563,7 @@ export const light_ball = normalizeItemDefinition({
 
 export const leek = normalizeItemDefinition({
     index: 226,
-    name: "Gambo",
-    description: "Tenuto da Farfetch'd, aumenta i danni di 1/3",
+    name: "Leek",
     image: "gambo.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -628,8 +574,7 @@ export const leek = normalizeItemDefinition({
 
 export const lucky_punch = normalizeItemDefinition({
     index: 227,
-    name: "Fortunpugno",
-    description: "Tenuto da Chansey, aumenta i danni di 1/3",
+    name: "Lucky Punch",
     image: "fortunpugno.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -640,8 +585,7 @@ export const lucky_punch = normalizeItemDefinition({
 
 export const thick_club = normalizeItemDefinition({
     index: 228,
-    name: "Osso spesso",
-    description: "Tenuto da Cubone o Marowak, aumenta i danni di 1/3",
+    name: "Thick Club",
     image: "ossospesso.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -652,8 +596,7 @@ export const thick_club = normalizeItemDefinition({
 
 export const kings_rock = normalizeItemDefinition({
     index: 229,
-    name: "Roccia di re",
-    description: "Inverte i turni di blocco da paralisi e confusione",
+    name: "King's Rock",
     image: "roccia_di_re.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
@@ -662,8 +605,7 @@ export const kings_rock = normalizeItemDefinition({
 
 export const metronome = normalizeItemDefinition({
     index: 230,
-    name: "Plessimetro",
-    description: "Se si usa la stessa mossa del turno precedente, il danno è x1.5",
+    name: "Metronome",
     image: "plessimetro.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -673,8 +615,7 @@ export const metronome = normalizeItemDefinition({
 
 export const life_orb = normalizeItemDefinition({
     index: 231,
-    name: "Assorbisfera",
-    description: "Chi attacca perde 1/4 dei PS attuali e aggiunge tale quantità al danno base",
+    name: "Life Orb",
     image: "assorbisfera.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -683,8 +624,7 @@ export const life_orb = normalizeItemDefinition({
 
 export const shell_bell = normalizeItemDefinition({
     index: 232,
-    name: "Conchinella",
-    description: "Chi la tiene recupera PS pari a 1/4 dei danni inflitti",
+    name: "Shell Bell",
     image: "conchinella.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -694,8 +634,7 @@ export const shell_bell = normalizeItemDefinition({
 
 export const blunder_policy = normalizeItemDefinition({
     index: 233,
-    name: "Fiascopolizza",
-    description: "Chi la tiene ottiene Attacco pari al proprio livello se usa una mossa che sfrutta la %",
+    name: "Blunder Policy",
     image: "fiascopolizza.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatsItem,
@@ -704,8 +643,7 @@ export const blunder_policy = normalizeItemDefinition({
 
 export const focus_band = normalizeItemDefinition({
     index: 234,
-    name: "Bandana",
-    description: "Protegge da mosse OHKO. 3 usi a sfida",
+    name: "Focus Band",
     image: "bandana.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.Misc,
@@ -714,8 +652,7 @@ export const focus_band = normalizeItemDefinition({
 
 export const rocky_helmet = normalizeItemDefinition({
     index: 235,
-    name: "Bitorzolelmo",
-    description: "Se chi lo tiene subisce uno status, infligge 2xLv danni all'avversario",
+    name: "Rocky Helmet",
     image: "bitorzolelmo.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -724,8 +661,7 @@ export const rocky_helmet = normalizeItemDefinition({
 
 export const zoom_lens = normalizeItemDefinition({
     index: 236,
-    name: "Zoomlente",
-    description: "Se l'avvesario è superefficace su chi la tiene, potenzia x1.5 i propri danni",
+    name: "Zoom Lens",
     image: "zoomlente.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
@@ -735,8 +671,7 @@ export const zoom_lens = normalizeItemDefinition({
 
 export const bright_powder = normalizeItemDefinition({
     index: 237,
-    name: "Luminpolvere",
-    description: "Chi la tiene è protetto da status per un turno ogni volta che entra in campo",
+    name: "Bright Powder",
     image: "luminpolvere.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
@@ -745,8 +680,7 @@ export const bright_powder = normalizeItemDefinition({
 
 export const focus_sash = normalizeItemDefinition({
     index: 238,
-    name: "Focalnastro",
-    description: "Chi lo tiene è protetto da status per 1 turno se manda ko l'avversario. 3 usi a sfida",
+    name: "Focus Sash",
     image: "focalnastro.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
@@ -755,8 +689,7 @@ export const focus_sash = normalizeItemDefinition({
 
 export const cheri_berry = normalizeItemDefinition({
     index: 300,
-    name: "Baccaliegia",
-    description: "Tenuta da un Pokémon, cura la paralisi",
+    name: "Cheri Berry",
     image: "baccaliegi.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
@@ -765,8 +698,7 @@ export const cheri_berry = normalizeItemDefinition({
 
 export const chesto_berry = normalizeItemDefinition({
     index: 301,
-    name: "Baccastagna",
-    description: "Tenuta da un Pokémon, cura il sonno",
+    name: "Chesto Berry",
     image: "baccastagna.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
@@ -775,8 +707,7 @@ export const chesto_berry = normalizeItemDefinition({
 
 export const pecha_berry = normalizeItemDefinition({
     index: 302,
-    name: "Baccapesca",
-    description: "Tenuta da un Pokémon, cura l'avvelenamento",
+    name: "Pecha Berry",
     image: "baccapesca.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
@@ -785,8 +716,7 @@ export const pecha_berry = normalizeItemDefinition({
 
 export const rawst_berry = normalizeItemDefinition({
     index: 303,
-    name: "Baccafrago",
-    description: "Tenuta da un Pokémon, cura la scottatura",
+    name: "Rawst Berry",
     image: "baccafrago.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
@@ -795,8 +725,7 @@ export const rawst_berry = normalizeItemDefinition({
 
 export const aspear_berry = normalizeItemDefinition({
     index: 304,
-    name: "Baccaperina",
-    description: "Tenuta da un Pokémon, cura il congelamento",
+    name: "Aspear Berry",
     image: "baccaperina.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
@@ -805,8 +734,7 @@ export const aspear_berry = normalizeItemDefinition({
 
 export const oran_berry = normalizeItemDefinition({
     index: 305,
-    name: "Baccarancia",
-    description: "Tenuta da un Pokémon, recupera 10 PS quando scende sotto 1/4 dei PS max",
+    name: "Oran Berry",
     image: "baccarancia.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealHp,
@@ -815,8 +743,7 @@ export const oran_berry = normalizeItemDefinition({
 
 export const sitrus_berry = normalizeItemDefinition({
     index: 306,
-    name: "Baccacedro",
-    description: "Tenuta da un Pokémon, recupera 1/4 dei PS max quando scende sotto 1/4 dei PS max",
+    name: "Sitrus Berry",
     image: "baccacedro.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealHp,
@@ -825,8 +752,7 @@ export const sitrus_berry = normalizeItemDefinition({
 
 export const persim_berry = normalizeItemDefinition({
     index: 307,
-    name: "Baccaki",
-    description: "Tenuta da un Pokémon, cura la confusione",
+    name: "Persim Berry",
     image: "baccaki.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
@@ -835,8 +761,7 @@ export const persim_berry = normalizeItemDefinition({
 
 export const lum_berry = normalizeItemDefinition({
     index: 308,
-    name: "Baccaprugna",
-    description: "Tenuta da un Pokémon, cura ogni status",
+    name: "Lum Berry",
     image: "baccaprugna.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
@@ -845,8 +770,7 @@ export const lum_berry = normalizeItemDefinition({
 
 export const occa_berry = normalizeItemDefinition({
     index: 309,
-    name: "Baccacao",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Fuoco",
+    name: "Occa Berry",
     image: "baccacao.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -855,8 +779,7 @@ export const occa_berry = normalizeItemDefinition({
 
 export const passho_berry = normalizeItemDefinition({
     index: 310,
-    name: "Baccapasflo",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Acqua",
+    name: "Passho Berry",
     image: "baccapasflo.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -865,8 +788,7 @@ export const passho_berry = normalizeItemDefinition({
 
 export const wacan_berry = normalizeItemDefinition({
     index: 311,
-    name: "Baccaparmen",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Elettro",
+    name: "Wacan Berry",
     image: "baccaparmen.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -875,8 +797,7 @@ export const wacan_berry = normalizeItemDefinition({
 
 export const rindo_berry = normalizeItemDefinition({
     index: 312,
-    name: "Baccarindo",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Erba",
+    name: "Rindo Berry",
     image: "baccarindo.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -885,8 +806,7 @@ export const rindo_berry = normalizeItemDefinition({
 
 export const yache_berry = normalizeItemDefinition({
     index: 313,
-    name: "Baccamoya",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Ghiaccio",
+    name: "Yache Berry",
     image: "baccamoya.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -895,8 +815,7 @@ export const yache_berry = normalizeItemDefinition({
 
 export const chople_berry = normalizeItemDefinition({
     index: 314,
-    name: "Baccarosmel",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Lotta",
+    name: "Chople Berry",
     image: "baccarosmel.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -905,8 +824,7 @@ export const chople_berry = normalizeItemDefinition({
 
 export const kebia_berry = normalizeItemDefinition({
     index: 315,
-    name: "Baccakebia",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Veleno",
+    name: "Kebia Berry",
     image: "baccakebia.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -915,8 +833,7 @@ export const kebia_berry = normalizeItemDefinition({
 
 export const shuca_berry = normalizeItemDefinition({
     index: 316,
-    name: "Baccanaca",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Terra",
+    name: "Shuca Berry",
     image: "baccanaca.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -925,8 +842,7 @@ export const shuca_berry = normalizeItemDefinition({
 
 export const coba_berry = normalizeItemDefinition({
     index: 317,
-    name: "Baccababa",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Volante",
+    name: "Coba Berry",
     image: "baccababa.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -935,8 +851,7 @@ export const coba_berry = normalizeItemDefinition({
 
 export const payapa_berry = normalizeItemDefinition({
     index: 318,
-    name: "Baccapayapa",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Psico",
+    name: "Payapa Berry",
     image: "baccapayapa.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -945,8 +860,7 @@ export const payapa_berry = normalizeItemDefinition({
 
 export const tanga_berry = normalizeItemDefinition({
     index: 319,
-    name: "Baccaitan",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Coleottero",
+    name: "Tanga Berry",
     image: "baccaitan.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -955,8 +869,7 @@ export const tanga_berry = normalizeItemDefinition({
 
 export const charti_berry = normalizeItemDefinition({
     index: 320,
-    name: "Baccaciofo",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Roccia",
+    name: "Charti Berry",
     image: "baccaciofo.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -965,8 +878,7 @@ export const charti_berry = normalizeItemDefinition({
 
 export const kasib_berry = normalizeItemDefinition({
     index: 321,
-    name: "Baccacitrus",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Spettro",
+    name: "Kasib Berry",
     image: "baccacitrus.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -975,8 +887,7 @@ export const kasib_berry = normalizeItemDefinition({
 
 export const haban_berry = normalizeItemDefinition({
     index: 322,
-    name: "Baccahaban",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Drago",
+    name: "Haban Berry",
     image: "baccahaban.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -985,8 +896,7 @@ export const haban_berry = normalizeItemDefinition({
 
 export const colbur_berry = normalizeItemDefinition({
     index: 323,
-    name: "Baccaxan",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Buio",
+    name: "Colbur Berry",
     image: "baccaxan.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -995,8 +905,7 @@ export const colbur_berry = normalizeItemDefinition({
 
 export const babiri_berry = normalizeItemDefinition({
     index: 324,
-    name: "Baccababiri",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Acciaio",
+    name: "Babiri Berry",
     image: "baccababiri.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -1005,8 +914,7 @@ export const babiri_berry = normalizeItemDefinition({
 
 export const chilan_berry = normalizeItemDefinition({
     index: 325,
-    name: "Baccacinlan",
-    description: "Tenuta da un Pokémon, dimezza un danno subito da un avversario di tipo Normale",
+    name: "Chilan Berry",
     image: "baccacinlan.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
@@ -1068,8 +976,7 @@ export const tm52 = normalizeItemDefinition(defineTM({index: 452, number: 52, mo
 
 export const hp_up = normalizeItemDefinition({
     index: 600,
-    name: "PS-Su",
-    description: "+3 PS massimi",
+    name: "HP Up",
     image: "ps_su.webp",
     category: ItemCategory.Vitamin,
     effect: "max_hp",
@@ -1078,8 +985,7 @@ export const hp_up = normalizeItemDefinition({
 
 export const pp_up = normalizeItemDefinition({
     index: 601,
-    name: "PP-Su",
-    description: "+2 punti potenza a una mossa",
+    name: "PP Up",
     image: "pp_su.webp",
     category: ItemCategory.Vitamin,
     effect: "move_power",
@@ -1088,8 +994,7 @@ export const pp_up = normalizeItemDefinition({
 
 export const pp_max = normalizeItemDefinition({
     index: 602,
-    name: "PP-Max",
-    description: "+4 punti potenza a una mossa",
+    name: "PP Max",
     image: "pp_max.webp",
     category: ItemCategory.Vitamin,
     effect: "move_power",
@@ -1098,8 +1003,7 @@ export const pp_max = normalizeItemDefinition({
 
 export const felix_stone = normalizeItemDefinition({
     index: 603,
-    name: "Felixpietra",
-    description: "Fa evolvere certe specie di Pokémon",
+    name: "Felix Stone",
     image: "felixpietra.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1107,8 +1011,7 @@ export const felix_stone = normalizeItemDefinition({
 
 export const fire_stone = normalizeItemDefinition({
     index: 604,
-    name: "Pietrafocaia",
-    description: "Fa evolvere certe specie di Pokémon",
+    name: "Fire Stone",
     image: "pietrafocaia.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1116,8 +1019,7 @@ export const fire_stone = normalizeItemDefinition({
 
 export const thunder_stone = normalizeItemDefinition({
     index: 605,
-    name: "Pietratuono",
-    description: "Fa evolvere certe specie di Pokémon",
+    name: "Thunder Stone",
     image: "pietratuono.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1125,8 +1027,7 @@ export const thunder_stone = normalizeItemDefinition({
 
 export const water_stone = normalizeItemDefinition({
     index: 606,
-    name: "Pietraidrica",
-    description: "Fa evolvere certe specie di Pokémon",
+    name: "Water Stone",
     image: "pietraidrica.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1134,8 +1035,7 @@ export const water_stone = normalizeItemDefinition({
 
 export const leaf_stone = normalizeItemDefinition({
     index: 607,
-    name: "Pietrafoglia",
-    description: "Fa evolvere certe specie di Pokémon",
+    name: "Leaf Stone",
     image: "pietrafoglia.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1143,8 +1043,7 @@ export const leaf_stone = normalizeItemDefinition({
 
 export const moon_stone = normalizeItemDefinition({
     index: 608,
-    name: "Pietralunare",
-    description: "Fa evolvere certe specie di Pokémon",
+    name: "Moon Stone",
     image: "pietralunare.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1152,8 +1051,7 @@ export const moon_stone = normalizeItemDefinition({
 
 export const sun_stone = normalizeItemDefinition({
     index: 609,
-    name: "Pietrasolare",
-    description: "Fa evolvere certe specie di Pokémon",
+    name: "Sun Stone",
     image: "pietrasolare.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1161,8 +1059,7 @@ export const sun_stone = normalizeItemDefinition({
 
 export const deep_sea_tooth = normalizeItemDefinition({
     index: 610,
-    name: "Dente Abissi",
-    description: "Fa evolvere Clamperl in Huntail",
+    name: "Deep Sea Tooth",
     image: "dente_abissi.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1170,8 +1067,7 @@ export const deep_sea_tooth = normalizeItemDefinition({
 
 export const deep_sea_scale = normalizeItemDefinition({
     index: 611,
-    name: "Squamabissi",
-    description: "Fa evolvere Clamperl in Gorebyss",
+    name: "Deep Sea Scale",
     image: "squamabissi.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1179,8 +1075,7 @@ export const deep_sea_scale = normalizeItemDefinition({
 
 export const prism_scale = normalizeItemDefinition({
     index: 612,
-    name: "Squama bella",
-    description: "Fa evolvere Feebas in Milotic",
+    name: "Prism Scale",
     image: "squama_bella.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1189,7 +1084,6 @@ export const prism_scale = normalizeItemDefinition({
 export const upgrade = normalizeItemDefinition({
     index: 613,
     name: "Upgrade",
-    description: "Fa evolvere Porygon in Porygon2",
     image: "upgrade.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1197,8 +1091,7 @@ export const upgrade = normalizeItemDefinition({
 
 export const dragon_scale = normalizeItemDefinition({
     index: 614,
-    name: "Squama drago",
-    description: "Fa evolvere Seadra in Kingdra",
+    name: "Dragon Scale",
     image: "squama_drago.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1206,8 +1099,7 @@ export const dragon_scale = normalizeItemDefinition({
 
 export const linking_cord = normalizeItemDefinition({
     index: 615,
-    name: "Filo dell'unione",
-    description: "Fa evolvere certe specie di Pokémon",
+    name: "Linking Cord",
     image: "filo_dell_unione.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
@@ -1215,16 +1107,14 @@ export const linking_cord = normalizeItemDefinition({
 
 export const go_goggles = normalizeItemDefinition({
     index: 616,
-    name: "Occhialoni",
-    description: "Permettono di visitare il Deserto",
+    name: "Go-Goggles",
     image: "occhialoni.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.Unknown
   });
 export const silph_scope = normalizeItemDefinition({
     index: 617,
-    name: "Spettrosonda",
-    description: "Permette di visitare la Torre Fantasma",
+    name: "Silph Scope",
     image: "spettrosonda.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.Unknown
@@ -1232,8 +1122,7 @@ export const silph_scope = normalizeItemDefinition({
 
 export const white_flute = normalizeItemDefinition({
     index: 618,
-    name: "Flauto bianco",
-    description: "Permette di scegliere il Livello esatto del Pokémon cercato. Usabile 5 volte al giorno",
+    name: "White Flute",
     image: "flauto_bianco.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.Unknown
@@ -1241,8 +1130,7 @@ export const white_flute = normalizeItemDefinition({
 
 export const black_flute = normalizeItemDefinition({
     index: 619,
-    name: "Flauto nero",
-    description: "Permette di scegliere il Tipo esatto del Pokémon cercato. Usabile 5 volte al giorno",
+    name: "Black Flute",
     image: "flauto_nero.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.Unknown
@@ -1251,7 +1139,6 @@ export const black_flute = normalizeItemDefinition({
 export const master_ball = normalizeItemDefinition({
     index: 620,
     name: "Master Ball",
-    description: "Per catturare Pokémon selvatici. È infallibile",
     image: "master_ball.webp",
     category: ItemCategory.Ball,
     value: 100
@@ -1259,8 +1146,7 @@ export const master_ball = normalizeItemDefinition({
 
 export const heart_scale = normalizeItemDefinition({
     index: 621,
-    name: "Squama Cuore",
-    description: "Permette al Pokémon di apprendere una qualsiasi mossa che potrebbe conoscere",
+    name: "Heart Scale",
     image: "squama_cuore.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.MoveTutor
@@ -1298,7 +1184,9 @@ export function pokemonCanHoldItem(pokemon, item) {
 function buildItemLibrary(entries) {
   return Object.freeze(Object.keys(entries).map(function (key) {
     entries[key].key = key;
-    return entries[key];
+    entries[key].name = key;
+    delete entries[key].description;
+    return Object.freeze(entries[key]);
   }));
 }
 
@@ -1599,10 +1487,6 @@ export function updateInventoryQuantity(inventory, itemIndex, delta) {
   }).sort(function (left, right) {
     return left[0] - right[0];
   });}
-
-export function itemDisplayDescription(item) {
-  var move = item && item.category === ItemCategory.TM && item.move ? item.move : null;
-  return move ? formatCatalogDescription(move) : item.description;}
 
 export function getBerryGrowthCycle(itemIndex) {
   var item = getItemByIndex(itemIndex);

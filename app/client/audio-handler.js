@@ -3,6 +3,7 @@ import { root, state } from "./game-state.js";
 import { isGymOrLeagueBattleType } from "../data/gyms.js";
 import { registerAction } from "./action-registry.js";
 import { renderLanguageSettingsControl } from "./language-settings.js";
+import { t } from "./i18n.js";
 
 var MUSIC_ENABLED_KEY = "pokemon_game_revival:music_enabled";
 var MUSIC_VOLUME_KEY = "pokemon_game_revival:music_volume";
@@ -222,7 +223,7 @@ export function toggleMusicEnabled() {
 }
 
 function userSettingsName() {
-  return state.auth.userLabel || state.playerName || "Utente";
+  return state.auth.userLabel || state.playerName || t("settings.defaultUser");
 }
 
 export function renderUserSettingsMenu(scene) {
@@ -232,26 +233,26 @@ export function renderUserSettingsMenu(scene) {
   }
   return [
     '<details class="user-settings">',
-    '  <summary class="user-settings-trigger" aria-label="Apri impostazioni utente">',
-    '    <span class="user-settings-name">Impostazioni</span>',
+    '  <summary class="user-settings-trigger" aria-label="' + escapeHtml(t("accessibility.openUserSettings")) + '">',
+    '    <span class="user-settings-name">' + escapeHtml(t("settings.title")) + '</span>',
     '    ' + renderImage(assetPath("img_miscellaneous", "settings_icon.webp"), "", "user-settings-icon", 'aria-hidden="true" loading="eager" decoding="async"'),
     '  </summary>',
     '  <div class="user-settings-menu">',
     '    <div class="user-settings-heading">',
-    '      <strong>Utente: ' + escapeHtml(userSettingsName()) + '</strong>',
+    '      <strong>' + escapeHtml(t("settings.user", { name: userSettingsName() })) + '</strong>',
     '    </div>',
     '    <button type="button" class="button music-toggle' + (musicEnabled ? ' is-on' : ' is-off') + '" data-action="music-toggle" aria-pressed="' + (musicEnabled ? 'true' : 'false') + '">',
-    '      <span class="music-toggle-label">Musica</span>',
-    '      <span class="music-toggle-state">' + (musicEnabled ? 'ON' : 'OFF') + '</span>',
+    '      <span class="music-toggle-label">' + escapeHtml(t("settings.music")) + '</span>',
+    '      <span class="music-toggle-state">' + escapeHtml(t(musicEnabled ? "settings.enabled" : "settings.disabled")) + '</span>',
     '    </button>',
     '    <label class="settings-volume-control">',
-    '      <span>Volume <strong data-music-volume-value>' + volumePercent + '%</strong></span>',
-    '      <input type="range" min="0" max="100" step="1" value="' + volumePercent + '" data-field="music-volume" aria-label="Volume musica">',
+    '      <span>' + escapeHtml(t("settings.volume")) + ' <strong data-music-volume-value>' + volumePercent + '%</strong></span>',
+    '      <input type="range" min="0" max="100" step="1" value="' + volumePercent + '" data-field="music-volume" aria-label="' + escapeHtml(t("accessibility.musicVolume")) + '">',
     '    </label>',
     renderLanguageSettingsControl(),
     '    <div class="user-settings-actions">',
-    '      <button type="button" class="button button-dark user-settings-action" data-action="auth-logout">Logout</button>',
-    '      <button type="button" class="button button-danger user-settings-action" data-action="auth-delete-account">Elimina account</button>',
+    '      <button type="button" class="button button-dark user-settings-action" data-action="auth-logout">' + escapeHtml(t("settings.logout")) + '</button>',
+    '      <button type="button" class="button button-danger user-settings-action" data-action="auth-delete-account">' + escapeHtml(t("settings.deleteAccount")) + '</button>',
     '    </div>',
     '  </div>',
     '</details>'
@@ -267,7 +268,7 @@ registerAction("music-toggle", function (element) {
     element.setAttribute("aria-pressed", enabled ? "true" : "false");
   }
   if (stateLabel) {
-    stateLabel.textContent = enabled ? "ON" : "OFF";
+    stateLabel.textContent = t(enabled ? "settings.enabled" : "settings.disabled");
   }
 });
 

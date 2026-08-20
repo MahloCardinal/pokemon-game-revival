@@ -3,7 +3,8 @@ import { state } from "../client/game-state.js";
 import { escapeHtml, getTypeImage, renderImage } from "../client/asset-helpers.js";
 import { button, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
-import { typeDisplayName } from "../data/type-chart.js";
+import { speciesDisplayName, typeDisplayName } from "../client/entity-text.js";
+import { getLocale, t } from "../client/i18n.js";
 
 function boxTypeOptions() {
   var seenTypes = {};
@@ -13,7 +14,7 @@ function boxTypeOptions() {
     });
   });
   return Object.keys(seenTypes).sort(function (a, b) {
-    return a.localeCompare(b, "it");
+    return typeDisplayName(a).localeCompare(typeDisplayName(b), getLocale());
   });
 }
 
@@ -21,7 +22,7 @@ function filteredBoxEntries() {
   var filter = state.boxFilter || { type: "", minLevel: "", maxLevel: "", name: "", heldItemOnly: false };
   var minLevel = Number(filter.minLevel || 0);
   var maxLevel = Number(filter.maxLevel || 0);
-  var nameFragment = String(filter.name || "").toLocaleLowerCase("it-IT");
+  var nameFragment = String(filter.name || "").toLocaleLowerCase(getLocale());
 
   return state.box.map(function (pokemon, index) {
     return {
@@ -33,7 +34,7 @@ function filteredBoxEntries() {
     if (filter.type && pokemon.type.indexOf(filter.type) === -1) { return false; }
     if (minLevel && pokemon.level < minLevel) { return false; }
     if (maxLevel && pokemon.level > maxLevel) { return false; }
-    if (nameFragment && pokemon.name.toLocaleLowerCase("it-IT").indexOf(nameFragment) === -1) { return false; }
+    if (nameFragment && speciesDisplayName(pokemon).toLocaleLowerCase(getLocale()).indexOf(nameFragment) === -1) { return false; }
     if (filter.heldItemOnly && !pokemon.heldItemIndex) { return false; }
     return true;
   });
@@ -45,15 +46,15 @@ export function renderBoxScene() {
   var selectedType = filter.type || "";
   var heldItemChecked = filter.heldItemOnly ? " checked" : "";
   var typeSummary = selectedType
-    ? renderImage(getTypeImage(selectedType), selectedType, "type-label-image choice-menu-current")
-    : '<span class="choice-menu-placeholder">Tutti</span>';
+    ? renderImage(getTypeImage(selectedType), typeDisplayName(selectedType), "type-label-image choice-menu-current")
+    : '<span class="choice-menu-placeholder">' + escapeHtml(t("ui.box.all")) + "</span>";
   var typeMenu = [
     '<details class="choice-menu">',
     '  <summary class="choice-menu-summary">' + typeSummary + "</summary>",
     '  <div class="choice-menu-list">',
     '    <label class="choice-menu-option' + (!selectedType ? " is-active" : "") + '">',
     '      <input type="radio" name="box-filter-type" value="" ' + (!selectedType ? "checked" : "") + ">",
-    '      <span>Tutti</span>',
+    '      <span>' + escapeHtml(t("ui.box.all")) + "</span>",
     "    </label>",
     typeOptions.map(function (typeName) {
       var selectedClass = selectedType === typeName ? " is-active" : "";
@@ -68,16 +69,16 @@ export function renderBoxScene() {
     "</details>"
   ].join("");
   var filterControls = [
-    '<section class="box-filter-row" aria-label="Filtra Box" data-render-region="box-filter">',
-    '  <span class="box-filter-label">Filtra per:</span>',
-    '  <label class="box-filter-field box-filter-type-field"><span>Tipo</span>' + typeMenu + "</label>",
-    '  <label class="box-filter-field"><span>Lv min</span><input data-field="box-filter-min-level" type="text" inputmode="numeric" maxlength="3" pattern="[0-9]*" value="' + escapeHtml(filter.minLevel || "") + '"></label>',
-    '  <label class="box-filter-field"><span>Lv max</span><input data-field="box-filter-max-level" type="text" inputmode="numeric" maxlength="3" pattern="[0-9]*" value="' + escapeHtml(filter.maxLevel || "") + '"></label>',
-    '  <label class="box-filter-field box-filter-name-field"><span>Nome</span><input data-field="box-filter-name" type="text" maxlength="3" pattern="[A-Za-z0-9-]{0,3}" value="' + escapeHtml(filter.name || "") + '"></label>',
-    '  <label class="box-filter-held-field"><span>Con strumento</span><input data-field="box-filter-held-item" type="checkbox"' + heldItemChecked + '></label>',
+    '<section class="box-filter-row" aria-label="' + escapeHtml(t("ui.box.filterAria")) + '" data-render-region="box-filter">',
+    '  <span class="box-filter-label">' + escapeHtml(t("ui.box.filterBy")) + "</span>",
+    '  <label class="box-filter-field box-filter-type-field"><span>' + escapeHtml(t("ui.box.type")) + "</span>" + typeMenu + "</label>",
+    '  <label class="box-filter-field"><span>' + escapeHtml(t("ui.box.minLevel")) + '</span><input data-field="box-filter-min-level" type="text" inputmode="numeric" maxlength="3" pattern="[0-9]*" value="' + escapeHtml(filter.minLevel || "") + '"></label>',
+    '  <label class="box-filter-field"><span>' + escapeHtml(t("ui.box.maxLevel")) + '</span><input data-field="box-filter-max-level" type="text" inputmode="numeric" maxlength="3" pattern="[0-9]*" value="' + escapeHtml(filter.maxLevel || "") + '"></label>',
+    '  <label class="box-filter-field box-filter-name-field"><span>' + escapeHtml(t("ui.box.name")) + '</span><input data-field="box-filter-name" type="text" maxlength="3" pattern="[A-Za-z0-9-]{0,3}" value="' + escapeHtml(filter.name || "") + '"></label>',
+    '  <label class="box-filter-held-field"><span>' + escapeHtml(t("ui.box.withItem")) + '</span><input data-field="box-filter-held-item" type="checkbox"' + heldItemChecked + '></label>',
     '  <div class="box-filter-actions">',
-    button("Azzera filtri", "box-filter-reset", "", "button-ghost box-filter-reset"),
-    button("Filtra", "box-filter-apply", "", "button-primary box-filter-submit"),
+    button(t("ui.box.resetFilters"), "box-filter-reset", "", "button-ghost box-filter-reset"),
+    button(t("ui.box.filter"), "box-filter-apply", "", "button-primary box-filter-submit"),
     "  </div>",
     "</section>"
   ].join("");
@@ -86,8 +87,8 @@ export function renderBoxScene() {
     ? (filteredEntries.length ? '<div class="box-pokemon-grid">' + filteredEntries.map(function (entry) {
       var pokemon = entry.pokemon;
       var actions = [
-        button("Ritira", "box-to-team", 'data-index="' + entry.originalIndex + '"' + (state.inBattle ? " disabled" : ""), "button-primary box-card-action-button"),
-        button("Libera", "box-release", 'data-index="' + entry.originalIndex + '"', "button-danger box-card-action-button")
+        button(t("ui.box.withdraw"), "box-to-team", 'data-index="' + entry.originalIndex + '"' + (state.inBattle ? " disabled" : ""), "button-primary box-card-action-button"),
+        button(t("ui.box.release"), "box-release", 'data-index="' + entry.originalIndex + '"', "button-danger box-card-action-button")
       ].join("");
       return renderPokemonCardFrame(renderPokemonCard(pokemon), { actions: actions });
     }).join("") + "</div>" : "")
@@ -102,7 +103,7 @@ export function renderBoxScene() {
   ].join("");
 
   return sceneShell(
-    "Box",
+    t("ui.box.sceneTitle"),
     "",
     content,
     "",

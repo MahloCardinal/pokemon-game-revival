@@ -1,6 +1,7 @@
 import { state } from "./game-state.js";
 import { setScene } from "./renderer.js";
 import { openMessage } from "./dialog-handler.js";
+import { messageDescriptor } from "./i18n.js";
 
 var STORAGE_PREFIX = "pokemon_game_revival:runtime:in_battle:";
 var PENDING_STORAGE_PREFIX = "pokemon_game_revival:runtime:pending_activity:";
@@ -122,7 +123,7 @@ function syncPendingActivityFromStorage() {
   }
   state.pendingActivity = {
     type: payload.type,
-    label: payload.label || "Attivita' in corso",
+    label: payload.label || "active_activity",
     slotIndex: Number.isFinite(Number(payload.slotIndex)) ? Number(payload.slotIndex) : null
   };
 }
@@ -246,7 +247,7 @@ export function initializeBattleRuntime() {
   });
 }
 
-export var BATTLE_LOCK_MSG = "Completa prima l'attività in corso";
+export var BATTLE_LOCK_MSG = messageDescriptor("system.activeActivity");
 
 export function requireNotInBattle() {
   if (isBattleRuntimeActive()) {
@@ -293,7 +294,7 @@ export function enforceBattleRuntimeSceneLock() {
   if (state.dialog && state.dialog.battleLockScene === scene.name) { return true; }
   openMessage([BATTLE_LOCK_MSG], {
     title: "",
-    closeLabel: "Esci",
+    closeLabel: messageDescriptor("system.exit"),
     closeClass: "button-accent",
     requireButtonClose: true,
     battleLockScene: scene.name,

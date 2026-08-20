@@ -9,6 +9,8 @@ import { getItemByIndex, getResolvedInventoryItem, resolveInventoryItems, ItemCa
 import { clampToLimits, maxHpForLevel, maxPowerForLevel, maxStatsForLevel } from "../data/index.js";
 import { adjustInventoryItemQuantity, markTeamRuntimeStateChanged } from "./runtime-state.js";
 import { renderPokemonCenterItemPanelContent, renderPokemonCenterMoveButton } from "../view/pokemon-center.js";
+import { getLocale, messageDescriptor, t, textDescriptor } from "./i18n.js";
+import { itemNameDescriptor, moveDisplayName, moveNameDescriptor, pokemonNameDescriptor, speciesNameDescriptor, teamViolationMessage } from "./entity-text.js";
 
 var findHeldItemAssignmentViolation = Engine.findHeldItemAssignmentViolation;
 import { queueGlobalActivityEvent } from "./activity-feed-runtime.js";
@@ -96,12 +98,12 @@ function syncPokemonCenterChoicePopup() {
   if (pending.type === "choose-tutor-move") {
     title = document.createElement("p");
     title.className = "pokemon-center-choice-popup-title";
-    title.textContent = "Scegli la mossa da insegnare";
+    title.textContent = t("ui.pokemonCenter.chooseTutorMove");
     popup.appendChild(title);
     list = document.createElement("div");
     list.className = "pokemon-center-choice-popup-list";
     candidates = Engine.pokemonMoveTutorPool(pokemon).slice().sort(function (first, second) {
-      return first.name.localeCompare(second.name, "it");
+      return moveDisplayName(first).localeCompare(moveDisplayName(second), getLocale());
     });
     candidates.forEach(function (move) {
       var button = document.createElement("button");
@@ -110,7 +112,7 @@ function syncPokemonCenterChoicePopup() {
       button.dataset.action = "pokemon-center-tutor-move-pick";
       button.dataset.index = String(pokemonIndex);
       button.dataset.moveIndex = String(move.index);
-      button.textContent = move.name;
+      button.textContent = moveDisplayName(move);
       list.appendChild(button);
     });
     popup.appendChild(list);
@@ -118,7 +120,7 @@ function syncPokemonCenterChoicePopup() {
     popup.classList.add("is-move-replacement-notice");
     title = document.createElement("p");
     title.className = "pokemon-center-choice-popup-notice";
-    title.textContent = "Seleziona la mossa da dimenticare";
+    title.textContent = t("ui.pokemonCenter.chooseMoveToForget");
     popup.appendChild(title);
   }
   root.appendChild(popup);
@@ -147,18 +149,18 @@ function pokemonCenterCompatibility(pokemon, item) {
 function pokemonCenterCommandError(message) {
   var text = String(message || "");
   if (/canonical Pokemon HP exceeds its catalog cap|canonical Pokemon moves are invalid/i.test(text)) {
-    return "I dati del Pokemon non rispettano i limiti previsti.";
+    return messageDescriptor("pokemonCenter.invalidData");
   }
-  if (/Pokemon must be in the current team/i.test(text)) return "Il Pokemon deve essere nella squadra attuale.";
-  if (/Pokemon has a pending resolution/i.test(text)) return "Il Pokemon ha una decisione in sospeso.";
-  if (/item is not available in inventory/i.test(text)) return "Lo strumento non e disponibile nello zaino.";
-  if (/Pokemon cannot learn (this MT|the selected tutor move)/i.test(text)) return "Il Pokemon non puo imparare questa mossa.";
+  if (/Pokemon must be in the current team/i.test(text)) return messageDescriptor("pokemonCenter.mustBeInTeam");
+  if (/Pokemon has a pending resolution/i.test(text)) return messageDescriptor("pokemonCenter.pendingResolution");
+  if (/item is not available in inventory/i.test(text)) return messageDescriptor("pokemonCenter.itemUnavailable");
+  if (/Pokemon cannot learn (this MT|the selected tutor move)/i.test(text)) return messageDescriptor("pokemonCenter.cannotLearn");
   if (/vitamin would have no valid effect|vitamin would have no effect on the selected move/i.test(text)) {
-    return "Lo strumento non avrebbe effetto.";
+    return messageDescriptor("pokemonCenter.noEffect");
   }
-  if (/Pokemon is not compatible with the held item/i.test(text)) return "Il Pokemon non e compatibile con questo strumento.";
-  if (/Pokemon already holds this item/i.test(text)) return "Il Pokemon possiede gia questo strumento.";
-  return "Impossibile completare l'operazione nel Centro Pokemon.";
+  if (/Pokemon is not compatible with the held item/i.test(text)) return messageDescriptor("pokemonCenter.heldIncompatible");
+  if (/Pokemon already holds this item/i.test(text)) return messageDescriptor("pokemonCenter.alreadyHolds");
+  return messageDescriptor("pokemonCenter.commandFailed");
 }
 
 function pokemonCenterTargetIsSelectable(scene, mode, item, pokemon, pokemonIndex, targetKind, move, compatibility) {
@@ -279,14 +281,18 @@ registerAction("pokemon-center-evolution-choose", function(element) {
     pokemon: dialog.pokemon,
     item: dialog.item,
     evolutionTargetSpeciesKey: element.dataset.speciesKey
-  }, dialog.pokemon.name + " si evolve in " + target.name + " usando " + dialog.item.name + ".");
+  }, messageDescriptor("pokemonCenter.evolvedUsing", {
+    pokemon: pokemonNameDescriptor(dialog.pokemon),
+    target: speciesNameDescriptor(target.speciesKey),
+    item: itemNameDescriptor(dialog.item)
+  }));
 });
 
 registerAction("pokemon-center-evolution-decline", function() {
   var dialog = state.dialog;
   if (!dialog || dialog.type !== "pokemon-center-evolution") return;
   state.dialog = null;
-  clearPokemonCenterAfterAction(state.scene, dialog.pokemon.name + " non si evolve.");
+  clearPokemonCenterAfterAction(state.scene, messageDescriptor("pokemonCenter.evolutionDeclined", { pokemon: pokemonNameDescriptor(dialog.pokemon) }));
   renderPokemonCenter();
 });
 
@@ -295,7 +301,7 @@ async function runAuthoritativePokemonCenterCommand(input, notice) {
   var result;
   if (!scene || scene.name !== "pokemon-center" || authoritativePokemonCenterCommandPending) return false;
   if (!input.pokemon || !input.pokemon.instanceId || !input.item) {
-    openMessage(["Identità autorevole del Pokemon o dello strumento mancante."], { title: "Centro Pokemon" });
+    openMessage([messageDescriptor("pokemonCenter.missingIdentity")], { title: textDescriptor("ui.pokemonCenter.sceneTitle") });
     return false;
   }
   authoritativePokemonCenterCommandPending = true;
@@ -310,7 +316,7 @@ async function runAuthoritativePokemonCenterCommand(input, notice) {
       evolutionTargetSpeciesKey: input.evolutionTargetSpeciesKey
     });
     if (!result.ok) {
-      openMessage([pokemonCenterCommandError(result.message)], { title: "Centro Pokemon" });
+      openMessage([pokemonCenterCommandError(result.message)], { title: textDescriptor("ui.pokemonCenter.sceneTitle") });
       return false;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -332,11 +338,13 @@ async function runAuthoritativePokemonCenterTutorCommand(pokemon, item, move, re
   try {
     result = await executePokemonCenterMoveTutorAuthoritative({ expectedRevision: state.authoritativeRevision, pokemonInstanceId: pokemon.instanceId, itemIndex: item.index, moveIndex: move.index, replacementSlot: replacementSlot });
     if (!result.ok) {
-      openMessage([pokemonCenterCommandError(result.message)], { title: "Centro Pokemon" });
+      openMessage([pokemonCenterCommandError(result.message)], { title: textDescriptor("ui.pokemonCenter.sceneTitle") });
       return false;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
-    clearPokemonCenterAfterAction(scene, pokemon.name + " impara " + move.name + " usando " + item.name + ".");
+    clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.learnedUsing", {
+      pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move), item: itemNameDescriptor(item)
+    }));
     state.saveStatus = { state: "saved", message: "" };
     renderPokemonCenter();
     return true;
@@ -371,7 +379,7 @@ function updatePokemonCenterModeDom() {
   var availableItems = resolveInventoryItems(state.inventory).filter(modeConfig.itemFilter);
   var hasNotice = Boolean(scene && scene.notice);
   if (targetTitle) {
-    targetTitle.textContent = modeConfig.pokemonTitle;
+    targetTitle.textContent = t("ui.pokemonCenter.pokemonTitles." + modeConfig.textKey);
   }
   root.querySelectorAll('[data-action="pokemon-center-mode"]').forEach(function (btn) {
     var isSelected = btn.dataset.mode === mode;
@@ -480,7 +488,8 @@ function applyPokemonCenterPendingRemove(scene) {
   if (!scene || scene.name !== "pokemon-center" || !pokemon || !heldItem) {
     return false;
   }
-  runAuthoritativePokemonCenterCommand({ operation: "remove_held", pokemon: pokemon, item: heldItem }, heldItem.name + " torna nello zaino.");
+  runAuthoritativePokemonCenterCommand({ operation: "remove_held", pokemon: pokemon, item: heldItem },
+    messageDescriptor("pokemonCenter.returnedToBag", { item: itemNameDescriptor(heldItem) }));
   return true;
 }
 
@@ -549,19 +558,24 @@ function teachPokemonCenterTMInline(pokemon, item, pokemonIndex) {
   var scene = state.scene;
   var move = createPokemonCenterTMMove(item, pokemon);
   if (!move || !Engine.pokemonCanLearnTM(pokemon, item)) {
-    clearPokemonCenterAfterAction(scene, item.name + " non può essere insegnata a " + pokemon.name + ".");
+    clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.cannotTeach", {
+      item: itemNameDescriptor(item), pokemon: pokemonNameDescriptor(pokemon)
+    }));
     updatePokemonCenterModeDom();
     return;
   }
   if (pokemon.moves.length < 4) {
-    runAuthoritativePokemonCenterCommand({ operation: "teach_tm", pokemon: pokemon, item: item }, pokemon.name + " impara " + move.name + ".");
+    runAuthoritativePokemonCenterCommand({ operation: "teach_tm", pokemon: pokemon, item: item },
+      messageDescriptor("pokemonCenter.learned", { pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move) }));
     return;
   }
   if (pokemon.moves.length < 4) {
     pokemon.moves.push(move);
     clampToLimits(pokemon);
     markTeamRuntimeStateChanged();
-    clearPokemonCenterAfterAction(scene, pokemon.name + " impara " + move.name + ".");
+    clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.learned", {
+      pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move)
+    }));
     saveAfterStateChange("tm_use");
     renderPokemonCenter();
     return;
@@ -598,7 +612,9 @@ function replacePokemonCenterTMMoveInline(pokemon, item, moveIndex) {
     pokemon: pokemon,
     item: item,
     replacementSlot: Number(moveIndex)
-  }, pokemon.name + " dimentica " + oldMove.name + " e impara " + newMove.name + ".");
+  }, messageDescriptor("pokemonCenter.forgotAndLearned", {
+    pokemon: pokemonNameDescriptor(pokemon), oldMove: moveNameDescriptor(oldMove), newMove: moveNameDescriptor(newMove)
+  }));
   return;
 }
 
@@ -694,18 +710,22 @@ function assignHeldItemToPokemonInline(pokemon, item, pokemonIndex) {
     return;
   }
   if (!pokemonCanHoldItem(pokemon, item)) {
-    clearPokemonCenterAfterAction(scene, pokemon.name + " non può tenere " + item.name + ".");
+    clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.cannotHold", {
+      pokemon: pokemonNameDescriptor(pokemon), item: itemNameDescriptor(item)
+    }));
     updatePokemonCenterModeDom();
     return;
   }
   violation = findHeldItemAssignmentViolation(state.team, pokemon, item, pokemonIndex);
   if (violation) {
-    clearPokemonCenterAfterAction(scene, violation.message);
+    clearPokemonCenterAfterAction(scene, teamViolationMessage(violation));
     updatePokemonCenterModeDom();
     return;
   }
   runAuthoritativePokemonCenterCommand({ operation: "assign_held", pokemon: pokemon, item: item },
-    pokemon.name + " ora tiene " + item.name + (previousItem ? ". " + previousItem.name + " torna nello zaino." : "."));
+    messageDescriptor(previousItem ? "pokemonCenter.nowHoldsReturned" : "pokemonCenter.nowHolds", {
+      pokemon: pokemonNameDescriptor(pokemon), item: itemNameDescriptor(item), previousItem: itemNameDescriptor(previousItem)
+    }));
   return;
 }
 
@@ -719,7 +739,9 @@ function useEvolutionItemOnPokemonInline(pokemon, item) {
     return;
   }
   if (!evolution) {
-    clearPokemonCenterAfterAction(scene, item.name + " non ha effetto su " + pokemon.name + ".");
+    clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.itemNoEffectOn", {
+      item: itemNameDescriptor(item), pokemon: pokemonNameDescriptor(pokemon)
+    }));
     updatePokemonCenterModeDom();
     return;
   }
@@ -732,7 +754,7 @@ function useEvolutionItemOnPokemonInline(pokemon, item) {
     }).map(function (entry) { return Engine.findSpecies(entry.species); }).filter(Boolean)
     : [];
   if (!targets.length) {
-    clearPokemonCenterAfterAction(scene, "Evoluzione non trovata.");
+    clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.evolutionNotFound"));
     renderPokemonCenter();
     return;
   }
@@ -757,28 +779,29 @@ function useVitaminOnPokemonInline(pokemon, item, pokemonIndex, targetKind, move
   }
   if (item.effect === "max_hp") {
     if (pokemon.maxHp >= pokemonCenterLimit(pokemon, maxHpForLevel(pokemon.level))) {
-      clearPokemonCenterAfterAction(scene, "Impossibile utilizzare, non avrebbe effetto.");
+      clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.noEffect"));
       updatePokemonCenterModeDom();
       return;
     }
-    runAuthoritativePokemonCenterCommand({ operation: "use_vitamin", pokemon: pokemon, item: item }, "I PS di " + pokemon.name + " aumentano!");
+    runAuthoritativePokemonCenterCommand({ operation: "use_vitamin", pokemon: pokemon, item: item },
+      messageDescriptor("pokemonCenter.hpIncreased", { pokemon: pokemonNameDescriptor(pokemon) }));
     return;
   }
   if (item.effect === "move_power") {
     if (!pokemon.moves.length) {
-      clearPokemonCenterAfterAction(scene, pokemon.name + " non ha mosse da potenziare.");
+      clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.noMovesToBoost", { pokemon: pokemonNameDescriptor(pokemon) }));
       updatePokemonCenterModeDom();
       return;
     }
     move = targetKind === "move" ? pokemon.moves[Number(moveIndex)] : null;
     if (!move) {
-      clearPokemonCenterAfterAction(scene, "Scegli una mossa da potenziare.");
+      clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.chooseMoveToBoost"));
       updatePokemonCenterModeDom();
       return;
     }
     if (move.power >= pokemonCenterLimit(pokemon, maxPowerForLevel(pokemon.level))
       && move.stats >= pokemonCenterLimit(pokemon, maxStatsForLevel(pokemon.level))) {
-      clearPokemonCenterAfterAction(scene, "Impossibile utilizzare, non avrebbe effetto.");
+      clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.noEffect"));
       updatePokemonCenterModeDom();
       return;
     }
@@ -787,7 +810,7 @@ function useVitaminOnPokemonInline(pokemon, item, pokemonIndex, targetKind, move
       pokemon: pokemon,
       item: item,
       replacementSlot: Number(moveIndex)
-    }, "La potenza di " + move.name + " aumenta!");
+    }, messageDescriptor("pokemonCenter.movePowerIncreased", { move: moveNameDescriptor(move) }));
     return;
   }
 }

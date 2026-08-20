@@ -12,11 +12,8 @@ import { missionCategories, missionIsActive, missionRowsByCategory } from "../cl
 import { isBattleRuntimeActive } from "../client/battle-scene-lock.js";
 import { escapeHtml, getItemImage, renderImage } from "../client/asset-helpers.js";
 import { button, formatInteger, moneyMarkup, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
-
-var SECTION_LABELS = {};
-SECTION_LABELS[MISSION_CATEGORY_ADVENTURE] = "Missioni avventura";
-SECTION_LABELS[MISSION_CATEGORY_CAPTURE] = "Missioni cattura";
-SECTION_LABELS[MISSION_CATEGORY_DAILY] = "Missioni giornaliere";
+import { itemDisplayName } from "../client/entity-text.js";
+import { resolveText, t, tp } from "../client/i18n.js";
 
 function renderMoneyReward(quantity) {
   return '<span class="pokefan-mission-reward">' + moneyMarkup(quantity) + "</span>";
@@ -25,10 +22,11 @@ function renderMoneyReward(quantity) {
 function renderItemReward(reward) {
   var item = getItemByIndex(reward && reward.itemIndex);
   var quantity = Number(reward && reward.quantity) || 1;
+  var itemName = item ? itemDisplayName(item) : t("ui.pokefan.fallbackReward");
   return [
     '<span class="pokefan-mission-reward">',
-    item && item.image ? renderImage(getItemImage(item.image), item.name, "pokefan-mission-item-image") : "",
-    '  <span>' + escapeHtml(quantity > 1 ? formatInteger(quantity) + "x " + (item ? item.name : "Ricompensa") : item ? item.name : "Ricompensa") + "</span>",
+    item && item.image ? renderImage(getItemImage(item.image), itemName, "pokefan-mission-item-image") : "",
+    '  <span>' + escapeHtml(quantity > 1 ? formatInteger(quantity) + "x " + itemName : itemName) + "</span>",
     "</span>"
   ].join("");
 }
@@ -54,7 +52,7 @@ function renderReward(reward, mission) {
     return renderMoneyReward(reward.quantity);
   }
   if (reward && (reward.kind === "choice" || reward.kind === "pokemon_choice")) {
-    return '<span class="pokefan-mission-reward"><span>' + escapeHtml(reward.choiceLabel) + "</span></span>";
+    return '<span class="pokefan-mission-reward"><span>' + escapeHtml(t("ui.pokefan.rewardChoices." + reward.choiceKey)) + "</span></span>";
   }
   return renderItemReward(reward);
 }
@@ -63,20 +61,20 @@ function renderMissionStatus(mission) {
   var missionState = state.missions || {};
   var progress = Math.min(Number(mission.counter) || 0, Number(mission.target) || 0) + "/" + escapeHtml(mission.target);
   if (Number(missionState.claimedNoticeMissionIndex) === Number(mission.missionIndex)) {
-    return '<span class="pokefan-mission-status is-claimed-now">Riscossa!</span>';
+    return '<span class="pokefan-mission-status is-claimed-now">' + escapeHtml(t("ui.pokefan.claimedNow")) + "</span>";
   }
   if (mission.claimStatus === MISSION_STATUS_SKIPPED) {
-    return '<span class="pokefan-mission-status">Saltata — migrazione debug</span>';
+    return '<span class="pokefan-mission-status">' + escapeHtml(t("ui.pokefan.skippedDebug")) + "</span>";
   }
   if (mission.claimStatus === MISSION_STATUS_CLAIMED) {
-    return '<span class="pokefan-mission-status">Riscossa</span>';
+    return '<span class="pokefan-mission-status">' + escapeHtml(t("ui.pokefan.claimed")) + "</span>";
   }
   if (!missionIsActive(mission)) {
-    return '<span class="pokefan-mission-status">Non attiva</span>';
+    return '<span class="pokefan-mission-status">' + escapeHtml(t("ui.pokefan.inactive")) + "</span>";
   }
   if (Number(mission.counter) >= Number(mission.target)) {
     return button(
-      "Ritira",
+      t("ui.pokefan.claim"),
       "pokefan-claim-mission",
       'data-mission-index="' + escapeHtml(mission.missionIndex) + '"' + (Number(missionState.claimingMissionIndex) === Number(mission.missionIndex) || isBattleRuntimeActive() ? " disabled" : ""),
       "button-accent button-slim pokefan-claim-button"
@@ -84,7 +82,7 @@ function renderMissionStatus(mission) {
   }
   if (isDebugUser()) {
     return button(
-      "Completa (debug)",
+      t("ui.pokefan.completeDebug"),
       "pokefan-debug-complete-mission",
       'data-mission-index="' + escapeHtml(mission.missionIndex) + '"' + (missionState.debugCompletingMissionIndex != null || isBattleRuntimeActive() ? " disabled" : ""),
       "button-ghost button-slim pokefan-debug-complete-button"
@@ -94,10 +92,11 @@ function renderMissionStatus(mission) {
 }
 
 function renderMissionRow(mission) {
-  var phase = mission.category === MISSION_CATEGORY_ADVENTURE ? '<span class="pokefan-mission-phase">' + escapeHtml(Math.max(0, Number(mission.phase) - 1)) + " Medaglie</span>" : "";
+  var badgeCount = Math.max(0, Number(mission.phase) - 1);
+  var phase = mission.category === MISSION_CATEGORY_ADVENTURE ? '<span class="pokefan-mission-phase">' + escapeHtml(tp("ui.pokefan.badges", badgeCount)) + "</span>" : "";
   return [
     '<div class="pokefan-mission-row">',
-    '  <div class="pokefan-mission-cell pokefan-mission-requirement">' + phase + escapeHtml(mission.requirement) + "</div>",
+    '  <div class="pokefan-mission-cell pokefan-mission-requirement">' + phase + escapeHtml(t("ui.pokefan.requirements." + mission.missionIndex)) + "</div>",
     '  <div class="pokefan-mission-cell">' + renderReward(mission.reward, mission) + "</div>",
     '  <div class="pokefan-mission-cell pokefan-mission-completion">' + renderMissionStatus(mission) + "</div>",
     "</div>"
@@ -108,7 +107,7 @@ function renderMissionTable(title, missions, emptyText) {
   var body = missions.length ? missions.map(renderMissionRow).join("") : '<div class="pokefan-mission-row pokefan-empty-row"><div class="pokefan-empty-state">' + escapeHtml(emptyText) + "</div></div>";
   return [
     '  <div class="pokefan-data-table">',
-    '    <div class="pokefan-mission-header"><span>' + escapeHtml(title) + '</span><span>Ricompensa</span><span>Stato</span></div>',
+    '    <div class="pokefan-mission-header"><span>' + escapeHtml(title) + "</span><span>" + escapeHtml(t("ui.pokefan.reward")) + "</span><span>" + escapeHtml(t("ui.pokefan.status")) + "</span></div>",
     body,
     "  </div>"
   ].join("");
@@ -122,9 +121,9 @@ function renderSectionTabs(activeSection) {
     order[MISSION_CATEGORY_CAPTURE] = 2;
     return (order[left] ?? 99) - (order[right] ?? 99);
   });
-  return '<section class="panel pokefan-sections-panel"><div class="panel-inner"><nav class="pokemon-center-action-row rules-section-row" aria-label="Categorie missioni">' + categories.map(function (section) {
+  return '<section class="panel pokefan-sections-panel"><div class="panel-inner"><nav class="pokemon-center-action-row rules-section-row" aria-label="' + escapeHtml(t("ui.pokefan.categoriesAria")) + '">' + categories.map(function (section) {
     return button(
-      SECTION_LABELS[section],
+      t("ui.pokefan.categories." + section),
       "pokefan-section",
       'data-section="' + section + '" aria-pressed="' + (section === activeSection ? "true" : "false") + '"',
       "button-slim" + (section === activeSection ? " button-primary" : " button-ghost")
@@ -147,7 +146,7 @@ export function renderPokefanScene() {
     return (mission.claimStatus === MISSION_STATUS_CLAIMED || mission.claimStatus === MISSION_STATUS_SKIPPED)
       && Number(missionState.claimedNoticeMissionIndex) !== Number(mission.missionIndex);
   });
-  var error = missionState.error ? '<p class="auth-error pokefan-error">' + escapeHtml(missionState.error) + "</p>" : "";
+  var error = missionState.error ? '<p class="auth-error pokefan-error">' + escapeHtml(resolveText(missionState.error)) + "</p>" : "";
   var body = [
     '<section class="pokefan-layout">',
     renderScenePresentationPanel("pokefan_club", "pokefan-info-panel"),
@@ -155,11 +154,11 @@ export function renderPokefanScene() {
     renderSectionTabs(activeSection),
     error,
     '<section class="panel pokefan-missions-panel"><div class="panel-inner">',
-    renderMissionTable("Missioni attive", activeMissions, "Nessuna missione disponibile."),
-    renderMissionTable("Missioni concluse", completedMissions, "Non hai ancora concluso missioni in questa sezione."),
+    renderMissionTable(t("ui.pokefan.activeMissions"), activeMissions, t("ui.pokefan.noAvailableMissions")),
+    renderMissionTable(t("ui.pokefan.completedMissions"), completedMissions, t("ui.pokefan.noCompletedMissions")),
     "</div></section>",
     "</div>",
     "</section>"
   ].join("");
-  return sceneShell("Club Pokéfan", "", body, "", "scene-content-pokefan", "parent-back");
+  return sceneShell(t("ui.pokefan.sceneTitle"), "", body, "", "scene-content-pokefan", "parent-back");
 }

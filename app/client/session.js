@@ -21,9 +21,27 @@ import { refreshMissionState } from "./mission-runtime.js";
 import { openAdminBattle, refreshAdminBattles } from "./admin-battle-handler.js";
 import { readServerRoles } from "../api/battle.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
+import { messageDescriptor } from "./i18n.js";
 
 var activeUserId = null;
 var PLAYER_SAVE_RETRY_DELAY_MS = 1000;
+
+function authResultMessage(result, fallbackKey) {
+  var code = String(result && result.code || "");
+  var keys = {
+    invalid_username: "invalidUsername", password_too_short: "passwordTooShort",
+    invalid_optional_email: "invalidOptionalEmail", invalid_email: "invalidEmail",
+    missing_configuration: "missingConfiguration", data_unavailable: "dataUnavailable",
+    password_unchanged: "passwordUnchanged", invalid_credentials: "invalidCredentials",
+    invalid_login_session: "invalidLoginSession", open_session_failed: "openSessionFailed",
+    registration_failed: "registrationFailed", recovery_failed: "recoveryFailed",
+    password_update_failed: "passwordUpdateFailed", delete_account_failed: "deleteFailed"
+  };
+  if (code === "rate_limited") {
+    return messageDescriptor(result.retrySeconds ? "auth.rateLimitedSeconds" : "auth.rateLimited", { seconds: result.retrySeconds });
+  }
+  return messageDescriptor("auth." + (keys[code] || fallbackKey || "genericFailed"));
+}
 
 function isPasswordRecoveryRoute() {
   if (typeof window === "undefined") { return false; }
@@ -88,7 +106,7 @@ function showLogin(error) {
 
 function showPasswordReset(session) {
   if (!session || !session.user) {
-    showLogin("Sessione di recupero password non valida o scaduta.");
+    showLogin(messageDescriptor("auth.invalidRecoverySession"));
     return;
   }
   activeUserId = session.user.id;
@@ -161,7 +179,7 @@ export async function startAuthenticatedSession(session) {
   state.auth.serverRoles = [];
   state.auth.error = "";
   state.auth.message = "";
-  state.playerLoadStatus = { state: "loading", message: "Caricamento salvataggio..." };
+  state.playerLoadStatus = { state: "loading", message: messageDescriptor("auth.saveLoading") };
   state.playerName = usernameFromSession(session);
   render();
 
@@ -170,7 +188,7 @@ export async function startAuthenticatedSession(session) {
   state.auth.serverRoles = roleResult.ok ? roleResult.roles : [];
   loaded = await loadPlayerSave();
   while (activeUserId === sessionUserId && loaded && !loaded.ok && loaded.incompleteSave) {
-    state.playerLoadStatus = { state: "loading", message: loaded.message || "Caricamento salvataggio..." };
+    state.playerLoadStatus = { state: "loading", message: messageDescriptor("auth.saveLoading") };
     render();
     await wait(PLAYER_SAVE_RETRY_DELAY_MS);
     if (activeUserId !== sessionUserId) {
@@ -192,14 +210,14 @@ export async function startAuthenticatedSession(session) {
     state.playerLoadStatus = { state: "new-player", message: "" };
   } else {
     state.auth.loading = false;
-    state.auth.error = loaded.message || "Impossibile caricare il salvataggio.";
+    state.auth.error = messageDescriptor("auth.saveLoadFailed");
     state.playerLoadStatus = {
       state: "error",
-      message: loaded.message || "Impossibile caricare il salvataggio."
+      message: messageDescriptor("auth.saveLoadFailed")
     };
     state.saveStatus = {
       state: "error",
-      message: loaded.message || "Impossibile caricare il salvataggio."
+      message: messageDescriptor("auth.saveLoadFailed")
     };
     setScene({ name: "login" }, { history: "replace" });
     return;
@@ -244,7 +262,7 @@ export async function initializeSession() {
   var session;
   var recoveryFlowAtStartup;
   if (!isSupabaseConfigured()) {
-    showLogin("Configurazione Supabase mancante.");
+    showLogin(messageDescriptor("auth.missingConfiguration"));
     return;
   }
 
@@ -282,7 +300,7 @@ export async function initializeSession() {
       showLogin("");
     }
   } catch (error) {
-    showLogin(error.message || "Errore durante l'inizializzazione della sessione.");
+    showLogin(messageDescriptor("auth.sessionInitFailed"));
   }
 
 }
@@ -305,7 +323,7 @@ export async function submitLogin(username, password) {
   result = await loginWithUsername(username, password);
   if (!result.ok) {
     state.auth.loading = false;
-    state.auth.error = result.message;
+    state.auth.error = authResultMessage(result, "invalidCredentials");
     render();
     return result;
   }
@@ -324,7 +342,7 @@ export async function submitRegistration(username, password, recoveryEmail) {
   result = await registerWithUsername(username, password, recoveryEmail);
   if (!result.ok) {
     state.auth.loading = false;
-    state.auth.error = result.message;
+    state.auth.error = authResultMessage(result, "registrationFailed");
     render();
     return result;
   }
@@ -343,11 +361,11 @@ export async function submitPasswordRecovery(username, recoveryEmail) {
   result = await requestPasswordRecovery(username, recoveryEmail);
   state.auth.loading = false;
   if (!result.ok) {
-    state.auth.error = result.message;
+    state.auth.error = authResultMessage(result, "recoveryFailed");
     render();
     return result;
   }
-  state.auth.message = result.message;
+  state.auth.message = messageDescriptor("auth.recoveryRequested");
   render();
   return result;
 }
@@ -361,13 +379,13 @@ export async function submitRecoveredPassword(password) {
   result = await updateCurrentUserPassword(password);
   if (!result.ok) {
     state.auth.loading = false;
-    state.auth.error = result.message;
+    state.auth.error = authResultMessage(result, "passwordUpdateFailed");
     render();
     return result;
   }
   await logout();
   showLogin("");
-  state.auth.message = "Password aggiornata. Accedi con la nuova password.";
+  state.auth.message = messageDescriptor("auth.passwordUpdated");
   render();
   return result;
 }
@@ -388,8 +406,8 @@ export async function submitAccountDeletion() {
   result = await deletePlayerAccount();
   if (!result.ok) {
     state.auth.loading = false;
-    openMessage([result.message], {
-      title: "Elimina account",
+    openMessage([authResultMessage(result, "deleteFailed")], {
+      title: messageDescriptor("auth.deleteTitle"),
       closeClass: "button-danger"
     });
     return result;

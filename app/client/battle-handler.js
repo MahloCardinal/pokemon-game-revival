@@ -31,7 +31,10 @@ import { abandonAuthoritativeBattle, allocateAuthoritativeTrainingLevels, append
 import { startPostBattleExpProgression } from "./level-up.js";
 import { button, formatInteger, moneyText } from "./render-utils.js";
 import { escapeHtml, getTrainerImage } from "./asset-helpers.js";
-import { KANTO_GYM_BADGE_NAMES, kantoGymCityByKey, kantoEliteFourMemberByIndex, KANTO_CHAMPION } from "../data/gyms.js";
+import { KANTO_GYM_BADGES, kantoGymCityByKey, kantoEliteFourMemberByIndex, KANTO_CHAMPION } from "../data/gyms.js";
+import { resolveText, t, textDescriptor } from "./i18n.js";
+import { itemDisplayName, itemNameDescriptor, moveDisplayName, pokemonDisplayName, pokemonNameDescriptor, speciesNameDescriptor, typeDisplayName } from "./entity-text.js";
+import { resolveBattleEvent } from "./battle-text.js";
 import { adjustInventoryItemQuantity, adjustTrainerMoney, broadcastAuthoritativeRevision, broadcastCaptureEncounterRuntimeInvalidation, replaceInventoryRuntimeState, replaceTeamRuntimeState, updateTrainerProfile } from "./runtime-state.js";
 import { ADMIN_BATTLE_ITEMS, isAdminControlledBattleType } from "../data/admin-battles.js";
 import { getSupabaseClient } from "../api/supabase.js";
@@ -51,6 +54,36 @@ var activeAuthoritativeTrainingResolution = null;
 var authoritativeTrainingProgressionPending = false;
 var authoritativeTrainingRecoveryPromise = null;
 var authoritativeOrdinaryProgressionComplete = null;
+
+function battleText(key, params) {
+  return textDescriptor("battleText.dialog." + key, params);
+}
+
+function battleTextNow(key, params) {
+  return t("battleText.dialog." + key, params || {});
+}
+
+function battleTitle(key) {
+  return battleText("titles." + key);
+}
+
+function battleFailure(key) {
+  return battleText(key || "commandFailed");
+}
+
+function localizedBattleResultLines(scene) {
+  var entries = scene && scene.manager && Array.isArray(scene.manager.battleResultLines) ? scene.manager.battleResultLines : [];
+  return entries.length ? entries.map(function (entry) { return resolveBattleEvent(entry, scene); }).filter(Boolean) : [battleText("battleConcluded")];
+}
+
+function gymBadgeDisplayName(index) {
+  var badge = KANTO_GYM_BADGES[Number(index)];
+  return badge ? t("ui.gyms.badges." + badge.key) : "";
+}
+
+function trainerNameDescriptor(trainer) {
+  return trainer && trainer.key ? textDescriptor("ui.gyms.trainers." + trainer.key) : textDescriptor("ui.gyms.eliteFourTitle");
+}
 
 function authoritativePokemon(entry) {
   var pokemon = new Engine.Pokemon({
@@ -106,7 +139,7 @@ export function appendAuthoritativeEventLines(scene, events) {
     var data = event.event_data || event.data || {};
     if (Number.isFinite(seq) && seq <= scene.authoritativeLastEventSeq) { return; }
     if (Number.isFinite(seq)) { scene.authoritativeLastEventSeq = Math.max(scene.authoritativeLastEventSeq, seq); }
-    if (type === "display_log" && data.line !== undefined) { scene.manager.log.push(String(data.line)); }
+    if (type === "display_log" && data.entry && typeof data.entry.key === "string") { scene.manager.log.push(data.entry); }
     if (type === "ordinary_exp_awarded") { storeAuthoritativeExpAwards(scene, data.awards); }
   });
 }
@@ -125,8 +158,8 @@ export function applyAuthoritativeProjection(scene, projection, events) {
   var previousLog = scene.manager && Array.isArray(scene.manager.log) ? scene.manager.log.slice() : [];
   var presentation = projection.presentation || scene.authoritativePresentation || {};
   var battleState = projection.battle_state && typeof projection.battle_state === "object" ? projection.battle_state : {};
-  var playerTeam = new Engine.Team(String(state.playerName || state.auth.userLabel || "").trim() || "Giocatore", playerEntries.map(authoritativePokemon), Math.max(0, playerEntries.findIndex(function (entry) { return Number(entry.slot_index) === Number(projection.player_active_slot); })));
-  var enemyTeam = new Engine.Team(String(presentation.name || "Sfidante"), npcEntries.map(authoritativePokemon), Math.max(0, npcEntries.findIndex(function (entry) { return Number(entry.slot_index) === Number(projection.npc_active_slot); })));
+  var playerTeam = new Engine.Team(String(state.playerName || state.auth.userLabel || "").trim() || "Player", playerEntries.map(authoritativePokemon), Math.max(0, playerEntries.findIndex(function (entry) { return Number(entry.slot_index) === Number(projection.player_active_slot); })));
+  var enemyTeam = new Engine.Team(String(presentation.name || "Challenger"), npcEntries.map(authoritativePokemon), Math.max(0, npcEntries.findIndex(function (entry) { return Number(entry.slot_index) === Number(projection.npc_active_slot); })));
   playerEntries.forEach(function (entry, index) {
     var combatant = playerTeam.combatantList[index];
     Object.assign(combatant, { hp: Number(entry.current_hp), status: entry.status || null,
@@ -339,8 +372,8 @@ function openAuthoritativeExpAwards(scene, onComplete) {
 
 function continueAuthoritativeBattleTerminal(scene, projection) {
   if (scene.battleTower && scene.authoritativeStatus === "concluded" && scene.authoritativeResultKey === "player_win_no_reward") {
-    openMessage(["Hai vinto la sfida! Il prossimo sfidante sta arrivando..."], {
-      title: "Torre Lotta", requireButtonClose: true, closeLabel: "Continua", closeClass: "button-accent",
+    openMessage([battleText("towerNext")], {
+      title: battleTitle("tower"), requireButtonClose: true, closeLabel: battleText("buttons.continue"), closeClass: "button-accent",
       onClose: function () { startNextAuthoritativeBattleTower(scene); }
     });
     return true;
@@ -376,10 +409,10 @@ function continueAuthoritativeBattleTerminal(scene, projection) {
   }
   if (scene.authoritativeCapture && scene.authoritativeResultKey === "pokemon_captured") {
     var capturedName = scene.enemyTeam && scene.enemyTeam.getActive() && scene.enemyTeam.getActive().pokemon
-      ? scene.enemyTeam.getActive().pokemon.name : "Pokémon selvatico";
-    openMessage([capturedName + " catturato!", projection && projection.placement === "team"
-      ? capturedName + " aggiunto alla squadra!" : capturedName + " inviato al Box!"], {
-      title: "Cattura", requireButtonClose: true, closeClass: "button-accent", onClose: function () {
+      ? pokemonNameDescriptor(scene.enemyTeam.getActive().pokemon) : speciesNameDescriptor("");
+    openMessage([battleText("captured", { pokemon: capturedName }), projection && projection.placement === "team"
+      ? battleText("addedToTeam", { pokemon: capturedName }) : battleText("sentToBox", { pokemon: capturedName })], {
+      title: battleTitle("capture"), requireButtonClose: true, closeClass: "button-accent", onClose: function () {
         showTerminalBattleScreen(scene);
       }
     });
@@ -395,7 +428,7 @@ function startNextAuthoritativeBattleTower(scene) {
   startAuthoritativeBattleTower({ expectedPlayerRevision: state.authoritativeRevision }).then(function (result) {
     state.battleStartPending = false;
     if (!result.ok || !result.battle) {
-      openMessage([result.message || "Impossibile avviare il prossimo sfidante."], { title: "Torre Lotta", onClose: function () {
+      openMessage([battleFailure("nextTowerFailed")], { title: battleTitle("tower"), onClose: function () {
         showTerminalBattleScreen(scene);
       } });
       return;
@@ -404,7 +437,7 @@ function startNextAuthoritativeBattleTower(scene) {
     openAuthoritativeBattleProjection(result.battle, result.events, { history: "replace" });
   }).catch(function (error) {
     state.battleStartPending = false;
-    openMessage([error.message || "Impossibile avviare il prossimo sfidante."], { title: "Torre Lotta", onClose: function () {
+    openMessage([battleFailure("nextTowerFailed")], { title: battleTitle("tower"), onClose: function () {
       showTerminalBattleScreen(scene);
     } });
   });
@@ -472,8 +505,8 @@ function applyAuthoritativeBattleCommandResult(scene, result) {
     refreshDeferredAuthoritativeScene(scene, commandResetsBattleScroll(result.events));
     render({ preserveScroll: commandResetsBattleScroll(result.events) ? false : true, scrollBattleLogToBottom: true });
     if (scene.authoritativeCapture && failedBall && !scene.manager.battleOver) {
-      openMessage(["Oh no, il Pokémon è uscito dalla Ball!"], {
-        title: "Cattura", closeLabel: "Ok", closeClass: "button-accent", scrollBattleLogToBottom: true
+      openMessage([battleText("ballEscaped")], {
+        title: battleTitle("capture"), closeLabel: "Ok", closeClass: "button-accent", scrollBattleLogToBottom: true
       });
     }
     handleAuthoritativeBattleTerminal(scene, result.projection);
@@ -519,19 +552,18 @@ function setAuthoritativeCommandUncertain(scene, result) {
   scene.authoritativeCommandPending = false;
   scene.authoritativeRecoveryPending = false;
   scene.authoritativeCommandUncertain = true;
-  scene.authoritativeUncertaintyMessage = result && result.message
-    || "Il comando è ancora in verifica. Riprova prima di inviare altre azioni.";
+  scene.authoritativeUncertaintyMessage = battleText("commandVerifying");
   render({ scrollBattleLogToBottom: true });
 }
 
-function readAuthoritativeBattleAfterResolution(scene, fallbackMessage) {
+function readAuthoritativeBattleAfterResolution(scene) {
   return getAuthoritativeBattle(scene.authoritativeBattleId, { afterSeq: scene.authoritativeLastEventSeq }).then(function (fresh) {
     if (!state.scene || state.scene !== scene) { return fresh; }
     if (fresh.ok && fresh.battle) {
       applyAuthoritativeBattleCommandResult(scene, fresh);
     } else {
       setAuthoritativeCommandUncertain(scene, fresh);
-      openMessage([fresh.message || fallbackMessage || "Impossibile verificare lo stato della battaglia."], { title: "Battaglia" });
+      openMessage([battleFailure("verifyFailed")], { title: battleTitle("battle") });
     }
     return fresh;
   });
@@ -549,7 +581,7 @@ function recoverAuthoritativeBattleCommand(scene, options) {
     scene.authoritativeCommandPending = false;
     if (result.pending && result.ok && result.battle) {
       if (options.readAfter) {
-        return readAuthoritativeBattleAfterResolution(scene, result.message).then(function () { return true; });
+        return readAuthoritativeBattleAfterResolution(scene).then(function () { return true; });
       }
       applyAuthoritativeBattleCommandResult(scene, result);
       return true;
@@ -561,7 +593,7 @@ function recoverAuthoritativeBattleCommand(scene, options) {
     if (result.pending && result.code === "revision_conflict") {
       clearPendingAuthoritativeBattleCommand(scene.authoritativeBattleId, result.commandId);
     }
-    return readAuthoritativeBattleAfterResolution(scene, result.message).then(function () { return true; });
+    return readAuthoritativeBattleAfterResolution(scene).then(function () { return true; });
   }).catch(function (error) {
     if (state.scene === scene) {
       setAuthoritativeCommandUncertain(scene, { message: error.message });
@@ -581,7 +613,7 @@ function recoverStoredAuthoritativeBattleCommand(scene) {
     if (!pending || !state.scene || state.scene !== scene) { return; }
     scene.authoritativePendingCommandId = pending.body.commandId;
     scene.authoritativeCommandUncertain = true;
-    scene.authoritativeUncertaintyMessage = "Comando in verifica. Recupero automatico in corso...";
+    scene.authoritativeUncertaintyMessage = battleText("automaticRecovery");
     render();
     recoverAuthoritativeBattleCommand(scene, { automatic: true });
   });
@@ -609,10 +641,10 @@ function authoritativeBattleCommand(scene, operation) {
       scene.authoritativeCommandPending = false;
       scene.authoritativePendingCommandId = null;
       if (result.code === "revision_conflict" || result.code === "battle_command_rejected") {
-        readAuthoritativeBattleAfterResolution(scene, result.message);
+        readAuthoritativeBattleAfterResolution(scene);
         return;
       }
-      openMessage([result.message || "Comando battaglia non riuscito."], { title: "Battaglia" });
+      openMessage([battleFailure("commandFailed")], { title: battleTitle("battle") });
       render();
       return;
     }
@@ -622,7 +654,7 @@ function authoritativeBattleCommand(scene, operation) {
     scene.authoritativeCommandUncertain = true;
     recoverAuthoritativeBattleCommand(scene, { automatic: true }).then(function (recovered) {
       if (!recovered && state.scene === scene) {
-        scene.authoritativeUncertaintyMessage = error.message || "Il comando non è ancora verificato.";
+        scene.authoritativeUncertaintyMessage = battleText("commandUnverified");
         render();
       }
     });
@@ -635,23 +667,22 @@ function openAuthoritativeBattleOutcome(scene, projection) {
   var captureUnavailable = scene.authoritativeCapture
     && ["pokemon_captured", "player_win_no_reward", "player_loss_no_reward", "abandoned_no_reward"].indexOf(scene.authoritativeResultKey) === -1;
   var wildPokemonName = scene.enemyTeam && scene.enemyTeam.getActive() && scene.enemyTeam.getActive().pokemon
-    ? scene.enemyTeam.getActive().pokemon.name : "Il Pokémon selvatico";
-  var lines = [captureUnavailable ? "L'incontro si è concluso senza premi."
-    : wildKo ? wildPokemonName + " è KO." : playerKo ? "La tua squadra è stata sconfitta."
-    : scene.authoritativeStatus === "abandoned" ? "Hai abbandonato lo scontro."
-      : scene.playerTeam.isAllFainted() ? "Hai perso la sfida." : "Hai vinto la sfida."];
+    ? pokemonNameDescriptor(scene.enemyTeam.getActive().pokemon) : speciesNameDescriptor("");
+  var lines = [captureUnavailable ? battleText("noRewards")
+    : wildKo ? battleText("wildKo", { pokemon: wildPokemonName }) : playerKo ? battleText("teamDefeated")
+    : scene.authoritativeStatus === "abandoned" ? battleText("abandoned")
+      : scene.playerTeam.isAllFainted() ? battleText("lostChallenge") : battleText("wonChallenge")];
   var hasPenalty = projection && projection.money_penalty !== null && projection.money_penalty !== undefined;
   var penalty = Math.max(0, Number(projection && projection.money_penalty) || 0);
   var towerPoints = Number(projection && projection.tower_reward && projection.tower_reward.battle_points) || 0;
   if (scene.battleTower && (scene.authoritativeStatus === "abandoned" || scene.playerTeam.isAllFainted())) {
-    lines.push("Ottieni " + towerPoints + " PL.");
+    lines.push(battleText("earnedBattlePoints", { points: towerPoints }));
   }
   if (hasPenalty) {
-    lines.push((scene.authoritativeCapture ? "Nella confusione perdi " : "Perdi ")
-      + formatInteger(penalty) + " Pokédollari.");
+    lines.push(battleText(scene.authoritativeCapture ? "lostMoneyConfusion" : "lostMoney", { money: moneyText(penalty) }));
   }
-  openMessage(lines, { title: scene.authoritativeCapture ? "Cattura" : scene.authoritativeGym ? "Palestra"
-    : scene.trainingBattle ? "Zona allenamento" : scene.battleTower ? "Torre Lotta" : "Battaglia",
+  openMessage(lines, { title: battleTitle(scene.authoritativeCapture ? "capture" : scene.authoritativeGym ? "gym"
+    : scene.trainingBattle ? "training" : scene.battleTower ? "tower" : "battle"),
     requireButtonClose: true, onClose: function () {
       showTerminalBattleScreen(scene);
     } });
@@ -679,10 +710,10 @@ function openAuthoritativeLeagueReward(scene, reward, leagueState) {
   var isChampion = memberIndex === 4;
   var member = isChampion ? KANTO_CHAMPION : kantoEliteFourMemberByIndex(memberIndex);
   openMessage([
-    "Hai sconfitto " + (isChampion ? "il Campione Blu" : member ? member.name : "il Superquattro") + "!",
-    "Hai ricevuto " + moneyText(Number(reward && reward.money) || 0) + " come premio!"
+    battleText("defeatedMember", { member: trainerNameDescriptor(isChampion ? KANTO_CHAMPION : member) }),
+    battleText("receivedPrizeMoney", { money: moneyText(Number(reward && reward.money) || 0) })
   ], {
-    title: "Lega Kanto", closeLabel: "Ok", closeClass: "button-accent", requireButtonClose: true,
+    title: battleTitle("league"), closeLabel: "Ok", closeClass: "button-accent", requireButtonClose: true,
     scrollBattleLogToBottom: true,
     onClose: function () {
       state.activeBattle = null;
@@ -698,27 +729,27 @@ function openAuthoritativeLeagueReward(scene, reward, leagueState) {
 
 function openAuthoritativeLeagueFailure(scene, leagueState) {
   var penalty = Number(leagueState && leagueState.moneyPenalty) || 0;
-  var lines = [scene.authoritativeStatus === "abandoned" ? "Ti sei ritirato dalla sfida." : "Hai perso la scalata della Lega."];
-  if (penalty) { lines.push("Nella confusione perdi " + moneyText(penalty) + "."); }
-  lines.push("Il prossimo tentativo ripartirà dal primo Superquattro.");
-  openMessage(lines, { title: "Lega Kanto", requireButtonClose: true, onClose: function () {
+  var lines = [battleText(scene.authoritativeStatus === "abandoned" ? "retiredChallenge" : "lostLeagueRun")];
+  if (penalty) { lines.push(battleText("lostMoneyConfusion", { money: moneyText(penalty) })); }
+  lines.push(battleText("leagueRestart"));
+  openMessage(lines, { title: battleTitle("league"), requireButtonClose: true, onClose: function () {
     showTerminalBattleScreen(scene);
   } });
 }
 
 function openAuthoritativeGymReward(scene, reward) {
-  var lines = ["Hai vinto la sfida.", "Ottieni " + moneyText(Number(reward.money) || 0) + "."];
+  var lines = [battleText("wonChallenge"), battleText("earnedMoney", { money: moneyText(Number(reward.money) || 0) })];
   var badgeIndex = Number(reward.badgeIndex);
   (Array.isArray(reward.items) ? reward.items : []).forEach(function (entry) {
     var item = getItemByIndex(entry && entry.itemIndex);
-    if (item) { lines.push("Ottieni " + item.name + "."); }
+    if (item) { lines.push(battleText("earnedItem", { item: itemNameDescriptor(item) })); }
   });
-  if (Number.isInteger(badgeIndex) && KANTO_GYM_BADGE_NAMES[badgeIndex]) {
-    lines.push("Ottieni la " + KANTO_GYM_BADGE_NAMES[badgeIndex] + ".");
-    queueGlobalActivityEvent({ eventType: "badge", subjectName: badgeActivitySubjectName(KANTO_GYM_BADGE_NAMES[badgeIndex]) });
+  if (Number.isInteger(badgeIndex) && KANTO_GYM_BADGES[badgeIndex]) {
+    lines.push(battleText("earnedBadge", { badge: textDescriptor("ui.gyms.badges." + KANTO_GYM_BADGES[badgeIndex].key) }));
+    queueGlobalActivityEvent({ eventType: "badge", subjectName: KANTO_GYM_BADGES[badgeIndex].key });
   }
   openMessage(lines, {
-    title: "Palestra",
+    title: battleTitle("gym"),
     closeLabel: "Ok",
     closeClass: "button-accent",
     requireButtonClose: true,
@@ -772,7 +803,7 @@ function pokemonByInstanceId(instanceId) {
 
 function trainingMoveName(moveIndex, fallback) {
   var move = Engine.moveFromJSON([Number(moveIndex), 0, 0]);
-  return move && move.name || fallback || "Mossa " + moveIndex;
+  return moveDisplayName(move) || fallback || t("entityDescriptions.moves.fallbackName") + " " + moveIndex;
 }
 
 function trainingEvolutionTarget(targetSpeciesKey, pokemon) {
@@ -801,8 +832,8 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
     if (!result.ok || !result.projection || !result.projection.player_state) {
       authoritativeTrainingProgressionPending = false;
       if (!result.uncertain) { session.commandId = globalThis.crypto.randomUUID(); }
-      openMessage([result.message || "Risoluzione del premio non riuscita. Riprova."], {
-        title: "Zona allenamento", onClose: function () {
+      openMessage([battleFailure("trainingResolutionFailed")], {
+        title: battleTitle("training"), onClose: function () {
           if (result.uncertain) { resumeAuthoritativeTrainingProgression(); }
           else { openNextAuthoritativeTrainingChoice(); }
         }
@@ -816,8 +847,8 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
     else { openAuthoritativeTrainingProgression(); }
   }).catch(function (error) {
     authoritativeTrainingProgressionPending = false;
-    openMessage([error.message || "Risoluzione del premio non riuscita. Riprova."], {
-      title: "Zona allenamento", onClose: function () { resumeAuthoritativeTrainingProgression(); }
+    openMessage([battleFailure("trainingResolutionFailed")], {
+      title: battleTitle("training"), onClose: function () { resumeAuthoritativeTrainingProgression(); }
     });
   });
 }
@@ -829,7 +860,7 @@ function finishAuthoritativeOrdinaryProgression() {
   if (typeof onComplete === "function") { onComplete(); return; }
   setScene(state.authoritativeLeagueState && state.authoritativeLeagueState.status === "awaiting_battle"
     ? { name: "gym-city", cityKey: "elite_four" } : { name: "home" }, { history: "replace" });
-  openMessage(["Progressione della battaglia completata."], { title: "Esperienza" });
+  openMessage([battleText("progressionComplete")], { title: battleTitle("experience") });
 }
 
 function resumeAuthoritativeOrdinaryChoices() {
@@ -838,7 +869,7 @@ function resumeAuthoritativeOrdinaryChoices() {
   var options;
   if (!resolution) { finishAuthoritativeOrdinaryProgression(); return; }
   pokemon = pokemonByInstanceId(resolution.pokemon_instance_id);
-  if (!pokemon) { openMessage(["Il Pokemon della progressione non è più disponibile."], { title: "Esperienza" }); return; }
+  if (!pokemon) { openMessage([battleText("progressionPokemonMissing")], { title: battleTitle("experience") }); return; }
   options = resolution.options || {};
   activeAuthoritativeTrainingResolution = {
     source: "ordinary", resolution: resolution, pokemon: pokemon,
@@ -875,7 +906,7 @@ function openNextAuthoritativeTrainingChoice() {
   if (!session) { return; }
   if (session.source === "ordinary" && !session.levelShown && session.beforePokemon && session.afterPokemon) {
     state.dialog = { type: "level-up", pokemonName: session.pokemon.name,
-      resultLines: [session.pokemon.name + " sale al Livello " + session.afterPokemon.level + "!"],
+      resultLines: [textDescriptor("messages.progression.levelReached", { pokemon: pokemonNameDescriptor(session.pokemon), level: session.afterPokemon.level })],
       beforePokemon: session.beforePokemon, afterPokemon: session.afterPokemon,
       continueAction: "ordinary-progression-level-continue" };
     render();
@@ -917,7 +948,7 @@ function resumeAuthoritativeTrainingChoices() {
   if (!resolution) { finishAuthoritativeTrainingProgression(); return; }
   pokemon = pokemonByInstanceId(resolution.pokemon_instance_id);
   if (!pokemon) {
-    openMessage(["Il Pokemon del premio non è più nella squadra canonica."], { title: "Zona allenamento" });
+    openMessage([battleText("rewardPokemonMissing")], { title: battleTitle("training") });
     return;
   }
   options = resolution.options || {};
@@ -949,7 +980,7 @@ export function openAuthoritativeTrainingProgression() {
     var pokemon = pokemonByInstanceId(eligible.pokemon_instance_id);
     return pokemon ? { pokemon: pokemon, pokemonInstanceId: eligible.pokemon_instance_id,
       assigned: 0, maxAssignable: Math.min(maxLevelsPerPokemon, Number(eligible.max_assignable) || 0),
-      disabledReason: Number(eligible.max_assignable) > 0 ? "" : "Cap Medaglie" } : null;
+      disabledReason: Number(eligible.max_assignable) > 0 ? "" : battleTextNow("badgeCap") } : null;
   }).filter(Boolean);
   state.dialog = {
     type: "training-level-assignment", authoritative: true, progressionId: progression.id,
@@ -968,14 +999,14 @@ export function resumeAuthoritativeTrainingProgression(options) {
     if (retry.pending && retry.ok && retry.projection && retry.projection.player_state) {
       applyAuthoritativeBattlePlayerState(retry.projection.player_state);
     } else if (retry.pending && !retry.ok && retry.uncertain) {
-      if (!options.silent) { openMessage([retry.message || "Recupero del premio non riuscito. Riprova."], { title: "Zona allenamento" }); }
+      if (!options.silent) { openMessage([battleFailure("rewardRecoveryFailed")], { title: battleTitle("training") }); }
       return null;
     }
     return readAuthoritativeTrainingProgression();
   }).then(function (result) {
     if (!result) { return false; }
     if (!result.ok || !result.projection || !result.projection.player_state) {
-      if (!options.silent) { openMessage([result.message || "Impossibile recuperare il premio in corso. Riprova."], { title: "Zona allenamento" }); }
+      if (!options.silent) { openMessage([battleFailure("rewardRecoveryFailed")], { title: battleTitle("training") }); }
       return false;
     }
     applyAuthoritativeBattlePlayerState(result.projection.player_state);
@@ -1039,10 +1070,10 @@ function setHpBar(bar, hp, animate, duration) {
   bar.fill.classList.toggle("is-animating", Boolean(animate));
   bar.fill.style.width = percent + "%";
   if (bar.label) {
-    bar.label.textContent = "PS: " + hp + "/" + bar.maxHp;
+    bar.label.textContent = t("ui.battle.hpLabel", { hp: hp, maxHp: bar.maxHp });
   }
   if (bar.vitals) {
-    bar.vitals.textContent = "Lv: " + bar.level + "\u00a0\u00a0\u00a0\u00a0PS: " + hp;
+    bar.vitals.textContent = t("ui.battle.vitalsLabel", { level: bar.level, hp: hp });
   }
 }
 
@@ -1198,7 +1229,7 @@ function performBattleMove(element) {
     return;
   }
   if (sceneAllowsBallUse(battleScene)) {
-    openMessage(["In modalità autoritativa questo incontro supporta solo la cattura diretta con una Ball."], { title: "Cattura" });
+    openMessage([battleText("captureDirectOnly")], { title: battleTitle("capture") });
     return;
   }
   if (battleScene.manager.battleOver) {
@@ -1272,9 +1303,9 @@ registerAction("battle-abandon-open", function () {
     return;
   }
   setHtml(container, [
-    '<p class="battle-abandon-confirm-text">Vuoi davvero abbandonare lo scontro?</p>',
-    button("Sì", "battle-abandon-confirm", "", "button-danger button-slim"),
-    button("No", "battle-abandon-cancel", "", "button-dark button-slim")
+    '<p class="battle-abandon-confirm-text">' + battleTextNow("abandonQuestion") + '</p>',
+    button(battleTextNow("buttons.yes"), "battle-abandon-confirm", "", "button-danger button-slim"),
+    button(battleTextNow("buttons.no"), "battle-abandon-cancel", "", "button-dark button-slim")
   ].join(""));
 });
 
@@ -1283,7 +1314,7 @@ registerAction("battle-abandon-cancel", function () {
   if (!container) {
     return;
   }
-  setHtml(container, button("Abbandona scontro", "battle-abandon-open", "", "button-danger button-slim"));
+  setHtml(container, button(battleTextNow("buttons.abandon"), "battle-abandon-open", "", "button-danger button-slim"));
 });
 
 registerAction("battle-abandon-confirm", function () {
@@ -1307,12 +1338,12 @@ function playerMustChooseBattleReplacement(scene) {
 }
 
 function showBattleReplacementRequiredMessage() {
-  openMessage(["Devi prima mandare un Pokémon in campo."], { title: "Battaglia" });
+  openMessage([battleText("sendPokemonFirst")], { title: battleTitle("battle") });
 }
 
 function performBattleItemUse(element) {
   if (!state || !state.scene || state.scene.name !== "battle") {
-    openMessage(["Lo strumento può essere usato solo durante una battaglia."], { title: "Zaino" });
+    openMessage([battleText("itemBattleOnly")], { title: battleTitle("bag") });
     return;
   }
   if (state.scene.manager.battleOver) {
@@ -1326,13 +1357,13 @@ function performBattleItemUse(element) {
   var itemIndex = Number(element.dataset.itemIndex);
   var battleItem = getInventoryItemByIndex(inventoryForBattleEvent(state.scene, "player"), itemIndex);
   if (!battleItem || (battleItem.quantity || 0) <= 0) {
-    openMessage(["Lo strumento selezionato non è disponibile nello zaino."], { title: "Zaino" });
+    openMessage([battleText("itemUnavailable")], { title: battleTitle("bag") });
     return;
   }
 
   if (battleItem.category === ItemCategory.Ball) {
     if (!sceneAllowsBallUse(state.scene)) {
-      openMessage(["Non puoi usare Ball contro un allenatore."], { title: battleItem.name });
+      openMessage([battleText("noBallsAgainstTrainer")], { title: itemNameDescriptor(battleItem) });
       return;
     }
     attemptCaptureWithBall(state.scene, battleItem);
@@ -1382,7 +1413,7 @@ function performBattleItemUse(element) {
     });
   }
   if (!useResult.ok) {
-    openMessage([useResult.message], { title: battleItem.name });
+    openMessage([resolveBattleEvent(useResult.event, state.scene) || battleText("unusable")], { title: itemNameDescriptor(battleItem) });
     return;
   }
 
@@ -1457,7 +1488,7 @@ function performBattleItemTarget(element) {
     });
   }
   if (!targetResult.ok) {
-    openMessage([targetResult.message], { title: selectedItem.name });
+    openMessage([resolveBattleEvent(targetResult.event, state.scene) || battleText("unusable")], { title: itemNameDescriptor(selectedItem) });
     return;
   }
 
@@ -1520,7 +1551,7 @@ function battleLockExitScene(scene) {
 }
 
 function battleLockMessage(scene) {
-  return "Completa prima l'attività in corso.";
+  return battleText("activeActivity");
 }
 
 export function openActiveProgressionScene() {
@@ -1549,8 +1580,8 @@ function showBattleRuntimeLostMessage() {
   clearBattleRuntimeOwnership();
   setScene({ name: "home" }, { history: "replace" });
   openMessage([
-    "La battaglia è stata ripresa in un'altra scheda."
-  ], { title: "Battaglia", closeLabel: "Ok", closeClass: "button-primary" });
+    battleText("battleElsewhere")
+  ], { title: battleTitle("battle"), closeLabel: "Ok", closeClass: "button-primary" });
 }
 
 function runBattleRuntimeAction(action) {
@@ -1641,14 +1672,14 @@ function battleItemUseLimitReached(scene, item) {
 }
 
 function battleItemUseLimitMessage(item) {
-  return "Hai già usato 3 copie di " + (item && item.name ? item.name : "questo strumento") + " in questa battaglia.";
+  return battleText("itemUseLimit", { item: itemNameDescriptor(item) });
 }
 
 function attemptCaptureWithBall(scene, ballItem) {
   var wildCombatant = scene && scene.enemyTeam ? scene.enemyTeam.getActive() : null;
   var wildPokemon = wildCombatant && wildCombatant.pokemon;
   if (!wildPokemon) {
-    openMessage(["Non c'è nessun Pokémon selvatico da catturare."], { title: ballItem.name });
+    openMessage([battleText("noWildTarget")], { title: itemNameDescriptor(ballItem) });
     return;
   }
   window.scrollTo(0, 0);
@@ -1776,7 +1807,7 @@ function refreshAuthoritativeSceneFromNotification(scene, battleId, generation, 
       if (generation !== activeAuthoritativeRealtimeGeneration || state.scene !== scene
         || String(scene.authoritativeBattleId || "") !== battleId) { return result; }
       if (!result.ok || !result.battle) {
-        state.saveStatus = { state: "error", message: result.message || "Impossibile aggiornare la battaglia." };
+        state.saveStatus = { state: "error", message: battleFailure("updateFailed") };
         return result;
       }
       if (authoritativePresentationActive(scene)) {
@@ -1968,7 +1999,7 @@ function trainingLevelAssignmentEntries(scene) {
   return scene.playerTeam.combatantList.map(function (combatant, index) {
     var pokemon = combatant && combatant.pokemon;
     var maxAssignable;
-    var disabledReason = "Non disponibile";
+    var disabledReason = battleTextNow("unavailable");
     if (!pokemon) {
       return null;
     }
@@ -1980,9 +2011,9 @@ function trainingLevelAssignmentEntries(scene) {
     if (maxAssignable > 0) {
       disabledReason = "";
     } else if ((Number(pokemon.level) || 0) >= 100) {
-      disabledReason = "Livello 100";
+      disabledReason = battleTextNow("level100");
     } else {
-      disabledReason = "Cap Medaglie";
+      disabledReason = battleTextNow("badgeCap");
     }
     return {
       pokemon: pokemon,
@@ -2042,15 +2073,15 @@ function trainingRewardPreview(difficulty) {
 
 function trainingRewardLines(reward, assignableLevels, maxLevelsPerPokemon) {
   maxLevelsPerPokemon = Math.max(1, Math.floor(Number(maxLevelsPerPokemon) || MAX_TRAINING_LEVELS_PER_POKEMON));
-  var lines = ["Hai vinto la sfida della Zona allenamento!"];
+  var lines = [battleText("trainingWon")];
   if (reward && Object.prototype.hasOwnProperty.call(reward, "battlePoints")) {
-    lines.push("Ottieni " + (Number(reward.battlePoints) || 0) + " PL.");
+    lines.push(battleText("earnedBattlePoints", { points: Number(reward.battlePoints) || 0 }));
   } else {
-    lines.push("Ottieni " + moneyText(reward.money) + ".");
+    lines.push(battleText("earnedMoney", { money: moneyText(reward.money) }));
   }
   if (assignableLevels > 0) {
-    lines.push("Assegna " + assignableLevels + (assignableLevels === 1 ? " Livello Allenamento" : " Livelli Allenamento") + " alla squadra.");
-    lines.push("Max " + maxLevelsPerPokemon + " livelli a Pokémon.");
+    lines.push(battleText(assignableLevels === 1 ? "assignTrainingLevel" : "assignTrainingLevels", { levels: assignableLevels }));
+    lines.push(battleText("maxTrainingLevels", { max: maxLevelsPerPokemon }));
   }
   return lines;
 }
@@ -2066,7 +2097,7 @@ function commitTrainingReward(scene, payloads, onNoPayloads) {
   return claimTrainingZoneReward(scene.trainingDifficulty).then(function (claimResult) {
     var reward;
     if (!claimResult || claimResult.ok === false) {
-      openMessage([claimResult && claimResult.message || "Premio giornaliero non registrato. Riprova."], { title: "Zona allenamento" });
+      openMessage([battleFailure("dailyRewardFailed")], { title: battleTitle("training") });
       return { ok: false };
     }
     reward = trainingRewardForBadges(state.trainerInfo[2], scene.trainingDifficulty, claimResult.full_reward !== false);
@@ -2113,7 +2144,7 @@ function markTrainingRewardPostBattle(scene) {
       if (result.locked || result.reason === "locked") {
         showBattleRuntimeLostMessage();
       } else {
-        state.saveStatus = { state: "error", message: result.message || "Errore durante il salvataggio della fase premio." };
+        state.saveStatus = { state: "error", message: battleFailure("rewardSaveFailed") };
         render({ scrollBattleLogToBottom: true });
       }
       return result;
@@ -2121,10 +2152,10 @@ function markTrainingRewardPostBattle(scene) {
     scene.battleStatus = "post_battle";
     scene.postBattleEvents = [];
     return { ok: true };
-  }).catch(function (error) {
-    state.saveStatus = { state: "error", message: error.message || "Errore durante il salvataggio della fase premio." };
+  }).catch(function () {
+    state.saveStatus = { state: "error", message: battleFailure("rewardSaveFailed") };
     render({ scrollBattleLogToBottom: true });
-    return { ok: false, message: error.message };
+    return { ok: false, code: "reward_save_failed" };
   });
 }
 
@@ -2140,7 +2171,7 @@ function openTrainingRewardAssignment(scene, options) {
         return;
       }
       commitTrainingReward(scene, [], function () {
-        finishTrainingBattle(scene, lines.concat(reward.levels > 0 ? ["Nessun Pokémon in squadra può ricevere altri livelli con le Medaglie attuali."] : []));
+        finishTrainingBattle(scene, lines.concat(reward.levels > 0 ? [battleText("noEligibleLevels")] : []));
       });
     });
     return;
@@ -2220,8 +2251,8 @@ function confirmTrainingLevelAssignment() {
       if (!result.ok || !result.projection || !result.projection.player_state) {
         authoritativeTrainingProgressionPending = false;
         if (!result.uncertain) { dialog.commandId = globalThis.crypto.randomUUID(); }
-        openMessage([result.message || "Assegnazione dei livelli non riuscita. Riprova."], {
-          title: "Zona allenamento", onClose: function () {
+        openMessage([battleFailure("levelAssignmentFailed")], {
+          title: battleTitle("training"), onClose: function () {
             if (result.uncertain) { resumeAuthoritativeTrainingProgression(); }
             else { state.dialog = dialog; render(); }
           }
@@ -2231,10 +2262,10 @@ function confirmTrainingLevelAssignment() {
       authoritativeTrainingProgressionPending = false;
       applyAuthoritativeBattlePlayerState(result.projection.player_state);
       openAuthoritativeTrainingProgression();
-    }).catch(function (error) {
+    }).catch(function () {
       authoritativeTrainingProgressionPending = false;
-      openMessage([error.message || "Assegnazione dei livelli non riuscita. Riprova."], {
-        title: "Zona allenamento",
+      openMessage([battleFailure("levelAssignmentFailed")], {
+        title: battleTitle("training"),
         onClose: function () { resumeAuthoritativeTrainingProgression(); }
       });
     });
@@ -2243,7 +2274,7 @@ function confirmTrainingLevelAssignment() {
   state.dialog = null;
   if (!payloads.length) {
     commitTrainingReward(scene, [], function () {
-      finishTrainingBattle(scene, (dialog.lines || []).concat(dialog.totalLevels > 0 ? ["Nessun Pokémon in squadra può ricevere altri livelli con le Medaglie attuali."] : []));
+      finishTrainingBattle(scene, (dialog.lines || []).concat(dialog.totalLevels > 0 ? [battleText("noEligibleLevels")] : []));
     });
     return;
   }
@@ -2352,25 +2383,25 @@ function battleRewardInventory(scene) {
 
 function openFinalizedGymRewardMessage(scene, baseLines, result) {
   var city = scene && scene.gymScene ? kantoGymCityByKey(scene.gymScene.cityKey) : null;
-  var rewardLines = (baseLines && baseLines.length ? baseLines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
+  var rewardLines = (baseLines && baseLines.length ? baseLines : localizedBattleResultLines(scene)).slice();
   var rewardTM = result && result.tm ? getItemByIndex(result.tm) : null;
   var rewardItem = result && result.item ? getItemByIndex(result.item) : null;
   var badgeIndex = result && result.badgeIndex !== null && result.badgeIndex !== undefined ? result.badgeIndex : city && city.badgeIndex;
 
   if (result && result.already) {
-    rewardLines.push("Premi già registrati sul profilo.");
+    rewardLines.push(battleText("rewardsAlreadyRegistered"));
   } else {
-    rewardLines.push("Ottieni " + moneyText(result ? result.money : 0) + ".");
+    rewardLines.push(battleText("earnedMoney", { money: moneyText(result ? result.money : 0) }));
     if (rewardTM) {
-      rewardLines.push("Ottieni " + rewardTM.name + ".");
+      rewardLines.push(battleText("earnedItem", { item: itemNameDescriptor(rewardTM) }));
     }
     if (rewardItem) {
-      rewardLines.push("Ottieni " + rewardItem.name + ".");
+      rewardLines.push(battleText("earnedItem", { item: itemNameDescriptor(rewardItem) }));
     }
-    rewardLines.push("Ottieni la " + (KANTO_GYM_BADGE_NAMES[badgeIndex] || "") + ".");
+    rewardLines.push(battleText("earnedBadge", { badge: textDescriptor("ui.gyms.badges." + KANTO_GYM_BADGES[badgeIndex].key) }));
   }
   openMessage(rewardLines, {
-    title: "Palestra",
+    title: battleTitle("gym"),
     closeLabel: "Ok",
     closeClass: "button-accent",
     scrollBattleLogToBottom: true,
@@ -2386,35 +2417,31 @@ function queueFinalizedGymActivity(scene, result) {
   var badgeIndex = result && result.badgeIndex !== null && result.badgeIndex !== undefined
     ? result.badgeIndex
     : city && city.badgeIndex;
-  var badgeName = KANTO_GYM_BADGE_NAMES[badgeIndex] || "";
-  if (!result || result.already || result.rewardKind !== "gym" || !badgeName) {
+  var badge = KANTO_GYM_BADGES[badgeIndex];
+  if (!result || result.already || result.rewardKind !== "gym" || !badge) {
     return;
   }
-  queueGlobalActivityEvent({ eventType: "badge", subjectName: badgeActivitySubjectName(badgeName) });
+  queueGlobalActivityEvent({ eventType: "badge", subjectName: badge.key });
 }
 
 function queueFinalizedKantoLeagueActivity(result, isChampion, member) {
-  var opponentName;
   if (!result || result.already || result.rewardKind !== "league") {
     return;
   }
-  opponentName = isChampion
-    ? "il Campione " + (KANTO_CHAMPION.name || "Kanto")
-    : "il Superquattro " + (member && member.name || "");
-  queueGlobalActivityEvent({ eventType: "league", subjectName: opponentName });
+  queueGlobalActivityEvent({ eventType: "league", subjectName: isChampion ? KANTO_CHAMPION.key : member && member.key || "" });
 }
 
 function finishAdminControlledGymBattle(scene, lines) {
   var eventResult = rewardResultFromEvent(scene && scene.rewardEvent);
-  var baseLines = (lines && lines.length ? lines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
+  var baseLines = (lines && lines.length ? lines : localizedBattleResultLines(scene)).slice();
   var rewardPromise = Promise.resolve(eventResult || {
     ok: false,
-    message: "Risultato autoritativo mancante. Aggiorna la battaglia."
+    code: "authoritative_result_missing"
   });
 
   rewardPromise.then(function (result) {
     if (!result || result.ok === false) {
-      state.saveStatus = { state: "error", message: result && result.message || "Impossibile registrare i premi." };
+      state.saveStatus = { state: "error", message: battleFailure("registerRewardsFailed") };
       render({ scrollBattleLogToBottom: true });
       return;
     }
@@ -2423,8 +2450,8 @@ function finishAdminControlledGymBattle(scene, lines) {
     saveBattleEndAfterInventorySync(scene).then(function () {
       openFinalizedGymRewardMessage(scene, baseLines, result);
     });
-  }).catch(function (error) {
-    state.saveStatus = { state: "error", message: error.message || "Impossibile registrare i premi." };
+  }).catch(function () {
+    state.saveStatus = { state: "error", message: battleFailure("registerRewardsFailed") };
     render({ scrollBattleLogToBottom: true });
   });
 }
@@ -2440,7 +2467,7 @@ function finishPostBattleProgression(scene) {
     return;
   }
   if (!scene.trainingBattle) {
-    openMessage(scene.manager.battleResultLines || ["Battaglia conclusa."], {
+    openMessage(localizedBattleResultLines(scene), {
       title: "",
       closeLabel: "Ok",
       closeClass: "button-accent",
@@ -2492,7 +2519,7 @@ export function resumeBattleSceneFollowup(scene) {
 
 function openFinalizedKantoLeagueRewardMessage(scene, rewardLines, isChampion, memberIndex) {
   openMessage(rewardLines, {
-    title: "Lega Kanto",
+    title: battleTitle("league"),
     closeLabel: "Ok",
     closeClass: "button-accent",
     scrollBattleLogToBottom: true,
@@ -2514,32 +2541,32 @@ function openFinalizedKantoLeagueRewardMessage(scene, rewardLines, isChampion, m
 }
 
 function finishAdminControlledKantoLeagueBattle(scene, lines) {
-  var rewardLines = (lines && lines.length ? lines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
+  var rewardLines = (lines && lines.length ? lines : localizedBattleResultLines(scene)).slice();
   var isChampion = scene.gymScene && scene.gymScene.cityKey === "kanto_champion";
   var memberIndex = scene.gymScene && scene.gymScene.e4MemberIndex;
   var member = !isChampion && memberIndex !== undefined ? kantoEliteFourMemberByIndex(memberIndex) : null;
-  var memberName = isChampion ? "il Campione Blu" : (member ? member.name : "il Superquattro");
+  var memberName = trainerNameDescriptor(isChampion ? KANTO_CHAMPION : member);
   var eventResult = rewardResultFromEvent(scene && scene.rewardEvent);
   var rewardPromise = Promise.resolve(eventResult || {
     ok: false,
-    message: "Risultato autoritativo mancante. Aggiorna la battaglia."
+    code: "authoritative_result_missing"
   });
 
   rewardPromise.then(function (result) {
     if (!result || result.ok === false) {
-      state.saveStatus = { state: "error", message: result && result.message || "Impossibile registrare i premi." };
+      state.saveStatus = { state: "error", message: battleFailure("registerRewardsFailed") };
       render({ scrollBattleLogToBottom: true });
       return;
     }
     applyFinalizedBattleReward(scene, result);
     queueFinalizedKantoLeagueActivity(result, isChampion, member);
-    rewardLines.push("Hai sconfitto " + memberName + "!");
-    rewardLines.push(result.already ? "Premio già registrato sul profilo." : "Hai ricevuto " + moneyText(result.money) + " come premio!");
+    rewardLines.push(battleText("defeatedMember", { member: memberName }));
+    rewardLines.push(result.already ? battleText("rewardAlreadyRegistered") : battleText("receivedPrizeMoney", { money: moneyText(result.money) }));
     saveBattleEndAfterInventorySync(scene).then(function () {
       openFinalizedKantoLeagueRewardMessage(scene, rewardLines, isChampion, memberIndex);
     });
-  }).catch(function (error) {
-    state.saveStatus = { state: "error", message: error.message || "Impossibile registrare i premi." };
+  }).catch(function () {
+    state.saveStatus = { state: "error", message: battleFailure("registerRewardsFailed") };
     render({ scrollBattleLogToBottom: true });
   });
 }
@@ -2549,18 +2576,18 @@ function finishKantoLeagueBattle(scene, lines) {
     finishAdminControlledKantoLeagueBattle(scene, lines);
     return;
   }
-  var rewardLines = (lines && lines.length ? lines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
+  var rewardLines = (lines && lines.length ? lines : localizedBattleResultLines(scene)).slice();
   var isChampion = scene.gymScene && scene.gymScene.cityKey === "kanto_champion";
   var memberIndex = scene.gymScene && scene.gymScene.e4MemberIndex;
   var member = !isChampion && memberIndex !== undefined ? kantoEliteFourMemberByIndex(memberIndex) : null;
-  var memberName = isChampion ? "il Campione Blu" : (member ? member.name : "il Superquattro");
+  var memberName = trainerNameDescriptor(isChampion ? KANTO_CHAMPION : member);
   var rewardMoney = isChampion ? KANTO_LEAGUE_REWARDS.champion.money : KANTO_LEAGUE_REWARDS.member.money;
   state.trainerInfo[1] = (state.trainerInfo[1] || 0) + rewardMoney;
-  rewardLines.push("Hai sconfitto " + memberName + "!");
-  rewardLines.push("Hai ricevuto " + moneyText(rewardMoney) +  " come premio!");
+  rewardLines.push(battleText("defeatedMember", { member: memberName }));
+  rewardLines.push(battleText("receivedPrizeMoney", { money: moneyText(rewardMoney) }));
   saveBattleEndAfterInventorySync(scene);
   openMessage(rewardLines, {
-    title: "Lega Kanto",
+    title: battleTitle("league"),
     closeLabel: "Ok",
     closeClass: "button-accent",
     scrollBattleLogToBottom: true,
@@ -2625,7 +2652,7 @@ export function startKantoLeagueNextBattle(nextIndex) {
   var member;
 
   if (!playerPokemon.length) {
-    openMessage(["Non hai Pokémon in squadra."], { title: "Lega Kanto" });
+    openMessage([battleText("emptyTeam")], { title: battleTitle("league") });
     return;
   }
 
@@ -2637,7 +2664,7 @@ function openAuthoritativeLeagueNextEntry(nextIndex) {
   var trainer = nextIndex === 4 ? KANTO_CHAMPION : kantoEliteFourMemberByIndex(nextIndex);
   state.dialog = {
     type: "kanto-league-entry",
-    trainerName: trainer ? trainer.name : "Lega Kanto",
+    trainerName: trainer ? trainer.name : battleTextNow("titles.league"),
     trainerImage: trainer ? getTrainerImage(trainer.sprite) : "",
     entries: state.team.map(function (pokemon, slot) {
       return pokemon ? { pokemon: pokemon, index: slot } : null;
@@ -2674,16 +2701,16 @@ function submitAuthoritativeLeagueNextStart(activeSlot, expectedMemberIndex) {
         if (fresh.ok && fresh.projection && fresh.projection.league_state) {
           state.authoritativeLeagueState = fresh.projection.league_state;
         }
-        openMessage([result.message || "Lo stato della Lega è cambiato. Aggiorna e riprova."], { title: "Lega Kanto" });
+        openMessage([battleFailure("leagueStateChanged")], { title: battleTitle("league") });
         setScene({ name: "gym-city", cityKey: "elite_four" }, { history: "replace" });
         return false;
       });
     }
-    openMessage([result.message || "Impossibile avviare il prossimo incontro della Lega."], { title: "Lega Kanto" });
+    openMessage([battleFailure("nextLeagueFailed")], { title: battleTitle("league") });
     setScene({ name: "gym-city", cityKey: "elite_four" }, { history: "replace" });
     return false;
-  }).catch(function (error) {
-    openMessage([error.message || "Impossibile avviare il prossimo incontro della Lega."], { title: "Lega Kanto" });
+  }).catch(function () {
+    openMessage([battleFailure("nextLeagueFailed")], { title: battleTitle("league") });
     setScene({ name: "gym-city", cityKey: "elite_four" }, { history: "replace" });
     return false;
   });
@@ -2717,7 +2744,7 @@ function startPersistedPostBattleExp(scene, payloads, onComplete, options) {
         showBattleRuntimeLostMessage();
         return result;
       }
-      state.saveStatus = { state: "error", message: result.message || "Errore durante il salvataggio della fase esperienza." };
+      state.saveStatus = { state: "error", message: textDescriptor("messages.progression.saveFailed") };
       render({ scrollBattleLogToBottom: true });
       return result;
     }
@@ -2735,7 +2762,7 @@ function startPersistedPostBattleExp(scene, payloads, onComplete, options) {
     return { ok: true };
   }).catch(function (error) {
     scene.postBattleExpStartPending = false;
-    state.saveStatus = { state: "error", message: error.message || "Errore durante il salvataggio della fase esperienza." };
+    state.saveStatus = { state: "error", message: textDescriptor("messages.progression.saveFailed") };
     render({ scrollBattleLogToBottom: true });
     return { ok: false, message: error.message };
   });
@@ -2830,7 +2857,7 @@ function withReplayNpcEvents(scene, npcEvents, action) {
       return entry && (entry.event_type === "move" || entry.event_type === "item") && entry.event_data && entry.event_data.actor === "npc";
     });
     if (index === -1) {
-      throw new Error("Evento azione NPC mancante nel replay della battaglia.");
+      throw new Error("Missing NPC action event in battle replay.");
     }
     return queue.splice(index, 1)[0];
   }
@@ -2850,7 +2877,7 @@ function withReplayNpcEvents(scene, npcEvents, action) {
     }
     item = getInventoryItemByIndex(inventoryForBattleEvent(scene, "npc"), Number(data.itemIndex));
     if (!item) {
-      throw new Error("Strumento NPC mancante nel replay della battaglia.");
+      throw new Error("Missing NPC item in battle replay.");
     }
     return {
       type: "item",
@@ -2869,7 +2896,12 @@ function withReplayNpcEvents(scene, npcEvents, action) {
       }
       scene.enemyTeam.lastSwitchedOutIndex = previousIndex;
       scene.enemyTeam.activeIndex = targetIndex;
-      return "Entra in campo " + scene.enemyTeam.getActive().pokemon.name;
+      return {
+        ok: true,
+        events: [Engine.battleEvent("switch.entered", {
+          pokemon: Engine.battleSpeciesRef(scene.enemyTeam.getActive())
+        })]
+      };
     }
     return originalSwitchRandom.call(scene.enemyTeam);
   };
@@ -2949,7 +2981,7 @@ function saveBattleEndAfterInventorySync(scene, options) {
 }
 
 function badgeActivitySubjectName(name) {
-  return String(name || "").replace(/^Medaglia\s+/i, "").trim();
+  return String(name || "").trim();
 }
 
 function applyBattleEvent(scene, event) {
@@ -3034,12 +3066,12 @@ function applyBattleEvent(scene, event) {
       }
     }
     scene.manager.endBattle();
-    scene.manager.log.push("Ball usata. Battaglia conclusa.");
+    scene.manager.log.push({ key: "capture.replayConcluded", params: {} });
     return;
   }
   if (event.event_type === "ball_fail") {
     item = getInventoryItemByIndex(inventoryForBattleEvent(scene, actor), Number(data.itemIndex));
-    itemResult = scene.manager.playerUseBall(item || getItemByIndex(Number(data.itemIndex)) || { name: "Poké Ball" });
+    itemResult = scene.manager.playerUseBall(item || getItemByIndex(Number(data.itemIndex)) || { key: "poke_ball", index: Number(data.itemIndex) || 1 });
     if (item && actor === "player" && itemResult && itemResult.ok && itemResult.itemConsumed !== false) {
       consumePlayerBattleInventoryItem(scene, item.index);
     }
@@ -3052,9 +3084,9 @@ export function sceneFromBattleRecord(battle, events) {
   var battleType = battle ? battle.battle_type : "";
   var battleStatus = battle && battle.status ? battle.status : "active";
   var rewardEvent = rewardEventEntry(events || []);
-  var playerName = String(battle && battle.player_username || state.playerName || state.auth.userLabel || "").trim() || "Giocatore";
+  var playerName = String(battle && battle.player_username || state.playerName || state.auth.userLabel || "").trim() || "Player";
   var playerTeam = new Engine.Team(playerName, revivePokemonList(initialState.playerTeam), Number(initialState.playerActiveIndex) || 0);
-  var enemyTeamName = initialState.enemyTeamName || (String(battleType || "").indexOf("capture_") === 0 ? "Pokemon selvatico" : "Sfidante");
+  var enemyTeamName = initialState.enemyTeamName || (String(battleType || "").indexOf("capture_") === 0 ? "Wild Pokemon" : "Challenger");
   var enemyTeam = new Engine.Team(enemyTeamName, revivePokemonList(initialState.enemyTeam), Number(initialState.enemyActiveIndex) || 0);
   var manager = new Engine.BattleManager(playerTeam, enemyTeam);
   manager.battleType = battleType;
@@ -3149,7 +3181,7 @@ export function persistBattleStart(scene, battleType, firstActor) {
   }, battleRuntimeOwnerId()).then(function (result) {
     if (!result.ok) {
       state.battleStartPending = false;
-      openMessage([result.message || "Impossibile creare la battaglia."], { title: "Battaglia" });
+      openMessage([battleFailure("createFailed")], { title: battleTitle("battle") });
       return false;
     }
     activateBattleRuntimeOwnership();
@@ -3166,9 +3198,9 @@ export function persistBattleStart(scene, battleType, firstActor) {
     }, { ownsRuntime: true });
     syncActiveBattleRealtime(scene);
     return true;
-  }).catch(function (error) {
+  }).catch(function () {
     state.battleStartPending = false;
-    openMessage([error.message || "Impossibile creare la battaglia."], { title: "Battaglia" });
+    openMessage([battleFailure("createFailed")], { title: battleTitle("battle") });
     return false;
   });
 }
@@ -3197,21 +3229,21 @@ function openBattleTakenOverScene(result) {
 function openBattleTakeoverDialog(result) {
   setScene({ name: "home" }, { history: "replace" });
   openConfirm(
-    "Battaglia",
-    ["Questa battaglia è già aperta in un'altra scheda."],
+    battleTitle("battle"),
+    [battleText("alreadyOpen")],
     function () {
       forceClaimBattleRuntimeLock().then(function (lockResult) {
         if (!lockResult.ok) {
-          openMessage([lockResult.message || "Impossibile riprendere la battaglia."], { title: "Battaglia" });
+          openMessage([battleFailure("resumeFailed")], { title: battleTitle("battle") });
           return;
         }
         openBattleTakenOverScene(result);
-      }).catch(function (error) {
-        openMessage([error.message || "Impossibile riprendere la battaglia."], { title: "Battaglia" });
+      }).catch(function () {
+        openMessage([battleFailure("resumeFailed")], { title: battleTitle("battle") });
       });
     },
     {
-      confirmLabel: "Riprendi da questa scheda",
+      confirmLabel: battleText("buttons.resumeHere"),
       confirmClass: "button-accent"
     }
   );
@@ -3236,15 +3268,15 @@ function exitPersistedBattle(nextScene) {
         showBattleRuntimeLostMessage();
         return result;
       }
-      openMessage([result.message || "Impossibile chiudere la battaglia."], { title: "Battaglia" });
+      openMessage([battleFailure("closeFailed")], { title: battleTitle("battle") });
       return result;
     }
     setActiveBattleMeta(null);
     setScene(nextScene, { history: "replace" });
     return result;
-  }).catch(function (error) {
-    openMessage([error.message || "Impossibile chiudere la battaglia."], { title: "Battaglia" });
-    return { ok: false, message: error.message };
+  }).catch(function () {
+    openMessage([battleFailure("closeFailed")], { title: battleTitle("battle") });
+    return { ok: false, code: "battle_close_failed" };
   });
 }
 
@@ -3264,15 +3296,15 @@ export function closePersistedBattleRuntime(scene) {
         showBattleRuntimeLostMessage();
         return result;
       }
-      state.saveStatus = { state: "error", message: result.message || "Impossibile chiudere la battaglia." };
+      state.saveStatus = { state: "error", message: battleFailure("closeFailed") };
       return result;
     }
     setActiveBattleMeta(null);
     return result;
-  }).catch(function (error) {
+  }).catch(function () {
     scene.persistedBattleClosed = false;
-    state.saveStatus = { state: "error", message: error.message || "Impossibile chiudere la battaglia." };
-    return { ok: false, message: error.message };
+    state.saveStatus = { state: "error", message: battleFailure("closeFailed") };
+    return { ok: false, code: "battle_close_failed" };
   });
 }
 
@@ -3391,16 +3423,16 @@ function refreshAuthoritativeBattle(options) {
       return result;
     }
     setScene({ name: "home" }, { history: "replace" });
-    openConfirm("Battaglia", ["Questa battaglia è già aperta in un'altra scheda."], function () {
+    openConfirm(battleTitle("battle"), [battleText("alreadyOpen")], function () {
       claimAuthoritativeBattleRuntime({ battleId: result.battle.battle_id, expectedPlayerRevision: result.playerRevision,
         expectedBattleVersion: result.battle.battle_version, runtimeOwnerId: ownerId, takeover: true }).then(function (claimResult) {
-        if (!claimResult.ok) { openMessage([claimResult.message || "Impossibile riprendere la battaglia."], { title: "Battaglia" }); return; }
+        if (!claimResult.ok) { openMessage([battleFailure("resumeFailed")], { title: battleTitle("battle") }); return; }
         state.authoritativeRevision = claimResult.playerRevision;
         getAuthoritativeBattle(result.battle.battle_id, { afterSeq: 0, limit: 100 }).then(function (fresh) {
           if (fresh.ok && fresh.battle) { state.authoritativeRevision = fresh.playerRevision; openAuthoritativeBattleProjection(fresh.battle, fresh.events, { history: "replace" }); }
         });
       });
-    }, { confirmLabel: "Riprendi da questa scheda", confirmClass: "button-accent" });
+    }, { confirmLabel: battleText("buttons.resumeHere"), confirmClass: "button-accent" });
     return result;
   });
 }
@@ -3433,9 +3465,9 @@ registerAction("battle-authoritative-cancel", function () {
   if (!scene || !scene.authoritativeBattle || !scene.authoritativeCommandUncertain || scene.authoritativeCommandPending) {
     return;
   }
-  openConfirm("Cancella sfida", ["Prima verificheremo l'ultimo comando.", "Se non risulta eseguito, la sfida verrà abbandonata."], function () {
+  openConfirm(battleTitle("deleteChallenge"), [battleText("verifyLastCommand"), battleText("abandonIfMissing")], function () {
     cancelUncertainAuthoritativeBattle(scene);
-  }, { confirmLabel: "Cancella sfida", confirmClass: "button-danger" });
+  }, { confirmLabel: battleTitle("deleteChallenge"), confirmClass: "button-danger" });
 });
 
 function cancelUncertainAuthoritativeBattle(scene) {
@@ -3479,7 +3511,7 @@ function cancelUncertainAuthoritativeBattle(scene) {
     }
     scene.authoritativeCommandPending = false;
     if (abandoned.code === "revision_conflict" || abandoned.code === "battle_command_rejected") {
-      readAuthoritativeBattleAfterResolution(scene, abandoned.message);
+      readAuthoritativeBattleAfterResolution(scene);
       return;
     }
     setAuthoritativeCommandUncertain(scene, abandoned);
@@ -3511,14 +3543,14 @@ function setBattleBottomPanel(mode) {
 
 function openPostMoveSwitchDialog(scene) {
   openTeamChoiceDialog({
-    title: "Staffetta",
-    copy: "Scegli il Pokémon che entra in campo con Staffetta.",
+    title: battleTitle("batonPass"),
+    copy: battleText("batonPassChoice"),
     activeIndex: scene.playerTeam.activeIndex,
     canCancel: false,
     entries: scene.playerTeam.combatantList.map(function (combatant, index) {
       return {
         pokemon: combatant.pokemon,
-        statusLabel: combatant.isFainted() ? "KO" : (index === scene.playerTeam.activeIndex ? "Attivo" : ""),
+        statusLabel: combatant.isFainted() ? "KO" : (index === scene.playerTeam.activeIndex ? battleText("active") : ""),
         disabled: combatant.isFainted() || index === scene.playerTeam.activeIndex
       };
     }),
@@ -3530,12 +3562,12 @@ function openPostMoveSwitchDialog(scene) {
 
 function battleEntryChoiceTitle(kind) {
   if (kind === "move") {
-    return "Scegli la mossa da bloccare";
+    return battleText("chooseMoveToBlock");
   }
   if (kind === "type") {
-    return "Scegli il secondo tipo";
+    return battleText("chooseSecondType");
   }
-  return "Scegli";
+  return battleText("choose");
 }
 
 function battleEntryChoiceAnchor(element) {
@@ -3544,7 +3576,9 @@ function battleEntryChoiceAnchor(element) {
 
 function openBattleEntryChoicePanel(scene, combatant, anchorElement, onPick, options) {
   var kind = scene && scene.manager ? scene.manager.entryHeldItemChoiceKind(combatant) : "";
-  var entries = kind ? scene.manager.entryHeldItemChoiceEntries(combatant) : [];
+  var entries = kind ? scene.manager.entryHeldItemChoiceEntries(combatant).map(function (entry) {
+    return Object.assign({}, entry, { name: kind === "move" ? moveDisplayName(entry) : typeDisplayName(entry.key) });
+  }) : [];
   if (!kind || !entries.length) {
     return false;
   }
@@ -3673,7 +3707,7 @@ function performBattleSwitch(index, entryChoice, anchorElement) {
     return;
   }
   if (targetCombatant.isFainted()) {
-    openMessage([targetCombatant.pokemon.name + " è KO e non può entrare in campo."], { title: "Battaglia" });
+    openMessage([battleText("targetFainted", { pokemon: pokemonNameDescriptor(targetCombatant.pokemon) })], { title: battleTitle("battle") });
     return;
   }
   if (!entryChoice && openBattleEntryChoicePanel(scene, targetCombatant, anchorElement || root.querySelector('[data-action="battle-switch"][data-index="' + index + '"]'), function (choice) {
@@ -3690,7 +3724,7 @@ function performBattleSwitch(index, entryChoice, anchorElement) {
     });
   }
   if (!switched) {
-    openMessage(["Cambio non riuscito."], { title: "Battaglia" });
+    openMessage([battleText("switchFailed")], { title: battleTitle("battle") });
     return;
   }
   switchEventData = { actor: "player", targetIndex: index };
@@ -3728,7 +3762,7 @@ function buildBattleItemTargetEntries(scene, item) {
       return { name: "", idx: index, selectable: false };
     }
     return {
-      name: combatant.pokemon.name,
+      name: pokemonDisplayName(combatant.pokemon),
       idx: index,
       selectable: scene.manager.canUseItemOnTarget(item, combatant).ok
     };
@@ -3797,12 +3831,12 @@ export function openBattleTargetPanel(anchorElement, item, entries, actionName, 
   if (!selectableEntries.length) {
     var emptyMessage = document.createElement("div");
     emptyMessage.className = "floating-panel-empty";
-    emptyMessage.textContent = emptyText || "Non usabile";
+    emptyMessage.textContent = resolveText(emptyText || battleText("unusable"));
     panel.className += " is-empty";
     panel.appendChild(emptyMessage);
   } else {
     title.className = "floating-panel-title";
-    title.textContent = "Su chi vuoi usare " + item.name + "?";
+    title.textContent = battleTextNow("useOn", { item: itemDisplayName(item) });
     panel.appendChild(title);
 
     grid.className = floatingPanelGridClass(selectableEntries.length);
@@ -3855,7 +3889,7 @@ function showBattleTargetPanelEmptyMessage(message) {
   panel.innerHTML = "";
   emptyMessage = document.createElement("div");
   emptyMessage.className = "floating-panel-empty";
-  emptyMessage.textContent = message || "Non usabile";
+  emptyMessage.textContent = resolveText(message || battleText("unusable"));
   panel.appendChild(emptyMessage);
 }
 
@@ -3902,7 +3936,7 @@ export function openBattleStartTargetPanel(anchorElement, entries, onPick, optio
 
   var title = document.createElement("h3");
   title.className = "battle-start-title";
-  title.textContent = options.title || "Scegli chi mandare per primo";
+  title.textContent = resolveText(options.title || battleText("chooseFirst"));
   panel.appendChild(title);
 
   grid.className = floatingPanelGridClass(entries.length);
@@ -3977,7 +4011,7 @@ export function battleReturnScene(scene) {
 function finishTrainingBattle(scene, lines) {
   saveBattleEndAfterInventorySync(scene);
   openMessage(lines, {
-    title: "Zona allenamento",
+    title: battleTitle("training"),
     closeLabel: "Ok",
     closeClass: "button-accent",
     requireButtonClose: true,
@@ -4000,7 +4034,7 @@ function finishGymBattle(scene, lines) {
   var rewardTM = gymReward && gymReward.tm ? getItemByIndex(gymReward.tm) : null;
   var rewardItem = gymReward && gymReward.item ? getItemByIndex(gymReward.item) : null;
   var rewardItemQuantity = Math.max(1, Number(gymReward && gymReward.itemQuantity) || 1);
-  var rewardLines = (lines && lines.length ? lines : scene.manager.battleResultLines || ["Battaglia conclusa."]).slice();
+  var rewardLines = (lines && lines.length ? lines : localizedBattleResultLines(scene)).slice();
   if (!scene.gymRewardHandled && city && badgeCount === city.badgeIndex) {
     updateTrainerProfile(function (trainerInfo) {
       return [trainerInfo[0], (Number(trainerInfo[1]) || 0) + rewardMoney, Math.min(8, badgeCount + 1), trainerInfo[3]];
@@ -4012,19 +4046,19 @@ function finishGymBattle(scene, lines) {
       adjustInventoryItemQuantity(rewardItem.index, rewardItemQuantity);
     }
     scene.gymRewardHandled = true;
-    rewardLines.push("Ottieni " + moneyText(rewardMoney) + ".");
+    rewardLines.push(battleText("earnedMoney", { money: moneyText(rewardMoney) }));
     if (rewardTM) {
-      rewardLines.push("Ottieni " + rewardTM.name + ".");
+      rewardLines.push(battleText("earnedItem", { item: itemNameDescriptor(rewardTM) }));
     }
     if (rewardItem) {
-      rewardLines.push("Ottieni " + (rewardItemQuantity > 1 ? String(rewardItemQuantity) + " " : "") + rewardItem.name + ".");
+      rewardLines.push(battleText(rewardItemQuantity > 1 ? "earnedItems" : "earnedItem", { quantity: rewardItemQuantity, item: itemNameDescriptor(rewardItem) }));
     }
-    rewardLines.push("Ottieni la " + (KANTO_GYM_BADGE_NAMES[city.badgeIndex] || "") + ".");
-    queueGlobalActivityEvent({ eventType: "badge", subjectName: badgeActivitySubjectName(KANTO_GYM_BADGE_NAMES[city.badgeIndex] || "") });
+    rewardLines.push(battleText("earnedBadge", { badge: textDescriptor("ui.gyms.badges." + KANTO_GYM_BADGES[city.badgeIndex].key) }));
+    queueGlobalActivityEvent({ eventType: "badge", subjectName: KANTO_GYM_BADGES[city.badgeIndex].key });
   }
   saveBattleEndAfterInventorySync(scene);
   openMessage(rewardLines, {
-    title: "Palestra",
+    title: battleTitle("gym"),
     closeLabel: "Ok",
     closeClass: "button-accent",
     scrollBattleLogToBottom: true,
@@ -4055,8 +4089,8 @@ function abandonTrainingBattle(scene) {
   scene.trainingResultHandled = true;
   markDirty();
   persistAndCloseFinishedBattle(scene);
-  openMessage(["Hai abbandonato lo scontro. Non ricevi premi."], {
-    title: "Zona allenamento",
+  openMessage([battleText("trainingAbandoned")], {
+    title: battleTitle("training"),
     closeLabel: "Ok",
     closeClass: "button-accent",
     scrollBattleLogToBottom: true,
@@ -4067,8 +4101,8 @@ function abandonTrainingBattle(scene) {
 
 function confirmBattleAbandon(scene) {
   openConfirm(
-    "Abbandona scontro",
-    ["Vuoi davvero abbandonare lo scontro?"],
+    battleTitle("abandon"),
+    [battleText("abandonConfirm")],
     function () {
       if (scene.trainingBattle) {
         abandonTrainingBattle(scene);
@@ -4083,7 +4117,7 @@ function confirmBattleAbandon(scene) {
       showTerminalBattleScreen(scene);
     },
     {
-      confirmLabel: "Sì",
+      confirmLabel: battleText("buttons.yes"),
       confirmClass: "button-danger"
     }
   );
@@ -4108,17 +4142,17 @@ function abandonBattleAndExit(scene) {
   markDirty();
   saveBattleEndAfterInventorySync(scene, { renderOnComplete: false }).then(function (result) {
     if (result && result.ok === false) {
-      openMessage([result.message || "Impossibile salvare l'abbandono dello scontro."], { title: "Battaglia" });
+      openMessage([battleFailure("abandonSaveFailed")], { title: battleTitle("battle") });
       return;
     }
     closePersistedBattleRuntime(scene).then(function (closeResult) {
       if (closeResult && closeResult.ok === false) {
-        openMessage([closeResult.message || "Impossibile chiudere lo scontro."], { title: "Battaglia" });
+        openMessage([battleFailure("closeEncounterFailed")], { title: battleTitle("battle") });
         return;
       }
       if (scene.gymScene) {
-        openMessage(["Ti sei ritirato dalla sfida.", "Perdi " + formatInteger(moneyPenalty) + " Pokédollari."], {
-          title: "Ritiro dalla sfida",
+        openMessage([battleText("retired"), battleText("lostMoney", { money: moneyText(moneyPenalty) })], {
+          title: battleTitle("withdraw"),
           closeLabel: "Ok",
           closeClass: "button-accent",
           requireButtonClose: true,
@@ -4129,8 +4163,8 @@ function abandonBattleAndExit(scene) {
         });
         return;
       }
-      openMessage(["Hai abbandonato lo scontro."], {
-        title: "Battaglia",
+      openMessage([battleText("abandoned")], {
+        title: battleTitle("battle"),
         closeLabel: "Ok",
         closeClass: "button-accent",
         requireButtonClose: true,
@@ -4165,12 +4199,12 @@ function showTrainingBattleFollowup(scene) {
 
   scene.trainingResultHandled = true;
   if (scene.playerTeam.isAllFainted()) {
-    finishTrainingBattle(scene, ["Hai perso la sfida. Non ricevi premi, ma non perdi nulla."]);
+    finishTrainingBattle(scene, [battleText("trainingLost")]);
     return;
   }
 
   if (!config) {
-    finishTrainingBattle(scene, ["Sfida conclusa."]);
+    finishTrainingBattle(scene, [battleText("challengeConcluded")]);
     return;
   }
 
@@ -4192,9 +4226,8 @@ function showBattleFollowup(scene) {
     var moneyPenalty = applyBattleMoneyPenalty(scene);
     markDirty();
     persistAndCloseFinishedBattle(scene);
-    openMessage(["Tutti i tuoi Pokémon sono ko!", (scene.gymScene ? "Perdi " : "Nella confusione perdi ")
-      + formatInteger(moneyPenalty) + " Pokédollari."], {
-      title: "Battaglia",
+    openMessage([battleText("allPokemonKo"), battleText(scene.gymScene ? "lostMoney" : "lostMoneyConfusion", { money: moneyText(moneyPenalty) })], {
+      title: battleTitle("battle"),
       closeLabel: "Ok",
       closeClass: "button-accent",
       requireButtonClose: true,
@@ -4232,7 +4265,7 @@ function showBattleFollowup(scene) {
       return;
     }
     if (!lines.length) {
-      lines = scene.manager.battleResultLines || ["Battaglia conclusa."];
+      lines = localizedBattleResultLines(scene);
     }
     markDirty();
     saveBattleEndAfterInventorySync(scene, { renderOnComplete: false }).then(function () {
@@ -4251,8 +4284,8 @@ function showBattleFollowup(scene) {
 
   if (lines.length) {
     openMessage(lines, {
-      title: "Battaglia",
-      closeLabel: "Continua",
+      title: battleTitle("battle"),
+      closeLabel: battleText("buttons.continue"),
       closeClass: "button-accent",
       scrollBattleLogToBottom: true
     });

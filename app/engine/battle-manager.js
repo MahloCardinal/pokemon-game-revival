@@ -1,10 +1,11 @@
 import { TYPE_CHART } from "../data/type-chart.js";
 import { getInventoryItemByIndex, ItemCategory, ItemSubcategory } from "../data/items.js";
-import { HeldItemTriggerContext, clearCombatantStatus, combatantHasCurableStatus, heldItemHasEffect, itemCanCureStatus, runHeldItemTrigger, statusDisplayName } from "./held-items.js";
+import { HeldItemTriggerContext, clearCombatantStatus, combatantHasCurableStatus, heldItemHasEffect, itemCanCureStatus, runHeldItemTrigger } from "./held-items.js";
 import * as m from "../data/moves.js";
 import { createMove } from "./moves.js";
 import { choosePveAction } from "./pve_move_manager.js";
 import { random } from "./deterministic-rng.js";
+import { battleEvent, battleItemRef, battleMoveRef, battleSpeciesRef, battleStatusRef, battleTeamRef } from "./battle-events.js";
 
 export function BattleManager(playerTeam, enemyTeam) {
   this.playerTeam = playerTeam;
@@ -47,9 +48,15 @@ BattleManager.prototype.canPlayerFlee = function () {
 };
 
 BattleManager.prototype.emit = function (payload) {
-  if (payload && payload.log !== undefined && payload.log !== null) {
-    this.log.push(payload.log);
+  if (payload && typeof payload.key === "string" && payload.key) {
+    this.log.push(payload);
   }
+};
+
+BattleManager.prototype.emitEvents = function (events) {
+  (Array.isArray(events) ? events : []).forEach(function (event) {
+    this.emit(event);
+  }, this);
 };
 
 BattleManager.prototype.capturePresentationFrame = function (actor) {
@@ -222,7 +229,7 @@ BattleManager.prototype.resolveMoveAction = function (actor, move) {
     return false;
   }
   if (this.isWeatherMoveBlocked(normalizedActor, move)) {
-    this.emit({ log: attacker.pokemon.name + " non può usare " + move.name + " per due turni consecutivi." });
+    this.emit(battleEvent("move.weatherRepeatBlocked", { pokemon: battleSpeciesRef(attacker), move: battleMoveRef(move) }));
     return false;
   }
   this.clearRecentSwitchTarget(attackerTeam);
@@ -249,7 +256,7 @@ BattleManager.prototype.resolveNpcItemAction = function (item, target) {
   this.consumeChargeDamageMultiplier(this.enemyTeam.getActive());
   effectResult = this.applyItemEffect(item, target);
   if (!effectResult.ok) {
-    this.emit({ log: effectResult.message });
+    this.emit(effectResult.event);
     this.endTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
     this.clearRecentSwitchTarget(this.playerTeam);
     return { ok: true, itemConsumed: false };
@@ -285,26 +292,26 @@ BattleManager.prototype.canNpcSwitchTo = function (index) {
   var active = this.enemyTeam.getActive();
   var target = this.enemyTeam.combatantList[index];
   if (!target) {
-    return { ok: false, message: "Pokémon avversario non trovato." };
+    return { ok: false, code: "target_not_found", event: battleEvent("switch.targetNotFound", {}) };
   }
   if (index === this.enemyTeam.activeIndex) {
-    return { ok: false, message: active.pokemon.name + " è già in campo" };
+    return { ok: false, code: "already_active", event: battleEvent("switch.alreadyActive", { pokemon: battleSpeciesRef(active) }) };
   }
   if (target.isFainted()) {
-    return { ok: false, message: target.pokemon.name + " è KO e non può entrare in campo." };
+    return { ok: false, code: "target_fainted", event: battleEvent("switch.targetFainted", { pokemon: battleSpeciesRef(target) }) };
   }
   if (active && !active.isFainted()) {
     if (active.trappedTurns > 0 || active.trappedMoveIndex) {
       if (active.trappedTurns >= 99) {
-        return { ok: false, message: active.pokemon.name + " non può essere sostituito" };
+        return { ok: false, code: "trapped", event: battleEvent("switch.trapped", { pokemon: battleSpeciesRef(active) }) };
       }
-      return { ok: false, message: active.pokemon.name + " non può essere sostituito per " + active.trappedTurns + " turni" };
+      return { ok: false, code: "trapped_turns", event: battleEvent("switch.trappedTurns", { pokemon: battleSpeciesRef(active), turns: active.trappedTurns }) };
     }
     if (active.rooted) {
-      return { ok: false, message: active.pokemon.name + " non può essere sostituito perché ha usato Radicamento" };
+      return { ok: false, code: "rooted", event: battleEvent("switch.rooted", { pokemon: battleSpeciesRef(active) }) };
     }
     if (active.pendingMove && !active.pendingMove.isForcedMove) {
-      return { ok: false, message: active.pokemon.name + " non può essere sostituito perché " + active.pendingMove.name + " in corso" };
+      return { ok: false, code: "pending_move", event: battleEvent("switch.pendingMove", { pokemon: battleSpeciesRef(active), move: battleMoveRef(active.pendingMove) }) };
     }
   }
   return { ok: true };
@@ -315,17 +322,17 @@ BattleManager.prototype.resolveNpcSwitchAction = function (index) {
   if (this.npcNeedsSwitch || this.enemyTeam.getActive().isFainted()) {
     result = this.enemyTeam.switchTo(index);
     if (!result.ok) {
-      this.emit({ log: result.message });
+      this.emit(result.event);
       return false;
     }
-    this.emit({ log: result.message });
+    this.emitEvents(result.events);
     this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
     if (this.adminControlled) {
       if (this.enemyTeam.getActive().isFainted()) {
         if (this.enemyTeam.isAllFainted()) {
           this.npcNeedsSwitch = false;
           this.replacementFlow = null;
-          this.emit({ log: "Avversario senza Pokémon disponibili. Hai vinto la lotta!" });
+          this.emit(battleEvent("outcome.playerWon", {}));
           this.endBattle();
           return { ok: true, waitingFor: this.waitingFor };
         }
@@ -346,11 +353,11 @@ BattleManager.prototype.resolveNpcSwitchAction = function (index) {
   this.consumeChargeDamageMultiplier(this.enemyTeam.getActive());
   result = this.enemyTeam.switchTo(index);
   if (!result.ok) {
-    this.emit({ log: result.message });
+    this.emit(result.event);
     this.endTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
     return false;
   }
-  this.emit({ log: result.message });
+  this.emitEvents(result.events);
   this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
   this.endTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
   this.clearRecentSwitchTarget(this.playerTeam);
@@ -361,7 +368,7 @@ BattleManager.prototype.npcSwitch = function (index) {
   var manager = this;
   var validation = this.canNpcSwitchTo(index);
   if (!validation.ok) {
-    this.emit({ log: validation.message });
+    this.emit(validation.event);
     return false;
   }
   return this.resolveNpcRound(function () {
@@ -399,7 +406,7 @@ BattleManager.prototype.resolvePlayerRound = function (playerAction, skippedPlay
     if (!this.canContinuePlayerRound()) {
       this.lastPlayerActionSkipped = true;
       if (!this.battleOver && this.playerNeedsSwitch) {
-        this.emit({ log: "L'azione del giocatore viene interrotta: serve mandare in campo un altro Pokémon." });
+        this.emit(battleEvent("action.playerInterruptedForSwitch", {}));
       }
       return skippedPlayerResult;
     }
@@ -573,14 +580,6 @@ BattleManager.prototype.recycleHeldItem = function (combatant) {
   return true;
 };
 
-function weatherDisplayName(weather) {
-  if (weather === "sun") { return "Giornodisole"; }
-  if (weather === "rain") { return "Pioggiadanza"; }
-  if (weather === "sand") { return "Terrempesta"; }
-  if (weather === "hail") { return "Grandine"; }
-  return "weather";
-}
-
 BattleManager.prototype.setWeather = function (weather) {
   this.weather = weather;
   this.weatherJustSet = false;
@@ -590,20 +589,20 @@ BattleManager.prototype.setWeather = function (weather) {
 
 BattleManager.prototype.canUseItemOnTarget = function (item, target) {
   if (!item) {
-    return { ok: false, message: "Strumento non trovato." };
+    return { ok: false, code: "item_not_found", event: battleEvent("item.notFound", {}) };
   }
   if (item.category !== ItemCategory.BattleItem && item.category !== ItemCategory.Berry) {
-    return { ok: false, message: "Questo strumento non può essere usato in battaglia." };
+    return { ok: false, code: "item_unusable", event: battleEvent("item.unusable", { item: battleItemRef(item) }) };
   }
   if (this.itemNeedsPokemonTarget(item)) {
     if (!target) {
-      return { ok: false, message: "Seleziona un Pokémon bersaglio." };
+      return { ok: false, code: "target_required", event: battleEvent("item.targetRequired", { item: battleItemRef(item) }) };
     }
     if (target.isFainted() && item.subcategory !== ItemSubcategory.HealKo) {
-      return { ok: false, message: target.pokemon.name + " è KO." };
+      return { ok: false, code: "target_fainted", event: battleEvent("item.targetFainted", { pokemon: battleSpeciesRef(target) }) };
     }
     if (!target.isFainted() && item.subcategory === ItemSubcategory.HealKo) {
-      return { ok: false, message: target.pokemon.name + " non è KO." };
+      return { ok: false, code: "target_not_fainted", event: battleEvent("item.targetNotFainted", { pokemon: battleSpeciesRef(target) }) };
     }
   }
 
@@ -611,31 +610,31 @@ BattleManager.prototype.canUseItemOnTarget = function (item, target) {
     case ItemSubcategory.HealHp:
       var currentHp = typeof target.hp === "number" ? target.hp : target.pokemon.maxHp;
       if (currentHp >= target.pokemon.maxHp) {
-        return { ok: false, message: target.pokemon.name + " ha già tutti i PS." };
+        return { ok: false, code: "hp_full", event: battleEvent("item.hpFull", { pokemon: battleSpeciesRef(target) }) };
       }
       return { ok: true };
     case ItemSubcategory.HealFull:
       var healStatusCurrentHp = typeof target.hp === "number" ? target.hp : target.pokemon.maxHp;
       if (healStatusCurrentHp >= target.pokemon.maxHp && !combatantHasCurableStatus(target)) {
-        return { ok: false, message: target.pokemon.name + " non ha PS mancanti o Status da curare." };
+        return { ok: false, code: "no_full_restore_effect", event: battleEvent("item.noFullRestoreEffect", { pokemon: battleSpeciesRef(target) }) };
       }
       return { ok: true };
     case ItemSubcategory.HealKo:
       return { ok: true };
     case ItemSubcategory.HealStatus:
       if (!itemCanCureStatus(item, target)) {
-        return { ok: false, message: target.pokemon.name + " non ha uno Status curabile con questo strumento." };
+        return { ok: false, code: "no_curable_status", event: battleEvent("item.noCurableStatus", { pokemon: battleSpeciesRef(target), item: battleItemRef(item) }) };
       }
       return { ok: true };
     case ItemSubcategory.Weather:
       if (!this.hasActiveWeather()) {
-        return { ok: false, message: "Non c'è alcun meteo attivo" };
+        return { ok: false, code: "weather_inactive", event: battleEvent("item.weatherInactive", {}) };
       }
       return { ok: true };
     case ItemSubcategory.TypeProtection:
-      return { ok: false, message: "Questa bacca si attiva solo quando è tenuta da un Pokémon." };
+      return { ok: false, code: "held_only", event: battleEvent("item.heldOnly", { item: battleItemRef(item) }) };
     default:
-      return { ok: false, message: "Sottocategoria non gestita: " + item.subcategory };
+      return { ok: false, code: "unsupported_subcategory", event: battleEvent("item.unsupported", { item: battleItemRef(item) }) };
   }
 };
 
@@ -653,7 +652,7 @@ BattleManager.prototype.applyItemEffect = function (item, target) {
       var nextHp = healsAllHp ? target.pokemon.maxHp : Math.min(target.pokemon.maxHp, currentHp + healAmount);
       var healed = nextHp - currentHp;
       target.hp = nextHp;
-      this.emit({ log: "Allenatore usa " + item.name + " su " + target.pokemon.name + ": +" + healed + " PS" });
+      this.emit(battleEvent("item.healedHp", { item: battleItemRef(item), pokemon: battleSpeciesRef(target), amount: healed }));
       return { ok: true };
     case ItemSubcategory.HealFull:
       var healStatusCurrentHp = typeof target.hp === "number" ? target.hp : target.pokemon.maxHp;
@@ -665,25 +664,25 @@ BattleManager.prototype.applyItemEffect = function (item, target) {
       target.sleepCounter = 0;
       target.sleepDuration = 3;
       target.confCounter = 0;
-      this.emit({ log: "Allenatore usa " + item.name + " su " + target.pokemon.name + ": +" + healStatusHealed + " PS" + (hadStatus ? " e Status curato" : "") });
+      this.emit(battleEvent(hadStatus ? "item.fullRestore" : "item.healedHp", { item: battleItemRef(item), pokemon: battleSpeciesRef(target), amount: healStatusHealed }));
       return { ok: true };
     case ItemSubcategory.HealKo:
       var revivedHp = item.value === "max"
         ? target.pokemon.maxHp
         : Math.max(1, Math.floor(target.pokemon.maxHp * (Number(item.healFraction) || 0.5)));
       target.hp = Math.min(target.pokemon.maxHp, revivedHp);
-      this.emit({ log: "Allenatore usa " + item.name + " su " + target.pokemon.name + ": rianimato con " + target.hp + " PS" });
+      this.emit(battleEvent("item.revived", { item: battleItemRef(item), pokemon: battleSpeciesRef(target), amount: target.hp }));
       return { ok: true };
     case ItemSubcategory.HealStatus:
       clearCombatantStatus(target, item);
-      this.emit({ log: "Allenatore usa " + item.name + " su " + target.pokemon.name + ": Status curato" });
+      this.emit(battleEvent("item.curedStatus", { item: battleItemRef(item), pokemon: battleSpeciesRef(target) }));
       return { ok: true };
     case ItemSubcategory.Weather:
       this.clearWeather();
-      this.emit({ log: "Allenatore usa " + item.name + ": meteo rimosso" });
+      this.emit(battleEvent("item.clearedWeather", { item: battleItemRef(item) }));
       return { ok: true };
     default:
-      return { ok: false, message: "Sottocategoria non gestita: " + item.subcategory };
+      return { ok: false, code: "unsupported_subcategory", event: battleEvent("item.unsupported", { item: battleItemRef(item) }) };
   }
 };
 
@@ -702,7 +701,7 @@ BattleManager.prototype.playerUseItem = function (item, target) {
     manager.consumeChargeDamageMultiplier(manager.playerTeam.getActive());
     effectResult = manager.applyItemEffect(item, target);
     if (!effectResult.ok) {
-      manager.emit({ log: effectResult.message });
+      manager.emit(effectResult.event);
       manager.endTurn(manager.playerTeam.getActive(), manager.enemyTeam.getActive());
       manager.clearRecentSwitchTarget(manager.enemyTeam);
       return { ok: true, itemConsumed: false };
@@ -721,7 +720,7 @@ BattleManager.prototype.playerUseBall = function (item) {
     manager.startTurn(manager.playerTeam.getActive(), manager.enemyTeam.getActive());
     manager.recordWeatherMoveAction("player", false);
     manager.consumeChargeDamageMultiplier(manager.playerTeam.getActive());
-    manager.emit({ log: manager.playerTeam.name + " usa " + (item && item.name ? item.name : "Poké Ball") + ", ma senza successo" });
+    manager.emit(battleEvent("capture.ballFailed", { team: battleTeamRef(manager.playerTeam), item: battleItemRef(item) }));
     manager.endTurn(manager.playerTeam.getActive(), manager.enemyTeam.getActive());
     manager.clearRecentSwitchTarget(manager.enemyTeam);
     return { ok: true, itemConsumed: true };
@@ -745,7 +744,7 @@ BattleManager.prototype.applyWeatherBuffs = function (combatant) {
 BattleManager.prototype.startTurn = function (attacker, defender) {
   var manager = this;
 
-  function advanceTeamEffect(team, effectKey, counterKey, max, endMessage) {
+  function advanceTeamEffect(team, effectKey, counterKey, max, endEvent) {
     if (team[counterKey] === 0 && (!effectKey || team[effectKey] === 0)) {
       return;
     }
@@ -754,8 +753,8 @@ BattleManager.prototype.startTurn = function (attacker, defender) {
       if (effectKey) {
         team[effectKey] = 0;
       }
-      if (endMessage) {
-        manager.emit({ log: endMessage });
+      if (endEvent) {
+        manager.emit(endEvent);
       }
       return;
     }
@@ -767,7 +766,7 @@ BattleManager.prototype.startTurn = function (attacker, defender) {
       if (combatant.confCounter >= 5) {
         combatant.status = null;
         combatant.confCounter = 0;
-        manager.emit({ log: combatant.pokemon.name + " non è più Confuso" });
+        manager.emit(battleEvent("status.confusionEnded", { pokemon: battleSpeciesRef(combatant) }));
       } else {
         combatant.confCounter += 1;
       }
@@ -777,38 +776,41 @@ BattleManager.prototype.startTurn = function (attacker, defender) {
         combatant.sleepCounter = 0;
         combatant.sleepDuration = 3;
         combatant.slpSource = null;
-        manager.emit({ log: combatant.pokemon.name + " si è svegliato" });
+        manager.emit(battleEvent("status.wokeUp", { pokemon: battleSpeciesRef(combatant) }));
       } else {
         combatant.sleepCounter += 1;
       }
     }
   }
 
-  this.emit({ log: "--- Turno " + this.turn + ": " + attacker.team.name });
+  this.emit(battleEvent("turn.started", { number: this.turn, team: battleTeamRef(attacker.team) }, { group: "turn", turn: this.turn }));
   this.tickDelayedStatuses();
   this.applyWeatherBuffs(attacker);
   this.applyWeatherBuffs(defender);
   advanceCombatantStatus(attacker);
 
-  advanceTeamEffect(attacker.team, "teamAtkBuff", "buffAtkCounter", 5, "Terminato l'aumento di Attacco della squadra");
-  advanceTeamEffect(attacker.team, "teamDefBuff", "buffDefCounter", 5, "Terminato l'aumento di Difesa della squadra");
-  advanceTeamEffect(attacker.team, null, "teamMistCounter", 5, "Terminata la protezione dalle modifiche stats avversarie di: " + attacker.team.name);
-  advanceTeamEffect(attacker.team, null, "teamMoveBoostProtectCounter", 5, "Terminata la protezione dai boost delle mosse avversarie di: " + attacker.team.name);
-  advanceTeamEffect(attacker.team, null, "teamStatusProtectCounter", 5, "Terminata la protezione dallo status di: " + attacker.team.name);
-  advanceTeamEffect(attacker.team, null, "sleepImmunityCounter", 5, "Terminata l'immunità al sonno di: " + attacker.team.name);
-  advanceTeamEffect(attacker.team, null, "teamBoostSuppressCounter", 1, "Terminato l'annullamento dei boost di: " + attacker.team.name);
+  advanceTeamEffect(attacker.team, "teamAtkBuff", "buffAtkCounter", 5, battleEvent("team.attackBuffEnded", { team: battleTeamRef(attacker.team) }));
+  advanceTeamEffect(attacker.team, "teamDefBuff", "buffDefCounter", 5, battleEvent("team.defenseBuffEnded", { team: battleTeamRef(attacker.team) }));
+  advanceTeamEffect(attacker.team, null, "teamMistCounter", 5, battleEvent("team.statProtectionEnded", { team: battleTeamRef(attacker.team) }));
+  advanceTeamEffect(attacker.team, null, "teamMoveBoostProtectCounter", 5, battleEvent("team.moveBoostProtectionEnded", { team: battleTeamRef(attacker.team) }));
+  advanceTeamEffect(attacker.team, null, "teamStatusProtectCounter", 5, battleEvent("team.statusProtectionEnded", { team: battleTeamRef(attacker.team) }));
+  advanceTeamEffect(attacker.team, null, "sleepImmunityCounter", 5, battleEvent("team.sleepImmunityEnded", { team: battleTeamRef(attacker.team) }));
+  advanceTeamEffect(attacker.team, null, "teamBoostSuppressCounter", 1, battleEvent("team.boostSuppressionEnded", { team: battleTeamRef(attacker.team) }));
 
   if (attacker.rooted) {
     var rootHeal = Math.floor(attacker.pokemon.maxHp / 2);
     attacker.hp = Math.min(attacker.hp + rootHeal, attacker.pokemon.maxHp);
-    manager.emit({ log: attacker.pokemon.name + " recupera " + rootHeal + " PS con Radicamento" });
+    manager.emit(battleEvent("status.ingrainHeal", { pokemon: battleSpeciesRef(attacker), amount: rootHeal }));
   }
   if (attacker.team.wishHealAmount > 0) {
     var wishHeal = Math.min(attacker.team.wishHealAmount, attacker.pokemon.maxHp - attacker.hp);
     attacker.hp = Math.min(attacker.hp + attacker.team.wishHealAmount, attacker.pokemon.maxHp);
-    manager.emit({ log: "Desiderio di " + (attacker.team.wishSourceName || attacker.pokemon.name) + " fa recuperare " + wishHeal + " PS a " + attacker.pokemon.name });
+    manager.emit(battleEvent("status.wishHeal", {
+      source: battleSpeciesRef({ speciesKey: attacker.team.wishSourceSpeciesKey || attacker.pokemon.speciesKey }),
+      pokemon: battleSpeciesRef(attacker), amount: wishHeal
+    }));
     attacker.team.wishHealAmount = 0;
-    attacker.team.wishSourceName = "";
+    attacker.team.wishSourceSpeciesKey = "";
   }
 
   if (attacker.trappedMoveIndex && attacker.trappedTurns < 99) {
@@ -824,7 +826,7 @@ BattleManager.prototype.startTurn = function (attacker, defender) {
     attacker.perishSongTurns -= 1;
     if (attacker.perishSongTurns === 0) {
       attacker.hp = 0;
-      this.emit({ log: "Ultimocanto: " + attacker.pokemon.name + " va KO!" });
+      this.emit(battleEvent("status.perishSongKo", { pokemon: battleSpeciesRef(attacker) }));
       this.KOCheck(attacker, defender);
     }
   }
@@ -894,9 +896,9 @@ BattleManager.prototype.tickDelayedStatuses = function () {
       combatant.confCounter = pending.confCounter || 0;
       combatant.slpSource = pending.source || null;
       if (pending.status === "slp") {
-        this.emit({ log: combatant.pokemon.name + " si addormenta" });
+        this.emit(battleEvent("status.fellAsleep", { pokemon: battleSpeciesRef(combatant) }));
       } else {
-        this.emit({ log: combatant.pokemon.name + " subisce " + statusDisplayName(pending.status) + "." });
+        this.emit(battleEvent("status.applied", { pokemon: battleSpeciesRef(combatant), status: battleStatusRef(pending.status) }));
       }
     }
     combatant.pendingDelayedStatus = null;
@@ -931,7 +933,7 @@ BattleManager.prototype.interceptDelayedStatus = function (combatant, before, mo
   if (pendingBefore) {
     restoreStatusSnapshot(combatant, before);
     move.logKey = damage > 0 ? "dmg_status_waiting" : "status_waiting";
-    move.delayedStatusTargetName = combatant.pokemon.name;
+    move.delayedStatusTargetSpeciesKey = combatant.pokemon.speciesKey;
     return;
   }
 
@@ -952,8 +954,8 @@ BattleManager.prototype.interceptDelayedStatus = function (combatant, before, mo
   };
   restoreStatusSnapshot(combatant, before);
   move.logKey = damage > 0 ? "dmg_status_delayed" : "status_delayed";
-  move.delayedStatusName = statusDisplayName(nextStatus);
-  move.delayedStatusTargetName = combatant.pokemon.name;
+  move.delayedStatusKey = nextStatus;
+  move.delayedStatusTargetSpeciesKey = combatant.pokemon.speciesKey;
 };
 
 BattleManager.prototype.consumeChargeDamageMultiplier = function (combatant) {
@@ -1105,7 +1107,7 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   if (effectiveMove.damagingMove) {
     chargeDamageMultiplier = attacker.activeChargeDamageMultiplier || 1;
     damage = this.calculateMoveDamage(attacker, defender, effectiveMove);
-    typeProtectLog = runHeldItemTrigger(this, "typeProtectBerry", HeldItemTriggerContext.typeProtectBerry(attacker, defender)).log;
+    typeProtectLog = runHeldItemTrigger(this, "typeProtectBerry", HeldItemTriggerContext.typeProtectBerry(attacker, defender)).event;
     if (typeProtectLog) {
       damage = Math.max(1, Math.floor(damage / 2));
     }
@@ -1118,7 +1120,7 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
       defender.endure = false;
       if (newHp === 0) {
         newHp = 1;
-        this.emit({ log: defender.pokemon.name + " ha resistito!" });
+        this.emit(battleEvent("status.endured", { pokemon: battleSpeciesRef(defender) }));
       }
     }
 
@@ -1146,7 +1148,7 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
 
   runHeldItemTrigger(this, "selfStatusChanged", HeldItemTriggerContext.selfStatusChanged(attacker, attackerStatusBeforeBefore));
 
-  statusProtectionLog = runHeldItemTrigger(this, "statusProtection", HeldItemTriggerContext.statusProtection(defender, defenderStatusBefore)).log;
+  statusProtectionLog = runHeldItemTrigger(this, "statusProtection", HeldItemTriggerContext.statusProtection(defender, defenderStatusBefore)).event;
 
   this.lastResolvedType = effectiveMove.resolvedType || null;
   if (effectiveMove.setWeather) {
@@ -1156,7 +1158,7 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
     if (attacker.team === this.playerTeam && this.canPlayerFlee()) {
       effectiveMove.logKey = "flee";
       this.battleFled = true;
-      this.battleResultLines = [attacker.pokemon.name + " fugge dalla lotta."];
+      this.battleResultLines = [battleEvent("outcome.fled", { pokemon: battleSpeciesRef(attacker) })];
       this.endBattle();
     } else {
       effectiveMove.logKey = "fail";
@@ -1171,7 +1173,7 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
       this.applyReplacementFlowWaiting();
     } else {
       var npcEnemySwitch = this.enemyTeam.switchRandom();
-      this.emit({ log: npcEnemySwitch });
+      if (npcEnemySwitch.ok) { this.emitEvents(npcEnemySwitch.events); }
     }
   }
   this.interceptDelayedStatus(defender, defenderStatusBefore, effectiveMove, damage, attacker);
@@ -1189,16 +1191,20 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
       attacker.sleepCounter = 0;
       attacker.sleepDuration = reflectedSleepDuration;
     }
-    this.emit({ log: defender.pokemon.name + " riflette lo stato con Magivelo su " + attacker.pokemon.name + "!" });
+    this.emit(battleEvent("status.magicCoatReflected", { source: battleSpeciesRef(defender), target: battleSpeciesRef(attacker) }));
   }
   attacker.turnBeforeMoveUsed = effectiveMove;
 
-  this.emit({ log: effectiveMove.prepareLog(attacker, defender, damage, effectiveMove.lastTypeEfficacy) });
+  this.emit(effectiveMove.prepareEvent(attacker, defender, damage, effectiveMove.lastTypeEfficacy));
+  if (effectiveMove.switchEvents) {
+    this.emitEvents(effectiveMove.switchEvents);
+    effectiveMove.switchEvents = null;
+  }
   if (statusProtectionLog) {
-    this.emit({ log: statusProtectionLog });
+    this.emit(statusProtectionLog);
   }
   if (typeProtectLog) {
-    this.emit({ log: typeProtectLog });
+    this.emit(typeProtectLog);
   }
   runHeldItemTrigger(this, "healStatusBerry", HeldItemTriggerContext.healStatusBerry(defender, defenderStatusBefore));
   if (damage > 0) {
@@ -1544,9 +1550,7 @@ BattleManager.prototype.moveStatusCheck = function (attacker, move) {
     }
     if (attacker.status === "par_block") {
       resolvePendingAsFailed();
-      manager.emit({
-        log: attacker.pokemon.name + " è paralizzato, non può attaccare"
-      });
+      manager.emit(battleEvent("status.paralyzedCannotMove", { pokemon: battleSpeciesRef(attacker) }));
       attacker.status = "par_free";
       return false;
     }
@@ -1563,9 +1567,7 @@ BattleManager.prototype.moveStatusCheck = function (attacker, move) {
       var dmg = Math.max(1, Math.floor(attacker.pokemon.maxHp / 16));
       attacker.hp = Math.max(0, attacker.hp - dmg);
       resolvePendingAsFailed();
-      manager.emit({
-        log: attacker.pokemon.name + " è così confuso da colpirsi da solo, e perde " + dmg + " PS"
-      });
+      manager.emit(battleEvent("status.confusionSelfDamage", { pokemon: battleSpeciesRef(attacker), amount: dmg }));
       attacker.status = "cnf_free";
       manager.KOCheck(attacker, attacker);
       return false;
@@ -1579,17 +1581,13 @@ BattleManager.prototype.moveStatusCheck = function (attacker, move) {
       return true;
     }
     resolvePendingAsFailed();
-    manager.emit({
-      log: attacker.pokemon.name + " è addormentato, non può attaccare"
-    });
+    manager.emit(battleEvent("status.asleepCannotMove", { pokemon: battleSpeciesRef(attacker) }));
     return false;
   }
 
   if (attacker.status === "frz") {
     resolvePendingAsFailed();
-    manager.emit({
-      log: attacker.pokemon.name + " è congelato, non può attaccare"
-    });
+    manager.emit(battleEvent("status.frozenCannotMove", { pokemon: battleSpeciesRef(attacker) }));
     return false;
   }
 
@@ -1608,26 +1606,26 @@ BattleManager.prototype.damageStatusCheck = function (attacker) {
   if (attacker.status === "psn") {
     var poisonDamage = Math.max(1, Math.floor(attacker.pokemon.maxHp / 8));
     attacker.hp = Math.max(0, attacker.hp - poisonDamage);
-    this.emit({ log: attacker.pokemon.name + " è avvelenato e perde " + poisonDamage + " PS" });
+    this.emit(battleEvent("status.poisonDamage", { pokemon: battleSpeciesRef(attacker), amount: poisonDamage }));
   }
   if (attacker.status === "brn") {
     var burnDamage = Math.max(1, Math.floor(attacker.pokemon.maxHp / 8));
     attacker.hp = Math.max(0, attacker.hp - burnDamage);
-    this.emit({ log: attacker.pokemon.name + " è bruciato e perde " + burnDamage + " PS" });
+    this.emit(battleEvent("status.burnDamage", { pokemon: battleSpeciesRef(attacker), amount: burnDamage }));
   }
   if (this.weather === "sand") {
     var sandImmune = attacker.type.indexOf("steel") !== -1 || attacker.type.indexOf("ground") !== -1 || attacker.type.indexOf("rock") !== -1;
     if (!sandImmune) {
       var sandDamage = Math.max(1, Math.floor(attacker.pokemon.maxHp / 8));
       attacker.hp = Math.max(0, attacker.hp - sandDamage);
-      this.emit({ log: attacker.pokemon.name + " subisce " + sandDamage + " PS dalla Terrempesta" });
+      this.emit(battleEvent("weather.sandDamage", { pokemon: battleSpeciesRef(attacker), amount: sandDamage }));
     }
   }
   if (this.weather === "hail") {
     if (attacker.type.indexOf("ice") === -1) {
       var hailDamage = Math.max(1, Math.floor(attacker.pokemon.maxHp / 8));
       attacker.hp = Math.max(0, attacker.hp - hailDamage);
-      this.emit({ log: attacker.pokemon.name + " subisce " + hailDamage + " PS dalla Grandine" });
+      this.emit(battleEvent("weather.hailDamage", { pokemon: battleSpeciesRef(attacker), amount: hailDamage }));
     }
   }
 };
@@ -1666,7 +1664,6 @@ BattleManager.prototype.applyMoveKoTriggeredEffects = function (defender) {
   var attacker = trigger && trigger.attacker;
   var moveKey = trigger && trigger.moveKey;
   var moveDefinition = moveKey ? m.MOVE_LIBRARY.find(function (move) { return move.key === moveKey; }) : null;
-  var moveName = moveDefinition ? moveDefinition.name : moveKey;
 
   if (!trigger) {
     return;
@@ -1678,12 +1675,12 @@ BattleManager.prototype.applyMoveKoTriggeredEffects = function (defender) {
   if (trigger.destinyBondActive) {
     attacker.hp = 0;
     defender.destinyBondActive = false;
-    this.emit({ log: "A causa di Destinobbligato, " + attacker.pokemon.name + " è KO!" });
+    this.emit(battleEvent("status.destinyBondKo", { pokemon: battleSpeciesRef(attacker) }));
   }
   if (trigger.grudgeActive && moveKey) {
     attacker.disableMoveInhibit(moveKey);
     defender.grudgeActive = false;
-    this.emit({ log: "A causa di Rancore, " + attacker.pokemon.name + " non può più usare " + moveName + "!" });
+    this.emit(battleEvent("status.grudgeDisabledMove", { pokemon: battleSpeciesRef(attacker), move: battleMoveRef(moveDefinition || { key: moveKey }) }));
   }
 };
 
@@ -1694,7 +1691,7 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
 
   if (defender.isFainted()) {
     defender.team.teamKOTracker = true;
-    this.emit({ log: defender.pokemon.name + " è KO!" });
+    this.emit(battleEvent("outcome.pokemonKo", { pokemon: battleSpeciesRef(defender) }));
     this.applyMoveKoTriggeredEffects(defender);
     if (!defender.expAwarded && attacker !== defender && attacker.team === this.playerTeam && defender.team === this.enemyTeam) {
       defender.expAwarded = true;
@@ -1708,7 +1705,7 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
 
   if (attacker.isFainted()) {
     attacker.team.teamKOTracker = true;
-    this.emit({ log: attacker.pokemon.name + " è KO!" });
+    this.emit(battleEvent("outcome.pokemonKo", { pokemon: battleSpeciesRef(attacker) }));
   }
 
   if (attacker.isFainted() && defender.isFainted()) {
@@ -1717,22 +1714,22 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
 
     if (attackerAllFainted && defenderAllFainted) {
       if (attacker.team === this.playerTeam) {
-        this.emit({ log: "Hai perso la lotta!" });
+        this.emit(battleEvent("outcome.playerLost", {}));
       } else {
-        this.emit({ log: "Avversario senza Pokémon disponibili. Hai vinto la lotta!" });
+        this.emit(battleEvent("outcome.playerWon", {}));
       }
       this.endBattle();
       return;
     }
 
     if (attackerAllFainted) {
-      this.emit({ log: attacker.team === this.playerTeam ? "Tutti i tuoi Pokémon sono KO, hai perso la lotta." : "Avversario senza Pokémon disponibili. Hai vinto la lotta!" });
+      this.emit(battleEvent(attacker.team === this.playerTeam ? "outcome.playerTeamKo" : "outcome.playerWon", {}));
       this.endBattle();
       return;
     }
 
     if (defenderAllFainted) {
-      this.emit({ log: defender.team === this.playerTeam ? "Tutti i tuoi Pokémon sono KO, hai perso la lotta." : "Avversario senza Pokémon disponibili. Hai vinto la lotta!" });
+      this.emit(battleEvent(defender.team === this.playerTeam ? "outcome.playerTeamKo" : "outcome.playerWon", {}));
       this.endBattle();
       return;
     }
@@ -1745,8 +1742,8 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
     }
 
     if (attacker === this.playerTeam.getActive()) {
-      var doubleKoEnemySwitchMessage = this.switchNpcAfterKo();
-      this.emit({ log: doubleKoEnemySwitchMessage });
+      var doubleKoEnemySwitchResult = this.switchNpcAfterKo();
+      this.emitEvents(doubleKoEnemySwitchResult.events);
       this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
       this.playerNeedsSwitch = true;
       this.KOStatus = "recoil_player";
@@ -1763,13 +1760,13 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
   }
 
   if (this.playerTeam.getActive().isFainted() && this.playerTeam.isAllFainted()) {
-    this.emit({ log: "Tutti i tuoi Pokémon sono KO, hai perso la lotta." });
+    this.emit(battleEvent("outcome.playerTeamKo", {}));
     this.endBattle();
     return;
   }
 
   if (this.enemyTeam.getActive().isFainted() && this.enemyTeam.isAllFainted()) {
-    this.emit({ log: "Avversario senza Pokémon disponibili. Hai vinto la lotta!" });
+    this.emit(battleEvent("outcome.playerWon", {}));
     this.endBattle();
     return;
   }
@@ -1784,7 +1781,7 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
   if (attacker === this.playerTeam.getActive()) {
     if (attacker.isFainted()) {
       if (attacker.team.isAllFainted()) {
-        this.emit({ log: "Tutti i tuoi Pokémon sono KO, hai perso la lotta." });
+        this.emit(battleEvent("outcome.playerTeamKo", {}));
         this.endBattle();
         return;
       }
@@ -1796,13 +1793,13 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
 
     if (defender.isFainted()) {
       if (defender.team.isAllFainted()) {
-        this.emit({ log: "Avversario senza Pokémon disponibili. Hai vinto la lotta!" });
+        this.emit(battleEvent("outcome.playerWon", {}));
         this.endBattle();
         return;
       }
 
-      var enemySwitchMessage = this.switchNpcAfterKo();
-      this.emit({ log: enemySwitchMessage });
+      var enemySwitchResult = this.switchNpcAfterKo();
+      this.emitEvents(enemySwitchResult.events);
       this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
     }
   }
@@ -1810,19 +1807,19 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
   if (attacker === this.enemyTeam.getActive()) {
     if (attacker.isFainted()) {
       if (attacker.team.isAllFainted()) {
-        this.emit({ log: "Avversario senza Pokémon disponibili. Hai vinto la lotta!" });
+        this.emit(battleEvent("outcome.playerWon", {}));
         this.endBattle();
         return;
       }
-      var autoKoSwitchMessage = this.switchNpcAfterKo();
-      this.emit({ log: autoKoSwitchMessage });
+      var autoKoSwitchResult = this.switchNpcAfterKo();
+      this.emitEvents(autoKoSwitchResult.events);
       this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
       return;
     }
 
     if (defender.isFainted()) {
       if (defender.team.isAllFainted()) {
-        this.emit({ log: "Tutti i tuoi Pokémon sono KO, hai perso la lotta." });
+        this.emit(battleEvent("outcome.playerTeamKo", {}));
         this.endBattle();
         return;
       }
@@ -1836,25 +1833,25 @@ BattleManager.prototype.canPlayerSwitchTo = function (index) {
   var active = this.playerTeam.getActive();
   var target = this.playerTeam.combatantList[index];
   if (!target) {
-    return { ok: false, message: "Pokémon non trovato." };
+    return { ok: false, code: "target_not_found", event: battleEvent("switch.targetNotFound", {}) };
   }
   if (index === this.playerTeam.activeIndex) {
-    return { ok: false, message: active.pokemon.name + " è già in campo" };
+    return { ok: false, code: "already_active", event: battleEvent("switch.alreadyActive", { pokemon: battleSpeciesRef(active) }) };
   }
   if (target.isFainted()) {
-    return { ok: false, message: target.pokemon.name + " è KO e non può entrare in campo." };
+    return { ok: false, code: "target_fainted", event: battleEvent("switch.targetFainted", { pokemon: battleSpeciesRef(target) }) };
   }
   if (active.trappedTurns > 0 || active.trappedMoveIndex) {
     if (active.trappedTurns >= 99) {
-      return { ok: false, message: active.pokemon.name + " non può essere sostituito" };
+      return { ok: false, code: "trapped", event: battleEvent("switch.trapped", { pokemon: battleSpeciesRef(active) }) };
     }
-    return { ok: false, message: active.pokemon.name + " non può essere sostituito per " + active.trappedTurns + " turni" };
+    return { ok: false, code: "trapped_turns", event: battleEvent("switch.trappedTurns", { pokemon: battleSpeciesRef(active), turns: active.trappedTurns }) };
   }
   if (active.rooted) {
-    return { ok: false, message: active.pokemon.name + " non può essere sostituito perché ha usato Radicamento" };
+    return { ok: false, code: "rooted", event: battleEvent("switch.rooted", { pokemon: battleSpeciesRef(active) }) };
   }
   if (active.pendingMove && !active.pendingMove.isForcedMove) {
-    return { ok: false, message: active.pokemon.name + " non può essere sostituito perché " + active.pendingMove.name + " in corso" };
+    return { ok: false, code: "pending_move", event: battleEvent("switch.pendingMove", { pokemon: battleSpeciesRef(active), move: battleMoveRef(active.pendingMove) }) };
   }
   return { ok: true };
 };
@@ -1866,12 +1863,12 @@ BattleManager.prototype.resolvePlayerSwitchAction = function (index, entryChoice
   this.consumeChargeDamageMultiplier(this.playerTeam.getActive());
   result = this.playerTeam.switchTo(index);
   if (!result.ok) {
-    this.emit({ log: result.message });
+    this.emit(result.event);
     this.endTurn(this.playerTeam.getActive(), this.enemyTeam.getActive());
     return true;
   }
 
-  this.emit({ log: result.message });
+  this.emitEvents(result.events);
   this.checkHeldHpBerryOnEntry(this.playerTeam.getActive());
   if (entryChoice) {
     this.applyEntryHeldItemChoice(this.playerTeam.getActive(), entryChoice);
@@ -1885,14 +1882,14 @@ BattleManager.prototype.resolveForcedPlayerSwitch = function (index, entryChoice
   var result = this.playerTeam.switchTo(index);
   var KOInfo;
   if (!result.ok) {
-    this.emit({ log: result.message });
+    this.emit(result.event);
     return false;
   }
 
   KOInfo = this.KOStatus;
   this.playerNeedsSwitch = false;
   this.KOStatus = null;
-  this.emit({ log: result.message });
+  this.emitEvents(result.events);
   this.checkHeldHpBerryOnEntry(this.playerTeam.getActive());
   if (entryChoice) {
     this.applyEntryHeldItemChoice(this.playerTeam.getActive(), entryChoice);
@@ -1903,7 +1900,7 @@ BattleManager.prototype.resolveForcedPlayerSwitch = function (index, entryChoice
       if (this.playerTeam.isAllFainted()) {
         this.playerNeedsSwitch = false;
         this.replacementFlow = null;
-        this.emit({ log: "Tutti i tuoi Pokémon sono KO, hai perso la lotta." });
+        this.emit(battleEvent("outcome.playerTeamKo", {}));
         this.endBattle();
         return true;
       }
@@ -1918,8 +1915,8 @@ BattleManager.prototype.resolveForcedPlayerSwitch = function (index, entryChoice
   } else if (KOInfo === "recoil_player" && this.firstActionInTurn === false) {
     this.resolveNpcAction();
   } else if (KOInfo === "recoil_NPC") {
-    var message = this.switchNpcAfterKo();
-    this.emit({ log: message });
+    var switchResult = this.switchNpcAfterKo();
+    this.emitEvents(switchResult.events);
     this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
   }
 
@@ -1929,12 +1926,12 @@ BattleManager.prototype.resolveForcedPlayerSwitch = function (index, entryChoice
 BattleManager.prototype.resolvePostMovePlayerSwitch = function (index, entryChoice) {
   var result = this.playerTeam.switchTo(index);
   if (!result.ok) {
-    this.emit({ log: result.message });
+    this.emit(result.event);
     return false;
   }
 
   this.playerPostMoveSwitch = false;
-  this.emit({ log: result.message });
+  this.emitEvents(result.events);
   this.checkHeldHpBerryOnEntry(this.playerTeam.getActive());
   if (entryChoice) {
     this.applyEntryHeldItemChoice(this.playerTeam.getActive(), entryChoice);
@@ -1943,7 +1940,7 @@ BattleManager.prototype.resolvePostMovePlayerSwitch = function (index, entryChoi
   if (this.playerTeam.getActive().isFainted()) {
     if (this.playerTeam.isAllFainted()) {
       this.playerNeedsSwitch = false;
-      this.emit({ log: "Tutti i tuoi Pokémon sono KO, hai perso la lotta." });
+      this.emit(battleEvent("outcome.playerTeamKo", {}));
       this.endBattle();
       return true;
     }
@@ -1972,7 +1969,7 @@ BattleManager.prototype.playerSwitch = function (index, entryChoice) {
   }
   validation = this.canPlayerSwitchTo(index);
   if (!validation.ok) {
-    this.emit({ log: validation.message });
+    this.emit(validation.event);
     return false;
   }
   return this.resolvePlayerRound(function () {
@@ -1988,7 +1985,7 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
     if (heldItemHasEffect(attacker, "hazard_multiturn_guard")) {
       attacker.seedTarget = null;
       attacker.seedValue = 0;
-      this.emit({ log: "Scarponi robusti libera " + attacker.pokemon.name + " da Parassiseme" });
+      this.emit(battleEvent("hazard.bootsClearedLeechSeed", { pokemon: battleSpeciesRef(attacker) }));
     } else {
       var seedTeam = attacker.seedTarget;
       var seedHealTarget = seedTeam && typeof seedTeam.getActive === "function" ? seedTeam.getActive() : null;
@@ -2000,7 +1997,10 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
       if (seedHealTarget && seedHeal > 0) {
         seedHealTarget.hp = Math.min(seedHealTarget.hp + seedHeal, seedHealTarget.pokemon.maxHp);
       }
-      this.emit({ log: attacker.pokemon.name + " perde " + seedDamage + " PS con Parassiseme" + (seedHealTarget && seedHeal > 0 ? ", " + seedHealTarget.pokemon.name + " recupera " + seedHeal + " PS" : "") });
+      this.emit(battleEvent(seedHealTarget && seedHeal > 0 ? "hazard.leechSeedDrain" : "hazard.leechSeedDamage", {
+        pokemon: battleSpeciesRef(attacker), amount: seedDamage,
+        target: battleSpeciesRef(seedHealTarget), healed: seedHeal
+      }));
     }
   }
 
@@ -2028,17 +2028,24 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
         var dmg = Math.max(1, Math.floor(attacker.team.futureSight.power * typeMultiplier));
         target.hp = Math.max(0, target.hp - dmg);
         var futureMove = m.MOVE_LIBRARY.find(function (move) { return move.key === attacker.team.futureSight.moveKey; });
-        this.emit({ log: (futureMove ? futureMove.name : "Colpo futuro") + " di " + attacker.team.futureSight.attackerName + " colpisce " + target.pokemon.name + " infliggendo " + dmg + " danni!" });
+        this.emit(battleEvent("future.hit", {
+          move: battleMoveRef(futureMove || { key: attacker.team.futureSight.moveKey }),
+          source: battleSpeciesRef({ speciesKey: attacker.team.futureSight.attackerSpeciesKey }),
+          target: battleSpeciesRef(target), amount: dmg
+        }));
         this.KOCheck(attacker, target);
       } else {
         var failedFutureMove = m.MOVE_LIBRARY.find(function (move) { return move.key === attacker.team.futureSight.moveKey; });
-        this.emit({ log: (failedFutureMove ? failedFutureMove.name : "Colpo futuro") + " fallisce perché " + ((originalTarget || target) ? (originalTarget || target).pokemon.name : "il bersaglio") + " è già KO." });
+        this.emit(battleEvent("future.failedTargetKo", {
+          move: battleMoveRef(failedFutureMove || { key: attacker.team.futureSight.moveKey }),
+          target: battleSpeciesRef(originalTarget || target)
+        }));
       }
       attacker.team.futureSight.active = false;
       attacker.team.futureSight.timer = 0;
       attacker.team.futureSight.power = 0;
       attacker.team.futureSight.attackerTypes = [];
-      attacker.team.futureSight.attackerName = "";
+      attacker.team.futureSight.attackerSpeciesKey = "";
       attacker.team.futureSight.moveKey = "";
       attacker.team.futureSight.targetIndex = -1;
     }
@@ -2047,7 +2054,7 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
   if (this.firstActionInTurn) {
     this.firstActionInTurn = false;
   } else {
-    this.emit({ log: "\u200b" });
+    this.emit(battleEvent("turn.divider", {}, { divider: true }));
     this.firstActionInTurn = true;
     this.turn += 1;
     [this.playerTeam, this.enemyTeam].forEach(function (team) {

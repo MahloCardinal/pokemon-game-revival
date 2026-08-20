@@ -1,5 +1,5 @@
 import { escapeHtml } from "./asset-helpers.js";
-import { getLocale, getLocaleLabel, getSupportedLocales, setLocale } from "./i18n.js";
+import { getLocale, getLocaleLabel, getSupportedLocales, setLocale, t } from "./i18n.js";
 import { registerAction } from "./action-registry.js";
 
 export function renderLanguageSettingsControl() {
@@ -17,8 +17,8 @@ export function renderLanguageSettingsControl() {
 
   return [
     '<div class="settings-language-control">',
-    '  <span class="settings-language-label">Lingua / Language</span>',
-    '  <div class="settings-language-options" role="group" aria-label="Lingua / Language">',
+    '  <span class="settings-language-label">' + escapeHtml(t("settings.language")) + '</span>',
+    '  <div class="settings-language-options" role="group" aria-label="' + escapeHtml(t("settings.language")) + '">',
     buttons,
     '  </div>',
     '</div>'

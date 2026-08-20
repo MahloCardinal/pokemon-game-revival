@@ -7,7 +7,7 @@ function commandId() {
   if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
     return globalThis.crypto.randomUUID();
   }
-  throw new Error("Impossibile generare l'identificativo del comando debug.");
+  throw new Error("Unable to generate the debug command identifier.");
 }
 
 async function runDebugCommand(action, expectedPlayerRevision, semantic) {
@@ -15,8 +15,7 @@ async function runDebugCommand(action, expectedPlayerRevision, semantic) {
     return {
       ok: false,
       code: "debug_command_in_progress",
-      uncertain: false,
-      message: "Attendi il completamento del comando debug già in corso."
+      uncertain: false
     };
   }
   debugCommandInFlight = executeDebugCommand(action, expectedPlayerRevision, semantic);

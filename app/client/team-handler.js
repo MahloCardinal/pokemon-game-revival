@@ -10,6 +10,7 @@ import { updateCaptureTeamRuntimeInline } from "./capture-handler.js";
 import { assignNextBoxIndex, queueBoxUpsert, removePokemonCardInline } from "./box-handler.js";
 import { getCurrentPlayerState, moveTeamPokemonToBoxAuthoritative, swapTeamPokemonSlotsAuthoritative } from "../api/player-command.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
+import { messageDescriptor } from "./i18n.js";
 
 var authoritativeTeamCommandPending = false;
 var authoritativeRuntimeRefreshInFlight = null;
@@ -19,11 +20,11 @@ registerAction("team-to-box", async function(element) {
   var pokemonToBox;
   var result;
   var hadMoveSelection = state.scene && Number.isInteger(Number(state.scene.teamMoveIndex));
-  if (blockActionDuringBattle(["Non puoi depositare Pokemon durante un combattimento"], { title: "Squadra" })) {
+  if (blockActionDuringBattle([messageDescriptor("team.depositDuringBattle")], { title: messageDescriptor("team.title") })) {
     return;
   }
   if (state.team.length <= 1) {
-    openInlineMessage(["Devi avere almeno un Pokemon in squadra!"], { title: "Squadra" });
+    openInlineMessage([messageDescriptor("team.minimumOne")], { title: messageDescriptor("team.title") });
     return;
   }
   if (authoritativeTeamCommandPending || !state.team[teamIndex] || !state.team[teamIndex].instanceId) {
@@ -36,7 +37,7 @@ registerAction("team-to-box", async function(element) {
       pokemonInstanceId: state.team[teamIndex].instanceId
     });
     if (!result.ok) {
-      openInlineMessage([result.message || "Deposito nel Box non riuscito."], { title: "Squadra" });
+      openInlineMessage([messageDescriptor("team.depositFailed")], { title: messageDescriptor("team.title") });
       return;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -51,7 +52,7 @@ registerAction("team-to-box", async function(element) {
 
 registerAction("team-move-start", function(element) {
     var teamIndex = Number(element.dataset.index);
-    if (blockActionDuringBattle(["Non puoi spostare Pokémon durante un combattimento"], { title: "Squadra" })) {
+    if (blockActionDuringBattle([messageDescriptor("team.moveDuringBattle")], { title: messageDescriptor("team.title") })) {
       return;
     }
     if (!state.scene || state.scene.name !== "team" || !state.team[teamIndex]) {
@@ -77,7 +78,7 @@ registerAction("team-move-place", async function(element) {
   var sourceIndex = state.scene && state.scene.teamMoveIndex !== null && state.scene.teamMoveIndex !== undefined ? Number(state.scene.teamMoveIndex) : NaN;
   var swapPokemon;
   var result;
-  if (blockActionDuringBattle(["Non puoi spostare Pokémon durante un combattimento"], { title: "Squadra" })) {
+  if (blockActionDuringBattle([messageDescriptor("team.moveDuringBattle")], { title: messageDescriptor("team.title") })) {
     return;
   }
   if (!Number.isInteger(sourceIndex) || !Number.isInteger(targetIndex) || !state.team[sourceIndex] || !state.team[targetIndex] || sourceIndex === targetIndex) {
@@ -98,7 +99,7 @@ registerAction("team-move-place", async function(element) {
       targetSlot: targetIndex
     });
     if (!result.ok) {
-      openInlineMessage([result.message || "Spostamento in squadra non riuscito."], { title: "Squadra" });
+      openInlineMessage([messageDescriptor("team.moveFailed")], { title: messageDescriptor("team.title") });
       return;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));

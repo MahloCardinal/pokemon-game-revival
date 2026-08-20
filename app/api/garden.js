@@ -15,22 +15,12 @@ function gardenPlotsFromRow(row) {
   ];
 }
 
-function gardenRpcMessage(reason) {
-  if (reason === "invalid_plot") { return "Area di coltivazione non valida."; }
-  if (reason === "plot_occupied") { return "Questo spazio è già occupato."; }
-  if (reason === "item_not_available") { return "Non hai questa bacca nello zaino."; }
-  if (reason === "plot_empty") { return "Non c'è nessuna bacca da raccogliere."; }
-  if (reason === "not_ready") { return "La pianta non è ancora pronta."; }
-  if (reason === "not_authenticated") { return "Sessione non valida."; }
-  return "Operazione sul Giardino non riuscita.";
-}
-
 function gardenRpcResult(data) {
   if (!data || data.ok === false) {
-    return { ok: false, message: gardenRpcMessage(data && data.reason) };
+    return { ok: false, code: data && data.reason || "garden_operation_failed" };
   }
   if (!data.garden || !Array.isArray(data.items)) {
-    return { ok: false, message: "Risposta Supabase non valida." };
+    return { ok: false, code: "invalid_garden_response" };
   }
   return {
     ok: true,
@@ -43,60 +33,60 @@ function gardenRpcResult(data) {
 
 export async function plantGardenBerryViaRpc(plotIndex, berryIndex, growthSeconds) {
   var client = getSupabaseClient();
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, code: "missing_configuration" }; }
   var user = await currentUserId(client);
-  if (!user.ok) { return { ok: false, message: user.message }; }
+  if (!user.ok) { return { ok: false, code: user.code || "invalid_session" }; }
   var result = await client.rpc("plant_garden_berry", {
     p_plot_index: Number(plotIndex),
     p_berry_index: Number(berryIndex),
     p_growth_seconds: Number(growthSeconds)
   });
-  if (result.error) { return { ok: false, message: result.error.message }; }
+  if (result.error) { return { ok: false, code: "garden_plant_failed", detail: result.error.message || "" }; }
   return gardenRpcResult(result.data);
 }
 
 export async function harvestGardenPlotViaRpc(plotIndex, growthSeconds, harvestQuantity) {
   var client = getSupabaseClient();
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, code: "missing_configuration" }; }
   var user = await currentUserId(client);
-  if (!user.ok) { return { ok: false, message: user.message }; }
+  if (!user.ok) { return { ok: false, code: user.code || "invalid_session" }; }
   var result = await client.rpc("harvest_garden_plot", {
     p_plot_index: Number(plotIndex),
     p_growth_seconds: Number(growthSeconds),
     p_quantity: Math.max(1, Math.floor(Number(harvestQuantity) || 1))
   });
-  if (result.error) { return { ok: false, message: result.error.message }; }
+  if (result.error) { return { ok: false, code: "garden_harvest_failed", detail: result.error.message || "" }; }
   return gardenRpcResult(result.data);
 }
 
 export async function loadDailyBerryLimit() {
   var client = getSupabaseClient();
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante.", dailyLimit: null }; }
+  if (!client) { return { ok: false, code: "missing_configuration", dailyLimit: null }; }
   var user = await currentUserId(client);
-  if (!user.ok) { return { ok: false, message: user.message, dailyLimit: null }; }
+  if (!user.ok) { return { ok: false, code: user.code || "invalid_session", dailyLimit: null }; }
   var result = await client.from("player_daily_limits").select("last_claimed_at").eq("auth_user_id", user.userId).eq("limit_type", "berry").maybeSingle();
   if (result.error) {
     if (dailyLimitTableIsMissing(result.error)) {
       return { ok: true, dailyLimit: null };
     }
-    return { ok: false, message: result.error.message, dailyLimit: null };
+    return { ok: false, code: "daily_berry_load_failed", detail: result.error.message || "", dailyLimit: null };
   }
   return { ok: true, dailyLimit: result.data || null };
 }
 
 export async function claimDailyBerryViaRpc() {
   var client = getSupabaseClient();
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, code: "missing_configuration" }; }
   var user = await currentUserId(client);
-  if (!user.ok) { return { ok: false, message: user.message }; }
+  if (!user.ok) { return { ok: false, code: user.code || "invalid_session" }; }
   var result = await client.rpc("claim_daily_berry");
-  if (result.error) { return { ok: false, message: result.error.message }; }
+  if (result.error) { return { ok: false, code: "daily_berry_claim_failed", detail: result.error.message || "" }; }
   if (!result.data || result.data.ok === false) {
     return {
       ok: false,
       alreadyClaimed: result.data && result.data.reason === "already_claimed",
       lastClaimedAt: result.data ? result.data.last_claimed_at : null,
-      message: "Hai gia' ritirato la tua bacca per oggi."
+      code: result.data && result.data.reason || "daily_berry_claim_failed"
     };
   }
   return {

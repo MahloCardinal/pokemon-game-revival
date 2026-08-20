@@ -5,9 +5,8 @@ import { FLUTE_DAILY_USE_LIMIT, SEARCH_TOOL_ITEMS, captureLevelLimitForBadges, c
 import { escapeHtml, getItemDisplayImage, getTypeImage, renderImage } from "../client/asset-helpers.js";
 import { button, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard } from "../client/pokemon-card.js";
-import { typeDisplayName } from "../data/type-chart.js";
-import { captureZonePresentationKey } from "../data/asset-paths.js";
 import { t } from "../client/i18n.js";
+import { itemDisplayName, speciesDisplayName, typeDisplayName } from "../client/entity-text.js";
 
 var CAPTURE_ZONE_THEME_CLASS = {
   viridian_forest: "capture-search-wrap-bosco-smeraldo",
@@ -21,10 +20,10 @@ var CAPTURE_ZONE_THEME_CLASS = {
 
 export function renderCaptureTeamSectionInner() {
   return state.team.length
-    ? '<div class="pokemon-grid team-pokemon-grid capture-team-grid"><h2 class="stack-title capture-team-title">Squadra attuale</h2>' + state.team.map(function (pokemon) {
+    ? '<div class="pokemon-grid team-pokemon-grid capture-team-grid"><h2 class="stack-title capture-team-title">' + escapeHtml(t("ui.capture.currentTeam")) + "</h2>" + state.team.map(function (pokemon) {
       return renderPokemonCard(pokemon);
     }).join("") + "</div>"
-    : '<div class="pokemon-grid team-pokemon-grid capture-team-grid"><h2 class="stack-title capture-team-title">Squadra attuale</h2><div class="empty-state capture-team-empty">La squadra e\' vuota.</div></div>';
+    : '<div class="pokemon-grid team-pokemon-grid capture-team-grid"><h2 class="stack-title capture-team-title">' + escapeHtml(t("ui.capture.currentTeam")) + '</h2><div class="empty-state capture-team-empty">' + escapeHtml(t("ui.capture.emptyTeam")) + "</div></div>";
 }
 
 export function captureWildCardKey(scene) {
@@ -40,12 +39,13 @@ function renderCaptureToolButton(key, item, isSelected, hasItem, remaining) {
   var used = Math.max(0, limit - Math.max(0, Number(remaining) || 0));
   var isAvailable = hasItem && remaining > 0;
   var inputName = key === "whiteFlute" ? "capture-use-white-flute" : "capture-use-black-flute";
+  var itemName = itemDisplayName(item);
   return [
     '<label class="capture-tool-button' + (isSelected ? " is-selected" : "") + (isAvailable ? "" : " is-unavailable") + '">',
     '  <input type="checkbox" name="' + inputName + '" value="1" ' + (isSelected ? "checked" : "") + ' ' + (isAvailable ? "" : "disabled") + '>',
     '  <span class="capture-tool-button-inner">',
-    renderImage(getItemDisplayImage(item), item.name, "capture-tool-image"),
-    '    <span class="capture-tool-text">' + escapeHtml(item.name) + ' <span class="capture-tool-count" data-capture-tool-count="' + key + '">(usi ' + escapeHtml(used) + '/' + escapeHtml(limit) + ')</span></span>',
+    renderImage(getItemDisplayImage(item), itemName, "capture-tool-image"),
+    '    <span class="capture-tool-text">' + escapeHtml(itemName) + ' <span class="capture-tool-count" data-capture-tool-count="' + key + '">(' + escapeHtml(t("ui.capture.toolUses", { used: used, limit: limit })) + ")</span></span>",
     '  </span>',
     '</label>'
   ].join("");
@@ -71,10 +71,10 @@ export function renderCaptureScene(scene) {
   var canReuseWildCard = state.captureWildCard && state.captureWildCard.key === wildCardKey;
   var wildCard = canReuseWildCard ? "" : wildPokemon
     ? renderPokemonCard(wildPokemon)
-    : '<div class="empty-state capture-wild-placeholder">Nessun Pok&eacute;mon selvatico &egrave; ancora apparso</div>';
+    : '<div class="empty-state capture-wild-placeholder">' + escapeHtml(t("ui.capture.noWildPokemon")) + "</div>";
   var typeSummary = selectedType
-    ? renderImage(getTypeImage(selectedType), selectedType, "type-label-image choice-menu-current")
-    : '<span class="choice-menu-placeholder">Tipo</span>';
+    ? renderImage(getTypeImage(selectedType), typeDisplayName(selectedType), "type-label-image choice-menu-current")
+    : '<span class="choice-menu-placeholder">' + escapeHtml(t("ui.capture.type")) + "</span>";
   var typeInlineList = zoneTypes.map(function (typeName) {
     return renderImage(getTypeImage(typeName), typeDisplayName(typeName), "type-label-image capture-type-inline-image");
   }).join("");
@@ -125,23 +125,23 @@ export function renderCaptureScene(scene) {
   var form = [
     '<section class="capture-zone-layout">',
     '<section class="capture-search-wrap ' + zoneThemeClass + '">',
-    renderScenePresentationPanel(captureZonePresentationKey(scene.zoneName), "capture-info-panel"),
+    renderScenePresentationPanel("capture." + scene.zoneName, "capture-info-panel"),
     '  <div class="capture-search-grid">',
     '    <div class="capture-search-content">',
     '      <section class="panel capture-search-panel"><div class="panel-inner stack">',
-    '        <p class="footer-note capture-level-hint" data-capture-level-hint>Con le attuali Medaglie puoi cercare Pokémon dal Lv5 fino al Lv' + escapeHtml(maxSearchLevel) + ".</p>",
+    '        <p class="footer-note capture-level-hint" data-capture-level-hint>' + escapeHtml(t("ui.capture.levelHint", { level: maxSearchLevel })) + "</p>",
     toolOptions,
     '        <div class="capture-search-sentence">',
-    '          <span>Cerca Pokémon di Livello</span>',
+    '          <span>' + escapeHtml(t("ui.capture.searchPokemonLevel")) + "</span>",
     rangeMenu,
     exactLevelInput,
-      '          <span class="capture-type-label">di tipo:</span><span class="capture-type-inline-list">' + typeInlineList + '</span>',
+      '          <span class="capture-type-label">' + escapeHtml(t("ui.capture.ofType")) + '</span><span class="capture-type-inline-list">' + typeInlineList + '</span>',
     typeMenu,
      '        </div>',
       '        <div class="capture-search-actions">',
-      button("Cerca", "capture-search", wildPokemon ? "disabled" : "", "button-accent capture-search-button"),
-      button("Fuggi", "capture-flee", wildPokemon ? "" : "disabled", "button-ghost capture-flee-button"),
-      button(wildPokemon ? "Combatti contro " + wildPokemon.name : "Combatti", "capture-start-fight", wildPokemon ? "" : "disabled", "button-primary capture-fight-button"),
+      button(t("ui.capture.search"), "capture-search", wildPokemon ? "disabled" : "", "button-accent capture-search-button"),
+      button(t("ui.capture.flee"), "capture-flee", wildPokemon ? "" : "disabled", "button-ghost capture-flee-button"),
+      button(wildPokemon ? t("ui.capture.fightPokemon", { pokemon: speciesDisplayName(wildPokemon) }) : t("ui.capture.fight"), "capture-start-fight", wildPokemon ? "" : "disabled", "button-primary capture-fight-button"),
       "        </div>",
     "      </div></section>",
     "    </div>",
@@ -151,5 +151,5 @@ export function renderCaptureScene(scene) {
     "</section>"
   ].join("");
 
-  return sceneShell(t("captureZones." + scene.zoneName, null, scene.zoneName), "", form, "", "", "parent-back");
+  return sceneShell(t("captureZones." + scene.zoneName + ".name"), "", form, "", "", "parent-back");
 }

@@ -1,8 +1,10 @@
 import { assetPath, escapeHtml, getItemDisplayImage, renderImage } from "../client/asset-helpers.js";
 import { sceneShell } from "../client/render-utils.js";
-import { itemDisplayDescription, ItemCategory, resolveInventoryItems } from "../data/items.js";
+import { ItemCategory, resolveInventoryItems } from "../data/items.js";
 import { isSingleCopyInventoryItem } from "./inventory-helpers.js";
 import { state } from "../client/game-state.js";
+import { itemDisplayDescription, itemDisplayName } from "../client/entity-text.js";
+import { t } from "../client/i18n.js";
 
 function styleButton(label, className) {
   return '<button type="button" class="style-proposals-button ' + escapeHtml(className) + '">' + escapeHtml(label) + '</button>';
@@ -11,7 +13,7 @@ function styleButton(label, className) {
 function stylePanel(title, text, className) {
   return [
     '<div class="style-proposals-panel ' + escapeHtml(className) + '">',
-    '  <span class="style-proposals-panel-kicker">Panel</span>',
+    '  <span class="style-proposals-panel-kicker">' + escapeHtml(t("ui.styles.panel")) + '</span>',
     '  <h4>' + escapeHtml(title) + '</h4>',
     '  <p>' + escapeHtml(text) + '</p>',
     '</div>'
@@ -46,9 +48,9 @@ function renderFontShowcase() {
   return [
     '<section class="style-proposals-font-panel" aria-labelledby="style-proposals-font-title">',
     '  <div class="style-proposals-font-heading">',
-    '    <span class="style-proposals-eyebrow">Tipografia</span>',
-    '    <h3 id="style-proposals-font-title">Font</h3>',
-    '    <p>Confronto rapido di famiglie tipografiche possibili per titoli, bottoni e testi descrittivi.</p>',
+    '    <span class="style-proposals-eyebrow">' + escapeHtml(t("ui.styles.typography")) + '</span>',
+    '    <h3 id="style-proposals-font-title">' + escapeHtml(t("ui.styles.fonts")) + '</h3>',
+    '    <p>' + escapeHtml(t("ui.styles.fontDescription")) + '</p>',
     '  </div>',
     '  <div class="style-proposals-font-grid">',
     fonts.map(function (font) {
@@ -56,8 +58,8 @@ function renderFontShowcase() {
         '    <article class="style-proposals-font-sample ' + escapeHtml(font[2]) + '">',
         '      <span>' + escapeHtml(font[0]) + '</span>',
         '      <strong>' + escapeHtml(font[1]) + '</strong>',
-        '      <p>Zona cattura - Conferma azione</p>',
-        '      <button type="button">Bottone</button>',
+        '      <p>' + escapeHtml(t("ui.styles.fontSample")) + '</p>',
+        '      <button type="button">' + escapeHtml(t("ui.styles.button")) + '</button>',
         '    </article>'
       ].join("");
     }).join(""),
@@ -71,12 +73,12 @@ function stylePopup(className) {
     '<div class="style-proposals-popup-scene ' + escapeHtml(className) + '">',
     '  <div class="style-proposals-popup-backdrop"></div>',
     '  <div class="style-proposals-popup-dialog">',
-    '    <span class="style-proposals-popup-kicker">Popup</span>',
-    '    <h4>Conferma azione</h4>',
-    '    <p>Procedere con questa operazione?</p>',
+    '    <span class="style-proposals-popup-kicker">' + escapeHtml(t("ui.styles.popup")) + '</span>',
+    '    <h4>' + escapeHtml(t("ui.styles.confirmAction")) + '</h4>',
+    '    <p>' + escapeHtml(t("ui.styles.proceed")) + '</p>',
     '    <div class="style-proposals-popup-actions">',
-    '      <button type="button" class="style-proposals-popup-button style-proposals-popup-yes">Si</button>',
-    '      <button type="button" class="style-proposals-popup-button style-proposals-popup-no">No</button>',
+    '      <button type="button" class="style-proposals-popup-button style-proposals-popup-yes">' + escapeHtml(t("ui.styles.yes")) + '</button>',
+    '      <button type="button" class="style-proposals-popup-button style-proposals-popup-no">' + escapeHtml(t("ui.styles.no")) + '</button>',
     '    </div>',
     '  </div>',
     '</div>'
@@ -102,14 +104,9 @@ function styleCard(number, title, text, cardClass, buttons, zoneButton, panel, p
 }
 
 function renderStyleZaino() {
-  var inventorySections = [
-    { key: "tools", title: "Strumenti" },
-    { key: "held", title: "Strumenti assegnabili" },
-    { key: "battle", title: "Strumenti battaglia" },
-    { key: "balls", title: "Poké Ball" },
-    { key: "mt", title: "MT" },
-    { key: "berries", title: "Bacche" }
-  ];
+  var inventorySections = ["tools", "held", "battle", "balls", "mt", "berries"].map(function (key) {
+    return { key: key, title: t("ui.team.inventorySections." + key) };
+  });
   var inventoryItems = resolveInventoryItems(state.inventory);
 
   function getInventorySectionKey(item) {
@@ -124,10 +121,11 @@ function renderStyleZaino() {
   }
 
   function renderInventoryItem(item) {
+    var itemName = itemDisplayName(item);
     var imageSrc = getItemDisplayImage(item);
     var itemImageClass = item.category === ItemCategory.TM ? "style-zaino-item-image style-zaino-item-image-mt" : "style-zaino-item-image";
     var imageMarkup = imageSrc
-      ? renderImage(imageSrc, item.name, itemImageClass)
+      ? renderImage(imageSrc, itemName, itemImageClass)
       : '<span class="style-zaino-item-image style-zaino-item-image-empty"></span>';
     var availabilityMarkup = isSingleCopyInventoryItem(item) ? "" : '<div class="style-zaino-item-availability"><span class="style-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
 
@@ -138,7 +136,7 @@ function renderStyleZaino() {
       availabilityMarkup,
       "  </div>",
       '  <div class="style-zaino-item-copy">',
-      '    <div class="style-zaino-item-heading"><h3 class="style-zaino-item-name">' + escapeHtml(item.name) + "</h3></div>",
+      '    <div class="style-zaino-item-heading"><h3 class="style-zaino-item-name">' + escapeHtml(itemName) + "</h3></div>",
       '    <p class="style-zaino-item-description">' + escapeHtml(itemDisplayDescription(item)) + "</p>",
       "  </div>",
       "</article>"
@@ -169,146 +167,59 @@ function renderStyleZaino() {
   return [
     '<section class="style-zaino-section" aria-labelledby="style-zaino-title">',
     '  <div class="style-proposals-heading">',
-    '    <span class="style-proposals-eyebrow">Zaino scheda allenatore</span>',
-    '    <h3 id="style-zaino-title">Zaino</h3>',
-    '    <p>Anteprima dello zaino in scheda allenatore. Oggetti e impaginazione rispecchiano la schermata /team.</p>',
+    '    <span class="style-proposals-eyebrow">' + escapeHtml(t("ui.styles.bagEyebrow")) + '</span>',
+    '    <h3 id="style-zaino-title">' + escapeHtml(t("ui.styles.bag")) + '</h3>',
+    '    <p>' + escapeHtml(t("ui.styles.bagDescription")) + '</p>',
     '  </div>',
     zainoHtml,
     '</section>'
   ].join("");
 }
 
+var STYLE_PROPOSALS = Object.freeze([
+  { number: "01", key: "cartridge", image: "bosco_smeraldo_bottone.webp" },
+  { number: "02", key: "gym", image: "lega_kanto_bottone.webp" },
+  { number: "03", key: "night", image: "torre_fantasma_bottone.webp" },
+  { number: "04", key: "dossier", image: "zone_cattura_bottone.webp" },
+  { number: "05", key: "badge", image: "campione_kanto_bottone.webp" },
+  { number: "06", key: "crystal", image: "mare_bottone.webp" },
+  { number: "07", key: "wood", image: "safari_bottone.webp" },
+  { number: "08", key: "neon", image: "zafferanopoli_bottone.webp" },
+  { number: "09", key: "brick", image: "plumbeopoli_bottone.webp" }
+]);
+
+function renderStyleProposal(proposal) {
+  var baseKey = "ui.styles.proposals." + proposal.key;
+  return styleCard(
+    proposal.number,
+    t(baseKey + ".title"),
+    t(baseKey + ".text"),
+    "style-proposals-card-" + proposal.key,
+    [
+      styleButton(t(baseKey + ".primary"), "style-proposals-button-" + proposal.key),
+      styleButton(t(baseKey + ".secondary"), "style-proposals-button-" + proposal.key + "-alt")
+    ],
+    styleZoneButton(t(baseKey + ".zone"), proposal.image, "style-proposals-zone-" + proposal.key),
+    stylePanel(t(baseKey + ".panelTitle"), t(baseKey + ".panelText"), "style-proposals-panel-" + proposal.key),
+    stylePopup("style-proposals-popup-" + proposal.key)
+  );
+}
+
 export function renderStylesScene() {
   var content = [
     '<section class="style-proposals" aria-labelledby="style-proposals-title">',
     '  <div class="style-proposals-heading">',
-    '    <span class="style-proposals-eyebrow">Proposte UI</span>',
-    '    <h2 id="style-proposals-title">Stili</h2>',
-    '    <p>Direzioni visive alternative per aggiornare bottoni, card zona, panel e popup dell\'applicazione. Le varianti includono bordi outset, doppi, tratteggiati, glow, cornici tagliate e mattoncini.</p>',
+    '    <span class="style-proposals-eyebrow">' + escapeHtml(t("ui.styles.eyebrow")) + '</span>',
+    '    <h2 id="style-proposals-title">' + escapeHtml(t("ui.styles.sceneTitle")) + '</h2>',
+    '    <p>' + escapeHtml(t("ui.styles.intro")) + '</p>',
     '  </div>',
     renderFontShowcase(),
     '  <div class="style-proposals-grid">',
-    styleCard(
-      "01",
-      "Cartuccia",
-      "Angoli netti, bordo outset e ombra corta per un look da interfaccia fisica.",
-      "style-proposals-card-cartridge",
-      [
-        styleButton("Conferma", "style-proposals-button-cartridge"),
-        styleButton("Dettagli", "style-proposals-button-cartridge-alt")
-      ],
-      styleZoneButton("Bosco Smeraldo", "bosco_smeraldo_bottone.webp", "style-proposals-zone-cartridge"),
-      stylePanel("Scheda compatta", "Cornice doppia e superficie chiara per contenuti ricorrenti.", "style-proposals-panel-cartridge"),
-      stylePopup("style-proposals-popup-cartridge")
-    ),
-    styleCard(
-      "02",
-      "Palestra",
-      "Accenti energetici, gradienti caldi e bordo luminoso per azioni importanti.",
-      "style-proposals-card-gym",
-      [
-        styleButton("Sfida", "style-proposals-button-gym"),
-        styleButton("Borsa", "style-proposals-button-gym-alt")
-      ],
-      styleZoneButton("Lega Kanto", "lega_kanto_bottone.webp", "style-proposals-zone-gym"),
-      stylePanel("Obiettivo", "Panel evidenziato per missioni, premi e riepiloghi palestra.", "style-proposals-panel-gym"),
-      stylePopup("style-proposals-popup-gym")
-    ),
-    styleCard(
-      "03",
-      "Notturno",
-      "Toni scuri, bagliori morbidi e contrasto alto per modali e battaglie.",
-      "style-proposals-card-night",
-      [
-        styleButton("Continua", "style-proposals-button-night"),
-        styleButton("Annulla", "style-proposals-button-night-alt")
-      ],
-      styleZoneButton("Torre Fantasma", "torre_fantasma_bottone.webp", "style-proposals-zone-night"),
-      stylePanel("Log evento", "Contenitore scuro pensato per messaggi e cronologia battaglia.", "style-proposals-panel-night"),
-      stylePopup("style-proposals-popup-night")
-    ),
-    styleCard(
-      "04",
-      "Dossier",
-      "Layout tecnico con bordo tratteggiato, etichette secche e gerarchia da scheda dati.",
-      "style-proposals-card-dossier",
-      [
-        styleButton("Analizza", "style-proposals-button-dossier"),
-        styleButton("Archivio", "style-proposals-button-dossier-alt")
-      ],
-      styleZoneButton("Zone cattura", "zone_cattura_bottone.webp", "style-proposals-zone-dossier"),
-      stylePanel("Report", "Cornice dashed utile per regole, statistiche e blocchi informativi.", "style-proposals-panel-dossier"),
-      stylePopup("style-proposals-popup-dossier")
-    ),
-    styleCard(
-      "05",
-      "Badge",
-      "Forme piu tonde, bordo ad anello e pulsanti a medaglia per premi o progressione.",
-      "style-proposals-card-badge",
-      [
-        styleButton("Riscatta", "style-proposals-button-badge"),
-        styleButton("Premi", "style-proposals-button-badge-alt")
-      ],
-      styleZoneButton("Campione", "campione_kanto_bottone.webp", "style-proposals-zone-badge"),
-      stylePanel("Ricompensa", "Bordo spesso e radiale per card celebrative o sblocchi.", "style-proposals-panel-badge"),
-      stylePopup("style-proposals-popup-badge")
-    ),
-    styleCard(
-      "06",
-      "Cristallo",
-      "Superfici leggere, bordo semitrasparente e taglio diagonale per aree speciali.",
-      "style-proposals-card-crystal",
-      [
-        styleButton("Apri", "style-proposals-button-crystal"),
-        styleButton("Filtra", "style-proposals-button-crystal-alt")
-      ],
-      styleZoneButton("Mare", "mare_bottone.webp", "style-proposals-zone-crystal"),
-      stylePanel("Archivio raro", "Cornice sfumata e angoli tagliati per contenuti premium o rari.", "style-proposals-panel-crystal"),
-      stylePopup("style-proposals-popup-crystal")
-    ),
-    styleCard(
-      "07",
-      "Legno",
-      "Toni caldi del legno, bordo intagliato con effetto rilievo per un tocco naturale e rustico.",
-      "style-proposals-card-wood",
-      [
-        styleButton("Esplora", "style-proposals-button-wood"),
-        styleButton("Raccogli", "style-proposals-button-wood-alt")
-      ],
-      styleZoneButton("Safari", "safari_bottone.webp", "style-proposals-zone-wood"),
-      stylePanel("Tana", "Interno scanalato che ricorda le assi di un tavolo da taverna.", "style-proposals-panel-wood"),
-      stylePopup("style-proposals-popup-wood")
-    ),
-    styleCard(
-      "08",
-      "Neon",
-      "Sfondo scuro, bordi glow al laser e pulsanti fluorescenti per interfacce hi-tech.",
-      "style-proposals-card-neon",
-      [
-        styleButton("Avvia", "style-proposals-button-neon"),
-        styleButton("Reset", "style-proposals-button-neon-alt")
-      ],
-      styleZoneButton("Zafferanopoli", "zafferanopoli_bottone.webp", "style-proposals-zone-neon"),
-      stylePanel("Console", "Bordo animato con bagliore ciano per log e cruscotti digitali.", "style-proposals-panel-neon"),
-      stylePopup("style-proposals-popup-neon")
-    ),
-    styleCard(
-      "09",
-      "Mattoncini",
-      "Cornice costruita a blocchi alternati: l'effetto mattone resta nel bordo e non invade il contenuto.",
-      "style-proposals-card-brick",
-      [
-        styleButton("Costruisci", "style-proposals-button-brick"),
-        styleButton("Ripara", "style-proposals-button-brick-alt")
-      ],
-      styleZoneButton("Plumbeopoli", "plumbeopoli_bottone.webp", "style-proposals-zone-brick"),
-      stylePanel("Muro", "Panel con cornice a mattoni esterna e area interna pulita.", "style-proposals-panel-brick"),
-      stylePopup("style-proposals-popup-brick")
-    ),
+    STYLE_PROPOSALS.map(renderStyleProposal).join(""),
     '  </div>',
     renderStyleZaino(),
     '</section>'
   ].join("");
 
-  return sceneShell("Stili", "", content, "", "scene-content-style-proposals", "parent-back");
+  return sceneShell(t("ui.styles.sceneTitle"), "", content, "", "scene-content-style-proposals", "parent-back");
 }

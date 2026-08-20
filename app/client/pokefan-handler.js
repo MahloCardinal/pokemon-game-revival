@@ -15,6 +15,8 @@ import { isDebugUser } from "./debug-tools.js";
 import { MISSION_CATEGORY_ADVENTURE, MISSION_CATEGORY_DAILY } from "../data/pokefan-missions.js";
 import { getCurrentPlayerState } from "../api/player-command.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
+import { itemDisplayName, speciesDisplayName } from "./entity-text.js";
+import { getLocale, messageDescriptor, t } from "./i18n.js";
 
 var pendingMissionChoice = null;
 var missionChoiceCleanup = null;
@@ -74,9 +76,9 @@ function missionChoiceEntries(mission) {
       var encounter = species && species.encounter || {};
       return species && encounter.rarity !== "legendary" && (!reward.excludeFossils || encounter.rarity !== "fossil")
         && minimumPokemonRewardLevel(speciesKey) <= level
-        ? { kind: "pokemon", speciesKey: speciesKey, level: level, label: species.name + " (Lv. " + level + ")" }
+        ? { kind: "pokemon", speciesKey: speciesKey, level: level, label: speciesDisplayName(speciesKey) + " (" + t("common.units.levelShort") + ". " + level + ")" }
         : null;
-    }).filter(Boolean).sort(function (left, right) { return left.label.localeCompare(right.label, "it"); });
+    }).filter(Boolean).sort(function (left, right) { return left.label.localeCompare(right.label, getLocale()); });
   }
   return (reward.choices || []).filter(function (choice) {
     var item = getItemByIndex(choice.itemIndex);
@@ -99,7 +101,7 @@ function openMissionChoiceMenu(anchorElement, mission) {
   panel.style.top = "0";
   panel.style.visibility = "hidden";
   title.className = "pokefan-choice-title";
-  title.textContent = "Scegli la ricompensa";
+  title.textContent = t("ui.pokefan.chooseReward");
   list.className = "pokefan-choice-list";
   missionChoiceEntries(mission).forEach(function (choice) {
     var item = getItemByIndex(choice.itemIndex);
@@ -114,7 +116,9 @@ function openMissionChoiceMenu(anchorElement, mission) {
     } else {
       choiceButton.dataset.itemIndex = String(choice.itemIndex);
     }
-    choiceButton.textContent = choice.label || (item ? item.name : "Ricompensa");
+    choiceButton.textContent = choice.kind === "pokemon"
+      ? choice.label
+      : item ? itemDisplayName(item) : t("ui.pokefan.fallbackReward");
     list.appendChild(choiceButton);
   });
   panel.appendChild(title);
@@ -143,8 +147,9 @@ function openMissionChoiceMenu(anchorElement, mission) {
 }
 
 function showClaimError(message) {
-  setMissionError(message || "Riscossione non riuscita.");
-  openMessage([message || "Riscossione non riuscita. Riprova."], { title: "Club Pokéfan" });
+  var localizedMessage = message || messageDescriptor("pokefan.claimFailed");
+  setMissionError(localizedMessage);
+  openMessage([localizedMessage], { title: messageDescriptor("pokefan.title") });
   renderRegions(["pokefan-content"]);
 }
 
@@ -153,7 +158,7 @@ function commitMissionClaim(mission, selectedReward) {
   renderRegions(["pokefan-content"]);
   claimPromise.then(function (result) {
     if (!result.ok) {
-      showClaimError(result.message);
+      showClaimError(messageDescriptor("pokefan.claimFailed"));
       return;
     }
     if (selectedReward && selectedReward.kind === "pokemon" && result.projection) {
@@ -188,11 +193,11 @@ registerAction("pokefan-claim-mission", function (element) {
   mission = missionCatalogByIndex(missionIndex);
   runtimeMission = missionByIndex(missionIndex);
   if (!mission || !runtimeMission) {
-    showClaimError("Missione non trovata.");
+    showClaimError(messageDescriptor("pokefan.missionNotFound"));
     return;
   }
   if (Number(runtimeMission.counter) < Number(mission.target)) {
-    showClaimError("Missione non ancora completata.");
+    showClaimError(messageDescriptor("pokefan.missionIncomplete"));
     return;
   }
   if (mission.reward && (mission.reward.kind === "choice" || mission.reward.kind === "pokemon_choice")) {
@@ -215,7 +220,7 @@ registerAction("pokefan-debug-complete-mission", async function (element) {
   runtimeMission = missionByIndex(missionIndex);
   if (!mission || !runtimeMission || !missionIsActive(runtimeMission)
     || runtimeMission.claimStatus !== "unclaimed" || Number(runtimeMission.counter) >= Number(mission.target)) {
-    showClaimError("La missione non può essere completata con il comando debug.");
+    showClaimError(messageDescriptor("pokefan.debugUnavailable"));
     return;
   }
   state.missions.debugCompletingMissionIndex = missionIndex;
@@ -228,7 +233,7 @@ registerAction("pokefan-debug-complete-mission", async function (element) {
     });
   } catch (error) {
     state.missions.debugCompletingMissionIndex = null;
-    showClaimError(error && error.message || "Completamento debug della missione non riuscito.");
+    showClaimError(messageDescriptor("pokefan.debugFailed"));
     return;
   }
   state.missions.debugCompletingMissionIndex = null;
@@ -238,13 +243,13 @@ registerAction("pokefan-debug-complete-mission", async function (element) {
       var refreshed = await getCurrentPlayerState();
       if (refreshed.ok && refreshed.projection && refreshed.projection.has_player) {
         applyPlayerSave(saveFromAuthoritativeProjection(refreshed.projection));
-        showClaimError("Lo stato del giocatore è cambiato. Dati aggiornati: riprova il comando debug.");
+        showClaimError(messageDescriptor("pokefan.debugStateChanged"));
         return;
       }
-      showClaimError("Lo stato del giocatore è cambiato e non è stato possibile aggiornarlo. Ricarica prima di riprovare.");
+      showClaimError(messageDescriptor("pokefan.debugRefreshFailed"));
       return;
     }
-    showClaimError(result && result.message || "Completamento debug della missione non riuscito.");
+    showClaimError(messageDescriptor("pokefan.debugFailed"));
     return;
   }
   applyPlayerSave(saveFromAuthoritativeProjection(playerState));

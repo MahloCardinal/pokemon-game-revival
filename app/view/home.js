@@ -1,12 +1,10 @@
 import { assetPath, escapeHtml, renderImage } from "../client/asset-helpers.js";
 import { isDebugUser } from "../client/debug-tools.js";
 import { state } from "../client/game-state.js";
-import { ZONE_CARD_DESCRIPTIONS } from "../data/zones-text.js";
 import { button, sceneShell } from "../client/render-utils.js";
-
-function badgeSubjectName(name) {
-  return String(name || "").replace(/^Medaglia\s+/i, "").trim();
-}
+import { t } from "../client/i18n.js";
+import { pokemonDisplayName } from "../client/entity-text.js";
+import { resolveText } from "../client/i18n.js";
 
 function strongText(value) {
   return "<strong>" + escapeHtml(value) + "</strong>";
@@ -17,23 +15,23 @@ function renderAdminMessageText(text) {
 }
 
 function renderActivityText(entry) {
-  var playerName = entry && entry.playerUsername ? entry.playerUsername : "Allenatore";
+  var playerName = entry && entry.playerUsername ? entry.playerUsername : t("ui.home.defaultTrainer");
   var subjectName = entry && entry.subjectName ? entry.subjectName : "";
   var secondarySubjectName = entry && entry.secondarySubjectName ? entry.secondarySubjectName : "";
   if (entry && entry.eventType === "starter") {
-    return strongText(playerName) + " ha iniziato l'avventura con " + strongText(subjectName) + ", buon divertimento!";
+    return t("ui.home.events.starter", { player: strongText(playerName), subject: strongText(pokemonDisplayName({ speciesKey: subjectName })) });
   }
   if (entry && entry.eventType === "capture") {
-    return strongText(playerName) + " ha catturato " + strongText(subjectName) + ", un Pokémon particolarmente raro, continua così!";
+    return t("ui.home.events.capture", { player: strongText(playerName), subject: strongText(pokemonDisplayName({ speciesKey: subjectName })) });
   }
   if (entry && entry.eventType === "badge") {
-    return strongText(playerName) + " ha conquistato la " + strongText("Medaglia " + badgeSubjectName(subjectName)) + ", complimenti!";
+    return t("ui.home.events.badge", { player: strongText(playerName), badge: strongText(t("ui.gyms.badges." + subjectName)) });
   }
   if (entry && entry.eventType === "league") {
-    return strongText(playerName) + " ha sconfitto " + strongText(subjectName) + ", complimenti!";
+    return t("ui.home.events.league", { player: strongText(playerName), subject: strongText(t("ui.gyms.trainers." + subjectName)) });
   }
   if (entry && entry.eventType === "evolution") {
-    return strongText(subjectName) + " di " + strongText(playerName) + " si è evoluto in " + strongText(secondarySubjectName) + "!";
+    return t("ui.home.events.evolution", { player: strongText(playerName), subject: strongText(pokemonDisplayName({ speciesKey: subjectName })), secondarySubject: strongText(pokemonDisplayName({ speciesKey: secondarySubjectName })) });
   }
   return "";
 }
@@ -43,17 +41,17 @@ function renderAdminActivityText(entry) {
   if (!entry || entry.eventType !== "admin_message") {
     return "";
   }
-  return '<strong class="home-activity-service-label">Comunicazione di servizio</strong>: ' + renderAdminMessageText(subjectName);
+  return '<strong class="home-activity-service-label">' + escapeHtml(t("ui.home.serviceCommunication")) + "</strong>: " + renderAdminMessageText(subjectName);
 }
 
 function renderActivityPanelBody(feed, rows, emptyText, renderEntry) {
   var body;
   if (feed.error) {
-    body = '<p class="home-activity-empty">' + escapeHtml(feed.error) + "</p>";
+    body = '<p class="home-activity-empty">' + escapeHtml(resolveText(feed.error)) + "</p>";
   } else if (!feed.loaded) {
-    body = '<p class="home-activity-empty">Caricamento attività; recenti...</p>';
+    body = '<p class="home-activity-empty">' + escapeHtml(t("ui.home.loadingActivity")) + "</p>";
   } else if (!rows.length) {
-    body = '<p class="home-activity-empty">' + emptyText + "</p>";
+    body = '<p class="home-activity-empty">' + escapeHtml(emptyText) + "</p>";
   } else {
     body = '<ul class="home-activity-list">' + rows.map(function (entry) {
       var text = renderEntry(entry);
@@ -64,10 +62,10 @@ function renderActivityPanelBody(feed, rows, emptyText, renderEntry) {
 }
 
 function renderUserActivityFeedPanel(feed, rows, selectedDashboard) {
-  var body = renderActivityPanelBody(feed, rows, "Nessuna attività recente.", renderActivityText);
+  var body = renderActivityPanelBody(feed, rows, t("ui.home.noRecentActivity"), renderActivityText);
   return [
-    '<section id="home-player-activity-panel" class="home-activity-panel is-player-panel' + (selectedDashboard === "players" ? " is-active" : "") + '" aria-label="Eventi GdR">',
-    '  <h2 class="home-activity-header">Eventi GdR</h2>',
+    '<section id="home-player-activity-panel" class="home-activity-panel is-player-panel' + (selectedDashboard === "players" ? " is-active" : "") + '" aria-label="' + escapeHtml(t("ui.home.eventsTitle")) + '">',
+    '  <h2 class="home-activity-header">' + escapeHtml(t("ui.home.eventsTitle")) + "</h2>",
     '  <div class="home-activity-scroll">',
     body,
     "  </div>",
@@ -76,10 +74,10 @@ function renderUserActivityFeedPanel(feed, rows, selectedDashboard) {
 }
 
 function renderAdminMessagesPanel(feed, rows, selectedDashboard) {
-  var body = renderActivityPanelBody(feed, rows, "Nessun messaggio dell'admin.", renderAdminActivityText);
+  var body = renderActivityPanelBody(feed, rows, t("ui.home.noAdminMessages"), renderAdminActivityText);
   return [
-    '<section id="home-admin-activity-panel" class="home-activity-panel is-admin-panel' + (selectedDashboard === "admin" ? " is-active" : "") + '" aria-label="Avvisi">',
-    '  <h2 class="home-activity-header">Avvisi</h2>',
+    '<section id="home-admin-activity-panel" class="home-activity-panel is-admin-panel' + (selectedDashboard === "admin" ? " is-active" : "") + '" aria-label="' + escapeHtml(t("ui.home.alertsTitle")) + '">',
+    '  <h2 class="home-activity-header">' + escapeHtml(t("ui.home.alertsTitle")) + "</h2>",
     '  <div class="home-activity-scroll">',
     body,
     "  </div>",
@@ -89,9 +87,9 @@ function renderAdminMessagesPanel(feed, rows, selectedDashboard) {
 
 function renderActivityDashboardTabs(selectedDashboard) {
   return [
-    '<div class="home-activity-dashboard-tabs" aria-label="Seleziona dashboard">',
-    button("Eventi GdR", "home-activity-dashboard-select", 'data-dashboard="players" aria-controls="home-player-activity-panel" aria-pressed="' + (selectedDashboard === "players" ? "true" : "false") + '"', "home-activity-dashboard-tab is-player-tab" + (selectedDashboard === "players" ? " is-active" : "")),
-    button("Avvisi", "home-activity-dashboard-select", 'data-dashboard="admin" aria-controls="home-admin-activity-panel" aria-pressed="' + (selectedDashboard === "admin" ? "true" : "false") + '"', "home-activity-dashboard-tab is-admin-tab" + (selectedDashboard === "admin" ? " is-active" : "")),
+    '<div class="home-activity-dashboard-tabs" aria-label="' + escapeHtml(t("ui.home.selectDashboard")) + '">',
+    button(t("ui.home.eventsTitle"), "home-activity-dashboard-select", 'data-dashboard="players" aria-controls="home-player-activity-panel" aria-pressed="' + (selectedDashboard === "players" ? "true" : "false") + '"', "home-activity-dashboard-tab is-player-tab" + (selectedDashboard === "players" ? " is-active" : "")),
+    button(t("ui.home.alertsTitle"), "home-activity-dashboard-select", 'data-dashboard="admin" aria-controls="home-admin-activity-panel" aria-pressed="' + (selectedDashboard === "admin" ? "true" : "false") + '"', "home-activity-dashboard-tab is-admin-tab" + (selectedDashboard === "admin" ? " is-active" : "")),
     "</div>"
   ].join("");
 }
@@ -109,8 +107,9 @@ export function renderActivityFeedSection() {
 }
 
 export function renderHomeScene() {
-  function homeCard(title, action, imageFile, href, descKey) {
-    var desc = descKey ? (ZONE_CARD_DESCRIPTIONS[descKey] || "") : "";
+  function homeCard(key, action, imageFile, href) {
+    var title = t("ui.zoneCards." + key + ".title");
+    var desc = t("ui.zoneCards." + key + ".description");
     var cardClass = imageFile ? "" : " home-zone-card-text-only";
     var mediaMarkup = imageFile ? [
       '  <div class="zone-card-media">',
@@ -128,17 +127,17 @@ export function renderHomeScene() {
   }
 
   var cards = [
-    homeCard("Regolamento", "open-rules", "regolamento_bottone.webp", "/rules", "rules"),
-    homeCard("Zone cattura", "open-zones", "zone_cattura_bottone.webp", "/zones", "zones"),
-    homeCard("Città", "open-city", "citta_bottone.webp", "/city", "city"),
-    homeCard("Scheda", "open-team", "scheda_bottone.webp", "/team", "team"),
-    homeCard("Box", "open-box", "box_bottone.webp", "/box", "box"),
-    homeCard("Area Lotta", "open-battle-area", "area_lotta_bottone.webp", "/battle-area", "battle_area"),
-    homeCard("Lega Kanto", "open-gyms", "lega_kanto_bottone.webp", "/gyms", "gyms")
+    homeCard("rules", "open-rules", "regolamento_bottone.webp", "/rules"),
+    homeCard("zones", "open-zones", "zone_cattura_bottone.webp", "/zones"),
+    homeCard("city", "open-city", "citta_bottone.webp", "/city"),
+    homeCard("team", "open-team", "scheda_bottone.webp", "/team"),
+    homeCard("box", "open-box", "box_bottone.webp", "/box"),
+    homeCard("battle_area", "open-battle-area", "area_lotta_bottone.webp", "/battle-area"),
+    homeCard("kanto_league", "open-gyms", "lega_kanto_bottone.webp", "/gyms")
   ];
 
   if (isDebugUser()) {
-    cards.push(homeCard("Stili", "open-styles", "", "/styles"));
+    cards.push(homeCard("styles", "open-styles", "", "/styles"));
   }
 
   var content = [
@@ -150,5 +149,5 @@ export function renderHomeScene() {
     "</section>"
   ].join("");
 
-  return sceneShell("Home", "", content, "", "scene-content-home", "parent-back", true);
+  return sceneShell(t("ui.sceneTitles.home"), "", content, "", "scene-content-home", "parent-back", true);
 }

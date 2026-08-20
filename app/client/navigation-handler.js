@@ -2,6 +2,7 @@ import { registerAction } from "./action-registry.js";
 import { battleReturnScene } from "./battle-handler.js";
 import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
 import { openConfirm, openMessage } from "./dialog-handler.js";
+import { messageDescriptor } from "./i18n.js";
 import {
   markDirty,
   render,
@@ -15,12 +16,13 @@ import { createCaptureScene } from "./router.js";
 import { renderRulesContent, rulesSectionByKey } from "../view/rules.js";
 import { clearGardenHarvestNotices, refreshDailyBerryLimit } from "./garden-handler.js";
 import { refreshMissionState } from "./mission-runtime.js";
-import { playerCanAccessZone, zoneAccessRequirement } from "../data/zone-access-rules.js";
+import { playerCanAccessZone } from "../data/zone-access-rules.js";
 import { loadTrainingDailyLimits } from "../api/training-zone.js";
 import { kantoEliteFourChallengeStatus } from "../data/gyms.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
 import { isDebugUser } from "./debug-tools.js";
 import { discardPreparedAuthoritativeTraining } from "./training-zone-handler.js";
+import { t } from "./i18n.js";
 
 registerAction("open-team", function(element) {
     setScene({ name: "team" });
@@ -189,7 +191,7 @@ registerAction("parent-back", function(element) {
     }
     if (state.scene.name === "battle") {
       if (!state.scene.terminalExitReady) {
-        openMessage("Concludi o abbandona lo scontro prima di uscire");
+        openMessage([messageDescriptor("system.finishBattleBeforeExit")]);
         return;
       }
       setScene(battleReturnScene(state.scene));
@@ -219,9 +221,8 @@ registerAction("open-box", function(element) {
 
 registerAction("open-zone", function(element) {
     var zoneName = element.dataset.zone;
-    var requirement = zoneAccessRequirement(zoneName);
     if (!playerCanAccessZone(state.inventory, zoneName)) {
-      openClosedSectionRequirementPanel(element, requirement.message);
+      openClosedSectionRequirementPanel(element, t("ui.zoneAccess." + zoneName));
       return;
     }
     setScene(createCaptureScene(zoneName));

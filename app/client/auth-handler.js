@@ -3,6 +3,7 @@ import { registerAction } from "./action-registry.js";
 import { openConfirm } from "./dialog-handler.js";
 import { setAuthMode, submitAccountDeletion, submitLogin, submitLogout, submitPasswordRecovery, submitRecoveredPassword, submitRegistration } from "./session.js";
 import { root } from "./game-state.js";
+import { messageDescriptor } from "./i18n.js";
 
 function formFieldValue(form, fieldName) {
     var field = form && form.querySelector('[data-field="' + fieldName + '"]');
@@ -72,15 +73,15 @@ registerAction("auth-logout", function(element) {
 
 registerAction("auth-delete-account", function(element) {
     openConfirm(
-      "Elimina account",
+      messageDescriptor("auth.deleteTitle"),
       [
-        "Vuoi davvero eliminare questo account?",
-        "L'operazione non può essere annullata."
+        messageDescriptor("auth.deleteConfirm"),
+        messageDescriptor("auth.deleteIrreversible")
       ],
       function () {
         submitAccountDeletion();
       },
-      { confirmLabel: "Elimina account" }
+      { confirmLabel: messageDescriptor("auth.deleteTitle") }
     );
     return;
 

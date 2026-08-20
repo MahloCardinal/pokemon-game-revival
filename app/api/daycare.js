@@ -21,14 +21,14 @@ function normalizeDaycareRow(row) {
   };
 }
 
-function normalizeRpcResult(data, fallbackMessage) {
+function normalizeRpcResult(data, fallbackCode) {
   if (!data || typeof data !== "object") {
-    return { ok: false, message: fallbackMessage || "Operazione Pensione non riuscita." };
+    return { ok: false, code: fallbackCode || "daycare_operation_failed" };
   }
   return {
     ok: data.ok !== false,
     reason: data.reason || "",
-    message: data.message || fallbackMessage || "Operazione Pensione non riuscita.",
+    code: data.ok === false ? data.reason || fallbackCode || "daycare_operation_failed" : "",
     pokedollars: Number(data.pokedollars),
     row: normalizeDaycareRow(data.row)
   };
@@ -38,7 +38,7 @@ async function userAndClient() {
   var client = getSupabaseClient();
   var user;
   if (!client) {
-    return { ok: false, message: "Configurazione Supabase mancante." };
+    return { ok: false, code: "missing_configuration" };
   }
   user = await currentUserId(client);
   if (!user.ok) {
@@ -53,7 +53,7 @@ export async function loadPlayerDaycare() {
   result = await getCurrentPlayerState();
   return result.ok
     ? { ok: true, rows: (result.projection && result.projection.daycare || []).map(normalizeDaycareRow).filter(Boolean), projection: result.projection }
-    : { ok: false, message: result.message, rows: [] };
+    : { ok: false, code: result.code || "daycare_load_failed", rows: [] };
 }
 
 export async function depositDaycarePokemon(slotIndex, pokemon) {
@@ -61,7 +61,7 @@ export async function depositDaycarePokemon(slotIndex, pokemon) {
   var payload;
   var result;
   if (!auth.ok) {
-    return { ok: false, message: auth.message };
+    return { ok: false, code: auth.code || "invalid_session" };
   }
   payload = {
     auth_user_id: auth.userId,
@@ -73,7 +73,7 @@ export async function depositDaycarePokemon(slotIndex, pokemon) {
     .select("slot_index, pokemon, deposited_at, status, pending_levels")
     .maybeSingle();
   if (result.error) {
-    return { ok: false, message: result.error.message };
+    return { ok: false, code: "daycare_deposit_failed", detail: result.error.message || "" };
   }
   return { ok: true, row: normalizeDaycareRow(result.data) };
 }
@@ -81,7 +81,7 @@ export async function depositDaycarePokemon(slotIndex, pokemon) {
 export async function deleteDaycarePokemon(slotIndex) {
   var auth = await userAndClient();
   if (!auth.ok) {
-    return { ok: false, message: auth.message };
+    return { ok: false, code: auth.code || "invalid_session" };
   }
   return runQuery(auth.client.from("player_daycare")
     .delete()
@@ -105,7 +105,7 @@ export async function startDaycareWithdraw(slotIndex, pendingLevels, cost) {
   var client = getSupabaseClient();
   var result;
   if (!client) {
-    return { ok: false, message: "Configurazione Supabase mancante." };
+    return { ok: false, code: "missing_configuration" };
   }
   result = await client.rpc("start_daycare_withdraw", {
     p_slot_index: Math.max(0, Math.min(1, Math.floor(Number(slotIndex) || 0))),
@@ -116,9 +116,9 @@ export async function startDaycareWithdraw(slotIndex, pendingLevels, cost) {
     p_max_pending_levels: DAYCARE_MAX_PENDING_LEVELS
   });
   if (result.error) {
-    return { ok: false, message: result.error.message };
+    return { ok: false, code: "daycare_withdraw_failed", detail: result.error.message || "" };
   }
-  return normalizeRpcResult(result.data, "Ritiro non riuscito.");
+  return normalizeRpcResult(result.data, "daycare_withdraw_failed");
 }
 
 export async function completeDaycareWithdraw(slotIndex, pokemonList, state) {
@@ -126,7 +126,7 @@ export async function completeDaycareWithdraw(slotIndex, pokemonList, state) {
   var dexPayload;
   var result;
   if (!client) {
-    return { ok: false, message: "Configurazione Supabase mancante." };
+    return { ok: false, code: "missing_configuration" };
   }
   dexPayload = state && state.pokedexDirty ? serializePokedexNumbers(state.playerDex) : null;
   result = await client.rpc("complete_daycare_withdraw", {
@@ -135,9 +135,9 @@ export async function completeDaycareWithdraw(slotIndex, pokemonList, state) {
     p_dex: dexPayload
   });
   if (result.error) {
-    return { ok: false, message: result.error.message };
+    return { ok: false, code: "daycare_withdraw_completion_failed", detail: result.error.message || "" };
   }
-  result = normalizeRpcResult(result.data, "Completamento ritiro non riuscito.");
+  result = normalizeRpcResult(result.data, "daycare_withdraw_completion_failed");
   if (result.ok && state && dexPayload && JSON.stringify(dexPayload) === JSON.stringify(serializePokedexNumbers(state.playerDex))) {
     state.pokedexDirty = false;
   }

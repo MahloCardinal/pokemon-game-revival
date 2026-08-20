@@ -12,6 +12,8 @@ var findTeamCompositionViolation = Engine.findTeamCompositionViolation;
 import * as Engine from "../engine/index.js";
 import { activateAuthoritativeTrainingBattle, authoritativeBattleRuntimeOwnerId, discardAuthoritativeTrainingBattle, getAuthoritativeBattle, prepareAuthoritativeTrainingBattle, startAuthoritativeDebugTrainingBattle } from "../api/battle.js";
 import { openAuthoritativeBattleProjection } from "./battle-handler.js";
+import { pokemonDisplayName, teamViolationLines } from "./entity-text.js";
+import { messageDescriptor, textDescriptor } from "./i18n.js";
 
 var DEBUG_TRAINING_START_STORAGE_KEY = "pokemon-game-revival:pending-debug-training-start";
 var debugTrainingStartRecovery = null;
@@ -81,12 +83,12 @@ registerAction("training-zone-search", function(element) {
     if (state.scene && state.scene.name === "training-zone") {
       var searchTrainingDifficulty = trainingDifficultyConfig(state.scene.trainingDifficulty) ? state.scene.trainingDifficulty : "";
       if (!searchTrainingDifficulty) {
-        openMessage(["Scegli prima la difficoltà dello sfidante."], { title: "Zona allenamento" });
+        openMessage([messageDescriptor("training.chooseDifficulty")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
         return;
       }
       var isDebug = searchTrainingDifficulty === TRAINING_ZONE_DEBUG_DIFFICULTY.key;
       if (!isDebug && !state.team.filter(Boolean).length) {
-        openMessage(["Non hai Pokémon in squadra."], { title: "Zona allenamento" });
+        openMessage([messageDescriptor("training.emptyTeam")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
         return;
       }
       if (!isDebug) {
@@ -119,12 +121,12 @@ registerAction("training-zone-debug-add-pokemon", function(element) {
     }
     opponentTeam = Array.isArray(state.scene.trainingOpponentTeam) ? state.scene.trainingOpponentTeam : [];
     if (opponentTeam.length >= TEAM_MAX) {
-      openInlineMessage(["La squadra dello sfidante è piena."], { title: "Zona allenamento" });
+      openInlineMessage([messageDescriptor("training.opponentTeamFull")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
       return;
     }
     result = createDebugPokemonFromPanel(element ? element.closest(".trainer-debug-pokemon-panel") : null);
     if (!result.ok) {
-      openInlineMessage(result.errors || ["Pokémon non valido."], { title: "Zona allenamento" });
+      openInlineMessage(result.errors || [messageDescriptor("training.invalidPokemon")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
       return;
     }
     opponentTeam.push(result.pokemon);
@@ -168,29 +170,29 @@ registerAction("training-zone-start", function(element) {
       playerPokemon = state.team.filter(Boolean);
       opponentTeam = Array.isArray(state.scene.trainingOpponentTeam) ? state.scene.trainingOpponentTeam : [];
       if (!config) {
-        openMessage(["Scegli prima la difficoltà dello sfidante."], { title: "Zona allenamento" });
+        openMessage([messageDescriptor("training.chooseDifficulty")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
         return;
       }
       if (config.debug && !isDebugUser()) {
         return;
       }
       if (!playerPokemon.length) {
-        openMessage(["Non hai Pokémon in squadra."], { title: "Zona allenamento" });
+        openMessage([messageDescriptor("training.emptyTeam")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
         return;
       }
       violation = findTeamCompositionViolation(playerPokemon);
       if (violation) {
-        openMessage(violation.lines, { title: "Zona allenamento" });
+        openMessage(teamViolationLines(violation), { title: textDescriptor("ui.sceneTitles.trainingZone") });
         return;
       }
       if (config.debug ? !opponentTeam.length : !state.scene.trainingPreparedBattle) {
-        openMessage(["Cerca prima uno sfidante."], { title: "Zona allenamento" });
+        openMessage([messageDescriptor("training.findOpponentFirst")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
         return;
       }
       var authoritativeEntries = state.team.map(function (pokemon, slot) { return pokemon ? { pokemon: pokemon, slot: slot } : null; }).filter(Boolean);
       if (authoritativeEntries.length > 1) {
         openBattleStartTargetPanel(element, authoritativeEntries.map(function (entry) {
-           return { name: entry.pokemon.name, index: entry.slot };
+           return { name: pokemonDisplayName(entry.pokemon), index: entry.slot };
         }), function (activeSlot) { startAuthoritativeTraining(state.scene, activeSlot, config.debug); });
       } else {
         startAuthoritativeTraining(state.scene, authoritativeEntries[0].slot, config.debug);
@@ -233,7 +235,7 @@ function startAuthoritativeTraining(trainingScene, activeSlot, debug) {
         recoverAuthoritativeTrainingStart(result, trainingScene, { commandId: debug ? input.commandId : "" });
         return;
       }
-      openMessage([result.message || "Impossibile avviare la sfida autoritativa."], { title: "Zona allenamento" });
+      openMessage([messageDescriptor("training.startFailed")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
       render();
       return;
     }
@@ -246,7 +248,7 @@ function startAuthoritativeTraining(trainingScene, activeSlot, debug) {
     openAuthoritativeBattleProjection(result.battle, result.events, { history: "push" });
   }).catch(function (error) {
     state.battleStartPending = false;
-    openMessage([error.message || "Impossibile avviare la sfida autoritativa."], { title: "Zona allenamento" });
+    openMessage([messageDescriptor("training.startFailed")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
     render();
   });
 }
@@ -254,7 +256,7 @@ function startAuthoritativeTraining(trainingScene, activeSlot, debug) {
 function prepareAuthoritativeTrainingOpponent(trainingScene, difficulty) {
   var previewActiveSlot = state.team.findIndex(function (pokemon) { return Boolean(pokemon); });
   if (previewActiveSlot < 0) {
-    openMessage(["Non hai Pokémon in squadra."], { title: "Zona allenamento" });
+    openMessage([messageDescriptor("training.emptyTeam")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
     return;
   }
   state.battleStartPending = true;
@@ -270,7 +272,7 @@ function prepareAuthoritativeTrainingOpponent(trainingScene, difficulty) {
       if (mayHaveCreatedAuthoritativeTraining(result)) {
         return recoverAuthoritativeTrainingStart(result, trainingScene);
       }
-      openMessage([result.message || "Impossibile cercare uno sfidante autoritativo."], { title: "Zona allenamento" });
+      openMessage([messageDescriptor("training.searchFailed")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
       return;
     }
     if (state.scene !== trainingScene) {
@@ -286,7 +288,7 @@ function prepareAuthoritativeTrainingOpponent(trainingScene, difficulty) {
     trainingScene.trainingAuthoritativeReady = true;
     state.authoritativeRevision = result.playerRevision;
   }).catch(function (error) {
-    openMessage([error.message || "Impossibile cercare uno sfidante autoritativo."], { title: "Zona allenamento" });
+    openMessage([messageDescriptor("training.searchFailed")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
   }).finally(function () {
     state.battleStartPending = false;
     if (state.scene === trainingScene) { render(); }
@@ -305,7 +307,7 @@ export function discardPreparedAuthoritativeTraining(trainingScene) {
     runtimeOwnerId: authoritativeBattleRuntimeOwnerId()
   }).then(function (result) {
     if (!result.ok) {
-      openMessage([result.message || "Impossibile sostituire lo sfidante autoritativo."], { title: "Zona allenamento" });
+      openMessage([messageDescriptor("training.replaceFailed")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
       return false;
     }
     state.authoritativeRevision = result.playerRevision;
@@ -315,7 +317,7 @@ export function discardPreparedAuthoritativeTraining(trainingScene) {
     trainingScene.trainingPreparedBattle = null;
     return true;
   }).catch(function (error) {
-    openMessage([error.message || "Impossibile sostituire lo sfidante autoritativo."], { title: "Zona allenamento" });
+    openMessage([messageDescriptor("training.replaceFailed")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
     return false;
   }).finally(function () {
     state.battleStartPending = false;
@@ -347,14 +349,14 @@ function recoverAuthoritativeTrainingStart(startResult, trainingScene, options) 
     }
     state.battleStartPending = false;
     if (!options.silent) {
-      openMessage([startResult.message || "Lo stato autoritativo è cambiato. Riprova dopo aver aggiornato la scena."], { title: "Zona allenamento" });
+      openMessage([messageDescriptor("training.stateChanged")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
     }
     render();
     return false;
   }).catch(function () {
     state.battleStartPending = false;
     if (!options.silent) {
-      openMessage([startResult.message || "Impossibile recuperare la battaglia autoritativa."], { title: "Zona allenamento" });
+      openMessage([messageDescriptor("training.recoverFailed")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
     }
     render();
     return false;

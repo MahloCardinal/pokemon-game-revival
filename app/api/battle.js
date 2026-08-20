@@ -2,7 +2,7 @@ import { getSupabaseClient, currentUserId } from "./supabase.js";
 import { serializePokemonList, serializePokedexNumbers } from "./player.js";
 import { adminControlledBattleRewardForType } from "../data/progression.js";
 
-export var AUTHORITATIVE_BATTLE_UI_BLOCK_MESSAGE = "L'interfaccia Edge autoritativa supporta ripristino, mosse, sostituzioni e abbandono; strumenti e Ball sono disponibili nei contratti che li ammettono.";
+export var AUTHORITATIVE_BATTLE_UI_BLOCK_MESSAGE = "The authoritative Edge interface supports recovery, moves, switches, abandonment, and contract-enabled items and Balls.";
 
 var AUTHORITATIVE_OWNER_STORAGE_KEY = "pokemon_game_revival:runtime:authoritative_battle_owner";
 var TRAINING_PROGRESSION_COMMAND_STORAGE_KEY = "pokemon_game_revival:training_progression_command";
@@ -16,7 +16,7 @@ export function authoritativeBattleRuntimeOwnerId() {
   try { owner = window.sessionStorage.getItem(AUTHORITATIVE_OWNER_STORAGE_KEY) || ""; } catch (error) {}
   if (!/^[0-9a-f-]{36}$/i.test(owner)) {
     owner = globalThis.crypto && typeof globalThis.crypto.randomUUID === "function" ? globalThis.crypto.randomUUID() : "";
-    if (!owner) { throw new Error("Impossibile generare l'identificativo del runtime battaglia."); }
+    if (!owner) { throw new Error("Unable to generate the battle runtime identifier."); }
     try { window.sessionStorage.setItem(AUTHORITATIVE_OWNER_STORAGE_KEY, owner); } catch (error) {}
   }
   return owner;
@@ -31,7 +31,7 @@ function battleCommandId(input) {
   if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
     return globalThis.crypto.randomUUID();
   }
-  throw new Error("Impossibile generare l'identificativo del comando battaglia.");
+  throw new Error("Unable to generate the battle command identifier.");
 }
 
 export async function invokeAuthoritativeBattleCommand(body) {
@@ -41,12 +41,12 @@ export async function invokeAuthoritativeBattleCommand(body) {
   var timeoutId = null;
   var timeoutResult = {};
   var remainingRateLimitSeconds;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration." }; }
   remainingRateLimitSeconds = Math.ceil((authoritativeBattleRateLimitUntil - Date.now()) / 1000);
   if (remainingRateLimitSeconds > 0) {
     return {
       ok: false,
-      message: "Troppe richieste. Attendi prima di riprovare.",
+      message: "Too many requests. Wait before retrying.",
       code: "rate_limited",
       retryAfterSeconds: remainingRateLimitSeconds,
       uncertain: false
@@ -61,15 +61,15 @@ export async function invokeAuthoritativeBattleCommand(body) {
     ]);
     if (result === timeoutResult) {
       return { ok: false, uncertain: true, timedOut: true, code: "command_timeout",
-        message: "Il comando sta impiegando troppo tempo. Verifica dello stato in corso." };
+        message: "The command timed out. State verification is in progress." };
     }
   } catch (error) {
-    return { ok: false, message: error && error.message || "Comando battaglia Edge non riuscito.", uncertain: true };
+    return { ok: false, message: error && error.message || "Edge battle command failed.", uncertain: true };
   } finally {
     if (timeoutId !== null) { globalThis.clearTimeout(timeoutId); }
   }
   if (result.error || !result.data || result.data.ok === false) {
-    message = result.data && result.data.error && result.data.error.message || result.error && result.error.message || "Comando battaglia Edge non riuscito.";
+    message = result.data && result.data.error && result.data.error.message || result.error && result.error.message || "Edge battle command failed.";
     var errorCode = result.data && result.data.error && result.data.error.code || "";
     var errorStatus = Number(result.error && result.error.context && result.error.context.status) || 0;
     var retryAfterSeconds = null;
@@ -127,10 +127,10 @@ function authoritativeBattleCommandStorageKey(userId, battleId) {
 
 async function authoritativeBattleCommandStorage(battleId) {
   var client = getSupabaseClient();
-  var user = client ? await currentUserId(client) : { ok: false, message: "Configurazione Supabase mancante." };
+  var user = client ? await currentUserId(client) : { ok: false, message: "Missing Supabase configuration." };
   var pending = null;
   var storageKey;
-  if (!user.ok) { return { ok: false, message: user.message || "Sessione utente non disponibile.", userId: "", pending: null }; }
+  if (!user.ok) { return { ok: false, message: user.message || "User session unavailable.", userId: "", pending: null }; }
   storageKey = authoritativeBattleCommandStorageKey(user.userId, battleId);
   try { pending = JSON.parse(window.sessionStorage.getItem(storageKey) || "null"); } catch (error) {}
   if (!pending || pending.userId !== user.userId || String(pending.battleId || "") !== String(battleId || "")
@@ -184,7 +184,7 @@ async function runAuthoritativeBattleCommand(action, input, semantic) {
   if (pending) {
     if (String(pending.battleId || "") !== body.battleId || pending.semanticKey !== semanticKey) {
       return { ok: false, uncertain: true, code: "pending_command_conflict",
-        message: "Un altro comando di battaglia è ancora in verifica. Risolvi quel comando prima di continuare." };
+        message: "Another battle command is still being verified. Resolve it before continuing." };
     }
     body = pending.body;
   } else {
@@ -193,7 +193,7 @@ async function runAuthoritativeBattleCommand(action, input, semantic) {
       window.sessionStorage.setItem(stored.storageKey, JSON.stringify(pending));
     } catch (error) {
       return { ok: false, code: "command_persistence_failed",
-        message: "Impossibile memorizzare il comando di battaglia prima dell'invio." };
+        message: "Unable to persist the battle command before sending it." };
     }
   }
   var result = await invokeAuthoritativeBattleCommand(body);
@@ -278,10 +278,10 @@ function authoritativeCaptureFleeStorageKey(userId, encounterId) {
 
 async function authoritativeCaptureFleeStorage(encounterId) {
   var client = getSupabaseClient();
-  var user = client ? await currentUserId(client) : { ok: false, message: "Configurazione Supabase mancante." };
+  var user = client ? await currentUserId(client) : { ok: false, message: "Missing Supabase configuration." };
   var storageKey;
   var pending = null;
-  if (!user.ok) { return { ok: false, message: user.message || "Sessione utente non disponibile." }; }
+  if (!user.ok) { return { ok: false, message: user.message || "User session unavailable." }; }
   storageKey = authoritativeCaptureFleeStorageKey(user.userId, encounterId);
   try { pending = JSON.parse(window.sessionStorage.getItem(storageKey) || "null"); } catch (error) {}
   if (!pending || pending.userId !== user.userId || String(pending.encounterId || "") !== String(encounterId || "")
@@ -324,7 +324,7 @@ export async function fleeAuthoritativeCaptureEncounter(input) {
       window.sessionStorage.setItem(stored.storageKey, JSON.stringify(pending));
     } catch (error) {
       return { ok: false, code: "command_persistence_failed",
-        message: "Impossibile memorizzare la fuga prima dell'invio." };
+        message: "Unable to persist the flee command before sending it." };
     }
   }
   result = await invokeAuthoritativeBattleCommand(body);
@@ -544,7 +544,7 @@ export function resolveAuthoritativeTrainingPokemon(input) {
 export async function claimAuthoritativeBattleRuntime(input) {
   var client = getSupabaseClient();
   var result;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante.", battle: null }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration.", battle: null }; }
   result = await client.rpc("claim_authoritative_battle_runtime", {
     p_battle_id: String(input.battleId || ""),
     p_expected_player_revision: Number(input.expectedPlayerRevision) || 0,
@@ -558,20 +558,20 @@ export async function claimAuthoritativeBattleRuntime(input) {
 
 function normalizeBattleLockResult(data, fallbackMessage) {
   if (!data || typeof data !== "object") {
-    return { ok: false, message: fallbackMessage || "Operazione lock battaglia non riuscita." };
+    return { ok: false, message: fallbackMessage || "Battle lock operation failed." };
   }
   return {
     ok: data.ok !== false && data.claimed !== false,
     claimed: data.claimed !== false,
     locked: data.reason === "locked",
     reason: data.reason || "",
-    message: data.message || fallbackMessage || "Operazione lock battaglia non riuscita."
+    message: data.message || fallbackMessage || "Battle lock operation failed."
   };
 }
 
 export async function loadActivePlayerBattle() {
   var client = getSupabaseClient();
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante.", battle: null, events: [] }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration.", battle: null, events: [] }; }
   var user = await currentUserId(client);
   if (!user.ok) { return { ok: false, message: user.message, battle: null, events: [] }; }
   var battleResult = await client.from("player_battle").select("auth_user_id, battle_type, first_actor, initial_state, status, created_at, runtime_owner_id, admin_controlled, waiting_for, waiting_since, admin_items, admin_notified_seq").eq("auth_user_id", user.userId).maybeSingle();
@@ -584,11 +584,11 @@ export async function loadActivePlayerBattle() {
 
 function normalizeRpcResult(data, fallbackMessage) {
   if (!data || typeof data !== "object") {
-    return { ok: false, message: fallbackMessage || "Operazione non riuscita." };
+    return { ok: false, message: fallbackMessage || "Operation failed." };
   }
   return {
     ok: data.ok !== false,
-    message: data.message || fallbackMessage || "Operazione non riuscita.",
+    message: data.message || fallbackMessage || "Operation failed.",
     battle: data.battle || null,
     battles: Array.isArray(data.battles) ? data.battles : [],
     events: Array.isArray(data.events) ? data.events : []
@@ -607,12 +607,12 @@ function normalizeInventoryEntries(entries) {
 function normalizeRewardResult(data, fallbackMessage) {
   var profile = data && data.profile && typeof data.profile === "object" ? data.profile : {};
   if (!data || typeof data !== "object") {
-    return { ok: false, message: fallbackMessage || "Operazione premi non riuscita." };
+    return { ok: false, message: fallbackMessage || "Reward operation failed." };
   }
   return {
     ok: data.ok !== false,
     already: Boolean(data.already),
-    message: data.message || fallbackMessage || "Operazione premi non riuscita.",
+    message: data.message || fallbackMessage || "Reward operation failed.",
     battleType: String(data.battleType || data.battle_type || ""),
     rewardKind: String(data.rewardKind || data.reward_kind || ""),
     money: Number(data.money) || 0,
@@ -630,7 +630,7 @@ function normalizeRewardResult(data, fallbackMessage) {
 export async function listAdminControlledBattles() {
   var client = getSupabaseClient();
   var result;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante.", battles: [] }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration.", battles: [] }; }
   return invokeAuthoritativeBattleCommand({ action: "admin_list" }).then(function (edgeResult) {
     return edgeResult.ok
       ? { ok: true, battles: Array.isArray(edgeResult.projection.battles) ? edgeResult.projection.battles : [] }
@@ -660,7 +660,7 @@ export async function loadAdminControlledBattle(playerAuthUserId, battleId, opti
 export async function appendAdminBattleEvent(playerAuthUserId, event) {
   var client = getSupabaseClient();
   var result;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration." }; }
   result = await client.rpc("append_admin_battle_event", {
     p_auth_user_id: String(playerAuthUserId || ""),
     p_seq: Number(event.seq),
@@ -668,14 +668,14 @@ export async function appendAdminBattleEvent(playerAuthUserId, event) {
     p_event_data: event.eventData || {}
   });
   if (result.error) { return { ok: false, message: result.error.message }; }
-  return normalizeBattleLockResult(result.data, "Errore durante il salvataggio della risposta admin.");
+  return normalizeBattleLockResult(result.data, "Failed to save the admin response.");
 }
 
 export async function finalizeAdminControlledBattleReward(playerAuthUserId, battleType, result, inventory) {
   var client = getSupabaseClient();
   var reward = adminControlledBattleRewardForType(battleType);
   var rpcResult;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration." }; }
   rpcResult = await client.rpc("finalize_admin_controlled_battle_reward", {
     p_auth_user_id: playerAuthUserId || null,
     p_battle_type: String(battleType || ""),
@@ -684,31 +684,31 @@ export async function finalizeAdminControlledBattleReward(playerAuthUserId, batt
     p_reward: reward
   });
   if (rpcResult.error) { return { ok: false, message: rpcResult.error.message }; }
-  return normalizeRewardResult(rpcResult.data, "Impossibile registrare i premi.");
+  return normalizeRewardResult(rpcResult.data, "Unable to record rewards.");
 }
 
 export async function claimActiveBattleRuntimeLock(ownerId) {
   var client = getSupabaseClient();
   var result;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration." }; }
   result = await client.rpc("set_player_battle_runtime_lock", {
     p_action: "claim",
     p_owner_id: String(ownerId || "")
   });
   if (result.error) { return { ok: false, message: result.error.message }; }
-  return normalizeBattleLockResult(result.data, "Impossibile prendere controllo della battaglia.");
+  return normalizeBattleLockResult(result.data, "Unable to claim battle control.");
 }
 
 export async function forceClaimActiveBattleRuntimeLock(ownerId) {
   var client = getSupabaseClient();
   var result;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration." }; }
   result = await client.rpc("set_player_battle_runtime_lock", {
     p_action: "force_claim",
     p_owner_id: String(ownerId || "")
   });
   if (result.error) { return { ok: false, message: result.error.message }; }
-  return normalizeBattleLockResult(result.data, "Impossibile riprendere la battaglia.");
+  return normalizeBattleLockResult(result.data, "Unable to resume the battle.");
 }
 
 export async function releaseActiveBattleRuntimeLock(ownerId) {
@@ -720,13 +720,13 @@ export async function releaseActiveBattleRuntimeLock(ownerId) {
     p_owner_id: String(ownerId || "")
   });
   if (result.error) { return { ok: false, message: result.error.message }; }
-  return normalizeBattleLockResult(result.data, "Impossibile rilasciare il lock battaglia.");
+  return normalizeBattleLockResult(result.data, "Unable to release the battle lock.");
 }
 
 export async function createActivePlayerBattle(battle, ownerId) {
   var client = getSupabaseClient();
   var result;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration." }; }
   result = await client.rpc("create_active_player_battle_locked", {
     p_battle_type: String(battle.battleType || ""),
     p_first_actor: String(battle.firstActor || "player"),
@@ -737,13 +737,13 @@ export async function createActivePlayerBattle(battle, ownerId) {
     p_admin_items: battle.adminItems
   });
   if (result.error) { return { ok: false, message: result.error.message }; }
-  return normalizeBattleLockResult(result.data, "Impossibile creare la battaglia.");
+  return normalizeBattleLockResult(result.data, "Unable to create the battle.");
 }
 
 export async function appendPlayerBattleEvent(event, ownerId) {
   var client = getSupabaseClient();
   var result;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration." }; }
   result = await client.rpc("append_player_battle_event_locked", {
     p_owner_id: String(ownerId || ""),
     p_seq: Number(event.seq),
@@ -751,7 +751,7 @@ export async function appendPlayerBattleEvent(event, ownerId) {
     p_event_data: event.eventData || {}
   });
   if (result.error) { return { ok: false, message: result.error.message }; }
-  return normalizeBattleLockResult(result.data, "Errore durante il salvataggio della battaglia.");
+  return normalizeBattleLockResult(result.data, "Failed to save the battle.");
 }
 
 export async function deleteActivePlayerBattle(ownerId) {
@@ -771,7 +771,7 @@ export async function consumePostBattleExpEvent(seq, pokemonList, state, ownerId
   var client = getSupabaseClient();
   var dexPayload;
   var result;
-  if (!client) { return { ok: false, message: "Configurazione Supabase mancante." }; }
+  if (!client) { return { ok: false, message: "Missing Supabase configuration." }; }
   dexPayload = state && state.pokedexDirty ? serializePokedexNumbers(state.playerDex) : null;
   result = await client.rpc("consume_post_battle_exp_event_locked", {
     p_owner_id: String(ownerId || ""),
@@ -780,7 +780,7 @@ export async function consumePostBattleExpEvent(seq, pokemonList, state, ownerId
     p_dex: dexPayload
   });
   if (result.error) { return { ok: false, message: result.error.message }; }
-  result = normalizeBattleLockResult(result.data, "Errore durante il consumo dell'esperienza.");
+  result = normalizeBattleLockResult(result.data, "Failed to consume the experience event.");
   if (!result.ok) { return result; }
   if (state && dexPayload && JSON.stringify(dexPayload) === JSON.stringify(serializePokedexNumbers(state.playerDex))) {
     state.pokedexDirty = false;

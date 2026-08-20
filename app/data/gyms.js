@@ -4,36 +4,25 @@ import { getItemByIndex } from "./items.js";
 import { BADGE_LEVEL_LIMITS, GYM_REWARDS, KANTO_LEAGUE_REWARDS } from "./progression.js";
 
 export var KANTO_GYM_CITIES = [
-  { key: "pewter_city", title: "Plumbeopoli", image: "plumbeopoli_bottone.webp", badgeIndex: 0 },
-  { key: "cerulean_city", title: "Celestopoli", image: "celestopoli_bottone.webp", badgeIndex: 1 },
-  { key: "vermilion_city", title: "Aranciopoli", image: "aranciopoli_bottone.webp", badgeIndex: 2 },
-  { key: "celadon_city", title: "Azzurropoli", image: "azzurropoli_bottone.webp", badgeIndex: 3 },
-  { key: "saffron_city", title: "Zafferanopoli", image: "zafferanopoli_bottone.webp", badgeIndex: 4 },
-  { key: "fuchsia_city", title: "Fucsiapoli", image: "fucsiapoli_bottone.webp", badgeIndex: 5 },
-  { key: "cinnabar_island", title: "Isola Cannella", image: "isola_cannella_bottone.webp", badgeIndex: 6 },
-  { key: "viridian_city", title: "Smeraldopoli", image: "smeraldopoli_bottone.webp", badgeIndex: 7 }
+  { key: "pewter_city", image: "plumbeopoli_bottone.webp", badgeIndex: 0 },
+  { key: "cerulean_city", image: "celestopoli_bottone.webp", badgeIndex: 1 },
+  { key: "vermilion_city", image: "aranciopoli_bottone.webp", badgeIndex: 2 },
+  { key: "celadon_city", image: "azzurropoli_bottone.webp", badgeIndex: 3 },
+  { key: "saffron_city", image: "zafferanopoli_bottone.webp", badgeIndex: 4 },
+  { key: "fuchsia_city", image: "fucsiapoli_bottone.webp", badgeIndex: 5 },
+  { key: "cinnabar_island", image: "isola_cannella_bottone.webp", badgeIndex: 6 },
+  { key: "viridian_city", image: "smeraldopoli_bottone.webp", badgeIndex: 7 }
 ];
 
-export var KANTO_GYM_BADGE_NAMES = [
-  "Medaglia Sasso",
-  "Medaglia Cascata",
-  "Medaglia Tuono",
-  "Medaglia Arcobaleno",
-  "Medaglia Anima",
-  "Medaglia Palude",
-  "Medaglia Vulcano",
-  "Medaglia Terra"
-];
-
-export var KANTO_GYM_BADGE_IMAGES = [
-  "medaglia_sasso.webp",
-  "medaglia_cascata.webp",
-  "medaglia_tuono.webp",
-  "medaglia_arcobaleno.webp",
-  "medaglia_anima.webp",
-  "medaglia_palude.webp",
-  "medaglia_vulcano.webp",
-  "medaglia_terra.webp"
+export var KANTO_GYM_BADGES = [
+  { key: "boulder", image: "medaglia_sasso.webp" },
+  { key: "cascade", image: "medaglia_cascata.webp" },
+  { key: "thunder", image: "medaglia_tuono.webp" },
+  { key: "rainbow", image: "medaglia_arcobaleno.webp" },
+  { key: "marsh", image: "medaglia_anima.webp" },
+  { key: "soul", image: "medaglia_palude.webp" },
+  { key: "volcano", image: "medaglia_vulcano.webp" },
+  { key: "earth", image: "medaglia_terra.webp" }
 ];
 
 function gymMove(index, power, stats) {
@@ -142,34 +131,35 @@ export function kantoGymChallengeStatus(cityKey, badges) {
   var city = kantoGymCityByKey(cityKey);
   var badgeCount = Math.max(0, Math.floor(Number(badges) || 0));
   if (badgeCount > city.badgeIndex) {
-    return { state: "completed", message: "" };
+    return { state: "completed" };
   }
   if (badgeCount < city.badgeIndex) {
     return {
       state: "locked",
-      message: "Devi prima ottenere la Medaglia " + (KANTO_GYM_BADGE_NAMES[city.badgeIndex - 1] || "").replace(/^Medaglia\s+/, "")
+      reason: "previous_badge",
+      requiredBadgeKey: KANTO_GYM_BADGES[city.badgeIndex - 1].key
     };
   }
-  return { state: "available", message: "" };
+  return { state: "available" };
 }
 
 function kantoGymPortItemChallengeLimit(badgeIndex) {
   return badgeIndex < 6
-    ? "I Pokémon dello sfidante non possono tenere Strumenti del Porto"
-    : "I Pokémon dello sfidante possono tenere massimo 1 Strumento del Porto";
+    ? { key: "port_items_max", count: 0, distinct: false }
+    : { key: "port_items_max", count: 1, distinct: false };
 }
 
 function kantoGymSuperEffectiveChallengeLimit(badgeIndex) {
   if (badgeIndex === 5 || badgeIndex === 6) {
-    return "La squadra dello sfidante può includere massimo 3 Pokémon superefficaci sui Pokémon del Capopalestra";
+    return { key: "super_effective_max", count: 3 };
   }
   if (badgeIndex === 7) {
-    return "La squadra dello sfidante può includere massimo 2 Pokémon superefficaci sui Pokémon del Capopalestra";
+    return { key: "super_effective_max", count: 2 };
   }
   return "";
 }
 
-var OFFICIAL_CHALLENGE_OHKO_LIMIT = "La squadra dello sfidante può includere massimo 2 Pokémon con mosse OHKO";
+var OFFICIAL_CHALLENGE_OHKO_LIMIT = Object.freeze({ key: "ohko_max", count: 2 });
 
 export function kantoGymLeaderByCity(cityKey) {
   var city = kantoGymCityByKey(cityKey);
@@ -182,16 +172,17 @@ export function kantoGymLeaderByCity(cityKey) {
   var rewardItem = rewardConfig.item ? getItemByIndex(rewardConfig.item) : null;
   var rewardItemQuantity = Math.max(1, Number(rewardConfig.itemQuantity) || 1);
   return {
+    key: city.key,
     name: leader.name,
     sprite: leader.sprite,
     rewards: [
-      { kind: "money", quantity: rewardConfig.money, label: String(rewardConfig.money) },
-      rewardTM ? { kind: "item", itemIndex: rewardTM.index, label: rewardTM.name } : null,
-      rewardItem ? { kind: "item", itemIndex: rewardItem.index, quantity: rewardItemQuantity, label: rewardItemQuantity > 1 ? String(rewardItemQuantity) + " " + rewardItem.name : rewardItem.name } : null,
-      { kind: "badge", label: KANTO_GYM_BADGE_NAMES[city.badgeIndex] || "Medaglia " + city.title, image: KANTO_GYM_BADGE_IMAGES[city.badgeIndex] || "" }
+      { kind: "money", quantity: rewardConfig.money },
+      rewardTM ? { kind: "item", itemIndex: rewardTM.index } : null,
+      rewardItem ? { kind: "item", itemIndex: rewardItem.index, quantity: rewardItemQuantity } : null,
+      { kind: "badge", badgeKey: KANTO_GYM_BADGES[city.badgeIndex].key, image: KANTO_GYM_BADGES[city.badgeIndex].image }
     ].filter(Boolean),
     challengeLimits: [
-      "I Pokémon dello sfidante possono essere al massimo di livello " + maxLevel,
+      { key: "max_level", level: maxLevel },
       OFFICIAL_CHALLENGE_OHKO_LIMIT,
       kantoGymPortItemChallengeLimit(city.badgeIndex),
       kantoGymSuperEffectiveChallengeLimit(city.badgeIndex)
@@ -224,16 +215,16 @@ function buildNamedPokemon(speciesKey, level, maxHp, moveIndices, heldItemIndex)
 }
 
 var PLACEHOLDER_REWARDS = [
-  { kind: "money", quantity: KANTO_LEAGUE_REWARDS.member.money, label: String(KANTO_LEAGUE_REWARDS.member.money) }
+  { kind: "money", quantity: KANTO_LEAGUE_REWARDS.member.money }
 ];
 
 var CHAMPION_REWARDS = [
-  { kind: "money", quantity: KANTO_LEAGUE_REWARDS.champion.money, label: String(KANTO_LEAGUE_REWARDS.champion.money) }
+  { kind: "money", quantity: KANTO_LEAGUE_REWARDS.champion.money }
 ];
 
 var E4_CHALLENGE_LIMITS = [
   OFFICIAL_CHALLENGE_OHKO_LIMIT,
-  "I Pokémon dello sfidante possono tenere massimo 2 Strumenti del Porto, e devono essere diversi"
+  { key: "port_items_max", count: 2, distinct: true }
 ];
 
 export var KANTO_ELITE_FOUR = [
@@ -305,7 +296,7 @@ export var KANTO_ELITE_FOUR = [
 
 export var KANTO_CHAMPION = {
   key: "kanto_champion",
-  name: "Blu",
+  name: "Blue",
   sprite: "blu.webp",
   team: [
     buildNamedPokemon(214, 100, 420, [37, 258, 148, 188], 220),
@@ -331,11 +322,11 @@ export function kantoEliteFourMemberByKey(key) {
 export function kantoEliteFourChallengeStatus(badges) {
   var badgeCount = Math.max(0, Math.floor(Number(badges) || 0));
   if (badgeCount >= 8) {
-    return { state: "available", message: "" };
+    return { state: "available" };
   }
-  return { state: "locked", message: "Devi prima ottenere la Medaglia Terra" };
+  return { state: "locked", reason: "required_badge", requiredBadgeKey: "earth" };
 }
 
 export function kantoChampionChallengeStatus() {
-  return { state: "locked", message: "Devi prima aver sconfitto i Superquattro per combattere contro il Campione" };
+  return { state: "locked", reason: "elite_four_required" };
 }

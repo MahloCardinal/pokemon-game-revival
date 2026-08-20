@@ -1,5 +1,6 @@
 import { getItemByIndex, ItemCategory, ItemSubcategory, pokemonCanHoldItem } from "../data/items.js";
-import { TYPE_CHART, typeDisplayName } from "../data/type-chart.js";
+import { TYPE_CHART } from "../data/type-chart.js";
+import { battleEvent, battleItemRef, battleMoveRef, battleSpeciesRef, battleStatusRef, battleTypeRef } from "./battle-events.js";
 
 function heldItemCacheKey(combatant) {
   var pokemon = combatant && combatant.pokemon;
@@ -63,16 +64,6 @@ export function heldItemMultiplierValue(item) {
 
 export function combatantHasCurableStatus(combatant) {
   return Boolean(combatant && (combatant.status || combatant.sleepCounter || combatant.confCounter || combatant.pendingDelayedStatus));
-}
-
-export function statusDisplayName(status) {
-  if (status === "psn") { return "avvelenamento"; }
-  if (status === "brn") { return "scottatura"; }
-  if (status === "frz") { return "congelamento"; }
-  if (status === "slp") { return "sonno"; }
-  if (status === "par_block" || status === "par_free") { return "paralisi"; }
-  if (status === "cnf_block" || status === "cnf_free") { return "confusione"; }
-  return "Status";
 }
 
 export function itemCanCureStatus(item, target) {
@@ -226,7 +217,7 @@ function applyHpCostBaseBoostCost(manager, context) {
   var hpCost = Number(context && context.hpCost) || 0;
   if (hpCost > 0) {
     attacker.hp = Math.max(0, attacker.hp - hpCost);
-    manager.emit({ log: attacker.pokemon.name + " perde " + hpCost + " PS con Assorbisfera" });
+    manager.emit(battleEvent("heldItem.lifeOrbCost", { pokemon: battleSpeciesRef(attacker), amount: hpCost }));
     manager.KOCheck(attacker, defender);
     hpCost = 0;
   }
@@ -242,7 +233,7 @@ function applyDamageDrain(manager, context) {
     drainHeal = Math.floor(damage * heldItemMultiplierValue(heldItem));
     if (drainHeal > 0) {
       attacker.hp = Math.min(attacker.pokemon.maxHp, attacker.hp + drainHeal);
-      manager.emit({ log: attacker.pokemon.name + " recupera " + drainHeal + " PS con Conchinella" });
+      manager.emit(battleEvent("heldItem.shellBellHeal", { pokemon: battleSpeciesRef(attacker), amount: drainHeal }));
     }
   }
   return context;
@@ -252,19 +243,21 @@ function applyHealStatusBerry(manager, context) {
   var combatant = context && context.combatant;
   var before = context && context.before;
   var berry = getHeldBerry(combatant);
-  var curedStatusName;
+  var curedStatus;
   if (!berry || berry.subcategory !== ItemSubcategory.HealStatus || !before || before.status !== null) {
     return Object.assign({}, context, { activated: false });
   }
   if (!itemCanCureStatus(berry, combatant)) {
     return Object.assign({}, context, { activated: false });
   }
-  curedStatusName = statusDisplayName(combatant.status || (combatant.pendingDelayedStatus && combatant.pendingDelayedStatus.status));
+  curedStatus = combatant.status || (combatant.pendingDelayedStatus && combatant.pendingDelayedStatus.status);
   if (!clearCombatantStatus(combatant, berry)) {
     return Object.assign({}, context, { activated: false });
   }
   if (consumeHeldBerry(manager, combatant, berry)) {
-    manager.emit({ log: berry.name + " si attiva: " + combatant.pokemon.name + " guarisce da " + curedStatusName});
+    manager.emit(battleEvent("heldItem.berryCuredStatus", {
+      item: battleItemRef(berry), pokemon: battleSpeciesRef(combatant), status: battleStatusRef(curedStatus)
+    }));
     return Object.assign({}, context, { activated: true, berry: berry });
   }
   return Object.assign({}, context, { activated: false });
@@ -292,7 +285,7 @@ function applyHealHpBerry(manager, context) {
   }
   combatant.hp = nextHp;
   if (consumeHeldBerry(manager, combatant, berry)) {
-    manager.emit({ log: berry.name + " si attiva: " + combatant.pokemon.name + " recupera " + healed + " PS" });
+    manager.emit(battleEvent("heldItem.berryHealed", { item: battleItemRef(berry), pokemon: battleSpeciesRef(combatant), amount: healed }));
     return Object.assign({}, context, { activated: true, berry: berry, healed: healed });
   }
   return Object.assign({}, context, { activated: false });
@@ -302,15 +295,19 @@ function applyTypeProtectBerry(manager, context) {
   var attacker = context && context.attacker;
   var defender = context && context.defender;
   var berry = getHeldBerry(defender);
-  var log = "";
   if (!heldBerryProtectsFromAttacker(berry, attacker)) {
-    return Object.assign({}, context, { activated: false, log: log });
+    return Object.assign({}, context, { activated: false, event: null });
   }
   if (!consumeHeldBerry(manager, defender, berry)) {
-    return Object.assign({}, context, { activated: false, log: log });
+    return Object.assign({}, context, { activated: false, event: null });
   }
-  log = berry.name + " si attiva: protegge " + defender.pokemon.name + " dal tipo " + berry.protectType + " e dimezza il danno";
-  return Object.assign({}, context, { activated: true, berry: berry, log: log });
+  return Object.assign({}, context, {
+    activated: true,
+    berry: berry,
+    event: battleEvent("heldItem.typeBerryProtected", {
+      item: battleItemRef(berry), pokemon: battleSpeciesRef(defender), type: battleTypeRef(berry.protectType)
+    })
+  });
 }
 
 function applyStatusRetaliateSetup(_manager, context) {
@@ -325,7 +322,7 @@ function applyStatusIgnoreDelay(manager, context) {
   var source = context && context.source;
   var target = context && context.target;
   if (heldItemHasEffect(source, "status_ignore_delay")) {
-    manager.emit({ log: source.pokemon.name + " ignora Distraroma con Fortunaroma" });
+    manager.emit(battleEvent("heldItem.ignoredStatusDelay", { pokemon: battleSpeciesRef(source) }));
     return Object.assign({}, context, { ignored: true });
   }
   return Object.assign({}, context, { ignored: false });
@@ -346,7 +343,7 @@ function applyOhkoProtect(manager, context) {
   }
   defender.hp = defenderHpBefore;
   defender._focusBandCharges = charges - 1;
-  manager.emit({ log: defender.pokemon.name + " resiste all'OHKO con Bandana! (" + (charges - 1) + " cariche rimanenti)" });
+  manager.emit(battleEvent("heldItem.focusBandProtected", { pokemon: battleSpeciesRef(defender), charges: charges - 1 }));
   return Object.assign({}, context, { activated: true });
 }
 
@@ -374,7 +371,7 @@ function applyEntryStatusProtection(manager, context) {
     combatant.status = before.status;
     combatant.sleepCounter = before.sleepCounter;
     combatant.confCounter = before.confCounter;
-    manager.emit({ log: combatant.pokemon.name + " è protetto da Luminpolvere!" });
+    manager.emit(battleEvent("heldItem.brightPowderProtected", { pokemon: battleSpeciesRef(combatant) }));
   }
   return context;
 }
@@ -387,7 +384,7 @@ function applyAfterKoStatusProtection(manager, context) {
     combatant.sleepCounter = before.sleepCounter;
     combatant.confCounter = before.confCounter;
     combatant._focusSashProtect = false;
-    return Object.assign({}, context, { log: "Focalnastro protegge " + combatant.pokemon.name + " dallo status!" });
+    return Object.assign({}, context, { event: battleEvent("heldItem.focusSashStatusProtected", { pokemon: battleSpeciesRef(combatant) }) });
   }
   return context;
 }
@@ -406,7 +403,7 @@ function applyAfterKoStatusProtectCharge(manager, context) {
   }
   attacker._focusSashProtect = true;
   attacker._focusSashCharges = charges - 1;
-  manager.emit({ log: attacker.pokemon.name + " si prepara a proteggersi con Focalnastro! (" + (charges - 1) + " cariche rimanenti)" });
+  manager.emit(battleEvent("heldItem.focusSashCharged", { pokemon: battleSpeciesRef(attacker), charges: charges - 1 }));
   return Object.assign({}, context, { activated: true });
 }
 
@@ -420,7 +417,9 @@ function applyStatusRetaliateDamage(manager, context) {
       && !combatant._rockyHelmetSelfInflicted) {
     damage = 2 * combatant.level;
     opponent.hp = Math.max(0, opponent.hp - damage);
-    manager.emit({ log: opponent.pokemon.name + " subisce " + damage + " danni da Bitorzolelmo di " + combatant.pokemon.name + "!" });
+    manager.emit(battleEvent("heldItem.rockyHelmetDamage", {
+      target: battleSpeciesRef(opponent), source: battleSpeciesRef(combatant), amount: damage
+    }));
     manager.KOCheck(combatant, opponent);
     return Object.assign({}, context, { activated: true, damage: damage });
   }
@@ -441,24 +440,26 @@ function clearDefenderStatusProtectionFlags(_manager, context) {
 function applySwitchHazard(_manager, context) {
   var combatant = context && context.combatant;
   var hazardTeam = combatant && combatant.team;
-  var message = context && context.message ? String(context.message) : "";
   var hazardDamage;
   if (!combatant || !hazardTeam || !hazardTeam.spikesActive) {
-    return Object.assign({}, context, { message: message });
+    return Object.assign({}, context, { event: null });
   }
   hazardDamage = hazardTeam.spikesLevel;
   if (heldItemHasEffect(combatant, "hazard_multiturn_guard")) {
     hazardTeam.spikesActive = false;
     hazardTeam.spikesLevel = 0;
-    message += ", Scarponi robusti libera il terreno di " + combatant.pokemon.name + " dalle Punte";
-    return Object.assign({}, context, { message: message, protected: true });
+    return Object.assign({}, context, {
+      event: battleEvent("hazard.bootsClearedSpikes", { pokemon: battleSpeciesRef(combatant) }),
+      protected: true
+    });
   }
   combatant.hp = Math.max(0, combatant.hp - hazardDamage);
-  message += ", Punte infligge " + hazardDamage + " danni a " + combatant.pokemon.name;
-  if (combatant.isFainted()) {
-    message += ". " + combatant.pokemon.name + " va KO!";
-  }
-  return Object.assign({}, context, { message: message, damage: hazardDamage });
+  return Object.assign({}, context, {
+    event: battleEvent(combatant.isFainted() ? "hazard.spikesDamageKo" : "hazard.spikesDamage", {
+      pokemon: battleSpeciesRef(combatant), damage: hazardDamage
+    }),
+    damage: hazardDamage
+  });
 }
 
 function applyEntryChoiceKind(_manager, context) {
@@ -494,7 +495,7 @@ function applyEntryChoiceEntries(manager, context) {
     entries = Object.keys(TYPE_CHART).filter(function (typeName) {
       return excludedTypes.indexOf(typeName) === -1;
     }).map(function (typeName, index) {
-      return { key: typeName, name: typeDisplayName(typeName), index: index, typeName: typeName };
+      return { key: typeName, name: typeName, index: index, typeName: typeName };
     });
   }
   return Object.assign({}, context, { entries: entries });
@@ -522,13 +523,17 @@ function applyEntryChoice(manager, context) {
       return Object.assign({}, context, { applied: false });
     }
     opponent.disableMoveInhibit(selectedEntry.key);
-    manager.emit({ log: heldItem.name + " blocca " + selectedEntry.name + " di " + opponent.pokemon.name});
+    manager.emit(battleEvent("heldItem.disabledMove", {
+      item: battleItemRef(heldItem), move: battleMoveRef({ key: selectedEntry.key }), pokemon: battleSpeciesRef(opponent)
+    }));
     return Object.assign({}, context, { applied: true });
   }
   if (kind === "type") {
     combatant.type = ["normal", selectedEntry.typeName || selectedEntry.name];
     combatant.entryAddedType = selectedEntry.typeName || selectedEntry.name;
-    manager.emit({ log: heldItem.name + " aggiunge il tipo " + typeDisplayName(combatant.entryAddedType) + " a " + combatant.pokemon.name});
+    manager.emit(battleEvent("heldItem.addedType", {
+      item: battleItemRef(heldItem), type: battleTypeRef(combatant.entryAddedType), pokemon: battleSpeciesRef(combatant)
+    }));
     return Object.assign({}, context, { applied: true });
   }
   return Object.assign({}, context, { applied: false });
@@ -575,7 +580,7 @@ function applyInvertParCnf(manager, context) {
   if (status === "par_block" || status === "par_free") {
     if (status === "par_free") {
       resolvePendingAsFailed(attacker);
-      manager.emit({ log: attacker.pokemon.name + " è paralizzato, non può attaccare" });
+      manager.emit(battleEvent("status.paralyzedCannotMove", { pokemon: battleSpeciesRef(attacker) }));
       attacker.status = "par_block";
       return Object.assign({}, context, { handled: true, canMove: false });
     }
@@ -587,7 +592,7 @@ function applyInvertParCnf(manager, context) {
       resolvePendingAsFailed(attacker);
       damage = Math.max(1, Math.floor(attacker.pokemon.maxHp / 16));
       attacker.hp = Math.max(0, attacker.hp - damage);
-      manager.emit({ log: attacker.pokemon.name + " è così confuso da colpirsi da solo, e perde " + damage + " PS" });
+      manager.emit(battleEvent("status.confusionSelfDamage", { pokemon: battleSpeciesRef(attacker), amount: damage }));
       attacker.status = "cnf_block";
       manager.KOCheck(attacker, attacker);
       return Object.assign({}, context, { handled: true, canMove: false });
@@ -676,15 +681,15 @@ export const HeldItemTriggerContext = Object.freeze({
   modifyDamage: function (attacker, defender, move, damage, reverseTypeEfficacy) { return { attacker: attacker, defender: defender, move: move, damage: damage, reverseTypeEfficacy: reverseTypeEfficacy }; },
   ohkoProtect: function (defender, move, defenderHpBefore) { return { defender: defender, move: move, defenderHpBefore: defenderHpBefore, activated: false }; },
   selfStatusChanged: function (combatant, beforeStatus) { return { combatant: combatant, beforeStatus: beforeStatus }; },
-  typeProtectBerry: function (attacker, defender) { return { attacker: attacker, defender: defender, activated: false, log: "" }; },
+  typeProtectBerry: function (attacker, defender) { return { attacker: attacker, defender: defender, activated: false, event: null }; },
   afterDamageApplied: function (attacker, defender, move, damage, hpCost) { return { attacker: attacker, defender: defender, move: move, damage: damage, hpCost: hpCost }; },
-  statusProtection: function (combatant, before) { return { combatant: combatant, before: before, log: "" }; },
+  statusProtection: function (combatant, before) { return { combatant: combatant, before: before, event: null }; },
   healStatusBerry: function (combatant, before) { return { combatant: combatant, before: before, activated: false }; },
   afterMoveResolved: function (attacker, defender, percentageBefore) { return { attacker: attacker, defender: defender, percentageBefore: percentageBefore, activated: false }; },
   moveStatusCheck: function (attacker) { return { attacker: attacker, handled: false, canMove: true }; },
   afterKo: function (attacker, defender) { return { attacker: attacker, defender: defender, activated: false }; },
   endTurnStatusEffects: function (combatant, opponent) { return { combatant: combatant, opponent: opponent }; },
-  switchHazard: function (combatant, opponentTeam, message) { return { combatant: combatant, opponentTeam: opponentTeam, message: message }; }
+  switchHazard: function (combatant, opponentTeam) { return { combatant: combatant, opponentTeam: opponentTeam }; }
 });
 
 export function runHeldItemTrigger(manager, trigger, context) {

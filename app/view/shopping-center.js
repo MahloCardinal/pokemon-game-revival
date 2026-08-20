@@ -1,15 +1,16 @@
 import { ItemCategory } from "../data/items.js";
-import { SHOPPING_CENTER_SECTIONS, getShoppingCenterSections, getShoppingCenterGroups, shoppingCenterSalePrice, shoppingCenterIsSellSection, shoppingCenterItemIsSinglePurchase, shoppingCenterSectionify, shoppingCenterSectionDisplayName, computeCartEntries, computeCartTotal } from "../data/shopping-center.js";
-import { formatCatalogDescription } from "../engine/index.js";
+import { SHOPPING_CENTER_SECTIONS, getShoppingCenterSections, getShoppingCenterGroups, shoppingCenterSalePrice, shoppingCenterIsSellSection, shoppingCenterItemIsSinglePurchase, shoppingCenterSectionify, computeCartEntries, computeCartTotal } from "../data/shopping-center.js";
 import { state } from "../client/game-state.js";
 import { escapeHtml, getItemDisplayImage, renderImage } from "../client/asset-helpers.js";
 import { button, formatInteger, moneyMarkup, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { isDebugUser } from "../client/debug-tools.js";
+import { itemDisplayDescription, itemDisplayName } from "../client/entity-text.js";
+import { t } from "../client/i18n.js";
 
 function shoppingCenterItemImageMarkup(item) {
   var imageClass = item && item.category === ItemCategory.TM ? "inventory-item-image shopping-center-mt-image" : "inventory-item-image";
   var imageSrc = getItemDisplayImage(item);
-  return imageSrc ? renderImage(imageSrc, item.name, imageClass) : '<span class="inventory-item-image inventory-item-image-empty"></span>';
+  return imageSrc ? renderImage(imageSrc, itemDisplayName(item), imageClass) : '<span class="inventory-item-image inventory-item-image-empty"></span>';
 }
 
 function renderDebugAddButton(item) {
@@ -18,7 +19,7 @@ function renderDebugAddButton(item) {
 }
 
 function shoppingCenterItemDescription(item) {
-  return item.category === ItemCategory.TM && item.move ? formatCatalogDescription(item.move) : item.description;
+  return itemDisplayDescription(item);
 }
 
 function shoppingCenterPurchaseButtons(item, sectionName) {
@@ -54,7 +55,7 @@ function renderShoppingCenterItemCardFrame(options) {
     "  </div>",
     '  <div class="market-item-copy shopping-center-item-copy">',
     '    <div class="shopping-center-item-heading">',
-    '      <h3 class="market-item-name shopping-center-item-name">' + escapeHtml(item.name) + "</h3>",
+    '      <h3 class="market-item-name shopping-center-item-name">' + escapeHtml(itemDisplayName(item)) + "</h3>",
     "    </div>",
     '    <p class="market-item-description shopping-center-item-description">' + escapeHtml(shoppingCenterItemDescription(item)) + "</p>",
     "  </div>",
@@ -70,12 +71,12 @@ function renderShoppingCenterItemCard(entry) {
   var cardClass = canPurchase ? " is-purchasable" : " is-not-purchasable";
   var isSinglePurchase = shoppingCenterItemIsSinglePurchase(item);
   var actionClass = isSinglePurchase ? " is-single-action" : "";
-  var stockText = canPurchase && entry.stockRemaining !== Infinity ? '<span class="shopping-center-sell-stock">Disp. ' + escapeHtml(formatInteger(entry.stockRemaining)) + "</span>" : "";
+  var stockText = canPurchase && entry.stockRemaining !== Infinity ? '<span class="shopping-center-sell-stock">' + escapeHtml(t("ui.shoppingCenter.availableShort")) + " " + escapeHtml(formatInteger(entry.stockRemaining)) + "</span>" : "";
   var showPrice = shoppingCenterShouldShowPrice(entry);
   var actionHtml;
   if (canPurchase) {
     if (isSinglePurchase) {
-      actionHtml = button("Compra", "shopping-center-buy-item", 'data-item-index="' + escapeHtml(item.index) + '" data-quantity="1"', "button-primary");
+      actionHtml = button(t("ui.shoppingCenter.buy"), "shopping-center-buy-item", 'data-item-index="' + escapeHtml(item.index) + '" data-quantity="1"', "button-primary");
     } else {
       actionHtml = shoppingCenterPurchaseButtons(item, entry.section);
     }
@@ -100,19 +101,32 @@ function renderShoppingCenterSellItemCard(item) {
     priceHtml: moneyMarkup(price),
     actionsClass: " shopping-center-sell-actions",
     actionsHtml: [
-      '    <span class="shopping-center-sell-stock">Disp. ' + escapeHtml(formatInteger(item.quantity)) + "</span>",
-      '    <input class="shopping-center-sell-quantity" type="text" inputmode="numeric" pattern="[0-9]*" value="1" aria-label="Quantit\u00e0 da vendere" data-field="shopping-center-sell-quantity" data-item-index="' + escapeHtml(item.index) + '" data-max-quantity="' + escapeHtml(item.quantity) + '">',
-      button("Aggiungi", "shopping-center-sell-item", 'data-item-index="' + escapeHtml(item.index) + '"', "button-primary shopping-center-sell-button")
+      '    <span class="shopping-center-sell-stock">' + escapeHtml(t("ui.shoppingCenter.availableShort")) + " " + escapeHtml(formatInteger(item.quantity)) + "</span>",
+      '    <input class="shopping-center-sell-quantity" type="text" inputmode="numeric" pattern="[0-9]*" value="1" aria-label="' + escapeHtml(t("ui.shoppingCenter.sellQuantity")) + '" data-field="shopping-center-sell-quantity" data-item-index="' + escapeHtml(item.index) + '" data-max-quantity="' + escapeHtml(item.quantity) + '">',
+      button(t("ui.shoppingCenter.add"), "shopping-center-sell-item", 'data-item-index="' + escapeHtml(item.index) + '"', "button-primary shopping-center-sell-button")
     ].join("")
   });
 }
 
+function shoppingCenterGroupTitle(group) {
+  var category = t("ui.shoppingCenter.categories." + group.categoryKey);
+  var availabilityKey = String(group.availabilityKey || "");
+  var availability;
+  if (!availabilityKey || availabilityKey === "sell") return category;
+  availability = t("ui.shoppingCenter.availability." + availabilityKey, {
+    count: group.requiredBadges,
+    badges: t(group.requiredBadges === 1 ? "ui.shoppingCenter.badgeOne" : "ui.shoppingCenter.badgeMany")
+  });
+  return category + " - " + availability;
+}
+
 function renderShoppingCenterItemGroup(group, isSellSection) {
   var items = group.items || [];
+  var title = shoppingCenterGroupTitle(group);
   if (!items.length) return "";
   return [
     '<section class="shopping-center-item-group">',
-    group.title ? '  <h2 class="stack-title shopping-center-group-title">' + escapeHtml(group.title) + "</h2>" : "",
+    title ? '  <h2 class="stack-title shopping-center-group-title">' + escapeHtml(title) + "</h2>" : "",
     '  <div class="shopping-center-item-group-grid">',
     items.map(function (entry) {
       if (!isSellSection) return renderShoppingCenterItemCard(entry);
@@ -126,7 +140,7 @@ function renderShoppingCenterItemGroup(group, isSellSection) {
 export function renderShoppingCenterItemGridContent(sectionName) {
   var isSell = shoppingCenterIsSellSection(sectionName);
   var groups = getShoppingCenterGroups(sectionName, state);
-  if (!groups.length) return '<p class="empty-state inventory-empty">Nessun oggetto disponibile.</p>';
+  if (!groups.length) return '<p class="empty-state inventory-empty">' + escapeHtml(t("ui.shoppingCenter.emptyItems")) + "</p>";
   return groups.map(function (g) { return renderShoppingCenterItemGroup(g, isSell); }).join("");
 }
 
@@ -134,25 +148,25 @@ function renderShoppingCenterSectionPanel(activeSectionName) {
   var sections = getShoppingCenterSections();
   var buttons = sections.map(function (sectionName) {
     var selectedClass = sectionName === activeSectionName ? " button-primary" : " button-ghost";
-    return button(shoppingCenterSectionDisplayName(sectionName), "shopping-center-section", 'data-section="' + escapeHtml(sectionName) + '"', "button-slim" + selectedClass);
+    return button(t("ui.shoppingCenter.sections." + sectionName), "shopping-center-section", 'data-section="' + escapeHtml(sectionName) + '"', "button-slim" + selectedClass);
   }).join("");
   return '<section class="panel shopping-center-sections-panel"><div class="panel-inner"><div class="pokemon-center-action-row rules-section-row">' + buttons + "</div></div></section>";
 }
 
 export function renderShoppingCenterCartPanelContent(pokedollars, entries, total, isSale) {
-  var confirmLabel = isSale ? shoppingCenterSectionDisplayName(SHOPPING_CENTER_SECTIONS.SELL) : "Acquista";
+  var confirmLabel = isSale ? t("ui.shoppingCenter.sections.sell") : t("ui.shoppingCenter.purchase");
   var confirmAction = isSale ? "shopping-center-confirm-sale" : "shopping-center-confirm-purchases";
-  var totalLabel = isSale ? "Totale vendita" : "Totale spesa";
+  var totalLabel = t(isSale ? "ui.shoppingCenter.saleTotal" : "ui.shoppingCenter.purchaseTotal");
   var rows = entries.length ? entries.map(function (entry) {
     return [
       '<div class="shopping-center-cart-row" data-shopping-center-cart-item="' + escapeHtml(entry.item.index) + '">',
       '  <span class="shopping-center-cart-quantity">x' + escapeHtml(formatInteger(entry.quantity)) + "</span>",
-      '  <span class="shopping-center-cart-name">' + escapeHtml(entry.item.name) + "</span>",
+      '  <span class="shopping-center-cart-name">' + escapeHtml(itemDisplayName(entry.item)) + "</span>",
       '  <strong class="shopping-center-cart-price">' + moneyMarkup(entry.subtotal) + "</strong>",
-      button("Togli", "shopping-center-remove-cart-item", 'data-item-index="' + escapeHtml(entry.item.index) + '"', "button-dark button-slim"),
+      button(t("ui.shoppingCenter.remove"), "shopping-center-remove-cart-item", 'data-item-index="' + escapeHtml(entry.item.index) + '"', "button-dark button-slim"),
       "</div>"
     ].join("");
-  }).join("") : '<p class="empty-state shopping-center-cart-empty">Carrello vuoto.</p>';
+  }).join("") : '<p class="empty-state shopping-center-cart-empty">' + escapeHtml(t("ui.shoppingCenter.emptyCart")) + "</p>";
   return [
     '<div class="shopping-center-cart-list-cell">',
     '  <div class="shopping-center-cart-scroll" data-scroll-key="shopping-center-cart">',
@@ -161,7 +175,7 @@ export function renderShoppingCenterCartPanelContent(pokedollars, entries, total
     "</div>",
     '<div class="shopping-center-cart-info-cell">',
     '  <div class="shopping-center-cart-summary">',
-    '    <span>Disponibili</span>',
+    '    <span>' + escapeHtml(t("ui.shoppingCenter.availableFunds")) + "</span>",
     '    <strong>' + moneyMarkup(pokedollars) + "</strong>",
     "  </div>",
     '  <div class="shopping-center-cart-summary">',
@@ -170,7 +184,7 @@ export function renderShoppingCenterCartPanelContent(pokedollars, entries, total
     "  </div>",
     '  <div class="shopping-center-cart-actions button-row">',
     button(confirmLabel, confirmAction, total ? "" : "disabled", "button-accent"),
-    button("Svuota", "shopping-center-clear-cart", total ? "" : "disabled", "button-ghost"),
+    button(t("ui.shoppingCenter.clear"), "shopping-center-clear-cart", total ? "" : "disabled", "button-ghost"),
     "  </div>",
     "</div>"
   ].join("");
@@ -191,7 +205,7 @@ export function renderShoppingCenterScene() {
   var cart = isSell ? (state.shoppingCenterSellCart || {}) : (state.shoppingCenterCart || {});
   var entries = computeCartEntries(cart, isSell, state.inventory, state);
   var total = computeCartTotal(entries);
-  return sceneShell("Centro commerciale", "", [
+  return sceneShell(t("ui.shoppingCenter.sceneTitle"), "", [
     '<section class="shopping-center-layout">',
     renderScenePresentationPanel("shopping_center", "shopping-center-info-panel"),
     '  <div class="shopping-center-top-row">',

@@ -20,7 +20,7 @@ export function renderZonesScene() {
 
   function renderZoneCard(zoneName) {
     var zoneTypes = Engine.getZoneTypes(zoneName);
-    var zoneLabel = t("captureZones." + zoneName, null, zoneName);
+    var zoneLabel = t("captureZones." + zoneName + ".name");
     var themeClass = zoneCardThemeClass[zoneName] || "zone-card-theme-default";
     return [
       '<a class="zone-card ' + themeClass + '" href="/capture/' + encodeURIComponent(zoneName) + '" data-action="open-zone" data-zone="' + escapeHtml(zoneName) + '">',
@@ -38,5 +38,5 @@ export function renderZonesScene() {
   var cards = availableZones.map(renderZoneCard);
   var grid = '<section class="zone-grid">' + cards.join("") + "</section>";
 
-  return sceneShell("Zone Cattura", "", grid, "", "scene-content-zones", "parent-back");
+  return sceneShell(t("ui.sceneTitles.zones"), "", grid, "", "scene-content-zones", "parent-back");
 }

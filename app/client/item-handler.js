@@ -2,7 +2,8 @@ import { registerAction } from "./action-registry.js";
 import { state } from "./game-state.js";
 import { escapeHtml, getItemDisplayImage, renderImage } from "./asset-helpers.js";
 import { setHtml } from "./renderer.js";
-import { getResolvedInventoryItem, itemDisplayDescription, ItemCategory } from "../data/items.js";
+import { getResolvedInventoryItem, ItemCategory } from "../data/items.js";
+import { itemDisplayDescription } from "./entity-text.js";
 import { adjustInventoryItemQuantity } from "./runtime-state.js";
 
 registerAction("inventory-toggle-item", function(element) {

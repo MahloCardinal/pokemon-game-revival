@@ -18,13 +18,3 @@ export var TYPE_CHART = {
   steel: { fire: 0.5, water: 0.5, electric: 0.5, ice: 2.0, rock: 2.0, fairy: 2.0, steel: 0.5 },
   fairy: { fire: 0.5, fighting: 2.0, poison: 0.5, dragon: 2.0, dark: 2.0, steel: 0.5 }
 };
-
-export var TYPE_LABELS_IT = Object.freeze({
-  normal: "Normale", fire: "Fuoco", water: "Acqua", electric: "Elettro", grass: "Erba", ice: "Ghiaccio",
-  fighting: "Lotta", poison: "Veleno", ground: "Terra", flying: "Volante", psychic: "Psico", bug: "Coleottero",
-  rock: "Roccia", ghost: "Spettro", dragon: "Drago", dark: "Buio", steel: "Acciaio", fairy: "Folletto"
-});
-
-export function typeDisplayName(typeKey) {
-  return TYPE_LABELS_IT[typeKey] || String(typeKey || "");
-}

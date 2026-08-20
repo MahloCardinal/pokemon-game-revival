@@ -6,6 +6,8 @@ import { markTeamRuntimeStateChanged, replaceTeamRuntimeState } from "./runtime-
 import { openMessage } from "./dialog-handler.js";
 import { queueGlobalActivityEvent } from "./activity-feed-runtime.js";
 import { createMissionEventKey, recordMissionEvent } from "./mission-runtime.js";
+import { moveNameDescriptor, pokemonNameDescriptor } from "./entity-text.js";
+import { messageDescriptor, resolveText, textDescriptor, t } from "./i18n.js";
 
 import { levelLimitForBadges } from "../data/progression.js";
 
@@ -149,7 +151,7 @@ function levelLimitForSession(session) {
 }
 
 function levelLimitWarningMessage(pokemon, limit) {
-  return pokemon.name + " ha raggiunto il livello massimo gestibile con le Medaglie attuali: Lv " + limit + ".";
+  return messageDescriptor("progression.levelLimit", { pokemon: pokemonNameDescriptor(pokemon), level: limit });
 }
 
 function markLevelLimitReached(session) {
@@ -199,12 +201,14 @@ function applyLevelUp(session) {
     pokemon.expCurrent = 0;
     markLevelLimitReached(session);
   }
-  session.scene.manager.log.push(pokemon.name + " sale al Livello " + pokemon.level + "!");
+  session.scene.manager.log.push(Engine.battleEvent("progression.levelUp", {
+    pokemon: Engine.battleSpeciesRef(pokemon), level: pokemon.level
+  }));
   if (session.resultLines && session.resultLines.length > 1) {
     if (session.levelsToApply > 0 || session.levelBased) {
-      session.resultLines[1] = pokemon.name + " ha guadagnato " + session.totalLevelsGained + " livelli!";
+      session.resultLines[1] = messageDescriptor("progression.gainedLevels", { pokemon: pokemonNameDescriptor(pokemon), levels: session.totalLevelsGained });
     } else {
-      session.resultLines[1] = pokemon.name + " ha guadagnato " + session.gainedExp + " punti esperienza ed è salito di livello!";
+      session.resultLines[1] = messageDescriptor("progression.gainedExperienceAndLevel", { pokemon: pokemonNameDescriptor(pokemon), experience: session.gainedExp });
     }
   }
   syncCombatant(session);
@@ -233,8 +237,11 @@ function applyEvolution(session, evolution) {
   pokemon.type = targetData.type.slice();
   pokemon.expCap = targetData.exp;
   registerPokedexPokemon(pokemon);
-  queueGlobalActivityEvent({ eventType: "evolution", subjectName: oldName, secondarySubjectName: pokemon.name });
-  session.scene.manager.log.push(oldName + " si evolve in " + pokemon.name + "!");
+  queueGlobalActivityEvent({ eventType: "evolution", subjectName: sourceSpeciesKey, secondarySubjectName: String(pokemon.speciesKey) });
+  session.scene.manager.log.push(Engine.battleEvent("progression.evolved", {
+    from: Engine.battleSpeciesRef({ speciesKey: sourceSpeciesKey }),
+    to: Engine.battleSpeciesRef(pokemon)
+  }));
   syncCombatant(session);
   markTeamRuntimeStateChanged();
   session.moveQueue = moveDefsAtLevel(pokemon, session.currentLevel);
@@ -273,20 +280,20 @@ function finishProgression() {
       if (result && result.ok === false) {
         if (result.locked || result.reason === "locked") {
           setScene({ name: "home" }, { history: "replace" });
-          openMessage(["La battaglia è stata ripresa in un'altra scheda."], {
-            title: "Battaglia",
-            closeLabel: "Ok",
+          openMessage([messageDescriptor("progression.battleElsewhere")], {
+            title: textDescriptor("ui.battle.sceneTitle"),
+            closeLabel: textDescriptor("ui.dialogs.ok"),
             closeClass: "button-primary"
           });
           return;
         }
-        state.saveStatus = { state: "error", message: result.message || "Errore durante il salvataggio dell'esperienza." };
+        state.saveStatus = { state: "error", message: messageDescriptor("progression.saveFailed") };
         render({ scrollBattleLogToBottom: true });
         return;
       }
       continueProgression();
     }).catch(function (error) {
-      state.saveStatus = { state: "error", message: error.message || "Errore durante il salvataggio dell'esperienza." };
+      state.saveStatus = { state: "error", message: messageDescriptor("progression.saveFailed") };
       render({ scrollBattleLogToBottom: true });
     });
     return;
@@ -309,7 +316,9 @@ function openMoveLearnDialog(session, moveDef) {
   if (session.pokemon.moves.length < 4) {
     session.pokemon.moves.push(move);
     clampToLimits(session.pokemon);
-    session.scene.manager.log.push(session.pokemon.name + " impara " + move.name + "!");
+    session.scene.manager.log.push(Engine.battleEvent("progression.moveLearned", {
+      pokemon: Engine.battleSpeciesRef(session.pokemon), move: Engine.battleMoveRef(move)
+    }));
     syncCombatant(session);
     markTeamRuntimeStateChanged();
     session.pendingMove = null;
@@ -317,7 +326,7 @@ function openMoveLearnDialog(session, moveDef) {
       type: "move-learn-result",
       pokemonName: session.pokemon.name,
       moveName: move.name,
-      message: session.pokemon.name + " ha imparato " + move.name + "!",
+      message: messageDescriptor("progression.learned", { pokemon: pokemonNameDescriptor(session.pokemon), move: moveNameDescriptor(move) }),
       pokemon: session.pokemon
     };
     render({ scrollBattleLogToBottom: true });
@@ -370,9 +379,9 @@ function openExperienceResultDialog(session) {
   }
   state.dialog = {
     type: "message",
-    title: "Esperienza",
+    title: messageDescriptor("progression.experienceTitle"),
     lines: lines,
-    closeLabel: "Ok",
+    closeLabel: textDescriptor("ui.dialogs.ok"),
     closeClass: "button-primary",
     onClose: function () {
       state.dialog = null;
@@ -388,12 +397,14 @@ function openLevelLimitWarning(session) {
   var lines = resultLinesForDialog(session).concat([message]);
   session.levelLimitWarningPending = false;
   session.levelLimitWarningShown = true;
-  session.scene.manager.log.push(message);
+  session.scene.manager.log.push(Engine.battleEvent("progression.levelLimit", {
+    pokemon: Engine.battleSpeciesRef(session.pokemon), level: levelLimitForSession(session)
+  }));
   state.dialog = {
     type: "message",
-    title: "Livello massimo raggiunto",
+    title: messageDescriptor("progression.maxLevelTitle"),
     lines: lines,
-    closeLabel: "Ok",
+    closeLabel: textDescriptor("ui.dialogs.ok"),
     closeClass: "button-primary",
     onClose: function () {
       state.dialog = null;
@@ -474,8 +485,8 @@ function openNextProgressionStep() {
 
 function expGainLine(pokemon, gainedExp) {
   return pokemon
-    ? pokemon.name + " ha guadagnato " + gainedExp + " punti esperienza"
-    : "Esperienza non assegnabile.";
+    ? messageDescriptor("progression.gainedExperience", { pokemon: pokemonNameDescriptor(pokemon), experience: gainedExp })
+    : messageDescriptor("progression.unavailable");
 }
 
 function queueExperienceAmount(scene, combatant, eventData, onComplete) {
@@ -492,7 +503,7 @@ function queueExperienceAmount(scene, combatant, eventData, onComplete) {
   if (atBadgeLevelLimit) {
     pokemon.expCurrent = 0;
     markTeamRuntimeStateChanged();
-    resultLines[0] = pokemon.name + " non ottiene altra esperienza.";
+    resultLines[0] = messageDescriptor("progression.noMoreExperience", { pokemon: pokemonNameDescriptor(pokemon) });
     progressionQueue.push({
       scene: scene,
       pokemon: pokemon,
@@ -521,7 +532,9 @@ function queueExperienceAmount(scene, combatant, eventData, onComplete) {
   if (pokemon.level >= MAX_LEVEL) {
     pokemon.expCurrent = 0;
     markTeamRuntimeStateChanged();
-    scene.manager.log.push(pokemon.name + " è già al Livello 100 e non ottiene altra esperienza.");
+    scene.manager.log.push(Engine.battleEvent("progression.maxLevelNoExperience", {
+      pokemon: Engine.battleSpeciesRef(pokemon)
+    }));
     progressionQueue.push({
       scene: scene,
       pokemon: pokemon,
@@ -542,14 +555,16 @@ function queueExperienceAmount(scene, combatant, eventData, onComplete) {
       levelLimit: levelLimit,
       levelLimitWarningPending: false,
       levelLimitWarningShown: false,
-      resultLines: [pokemon.name + " è già al Livello 100 e non ottiene altra esperienza."],
+      resultLines: [messageDescriptor("progression.level100NoExperience", { pokemon: pokemonNameDescriptor(pokemon) })],
       resultLinesShown: false
     });
     return true;
   }
   pokemon.expCurrent += gainedExp;
   markTeamRuntimeStateChanged();
-  scene.manager.log.push(pokemon.name + " ottiene " + gainedExp + " punti esperienza.");
+  scene.manager.log.push(Engine.battleEvent("progression.gainedExperience", {
+    pokemon: Engine.battleSpeciesRef(pokemon), experience: gainedExp
+  }));
   progressionQueue.push({
     scene: scene,
     pokemon: pokemon,
@@ -579,18 +594,19 @@ function queueExperienceAmount(scene, combatant, eventData, onComplete) {
 function queueLevelAmount(scene, combatant, eventData, onComplete) {
   var pokemon = combatant && combatant.pokemon;
   var levels = Math.max(0, Math.floor(Number(eventData && eventData.value) || 0));
-  var levelText = levels === 1 ? " livello" : " livelli";
   var levelLimit = levelLimitForBadges(state.trainerInfo[2]);
   var atBadgeLevelLimit = pokemon && levelLimit < MAX_LEVEL && pokemon.level >= levelLimit;
   var resultLines = [
-    pokemon ? pokemon.name + " ha guadagnato " + levels + levelText : "Esperienza non assegnabile."
+    pokemon ? messageDescriptor(levels === 1 ? "progression.gainedLevel" : "progression.gainedLevelPlural", {
+      pokemon: pokemonNameDescriptor(pokemon), levels: levels
+    }) : messageDescriptor("progression.unavailable")
   ];
   if (!pokemon) {
     return false;
   }
   if (atBadgeLevelLimit) {
     markTeamRuntimeStateChanged();
-    resultLines[0] = pokemon.name + " non ottiene altri livelli.";
+    resultLines[0] = messageDescriptor("progression.noMoreLevels", { pokemon: pokemonNameDescriptor(pokemon) });
     progressionQueue.push({
       scene: scene,
       pokemon: pokemon,
@@ -621,7 +637,9 @@ function queueLevelAmount(scene, combatant, eventData, onComplete) {
   }
   if (pokemon.level >= MAX_LEVEL) {
     markTeamRuntimeStateChanged();
-    scene.manager.log.push(pokemon.name + " è già al Livello 100 e non ottiene altri livelli.");
+    scene.manager.log.push(Engine.battleEvent("progression.maxLevelNoLevels", {
+      pokemon: Engine.battleSpeciesRef(pokemon)
+    }));
     progressionQueue.push({
       scene: scene,
       pokemon: pokemon,
@@ -645,13 +663,15 @@ function queueLevelAmount(scene, combatant, eventData, onComplete) {
       levelLimit: levelLimit,
       levelLimitWarningPending: false,
       levelLimitWarningShown: false,
-      resultLines: [pokemon.name + " è già al Livello 100 e non ottiene altri livelli."],
+      resultLines: [messageDescriptor("progression.level100NoLevels", { pokemon: pokemonNameDescriptor(pokemon) })],
       resultLinesShown: false
     });
     return true;
   }
   markTeamRuntimeStateChanged();
-  scene.manager.log.push(pokemon.name + " sale di " + levels + levelText + "!");
+  scene.manager.log.push(Engine.battleEvent(levels === 1 ? "progression.gainedLevel" : "progression.gainedLevels", {
+    pokemon: Engine.battleSpeciesRef(pokemon), levels: levels
+  }));
   progressionQueue.push({
     scene: scene,
     pokemon: pokemon,
@@ -792,7 +812,9 @@ export function replaceProgressionMove(index) {
   learnedMove = activeSession.pendingMove;
   activeSession.pokemon.moves[index] = learnedMove;
   clampToLimits(activeSession.pokemon);
-  activeSession.scene.manager.log.push(activeSession.pokemon.name + " dimentica " + oldMove.name + " e impara " + learnedMove.name + "!");
+  activeSession.scene.manager.log.push(Engine.battleEvent("progression.moveReplaced", {
+    pokemon: Engine.battleSpeciesRef(activeSession.pokemon), oldMove: Engine.battleMoveRef(oldMove), newMove: Engine.battleMoveRef(learnedMove)
+  }));
   syncCombatant(activeSession);
   markTeamRuntimeStateChanged();
   activeSession.pendingMove = null;
@@ -800,7 +822,7 @@ export function replaceProgressionMove(index) {
     type: "move-learn-result",
     pokemonName: activeSession.pokemon.name,
     moveName: learnedMove.name,
-    message: activeSession.pokemon.name + " ha imparato " + learnedMove.name + "!",
+    message: messageDescriptor("progression.learned", { pokemon: pokemonNameDescriptor(activeSession.pokemon), move: moveNameDescriptor(learnedMove) }),
     pokemon: activeSession.pokemon
   };
   render({ scrollBattleLogToBottom: true });
@@ -837,7 +859,10 @@ export function showProgressionMoveConfirmPanel(index, anchorElement) {
 
   title = document.createElement("h3");
   title.className = "floating-panel-title";
-  title.textContent = "Vuoi davvero far dimenticare " + oldMove.name + "?";
+  title.textContent = t("messages.progression.confirmForget", {
+    pokemon: resolveText(pokemonNameDescriptor(activeSession.pokemon)),
+    move: resolveText(moveNameDescriptor(oldMove))
+  });
   panel.appendChild(title);
 
   grid = document.createElement("div");
@@ -847,7 +872,7 @@ export function showProgressionMoveConfirmPanel(index, anchorElement) {
   confirmBtn = document.createElement("button");
   confirmBtn.type = "button";
   confirmBtn.className = "floating-panel-btn selectable";
-  confirmBtn.textContent = "Conferma";
+  confirmBtn.textContent = t("ui.dialogs.confirm");
   confirmBtn.dataset.action = "progression-replace-move-confirm";
   confirmBtn.dataset.index = String(index);
   grid.appendChild(confirmBtn);
@@ -855,7 +880,7 @@ export function showProgressionMoveConfirmPanel(index, anchorElement) {
   noBtn = document.createElement("button");
   noBtn.type = "button";
   noBtn.className = "floating-panel-btn selectable";
-  noBtn.textContent = "No";
+  noBtn.textContent = t("ui.dialogs.cancel");
   noBtn.dataset.action = "progression-replace-move-cancel";
   grid.appendChild(noBtn);
 
@@ -928,13 +953,16 @@ export function skipProgressionMove() {
     return;
   }
   skippedMove = activeSession.pendingMove;
-  activeSession.scene.manager.log.push(activeSession.pokemon.name + " non impara " + skippedMove.name + ".");
+  activeSession.scene.manager.log.push(Engine.battleEvent("progression.moveNotLearned", {
+    pokemon: Engine.battleSpeciesRef(activeSession.pokemon),
+    move: Engine.battleMoveRef(skippedMove)
+  }));
   activeSession.pendingMove = null;
   state.dialog = {
     type: "move-learn-result",
     pokemonName: activeSession.pokemon.name,
     moveName: skippedMove.name,
-    message: activeSession.pokemon.name + " non ha imparato " + skippedMove.name,
+    message: messageDescriptor("progression.notLearned", { pokemon: pokemonNameDescriptor(activeSession.pokemon), move: moveNameDescriptor(skippedMove) }),
     pokemon: null
   };
   render({ scrollBattleLogToBottom: true });
@@ -965,7 +993,9 @@ export function resolveProgressionEvolution(accepted) {
     return;
   } else {
     activeSession.refusedBySpecies[activeSession.pokemon.speciesKey] = true;
-    activeSession.scene.manager.log.push(activeSession.pokemon.name + " non si evolve.");
+    activeSession.scene.manager.log.push(Engine.battleEvent("progression.evolutionDeclined", {
+      pokemon: Engine.battleSpeciesRef(activeSession.pokemon)
+    }));
     activeSession.phase = "evolution";
   }
   activeSession.pendingEvolution = null;

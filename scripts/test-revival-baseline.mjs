@@ -32,7 +32,6 @@ const gameDataChangeGenerator = read("scripts/create-game-data-change.mjs");
 const discordAudienceMigration = read("supabase/migrations/20260814131000_notify_all_admin_battle_players.sql");
 const discordTurnMigration = read("supabase/migrations/20260814132000_admin_battle_turn_discord_notifications.sql");
 const renderUtils = read("app/client/render-utils.js");
-const zoneTexts = read("app/data/zones-text.js");
 const assetPaths = read("app/data/asset-paths.js");
 const captureZonesData = read("app/data/capture-zones.js");
 const i18nRuntime = read("app/client/i18n.js");
@@ -40,6 +39,8 @@ const languageSettings = read("app/client/language-settings.js");
 const i18nCatalogIndex = read("app/data/i18n/index.js");
 const i18nItalian = read("app/data/i18n/it.js");
 const i18nEnglish = read("app/data/i18n/en.js");
+const i18nItalianScenes = read("app/data/i18n/it/scenes.js");
+const i18nEnglishScenes = read("app/data/i18n/en/scenes.js");
 const gymsView = read("app/view/gyms.js");
 const gymsHandler = read("app/client/gyms-handler.js");
 const battleHandler = read("app/client/battle-handler.js");
@@ -93,17 +94,24 @@ assert.match(renderer, /export function renderDialogLayer\(options\)/);
 assert.match(renderUtils, /scenePresentationAssetPath\(presentationKey\)/);
 assert.doesNotMatch(renderUtils, /_presentazione|\.normalize\("NFD"\)/);
 assert.doesNotMatch(captureZonesData, /CAPTURE_ZONE_LABELS_IT|captureZoneDisplayName/);
-assert.doesNotMatch(zoneTexts, /SCENE_PRESENTATION_TEXT/);
+assert.equal(existsSync(new URL("../app/data/zones-text.js", import.meta.url)), false);
 assert.match(i18nRuntime, /export function t\(/);
 assert.match(i18nRuntime, /export function setLocale\(/);
 assert.match(i18nRuntime, /export function getLocaleLabel\(/);
+assert.match(i18nRuntime, /export function tList\(/);
+assert.match(i18nRuntime, /export function tp\(/);
 assert.match(languageSettings, /settings-language-select/);
-assert.match(languageSettings, /Lingua \/ Language/);
+assert.match(languageSettings, /t\("settings\.language"\)/);
+assert.doesNotMatch(languageSettings, /Lingua \/ Language/);
 assert.match(languageSettings, /aria-pressed/);
 assert.match(i18nCatalogIndex, /SUPPORTED_LOCALES = Object\.freeze\(\["it", "en"\]\)/);
-assert.match(i18nItalian, /scenePresentations/);
-assert.match(i18nEnglish, /ghost_tower: "Ghost Tower"/);
-assert.match(i18nEnglish, /safari_zone: "Safari Zone"/);
+assert.match(i18nItalian, /IT_SCENE_TRANSLATIONS\.captureZones/);
+assert.match(i18nEnglish, /EN_SCENE_TRANSLATIONS\.captureZones/);
+assert.match(i18nItalianScenes, /captureZones/);
+assert.doesNotMatch(i18nItalianScenes, /sceneTitles|scenePresentations/);
+assert.match(i18nEnglishScenes, /name: "Ghost Tower"/);
+assert.match(i18nEnglishScenes, /name: "Safari Zone"/);
+assert.doesNotMatch(assetPaths, /presentationKey\s*:/);
 const listedAssetPaths = Array.from(assetPaths.matchAll(/"\/assets\/([^"\r\n]+)"/g), (match) => match[1]);
 assert.ok(listedAssetPaths.length >= 30, "Expected an explicit presentation asset catalog");
 for (const relativeAssetPath of listedAssetPaths) {
@@ -111,11 +119,12 @@ for (const relativeAssetPath of listedAssetPaths) {
 }
 assert.doesNotMatch(gymsView, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
 assert.doesNotMatch(gymsHandler, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
-assert.match(gymsView, /Completa le Missioni avventura necessarie/);
+assert.match(gymsView, /ui\.gyms\.adventureRequirement/);
 assert.doesNotMatch(adminBattleHandler, /registerAction\("admin-battle-refresh"/);
 assert.doesNotMatch(battleView, /admin-battle-refresh|button\("Aggiorna"/);
 assert.match(battleHandler, /\["item", "switch"\]\.indexOf\(data\.command_type\)/);
-assert.match(battleHandler, /scene\.authoritativeCapture \? "Nella confusione perdi " : "Perdi "[\s\S]*Pokédollari/);
+assert.match(battleHandler, /battleText\(scene\.authoritativeCapture \? "lostMoneyConfusion" : "lostMoney"/);
+assert.doesNotMatch(battleHandler, /Nella confusione perdi|Pokédollari/);
 assert.match(captureHandler, /await refreshCaptureEncounterState\(captureScene\)/);
 assert.match(captureHandler, /state\.ordinaryProgression[\s\S]*openActiveProgressionScene\(\)/);
 assert.match(inventoryViewHelpers, /SINGLE_COPY_INVENTORY_ITEM_INDEXES[\s\S]*go_goggles\.index[\s\S]*silph_scope\.index[\s\S]*white_flute\.index[\s\S]*black_flute\.index/);
@@ -309,8 +318,8 @@ function assertStableCatalogKeys(entries, expectedCount, label) {
 
 assertStableCatalogKeys(MoveDefinitions.MOVE_LIBRARY, 351, "move");
 assertStableCatalogKeys(ItemDefinitions.ITEM_LIBRARY, 164, "item");
-assert.equal(MoveDefinitions.doom_desire.name, "Desiderio Fatale");
-assert.equal(ItemDefinitions.leek.name, "Gambo");
+assert.equal(MoveDefinitions.doom_desire.name, "doom_desire");
+assert.equal(ItemDefinitions.leek.name, "leek");
 
 function pursuitTestPokemon(name, moves) {
   return new Pokemon({

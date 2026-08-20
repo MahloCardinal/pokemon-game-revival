@@ -1,5 +1,6 @@
 import { appendGlobalActivityFeedEvent, loadGlobalActivityFeed } from "../api/activity-feed.js";
 import { state } from "./game-state.js";
+import { messageDescriptor } from "./i18n.js";
 
 var HOME_ACTIVITY_POLL_MS = 60000;
 var homeActivityTimer = null;
@@ -72,7 +73,7 @@ export async function recordGlobalActivityEvent(event) {
   try {
     return await appendGlobalActivityFeedEvent(normalized);
   } catch (error) {
-    return { ok: false, message: error.message || "Impossibile salvare l'attivita recente." };
+    return { ok: false, code: "activity_feed_save_failed" };
   }
 }
 
@@ -103,7 +104,7 @@ export async function flushPendingGlobalActivityEvents() {
       state.pendingGlobalActivities.unshift(event);
     }
     homeActivityFlushInFlight = false;
-    return { ok: false, message: error.message || "Impossibile salvare l'attivita recente." };
+    return { ok: false, code: "activity_feed_save_failed" };
   }
   homeActivityFlushInFlight = false;
   return { ok: true };
@@ -131,7 +132,7 @@ export function refreshHomeActivityFeed(onRefresh, silent) {
       state.activityFeed.rows = result.events || [];
       state.activityFeed.error = "";
     } else {
-      state.activityFeed.error = result.message || "Impossibile caricare le attivita recenti.";
+      state.activityFeed.error = messageDescriptor("activityFeed.loadFailed");
     }
     if (shouldPollHomeActivity() && typeof onRefresh === "function") {
       onRefresh();
@@ -140,7 +141,7 @@ export function refreshHomeActivityFeed(onRefresh, silent) {
     homeActivityRefreshInFlight = false;
     state.activityFeed.loading = false;
     state.activityFeed.loaded = true;
-    state.activityFeed.error = error.message || "Impossibile caricare le attivita recenti.";
+    state.activityFeed.error = messageDescriptor("activityFeed.loadFailed");
     if (shouldPollHomeActivity() && typeof onRefresh === "function") {
       onRefresh();
     }

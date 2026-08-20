@@ -87,20 +87,20 @@ Pokemon.fromJSON = function (data) {
   var level;
   var maxHp;
   if (!data || data.s === undefined) {
-    throw new Error("Formato Pokémon non valido.");
+    throw new Error("Invalid Pokemon format.");
   }
   speciesEntry = resolveSpeciesEntry(data.s);
   if (!speciesEntry) {
-    throw new Error("Pokémon non trovato: " + data.s);
+    throw new Error("Pokemon not found: " + data.s);
   }
   speciesData = speciesEntry.data;
   if (!Array.isArray(data.m)) {
-    throw new Error("Formato mosse Pokémon non valido.");
+    throw new Error("Invalid Pokemon move format.");
   }
   level = Number(data.l);
   maxHp = Number(data.hp);
   if (!Number.isFinite(level) || level <= 0 || !Number.isFinite(maxHp) || maxHp <= 0) {
-    throw new Error("Valori Pokémon non validi.");
+    throw new Error("Invalid Pokemon values.");
   }
   return new Pokemon({
     speciesKey: speciesEntry.key,
@@ -130,7 +130,7 @@ export function createPokemonFromSpecies(speciesName, level, options) {
   var moveDefs;
   var gender;
   if (!speciesEntry) {
-    throw new Error("Specie Pokémon non trovata: " + speciesName);
+    throw new Error("Pokemon species not found: " + speciesName);
   }
   genderOptions = speciesData.gender || [];
   moveDefs = options.moveDefs ? options.moveDefs.slice(0, 4) : movePoolForLevel(speciesData, level);

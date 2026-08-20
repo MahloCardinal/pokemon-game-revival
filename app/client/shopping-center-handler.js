@@ -11,6 +11,7 @@ import { buyShopItemAuthoritative, sellShopItemAuthoritative } from "../api/play
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { shoppingCenterItemCanBePurchased, shoppingCenterRemainingCartQuantity, shoppingCenterIsSellSection, shoppingCenterSectionify, computeCartEntries, computeCartTotal } from "../data/shopping-center.js";
 import { renderShoppingCenterCartPanelContent, renderShoppingCenterItemGridContent } from "../view/shopping-center.js";
+import { messageDescriptor, textDescriptor } from "./i18n.js";
 
 var authoritativeShopCommandPending = false;
 
@@ -172,7 +173,7 @@ async function runAuthoritativeCart(entries, command, cartKey) {
             return cart;
           }, {});
         }
-        openMessage([result.message || "Comando negozio non riuscito."], { title: "Centro commerciale" });
+        openMessage([messageDescriptor("shopping.commandFailed")], { title: textDescriptor("ui.shoppingCenter.sceneTitle") });
         renderRegions(["shopping-center-cart", "shopping-center-items"]);
         return false;
       }
@@ -197,11 +198,11 @@ async function confirmPurchases() {
   var money = Number(state.trainerInfo[1]) || 0;
   if (!requireNotInBattle()) return;
   if (!entries.length) {
-    openMessage(["Nessuno strumento selezionato."], { title: "Centro commerciale" });
+    openMessage([messageDescriptor("shopping.noneSelected")], { title: textDescriptor("ui.shoppingCenter.sceneTitle") });
     return;
   }
   if (await runAuthoritativeCart(entries, buyShopItemAuthoritative, "shoppingCenterCart")) {
-    openMessage(["Acquisto effettuato"], { title: "Centro commerciale" });
+    openMessage([messageDescriptor("shopping.purchased")], { title: textDescriptor("ui.shoppingCenter.sceneTitle") });
   }
   return;
 }
@@ -211,7 +212,7 @@ async function confirmSale() {
   var total = computeCartTotal(entries);
   if (!requireNotInBattle()) return;
   if (!entries.length) {
-    openMessage(["Nessuno strumento selezionato."], { title: "Centro commerciale" });
+    openMessage([messageDescriptor("shopping.noneSelected")], { title: textDescriptor("ui.shoppingCenter.sceneTitle") });
     return;
   }
   await runAuthoritativeCart(entries, sellShopItemAuthoritative, "shoppingCenterSellCart");

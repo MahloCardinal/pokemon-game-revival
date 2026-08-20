@@ -1,0 +1,149 @@
+export var EN_BATTLE_TRANSLATIONS = Object.freeze({
+  statuses: Object.freeze({
+    psn: "poisoning", brn: "a burn", frz: "freezing", slp: "sleep",
+    par_block: "paralysis", par_free: "paralysis", cnf_block: "confusion", cnf_free: "confusion",
+    fallback: "a status condition"
+  }),
+  effectiveness: Object.freeze({ super: "It's super effective!", weak: "It's not very effective." }),
+  summary: Object.freeze({
+    weather: "Weather: {weather}", weatherTypes: Object.freeze({ sun: "harsh sunlight", rain: "rain", sand: "sandstorm", hail: "hail" }),
+    activePokemon: "Active Pokémon: {pokemon}", alivePokemon: "Available Pokémon: {pokemon}", koPokemon: "Knocked-out Pokémon: {pokemon}", items: "Items: {items}",
+    percentage: "%: {value}", positive: "positive", negative: "negative", attackBuff: "+{value} Atk", attackNerf: "-{value} Atk", defenseBuff: "+{value} Def", defenseNerf: "-{value} Def", drowsy: "Drowsy", pendingStatus: "Pending status: {turns}",
+    status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Psn", brn: "Brn", frz: "Frz", slp: "Slp {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
+    doubleDamageNextTurn: "Double damage next turn", repeatMove: "Repeats {move} {turns}/3", pendingMove: "{move} in progress", noDefenseBoost: "No Defense boost",
+    endure: "Endures until next turn", itemLocked: "Held item disabled", disabledMoves: "{moves} disabled", trapped: "Trapped", trappedTurns: "Trapped {turns}/4",
+    leechSeed: "Leech Seed (-{amount})", koInTurns: "Knocked out in {turns} turns", noStatNerfs: "No stat reductions {turns}/5",
+    noMoveBoosts: "No opposing move boosts {turns}/{max}", noStatus: "No status conditions {turns}/5", noSleep: "Sleep immunity {turns}/5",
+    wishNextTurn: "Wish triggers in 1 turn", futureMove: "{move} strikes in {turns} turns"
+  }),
+  dialog: Object.freeze({
+    titles: Object.freeze({ battle: "Battle", capture: "Capture", tower: "Battle Tower", training: "Training Zone", gym: "Gym", league: "Kanto League", experience: "Experience", bag: "Bag", withdraw: "Challenge withdrawal", abandon: "Abandon battle", deleteChallenge: "Delete challenge", batonPass: "Baton Pass" }),
+    buttons: Object.freeze({ continue: "Continue", yes: "Yes", no: "No", abandon: "Abandon battle", resumeHere: "Resume in this tab" }),
+    abandonQuestion: "Are you sure you want to abandon the battle?",
+    towerNext: "You won the challenge! The next challenger is on the way...", captured: "You caught {pokemon}!", addedToTeam: "{pokemon} was added to your team!", sentToBox: "{pokemon} was sent to the Box!",
+    nextTowerFailed: "The next challenger could not be started.", ballEscaped: "Oh no! The Pokémon broke free from the Ball!", commandVerifying: "The command is still being verified. Retry it before sending another action.",
+    verifyFailed: "The battle state could not be verified.", commandFailed: "The battle command failed.", trainingResolutionFailed: "The reward could not be resolved. Try again.", commandUnverified: "The command has not been verified yet.", automaticRecovery: "Command under verification. Automatic recovery in progress...",
+    noRewards: "The encounter ended without rewards.", wildKo: "{pokemon} is knocked out.", teamDefeated: "Your team was defeated.", abandoned: "You abandoned the battle.", lostChallenge: "You lost the challenge.", wonChallenge: "You won the challenge.",
+    earnedBattlePoints: "You receive {points} BP.", lostMoney: "You lose {money}.", lostMoneyConfusion: "In the confusion, you lose {money}.", defeatedMember: "You defeated {member}!", receivedPrizeMoney: "You received {money} as a prize!",
+    retiredChallenge: "You withdrew from the challenge.", lostLeagueRun: "You lost your League run.", leagueRestart: "Your next attempt will restart from the first Elite Four member.", earnedMoney: "You receive {money}.", earnedItem: "You receive {item}.", earnedItems: "You receive {quantity} {item}.", earnedBadge: "You receive the {badge}.",
+    progressionComplete: "Battle progression complete.", progressionPokemonMissing: "The progression Pokémon is no longer available.", rewardPokemonMissing: "The reward Pokémon is no longer in the canonical team.", rewardRecoveryFailed: "The pending reward could not be recovered. Try again.",
+    captureDirectOnly: "In authoritative mode, this encounter only supports direct capture with a Ball.", sendPokemonFirst: "You must send out a Pokémon first.", itemBattleOnly: "This item can only be used during a battle.", itemUnavailable: "The selected item is not available in the Bag.", noBallsAgainstTrainer: "You cannot use Balls against a Trainer.",
+    activeActivity: "Complete the current activity first.", battleElsewhere: "The battle was resumed in another tab.", itemUseLimit: "You have already used 3 copies of {item} in this battle.", noWildTarget: "There is no wild Pokémon to catch.", updateFailed: "The battle could not be updated.", unavailable: "Unavailable", level100: "Level 100", badgeCap: "Badge limit",
+    trainingWon: "You won the Training Zone challenge!", assignTrainingLevel: "Assign {levels} Training Level to your team.", assignTrainingLevels: "Assign {levels} Training Levels to your team.", maxTrainingLevels: "Maximum {max} levels per Pokémon.", dailyRewardFailed: "The daily reward was not recorded. Try again.", rewardSaveFailed: "The reward phase could not be saved.", noEligibleLevels: "No Pokémon in your team can receive more levels with your current Badges.", levelAssignmentFailed: "The levels could not be assigned. Try again.",
+    battleConcluded: "Battle concluded.", rewardsAlreadyRegistered: "Rewards already recorded on the profile.", rewardAlreadyRegistered: "Reward already recorded on the profile.", registerRewardsFailed: "The rewards could not be recorded.", emptyTeam: "You have no Pokémon in your team.", leagueStateChanged: "The League state changed. Refresh and try again.", nextLeagueFailed: "The next League battle could not be started.",
+    createFailed: "The battle could not be created.", alreadyOpen: "This battle is already open in another tab.", resumeFailed: "The battle could not be resumed.", closeFailed: "The battle could not be closed.", verifyLastCommand: "The last command will be checked first.", abandonIfMissing: "If it was not executed, the challenge will be abandoned.",
+    batonPassChoice: "Choose the Pokémon that will enter with Baton Pass.", active: "Active", chooseMoveToBlock: "Choose the move to disable", chooseSecondType: "Choose the second type", choose: "Choose", targetFainted: "{pokemon} is knocked out and cannot enter the battle.", switchFailed: "The switch failed.", unusable: "Cannot be used", useOn: "Which Pokémon should receive {item}?", chooseFirst: "Choose the first Pokémon to send out",
+    trainingAbandoned: "You abandoned the battle. You receive no rewards.", abandonConfirm: "Do you really want to abandon the battle?", abandonSaveFailed: "The abandoned battle could not be saved.", closeEncounterFailed: "The encounter could not be closed.", retired: "You withdrew from the challenge.", trainingLost: "You lost the challenge. You receive no rewards, but lose nothing.", challengeConcluded: "Challenge concluded.", allPokemonKo: "All your Pokémon are knocked out!"
+  }),
+  events: Object.freeze({
+    turn: Object.freeze({ started: "{team}", divider: "—" }),
+    action: Object.freeze({ playerInterruptedForSwitch: "The action is interrupted: another Pokémon must be sent out." }),
+    progression: Object.freeze({
+      maxLevelNoExperience: "{pokemon} is already Level 100 and gains no more experience.",
+      maxLevelNoLevels: "{pokemon} is already Level 100 and gains no more levels.",
+      levelUp: "{pokemon} reaches Level {level}!", levelLimit: "{pokemon} reaches the current limit: Lv. {level}.", gainedExperience: "{pokemon} gains {experience} experience points.",
+      gainedLevel: "{pokemon} gains {levels} level.", gainedLevels: "{pokemon} gains {levels} levels.", evolved: "{from} evolves into {to}!",
+      moveLearned: "{pokemon} learns {move}!", moveReplaced: "{pokemon} forgets {oldMove} and learns {newMove}!", moveNotLearned: "{pokemon} does not learn {move}.", evolutionDeclined: "{pokemon} does not evolve."
+    }),
+    outcome: Object.freeze({
+      pokemonKo: "{pokemon} is knocked out!", playerLost: "You lost the battle!", playerTeamKo: "All your Pokémon are knocked out. You lost the battle.",
+      playerWon: "The opponent has no Pokémon left. You won the battle!", fled: "{pokemon} flees from the battle.", abandoned: "Battle abandoned."
+    }),
+    switch: Object.freeze({
+      targetNotFound: "Pokémon not found.", alreadyActive: "{pokemon} is already in battle.", targetFainted: "{pokemon} is knocked out and cannot enter the battle.",
+      trapped: "{pokemon} cannot be switched out.", trappedTurns: "{pokemon} cannot be switched out for {turns} turns.",
+      rooted: "{pokemon} cannot be switched out because it used Ingrain.", pendingMove: "{pokemon} cannot be switched out while {move} is in progress.",
+      changed: "{outgoing} is withdrawn; {incoming} enters the battle.", entered: "{pokemon} enters the battle.", batonPass: "Baton Pass transfers the effects to {pokemon}."
+    }),
+    item: Object.freeze({
+      notFound: "Item not found.", unusable: "{item} cannot be used in battle.", targetRequired: "Choose a Pokémon on which to use {item}.",
+      targetFainted: "{pokemon} is knocked out.", targetNotFainted: "{pokemon} is not knocked out.", hpFull: "{pokemon} already has full HP.",
+      noFullRestoreEffect: "{pokemon} has no missing HP or status condition to cure.", noCurableStatus: "{pokemon} has no status condition that {item} can cure.",
+      weatherInactive: "There is no active weather.", heldOnly: "{item} activates only when held by a Pokémon.", unsupported: "This item is not supported in battle.",
+      healedHp: "The Trainer uses {item} on {pokemon}: {amount} HP restored.", fullRestore: "The Trainer uses {item} on {pokemon}: {amount} HP restored and the status condition is cured.",
+      revived: "The Trainer uses {item} on {pokemon}: revived with {amount} HP.", curedStatus: "The Trainer uses {item} on {pokemon}: status condition cured.",
+      clearedWeather: "The Trainer uses {item}: the weather returns to normal."
+    }),
+    capture: Object.freeze({ ballFailed: "{team} uses {item}, but it fails.", caught: "{team} uses {item} and catches {pokemon}!", replayConcluded: "Ball used. Battle concluded." }),
+    status: Object.freeze({
+      confusionEnded: "{pokemon} is no longer confused.", wokeUp: "{pokemon} woke up.", fellAsleep: "{pokemon} falls asleep.", applied: "{pokemon} is affected by {status}.",
+      paralyzedCannotMove: "{pokemon} is paralyzed and cannot attack.", confusionSelfDamage: "{pokemon} hurts itself in its confusion and loses {amount} HP.",
+      asleepCannotMove: "{pokemon} is asleep and cannot attack.", frozenCannotMove: "{pokemon} is frozen and cannot attack.",
+      poisonDamage: "{pokemon} is poisoned and loses {amount} HP.", burnDamage: "{pokemon} is burned and loses {amount} HP.",
+      ingrainHeal: "{pokemon} restores {amount} HP with Ingrain.", wishHeal: "{source}'s Wish restores {amount} HP to {pokemon}.",
+      perishSongKo: "Perish Song knocks out {pokemon}!", endured: "{pokemon} endured the hit!", magicCoatReflected: "{source} reflects the status condition onto {target} with Magic Coat!",
+      destinyBondKo: "Destiny Bond knocks out {pokemon}!", grudgeDisabledMove: "Grudge prevents {pokemon} from using {move} again!"
+    }),
+    weather: Object.freeze({ sandDamage: "{pokemon} loses {amount} HP to the sandstorm.", hailDamage: "{pokemon} loses {amount} HP to the hail." }),
+    team: Object.freeze({
+      attackBuffEnded: "{team}'s Attack boost ends.", defenseBuffEnded: "{team}'s Defense boost ends.", statProtectionEnded: "{team}'s stat-reduction protection ends.",
+      moveBoostProtectionEnded: "{team}'s move-boost protection ends.", statusProtectionEnded: "{team}'s status protection ends.",
+      sleepImmunityEnded: "{team}'s sleep immunity ends.", boostSuppressionEnded: "{team}'s boost suppression ends."
+    }),
+    hazard: Object.freeze({
+      bootsClearedSpikes: "{pokemon}'s Heavy-Duty Boots remove the Spikes.", spikesDamage: "Spikes deal {damage} HP of damage to {pokemon}.",
+      spikesDamageKo: "Spikes deal {damage} HP of damage to {pokemon}, knocking it out!", bootsClearedLeechSeed: "Heavy-Duty Boots free {pokemon} from Leech Seed.",
+      leechSeedDamage: "{pokemon} loses {amount} HP to Leech Seed.", leechSeedDrain: "{pokemon} loses {amount} HP to Leech Seed; {target} restores {healed} HP."
+    }),
+    future: Object.freeze({ hit: "{source}'s {move} hits {target} and deals {amount} HP of damage!", failedTargetKo: "{move} fails because {target} is already knocked out." }),
+    heldItem: Object.freeze({
+      lifeOrbCost: "{pokemon} loses {amount} HP to Life Orb.", shellBellHeal: "{pokemon} restores {amount} HP with Shell Bell.",
+      berryCuredStatus: "{item} activates: {pokemon} is cured of {status}.", berryHealed: "{item} activates: {pokemon} restores {amount} HP.",
+      typeBerryProtected: "{item} protects {pokemon} from {type}-type damage and halves the damage.", ignoredStatusDelay: "{pokemon} ignores Lax Incense with Luck Incense.",
+      focusBandProtected: "Focus Band protects {pokemon} from a one-hit knockout. Charges left: {charges}.", brightPowderProtected: "Bright Powder protects {pokemon}!",
+      focusSashStatusProtected: "Focus Sash protects {pokemon} from the status condition!", focusSashCharged: "{pokemon} readies Focus Sash. Charges left: {charges}.",
+      rockyHelmetDamage: "{target} takes {amount} HP of damage from {source}'s Rocky Helmet!", disabledMove: "{item} disables {pokemon}'s {move}.",
+      addedType: "{item} adds the {type} type to {pokemon}."
+    }),
+    move: Object.freeze({
+      weatherRepeatBlocked: "{pokemon} cannot use {move} on two consecutive turns.", brickBreakScreens: "Brick Break destroys {team}'s screens.",
+      "1HKO": "{attacker} uses {move}: {defender} is knocked out.", baton_pass: "{attacker} uses {move} and passes the effects to the next Pokémon.",
+      buff_debuff_self: "{attacker} uses {move}: -{stats} Defense, +{doubledStats} Attack.", buff_self_atk: "{attacker} uses {move}: +{stats} Attack.",
+      buff_self_atk_big: "{attacker} uses {move}: +{doubledStats} Attack.", buff_self_atk_def: "{attacker} uses {move}: +{stats} Attack and Defense.",
+      buff_self_def: "{attacker} uses {move}: +{stats} Defense.", buff_self_def_burn: "{attacker} uses {move}: +{stats} Defense and immunity to burns.",
+      buff_team_atk: "{attacker} uses {move}: +{stats} team Attack for 5 turns.", buff_team_def: "{attacker} uses {move}: +{stats} team Defense for 5 turns.",
+      charge: "{attacker} is charging up.", cnf: "{attacker} uses {move}: {defender} is confused.", cnf_buff_enem: "{attacker} uses {move}: {defender} is confused and its Attack rises.",
+      convers: "{attacker} uses {move} and becomes {resolvedType} type.", copy_stats: "{attacker} uses {move} and copies {defender}'s stat changes.",
+      cure_status: "{attacker} uses {move} and cures its status conditions.", cure_status_team: "{attacker} uses {move} and cures the team's status conditions.",
+      def_raise_block: "{attacker} uses {move}: {defender} cannot raise its Defense.", destiny_bond: "{attacker} uses {move}: if it is knocked out by the next move, the opponent will be knocked out too.",
+      dmg: "{attacker} uses {move} and deals {damage} HP of damage.", dmg_1hp: "{attacker} uses {move}: {defender} hangs on with 1 HP.",
+      dmg_bind: "{attacker} uses {move}, deals {damage} HP of damage, and traps {defender} for {turns} turns.", dmg_brn: "{attacker} uses {move}, deals {damage} HP of damage, and burns {defender}.",
+      dmg_cnf: "{attacker} uses {move}, deals {damage} HP of damage, and confuses {defender}.", dmg_double: "{attacker} uses {move}: its power doubles and it deals {damage} HP of damage.",
+      dmg_enem_atk: "{attacker} uses {move}, deals {damage} HP of damage, and lowers {defender}'s Attack by {stats}.", dmg_enem_def: "{attacker} uses {move}, deals {damage} HP of damage, and lowers {defender}'s Defense by {stats}.",
+      dmg_frz: "{attacker} uses {move}, deals {damage} HP of damage, and freezes {defender}.", dmg_los_hp: "{attacker} uses {move}, deals {damage} HP of damage, and loses {recoil} HP to recoil.",
+      dmg_los_perc: "{attacker} uses {move}, deals {damage} HP of damage, and loses the percentage.", dmg_one_half: "{attacker} uses {move}: the effect activates and deals {damage} HP of damage.",
+      dmg_par: "{attacker} uses {move}, deals {damage} HP of damage, and paralyzes {defender}.", dmg_psn: "{attacker} uses {move}, deals {damage} HP of damage, and poisons {defender}.",
+      dmg_pursuit_switch: "{attacker} uses {move}, hits the withdrawing {defender}, and deals {damage} HP of damage.", dmg_rec_hp: "{attacker} uses {move}, deals {damage} HP of damage, and restores {absorbed} HP.",
+      dmg_rec_perc: "{attacker} uses {move}, deals {damage} HP of damage, and recovers the percentage.", dmg_seed: "{attacker} uses {move}, deals {damage} HP of damage, and plants Leech Seed on {defender}.",
+      dmg_self_cnf: "{attacker} uses {move}, deals {damage} HP of damage, and becomes confused.", dmg_self_cnf_fail: "{attacker} uses {move}, but it fails and becomes confused.",
+      dmg_snatch_buffs: "{attacker} uses {move}, deals {damage} HP of damage, and steals {defender}'s boosts.", dmg_sleep_immunity: "{attacker} uses {move}, deals {damage} HP of damage, and makes the team immune to sleep for 5 turns.",
+      dmg_suppress_boost: "{attacker} uses {move}, deals {damage} HP of damage, and suppresses the opponent's boosts next turn.",
+      dmg_status_uproar: "{attacker} uses {move} and deals {damage} HP of damage, but Uproar protects {defender}.", dmg_status_delayed: "{attacker} uses {move} and deals {damage} HP of damage; Lax Incense delays {delayedStatus} on {delayedTarget}.",
+      dmg_status_safeguard: "{attacker} uses {move} and deals {damage} HP of damage, but Safeguard protects {defender}.", dmg_status_waiting: "{attacker} uses {move} and deals {damage} HP of damage, but {delayedTarget} already has a pending status condition.",
+      embargo: "{attacker} uses {move}: {defender} cannot use items.", endeavor: "{attacker} uses {move}: {defender}'s HP becomes {damage}.", endure: "{attacker} uses {move} and braces itself.",
+      fail: "{attacker} uses {move}, but it fails.", flee: "{attacker} uses {move} and flees from the battle.", future_sight_set: "{attacker} uses {move}: it will strike in 2 turns.",
+      gain_self_perc: "{attacker} uses {move} and recovers the percentage.", grudge: "{attacker} uses {move}: if it is knocked out, the opponent's move will be disabled.",
+      imprison: "{attacker} uses {move} and blocks the moves it shares with {defender}.", inhibit: "{attacker} uses {move} and disables {relatedMove}.",
+      invul_dig: "{attacker} uses {move} and hides underground.", invul_fly: "{attacker} uses {move} and flies high into the sky.", invul_sub: "{attacker} uses {move} and becomes temporarily untargetable.",
+      lose_enem_perc: "{attacker} uses {move}: the opponent's percentage becomes negative.", lose_self_perc: "{attacker} uses {move} and loses the percentage.",
+      magic_coat: "{attacker} uses {move} and will reflect status conditions.", mimic: "{attacker} uses {move} and copies the opponent's last move.",
+      nerf_enem_atk: "{attacker} uses {move}: -{stats} Attack to {defender}.", nerf_enem_atk_def: "{attacker} uses {move}: -{stats} Attack and Defense to {defender}.",
+      nerf_enem_def: "{attacker} uses {move}: -{stats} Defense to {defender}.", nightmare_dmg: "{attacker} uses {move}: {defender} loses HP to the nightmare.",
+      no_move_boost_team: "{attacker} uses {move}: the team is protected from opposing move boosts for 5 turns.", no_stat_nerf_team: "{attacker} uses {move}: the team is protected from stat reductions for 5 turns.",
+      nube: "{attacker} uses {move} and clears all stat changes.", pain_split: "{attacker} uses {move} and splits its HP evenly with {defender}.", par: "{attacker} uses {move}: {defender} is paralyzed.", brn: "{attacker} uses {move}: {defender} is burned.",
+      perish_song: "{attacker} uses {move}: all active Pokémon will be knocked out in 3 turns.", present_heal: "{attacker} uses {move}: {defender} restores one quarter of its HP.", psn: "{attacker} uses {move}: {defender} is poisoned.",
+      spikes_set: "{attacker} uses {move}: entering Pokémon will take damage equal to their level.", rapid_spin: "{attacker} uses {move}, deals {damage} HP of damage, and clears effects from its side.",
+      recharge: "{attacker} must recharge.", recycle_item: "{attacker} uses {move} and restores the item assigned at the start of battle.", repeat: "{attacker} uses {move}: {defender} must repeat {relatedMove} for 3 turns.",
+      rest: "{attacker} uses {move}, falls asleep, and restores all HP.", rest_hp: "{attacker} uses {move} and restores {restored} HP.", roar: "{attacker} uses {move} and forces the opponent to switch.",
+      root: "{attacker} uses {move} and plants its roots.", selfdestruct: "{attacker} uses {move}, deals {damage} HP of damage, and is knocked out.",
+      sleep_delayed: "{attacker} uses {move}: {defender} will fall asleep at the end of the next turn.", slp: "{attacker} uses {move}: {defender} falls asleep.",
+      smp_move: "{attacker} uses {move}.", status_delayed: "{attacker} uses {move}: Lax Incense delays {delayedStatus} on {delayedTarget}.",
+      status_uproar: "{attacker} uses {move}, but Uproar protects {defender}.", status_not_done: "{attacker} uses {move}, but {defender} already has a status condition.",
+      status_protect: "{attacker} uses {move}: the team is protected from status conditions for 5 turns.", status_safeguard: "{attacker} uses {move}, but Safeguard protects {defender}.",
+      status_waiting: "{attacker} uses {move}, but {delayedTarget} already has a pending status condition.", steal_item: "{attacker} uses {move} and steals {defender}'s held item.",
+      suppress_boost: "{attacker} uses {move} and suppresses the opponent's boosts next turn.", transform: "{attacker} uses {move} and transforms into the opponent.",
+      trick_item: "{attacker} uses {move} and swaps held items with {defender}.", trap: "{attacker} uses {move}: {defender} cannot escape.",
+      weather_set: "{attacker} uses {move} and changes the weather.", wish: "{attacker} uses {move}: the wish will come true next turn."
+    })
+  })
+});

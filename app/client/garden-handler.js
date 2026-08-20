@@ -11,6 +11,7 @@ import { requireNotInBattle } from "./battle-scene-lock.js";
 import { applyGardenDailyLimit, applyPlayerSave, state } from "./game-state.js";
 import { adjustInventoryItemQuantity, replaceInventoryRuntimeState } from "./runtime-state.js";
 import { recordMissionEvent } from "./mission-runtime.js";
+import { messageDescriptor, textDescriptor } from "./i18n.js";
 
 var DAILY_BERRY_LONG_CHANCE = 0.1;
 var authoritativeGardenCommandPending = false;
@@ -60,7 +61,7 @@ export async function refreshDailyBerryLimit() {
     }
     if (!result.ok) {
         state.garden.dailyBerry.loading = false;
-        state.garden.dailyBerry.error = result.message;
+        state.garden.dailyBerry.error = messageDescriptor("garden.actionFailed");
         render();
         return result;
     }
@@ -114,7 +115,7 @@ registerAction("garden-plant-select", async function(element) {
     });
     authoritativeGardenCommandPending = false;
     if (!result.ok) {
-        openMessage([result.message], { title: "Errore" });
+        openMessage([messageDescriptor("garden.actionFailed")], { title: messageDescriptor("generic.errorTitle") });
         return;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -139,7 +140,7 @@ registerAction("garden-harvest", async function(element) {
     });
     authoritativeGardenCommandPending = false;
     if (!result.ok) {
-        openMessage([result.message], { title: "Errore" });
+        openMessage([messageDescriptor("garden.actionFailed")], { title: messageDescriptor("generic.errorTitle") });
         return;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
@@ -179,7 +180,7 @@ registerAction("garden-daily-berry-claim", async function(element) {
     authoritativeGardenCommandPending = false;
     if (!authoritativeResult.ok) {
         state.garden.dailyBerry.claiming = false;
-        openMessage([authoritativeResult.message], { title: "Giardino" });
+        openMessage([messageDescriptor("garden.actionFailed")], { title: textDescriptor("ui.garden.sceneTitle") });
         return;
     }
     applyPlayerSave(saveFromAuthoritativeProjection(authoritativeResult.projection));

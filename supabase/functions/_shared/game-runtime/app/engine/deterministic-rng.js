@@ -15,7 +15,7 @@ export function createRngState(seed) {
 
 export function restoreRngState(value) {
   if (!value || value.algorithm !== "xorshift32-v1") {
-    throw new Error("Stato RNG non supportato.");
+    throw new Error("Unsupported RNG state.");
   }
   return {
     algorithm: value.algorithm,
@@ -42,14 +42,14 @@ export function withDeterministicRng(state, operation) {
   var previous;
   var result;
   if (activeRng) {
-    throw new Error("Un'esecuzione RNG deterministica è già attiva.");
+    throw new Error("A deterministic RNG execution is already active.");
   }
   previous = activeRng;
   activeRng = restoreRngState(state);
   try {
     result = operation();
     if (result && typeof result.then === "function") {
-      throw new Error("L'esecuzione RNG deterministica deve essere sincrona.");
+      throw new Error("Deterministic RNG execution must be synchronous.");
     }
     return { result: result, rngState: restoreRngState(activeRng) };
   } finally {

@@ -14,8 +14,7 @@ export function pokemonCenterMode(scene) {
 export function pokemonCenterModeConfig(mode) {
   if (mode === "use-item") {
     return {
-      pokemonTitle: "Pokemon su cui usare lo strumento",
-      emptyText: "Nessuno strumento utilizzabile disponibile.",
+      textKey: "useItem",
       itemFilter: function (item) {
         return itemCanTriggerEvolution(item) || item.category === ItemCategory.Vitamin
           || item.category === ItemCategory.Item && item.subcategory === ItemSubcategory.MoveTutor;
@@ -24,14 +23,12 @@ export function pokemonCenterModeConfig(mode) {
   }
   if (mode === "use-tm") {
     return {
-      pokemonTitle: "Pokemon su cui usare la MT",
-      emptyText: "Nessuna MT disponibile.",
+      textKey: "useTm",
       itemFilter: function (item) { return item.category === ItemCategory.TM; }
     };
   }
   return {
-    pokemonTitle: "Pokemon a cui assegnare lo strumento",
-    emptyText: "Nessuno strumento assegnabile disponibile.",
+    textKey: "assignHeld",
     itemFilter: function (item) { return item.category === ItemCategory.HeldItem || item.category === ItemCategory.Berry; }
   };
 }
@@ -131,15 +128,15 @@ export function pokemonCenterPokemonDisplayState(scene, mode, item, pokemon, pok
   return { clickable: compatible, muted: !compatible, bodyMuted: false };
 }
 
-export function pokemonCenterItemPrompt(mode, item, scene) {
+export function pokemonCenterItemPromptKey(mode, item, scene) {
   if (mode === "assign-held") {
-    return "A chi vuoi assegnare " + item.name + "?";
+    return "assignHeld";
   }
   if (mode === "use-item" && item.category === ItemCategory.Vitamin && item.effect === "move_power") {
-    return "Su quale mossa vuoi usare " + item.name + "?";
+    return "useMoveItem";
   }
   if (mode === "use-tm") {
-    return "A chi vuoi insegnare " + item.name + "?";
+    return "teachTm";
   }
-  return "Su chi vuoi usare " + item.name + "?";
+  return "useItem";
 }

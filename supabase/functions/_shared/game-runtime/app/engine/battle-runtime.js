@@ -9,6 +9,7 @@ import { createBattleTowerOpponentPresentation, createBattleTowerOpponentTeam } 
 import { computeBallCaptureRate, computeBallCaptureResult } from "./capture-calc.js";
 import { expMultiplierForWinnerLevel } from "../data/progression.js";
 import { authoritativeNpcItemsForBattle } from "../data/authoritative-npc-items.js";
+import { battleEvent, battleItemRef, battleSpeciesRef, battleTeamRef } from "./battle-events.js";
 
 export var BATTLE_ENGINE_VERSION = "pokemon-game-revival";
 export var BATTLE_SNAPSHOT_VERSION = 3;
@@ -191,7 +192,7 @@ function createTeam(snapshot) {
     ? snapshot.state.activeIndex
     : NaN;
   if (!Number.isInteger(activeIndex) || activeIndex < 0 || activeIndex >= pokemon.length) {
-    throw new Error("Indice del Pokémon attivo non valido nello snapshot.");
+    throw new Error("Invalid active Pokemon index in battle snapshot.");
   }
   return new Team(
     String(snapshot.state && snapshot.state.name || "Team"),
@@ -236,7 +237,7 @@ export function restoreBattleManager(snapshot) {
   var enemyTeam;
   var manager;
   if (!snapshot || snapshot.snapshotVersion !== BATTLE_SNAPSHOT_VERSION || snapshot.engineVersion !== BATTLE_ENGINE_VERSION) {
-    throw new Error("Snapshot battaglia non supportato.");
+    throw new Error("Unsupported battle snapshot.");
   }
   playerTeam = createTeam(snapshot.playerTeam);
   enemyTeam = createTeam(snapshot.enemyTeam);
@@ -282,12 +283,12 @@ export function initializeBattleRuntime(input) {
   function requiredSlot(value, label) {
     var slot = value !== null && value !== undefined ? Number(value) : NaN;
     if (!Number.isInteger(slot) || slot < 0) {
-      throw new Error(label + " non valido.");
+      throw new Error(label + " is invalid.");
     }
     return slot;
   }
   function participantPokemon(entry) {
-    var authoritativeSlot = requiredSlot(entry.slot_index, "Slot partecipante");
+    var authoritativeSlot = requiredSlot(entry.slot_index, "Participant slot");
     var pokemon = new Pokemon({
       name: entry.display_name,
       speciesKey: entry.species_key,
@@ -337,16 +338,16 @@ export function initializeBattleRuntime(input) {
     presentation = towerGenerated.result.presentation;
     rngState = towerGenerated.rngState;
   }
-  if (!playerPokemon.length || !npcPokemon.length) { throw new Error("Partecipanti battaglia mancanti."); }
-  playerActiveSlot = requiredSlot(input.playerActiveSlot, "Slot attivo del giocatore");
-  npcActiveSlot = requiredSlot(input.npcActiveSlot, "Slot attivo dell'avversario");
+  if (!playerPokemon.length || !npcPokemon.length) { throw new Error("Missing battle participants."); }
+  playerActiveSlot = requiredSlot(input.playerActiveSlot, "Player active slot");
+  npcActiveSlot = requiredSlot(input.npcActiveSlot, "Opponent active slot");
   playerActiveIndex = playerPokemon.findIndex(function (pokemon) { return pokemon.authoritativeSlot === playerActiveSlot; });
   npcActiveIndex = npcPokemon.findIndex(function (pokemon) { return pokemon.authoritativeSlot === npcActiveSlot; });
   if (playerActiveIndex < 0 || npcActiveIndex < 0) {
-    throw new Error("Il Pokémon attivo non corrisponde a un partecipante della battaglia.");
+    throw new Error("The active Pokemon does not match a battle participant.");
   }
-  playerTeam = new Team("Giocatore", playerPokemon, playerActiveIndex);
-  enemyTeam = new Team(presentation && presentation.name || "Avversario", npcPokemon, npcActiveIndex);
+  playerTeam = new Team("Player", playerPokemon, playerActiveIndex);
+  enemyTeam = new Team(presentation && presentation.name || "Opponent", npcPokemon, npcActiveIndex);
   input.participants.filter(function (entry) { return entry.side === "player"; }).sort(function (a, b) { return a.slot_index - b.slot_index; }).forEach(function (entry, index) {
     playerTeam.combatantList[index].hp = Number(entry.current_hp);
   });
@@ -375,7 +376,7 @@ export function executeInitialNpcOpening(snapshot) {
   var logStart = manager.log.length;
   var presentationFrames = capturePresentationFrames(manager);
   var execution = withDeterministicRng(restored.rngState, function () {
-    if (!manager.resolveNpcOpeningMove()) { throw new Error("L'apertura NPC non è disponibile."); }
+    if (!manager.resolveNpcOpeningMove()) { throw new Error("The NPC opening action is unavailable."); }
     manager.capturePresentationFrame("npc");
   });
   var status = battleStatus(manager);
@@ -445,8 +446,8 @@ function commandEvents(manager, logStart, commandEvent, presentationFrames) {
   var frames = (presentationFrames || []).map(function (frame, index) {
     return { sequence: index + 1, type: "presentation_frame", data: frame };
   });
-  return [commandEvent].concat(frames, manager.log.slice(logStart).map(function (line, index) {
-    return { sequence: frames.length + index + 1, type: "display_log", data: { line: line === null ? "" : String(line) } };
+  return [commandEvent].concat(frames, manager.log.slice(logStart).map(function (entry, index) {
+    return { sequence: frames.length + index + 1, type: "display_log", data: { entry: entry } };
   }));
 }
 
@@ -459,12 +460,12 @@ export function executeBattleCommand(snapshot, command) {
   var itemActionSkipped = false;
   var presentationFrames = capturePresentationFrames(manager);
   if (manager.initialEntry && manager.initialEntry.phase !== "ready" && command.type !== "entry_choice" && command.type !== "abandon") {
-    throw new Error("Devi prima scegliere l'effetto dello strumento tenuto.");
+    throw new Error("A held-item effect must be selected first.");
   }
   if (manager.adminControlled) {
-    if (manager.waitingFor !== "player" && command.type !== "abandon") { throw new Error("In attesa dell'azione admin."); }
+    if (manager.waitingFor !== "player" && command.type !== "abandon") { throw new Error("Waiting for the admin action."); }
     if ((manager.playerNeedsSwitch || manager.playerPostMoveSwitch) && command.type !== "switch" && command.type !== "abandon") {
-      throw new Error("Devi prima mandare un Pokémon in campo.");
+      throw new Error("A Pokemon must be sent out first.");
     }
   }
   var execution = withDeterministicRng(restored.rngState, function () {
@@ -477,16 +478,16 @@ export function executeBattleCommand(snapshot, command) {
       active = manager.playerTeam.getActive();
       var playerMoveAction = active && manager.moveActionForSlot("player", command.moveSlot);
       move = playerMoveAction && playerMoveAction.move;
-      if (!move) { throw new Error("Mossa non disponibile o non eseguibile."); }
+      if (!move) { throw new Error("Move is unavailable or cannot be executed."); }
       result = manager.playerUseMove(move);
-      if (result === false && !manager.lastPlayerActionSkipped) { throw new Error("Mossa non eseguibile."); }
+      if (result === false && !manager.lastPlayerActionSkipped) { throw new Error("Move cannot be executed."); }
     } else if (command.type === "entry_choice") {
       active = manager.playerTeam.getActive();
       if (!active || !manager.resolveInitialEntryChoice("player", command.entryChoice)) {
-        throw new Error("Scelta dello strumento tenuto non valida.");
+        throw new Error("Invalid held-item choice.");
       }
       if (manager.initialEntry.phase === "awaiting_npc_opening" && !manager.resolveNpcOpeningMove()) {
-        throw new Error("L'apertura NPC non è disponibile.");
+        throw new Error("The NPC opening action is unavailable.");
       }
       if (manager.initialEntry.phase === "ready" && manager.normalizedFirstActor() === "npc") {
         manager.capturePresentationFrame("npc");
@@ -497,28 +498,28 @@ export function executeBattleCommand(snapshot, command) {
       });
       var switchTarget = manager.playerTeam.combatantList[switchIndex];
       if (switchTarget && manager.entryHeldItemChoiceKind(switchTarget) && !command.entryChoice) {
-        throw new Error("Devi scegliere l'effetto dello strumento tenuto in ingresso.");
+        throw new Error("An entry held-item effect must be selected first.");
       }
       result = manager.playerSwitch(switchIndex, command.entryChoice || null);
-      if (result === false && !manager.lastPlayerActionSkipped) { throw new Error("Sostituzione non eseguibile."); }
+      if (result === false && !manager.lastPlayerActionSkipped) { throw new Error("Switch cannot be executed."); }
     } else if (command.type === "item") {
-      if (manager.playerNeedsSwitch || manager.playerPostMoveSwitch) { throw new Error("Devi prima mandare un Pokémon in campo."); }
+      if (manager.playerNeedsSwitch || manager.playerPostMoveSwitch) { throw new Error("A Pokemon must be sent out first."); }
       item = getInventoryItemByIndex(restored.playerItems, Number(command.itemIndex));
       target = Number.isInteger(command.targetSlot) ? manager.playerTeam.combatantList.find(function (combatant) {
         return combatant.pokemon.authoritativeSlot === Number(command.targetSlot);
       }) || null : null;
-      if (!item || item.category === ItemCategory.Ball || !isPlayerBattleInventoryItem(item)) { throw new Error("Strumento battaglia non disponibile."); }
-      if ((Number(manager.usedItems[item.key]) || 0) >= 3) { throw new Error("Limite utilizzi dello strumento raggiunto."); }
+      if (!item || item.category === ItemCategory.Ball || !isPlayerBattleInventoryItem(item)) { throw new Error("Battle item unavailable."); }
+      if ((Number(manager.usedItems[item.key]) || 0) >= 3) { throw new Error("Battle item use limit reached."); }
       var inventoryEntry = restored.playerItems.find(function (entry) { return Number(entry[0]) === Number(command.itemIndex); });
       var quantityBefore = Number(inventoryEntry && inventoryEntry[1]) || 0;
-      if (quantityBefore <= 0) { throw new Error("Strumento battaglia non disponibile."); }
+      if (quantityBefore <= 0) { throw new Error("Battle item unavailable."); }
       result = manager.playerUseItem(item, target);
       if (result && result.actionSkipped && result.itemConsumed === false) {
         itemActionSkipped = true;
       } else if (!result || result.ok === false || !result.itemConsumed) {
-        throw new Error(result && result.message || "Strumento non utilizzabile.");
+        throw new Error(result && result.code || "Battle item cannot be used.");
       } else {
-        if (!consumePlayerItem(restored.playerItems, Number(command.itemIndex))) { throw new Error("Strumento battaglia non disponibile."); }
+        if (!consumePlayerItem(restored.playerItems, Number(command.itemIndex))) { throw new Error("Battle item unavailable."); }
         itemConsumption = {
           itemIndex: Number(command.itemIndex),
           quantity: 1,
@@ -529,9 +530,9 @@ export function executeBattleCommand(snapshot, command) {
     } else if (command.type === "abandon") {
       manager.endBattle();
       manager.battleFled = true;
-      manager.battleResultLines = ["Battaglia abbandonata."];
+      manager.battleResultLines = [battleEvent("outcome.abandoned", {})];
     } else {
-      throw new Error("Comando battaglia non supportato.");
+      throw new Error("Unsupported battle command.");
     }
     return result;
   });
@@ -576,16 +577,16 @@ export function executeCaptureBattleCommand(snapshot, command) {
   var catchRate;
   var presentationFrames = capturePresentationFrames(manager);
   if (manager.initialEntry && manager.initialEntry.phase !== "ready") {
-    throw new Error("Devi prima scegliere l'effetto dello strumento tenuto.");
+    throw new Error("A held-item effect must be selected first.");
   }
   if (manager.battleOver || manager.playerNeedsSwitch || manager.playerPostMoveSwitch) {
-    throw new Error("La battaglia non accetta un tentativo di cattura.");
+    throw new Error("This battle does not allow capture attempts.");
   }
   if (!item || item.category !== ItemCategory.Ball || quantityBefore <= 0) {
-    throw new Error("Ball non disponibile.");
+    throw new Error("Ball unavailable.");
   }
   if (!target || target.isFainted() || Number(command.targetSlot) !== Number(target.pokemon.authoritativeSlot)) {
-    throw new Error("Il bersaglio selvatico non è catturabile.");
+    throw new Error("The wild target cannot be captured.");
   }
   catchRate = computeBallCaptureRate(item, target);
   var execution = withDeterministicRng(restored.rngState, function () {
@@ -594,7 +595,9 @@ export function executeCaptureBattleCommand(snapshot, command) {
       manager.startTurn(manager.playerTeam.getActive(), manager.enemyTeam.getActive());
       manager.recordWeatherMoveAction("player", false);
       manager.consumeChargeDamageMultiplier(manager.playerTeam.getActive());
-      manager.emit({ log: manager.playerTeam.name + " ha usato " + item.name + " e ha catturato " + target.pokemon.name + "!" });
+      manager.emit(battleEvent("capture.caught", {
+        team: battleTeamRef(manager.playerTeam), item: battleItemRef(item), pokemon: battleSpeciesRef(target)
+      }));
       manager.endBattle();
       itemConsumed = true;
     } else {
@@ -603,7 +606,7 @@ export function executeCaptureBattleCommand(snapshot, command) {
       actionSkipped = Boolean(result && result.actionSkipped);
     }
     if (itemConsumed && !consumePlayerItem(restored.playerItems, itemIndex)) {
-      throw new Error("Ball non disponibile.");
+      throw new Error("Ball unavailable.");
     }
   });
   var status = captured
@@ -642,10 +645,10 @@ export function executeAdminBattleCommand(snapshot, command) {
   var execution;
   var result;
   if (!manager.adminControlled || manager.waitingFor !== "admin" || manager.battleOver) {
-    throw new Error("La battaglia non attende un'azione admin.");
+    throw new Error("The battle is not waiting for an admin action.");
   }
   if (manager.npcNeedsSwitch && command.type !== "switch") {
-    throw new Error("L'admin deve prima mandare un Pokémon in campo.");
+    throw new Error("The admin must send out a Pokemon first.");
   }
   execution = withDeterministicRng(restored.rngState, function () {
     var active;
@@ -655,13 +658,13 @@ export function executeAdminBattleCommand(snapshot, command) {
     if (command.type === "entry_choice") {
       active = manager.enemyTeam.getActive();
       if (!active || !manager.resolveInitialEntryChoice("npc", command.entryChoice)) {
-        throw new Error("Scelta dello strumento tenuto non valida.");
+        throw new Error("Invalid held-item choice.");
       }
     } else if (command.type === "move") {
       active = manager.enemyTeam.getActive();
       var adminMoveAction = active && manager.moveActionForSlot("npc", command.moveSlot);
       move = adminMoveAction && adminMoveAction.move;
-      if (!move) { throw new Error("Mossa avversaria non disponibile o non eseguibile."); }
+      if (!move) { throw new Error("Opponent move is unavailable or cannot be executed."); }
       result = manager.npcUseMove(move);
     } else if (command.type === "switch") {
       var switchIndex = manager.enemyTeam.combatantList.findIndex(function (combatant) {
@@ -673,19 +676,19 @@ export function executeAdminBattleCommand(snapshot, command) {
       target = Number.isInteger(command.targetSlot) ? manager.enemyTeam.combatantList.find(function (combatant) {
         return combatant.pokemon.authoritativeSlot === Number(command.targetSlot);
       }) || null : null;
-      if (!item || item.category === ItemCategory.Ball) { throw new Error("Strumento admin non disponibile."); }
+      if (!item || item.category === ItemCategory.Ball) { throw new Error("Admin item unavailable."); }
       result = manager.npcUseItem(item, target);
     } else {
-      throw new Error("Comando admin non supportato.");
+      throw new Error("Unsupported admin command.");
     }
     if (result === false || result && result.ok === false) {
-      throw new Error(result && result.message || "Azione admin non eseguibile.");
+      throw new Error(result && result.code || "Admin action cannot be executed.");
     }
     return result;
   });
   var status = battleStatus(manager);
-  var events = manager.log.slice(logStart).map(function (line, index) {
-    return { sequence: index + 1, type: "display_log", data: { line: line === null ? "" : String(line) } };
+  var events = manager.log.slice(logStart).map(function (entry, index) {
+    return { sequence: index + 1, type: "display_log", data: { entry: entry } };
   });
   events.unshift({ sequence: 0, type: "admin_command_resolved", data: { command_type: command.type } });
   return {

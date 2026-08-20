@@ -37,14 +37,14 @@ export async function loadPlayerMissions() {
 }
 
 export async function recordPlayerMissionProgress(eventKey, updates) {
-  return { ok: false, message: "Il progresso missione autoritativo deriva dai comandi del server.", rows: [] };
+  return { ok: false, message: "Authoritative mission progress is derived from server commands.", rows: [] };
 }
 
 export async function claimPlayerMission(missionIndex, target, reward, expectedRevision, selectedRewardItemIndex, selectedRewardSpeciesKey) {
   var authoritativeResult;
   var client = getSupabaseClient();
   if (!client) {
-    return { ok: false, message: "Configurazione Supabase mancante." };
+    return { ok: false, message: "Missing Supabase configuration." };
   }
   authoritativeResult = await claimPlayerMissionAuthoritative({
     expectedRevision: expectedRevision,

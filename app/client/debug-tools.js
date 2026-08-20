@@ -17,6 +17,7 @@ import { addAuthoritativeDebugBattlePoints, adjustAuthoritativeDebugBadges, adju
 import { authoritativeDebugPlayerState } from "../api/debug-contract.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { getCurrentPlayerState } from "../api/player-command.js";
+import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 
 var DEBUG_USER_NAME = "aaa";
 var DEBUG_POKEMON_MIN_LEVEL = 5;
@@ -62,9 +63,9 @@ export function renderDebugPokemonCreatorPanel(options) {
   var moveRows;
   var count = options.count !== undefined ? Number(options.count) || 0 : state.team.length;
   var max = options.max !== undefined ? Number(options.max) || 0 : TEAM_MAX;
-  var title = options.title || "Crea Pokémon (debug)";
+  var title = options.title || t("ui.debug.createPokemonTitle");
   var action = options.action || "trainer-debug-create-pokemon";
-  var buttonLabel = options.buttonLabel || "Crea Pokémon";
+  var buttonLabel = options.buttonLabel || t("ui.debug.createPokemon");
   var panelClass = "team-description-panel trainer-debug-pokemon-panel" + (options.className ? " " + options.className : "");
   if (!isDebugUser() || count >= max) {
     return "";
@@ -73,9 +74,9 @@ export function renderDebugPokemonCreatorPanel(options) {
     var slot = index + 1;
     return [
       '<div class="trainer-debug-pokemon-move-row">',
-      '  <label><span>Mossa ' + slot + '</span><input type="text" data-debug-pokemon-field="move-name-' + index + '" placeholder="AttaccodAla"' + (index === 0 ? ' value="Azione"' : '') + ' autocomplete="off"></label>',
-      '  <label><span>Power</span><input type="number" min="0" max="999" step="1" data-debug-pokemon-field="move-power-' + index + '"' + (index === 0 ? ' value="999"' : '') + ' inputmode="numeric"></label>',
-      '  <label><span>Stats</span><input type="number" min="0" max="999" step="1" data-debug-pokemon-field="move-stats-' + index + '"' + (index === 0 ? ' value="999"' : '') + ' inputmode="numeric"></label>',
+      '  <label><span>' + escapeHtml(t("ui.debug.move", { number: slot })) + '</span><input type="text" data-debug-pokemon-field="move-name-' + index + '" placeholder="wing_attack"' + (index === 0 ? ' value="tackle"' : '') + ' autocomplete="off"></label>',
+      '  <label><span>' + escapeHtml(t("ui.debug.power")) + '</span><input type="number" min="0" max="999" step="1" data-debug-pokemon-field="move-power-' + index + '"' + (index === 0 ? ' value="999"' : '') + ' inputmode="numeric"></label>',
+      '  <label><span>' + escapeHtml(t("ui.debug.stats")) + '</span><input type="number" min="0" max="999" step="1" data-debug-pokemon-field="move-stats-' + index + '"' + (index === 0 ? ' value="999"' : '') + ' inputmode="numeric"></label>',
       "</div>"
     ].join("");
   }).join("");
@@ -87,10 +88,10 @@ export function renderDebugPokemonCreatorPanel(options) {
     '    <span>' + escapeHtml(count) + "/" + escapeHtml(max) + "</span>",
     "  </div>",
     '  <div class="trainer-debug-pokemon-grid">',
-    '    <label><span>Indice specie</span><input type="text" data-debug-pokemon-field="species-key" placeholder="1" value="4" autocomplete="off"></label>',
-    '    <label><span>Livello</span><input type="number" min="5" max="100" step="1" data-debug-pokemon-field="level" value="100" inputmode="numeric"></label>',
-    '    <label><span>PS</span><input type="number" min="1" max="999" step="1" data-debug-pokemon-field="max-hp" value="999" inputmode="numeric"></label>',
-    '    <label><span>Strumento</span><input type="text" data-debug-pokemon-field="held-item" placeholder="poke_ball" autocomplete="off"></label>',
+    '    <label><span>' + escapeHtml(t("ui.debug.speciesIndex")) + '</span><input type="text" data-debug-pokemon-field="species-key" placeholder="1" value="4" autocomplete="off"></label>',
+    '    <label><span>' + escapeHtml(t("ui.debug.level")) + '</span><input type="number" min="5" max="100" step="1" data-debug-pokemon-field="level" value="100" inputmode="numeric"></label>',
+    '    <label><span>' + escapeHtml(t("ui.debug.hp")) + '</span><input type="number" min="1" max="999" step="1" data-debug-pokemon-field="max-hp" value="999" inputmode="numeric"></label>',
+    '    <label><span>' + escapeHtml(t("ui.debug.heldItem")) + '</span><input type="text" data-debug-pokemon-field="held-item" placeholder="poke_ball" autocomplete="off"></label>',
     "  </div>",
     '  <div class="trainer-debug-pokemon-moves">',
     moveRows,
@@ -119,7 +120,7 @@ function parsePositiveInteger(value, label, errors) {
   var normalized = String(value || "").replace(/\D/g, "");
   var number = Number(normalized);
   if (!normalized || !Number.isFinite(number) || number <= 0) {
-    errors.push(label + " non valido.");
+    errors.push(messageDescriptor("debug.invalidValue", { field: label }));
     return 0;
   }
   return Math.floor(number);
@@ -136,7 +137,7 @@ function parseMoveNumber(value) {
 function resolveMoveConstant(name, errors) {
   var move = MoveConstants[name];
   if (!move || !Number.isFinite(Number(move.index))) {
-    errors.push("Mossa non trovata: " + name + ".");
+    errors.push(messageDescriptor("debug.moveNotFound", { name: name }));
     return null;
   }
   return move;
@@ -149,7 +150,7 @@ function resolveHeldItemConstant(name, errors) {
   }
   item = ItemConstants[name];
   if (!item || !Number.isFinite(Number(item.index))) {
-    errors.push("Strumento non trovato: " + name + ".");
+    errors.push(messageDescriptor("debug.itemNotFound", { name: name }));
     return null;
   }
   return item;
@@ -186,30 +187,30 @@ export function createDebugPokemonFromPanel(panel) {
   var errors = [];
   var speciesKey = readDebugPokemonField(panel, "species-key");
   var speciesData = SPECIES_LIBRARY[speciesKey];
-  var level = parsePositiveInteger(readDebugPokemonField(panel, "level"), "Livello", errors);
-  var maxHp = parsePositiveInteger(readDebugPokemonField(panel, "max-hp"), "PS", errors);
+  var level = parsePositiveInteger(readDebugPokemonField(panel, "level"), t("ui.debug.level"), errors);
+  var maxHp = parsePositiveInteger(readDebugPokemonField(panel, "max-hp"), t("ui.debug.hp"), errors);
   var heldItem = resolveHeldItemConstant(readDebugPokemonField(panel, "held-item"), errors);
   var moves = buildDebugPokemonMoves(panel, errors);
   var pokemon;
 
   if (!speciesData) {
-    errors.push("Specie non trovata: " + speciesKey + ".");
+    errors.push(messageDescriptor("debug.speciesNotFound", { key: speciesKey }));
   }
   if (level > 100) {
-    errors.push("Il livello massimo è 100.");
+    errors.push(messageDescriptor("debug.maxLevel"));
   }
   if (level && level < DEBUG_POKEMON_MIN_LEVEL) {
-    errors.push("Il livello minimo è 5.");
+    errors.push(messageDescriptor("debug.minLevel"));
   }
   if (maxHp > DEBUG_POKEMON_MAX_HP) {
-    errors.push("I PS massimi sono 999.");
+    errors.push(messageDescriptor("debug.maxHp"));
   }
   moves.forEach(function (move) {
     if (move.power < 0 || move.power > DEBUG_POKEMON_MAX_POWER) {
-      errors.push("La potenza delle mosse deve essere compresa tra 0 e 999.");
+      errors.push(messageDescriptor("debug.movePowerRange"));
     }
     if (move.stats < 0 || move.stats > DEBUG_POKEMON_MAX_STATS) {
-      errors.push("Le statistiche delle mosse devono essere comprese tra 0 e 999.");
+      errors.push(messageDescriptor("debug.moveStatsRange"));
     }
   });
   if (errors.length) {
@@ -248,7 +249,7 @@ async function applyAuthoritativeDebugResult(result, title) {
   if (playerState) {
     applyAuthoritativePlayerState(playerState);
     if (result.projection && result.projection.conflict === "player_revision") {
-      openInlineMessage(["Lo stato del giocatore è stato riallineato. Ora puoi riprovare il comando debug."], { title: title });
+      openInlineMessage([messageDescriptor("debug.stateRealigned")], { title: title });
       return false;
     }
     return true;
@@ -257,23 +258,23 @@ async function applyAuthoritativeDebugResult(result, title) {
     var refreshed = await getCurrentPlayerState();
     if (refreshed.ok && refreshed.projection && refreshed.projection.has_player) {
       applyAuthoritativePlayerState(refreshed.projection);
-      openInlineMessage(["Lo stato del giocatore è cambiato. Dati aggiornati: riprova il comando debug."], { title: title });
+      openInlineMessage([messageDescriptor("debug.stateChanged")], { title: title });
       return false;
     }
-    openInlineMessage(["Lo stato del giocatore è cambiato e non è stato possibile aggiornarlo. Ricarica prima di riprovare."], { title: title });
+    openInlineMessage([messageDescriptor("debug.refreshFailed")], { title: title });
     return false;
   }
   if (!result || !result.ok) {
-    openInlineMessage([result && result.message || "Comando debug non riuscito."], { title: title });
+    openInlineMessage([messageDescriptor("debug.commandFailed")], { title: title });
     return false;
   }
-  openInlineMessage(["La risposta debug non contiene lo stato canonico del giocatore."], { title: title });
+  openInlineMessage([messageDescriptor("debug.missingCanonicalState")], { title: title });
   return false;
 }
 
 registerDebugAction("trainer-debug-add-money", async function () {
   var result = await adjustAuthoritativeDebugMoney({ expectedPlayerRevision: state.authoritativeRevision, delta: 1000000 });
-  await applyAuthoritativeDebugResult(result, "Debug denaro");
+  await applyAuthoritativeDebugResult(result, textDescriptor("ui.debug.titles.money"));
   return;
 });
 
@@ -283,7 +284,7 @@ registerDebugAction("trainer-debug-add-battle-points", async function () {
   render();
   try {
     var result = await addAuthoritativeDebugBattlePoints({ expectedPlayerRevision: state.authoritativeRevision });
-    await applyAuthoritativeDebugResult(result, "Debug PL");
+    await applyAuthoritativeDebugResult(result, textDescriptor("ui.debug.titles.battlePoints"));
   } finally {
     authoritativeDebugBattlePointsPending = false;
     render();
@@ -294,7 +295,7 @@ registerDebugAction("trainer-debug-add-battle-points", async function () {
 registerDebugAction("trainer-debug-adjust-badges", async function (element) {
   var delta = Number(element.dataset.delta) || 0;
   var result = await adjustAuthoritativeDebugBadges({ expectedPlayerRevision: state.authoritativeRevision, delta: delta });
-  await applyAuthoritativeDebugResult(result, "Debug medaglie");
+  await applyAuthoritativeDebugResult(result, textDescriptor("ui.debug.titles.badges"));
   return;
 });
 
@@ -304,11 +305,11 @@ registerDebugAction("trainer-debug-create-pokemon", async function (element) {
   var result = createDebugPokemonFromPanel(panel);
 
   if (state.team.length >= TEAM_MAX) {
-    errors.push("La squadra è piena.");
+    errors.push(messageDescriptor("debug.teamFull"));
   }
   errors = errors.concat(result.errors || []);
   if (errors.length) {
-    openInlineMessage(errors, { title: "Debug Pokémon" });
+    openInlineMessage(errors, { title: textDescriptor("ui.debug.titles.pokemon") });
     return;
   }
 
@@ -316,7 +317,7 @@ registerDebugAction("trainer-debug-create-pokemon", async function (element) {
     expectedPlayerRevision: state.authoritativeRevision,
     pokemon: result.semantic
   });
-  await applyAuthoritativeDebugResult(commandResult, "Debug Pokémon");
+  await applyAuthoritativeDebugResult(commandResult, textDescriptor("ui.debug.titles.pokemon"));
   return;
 });
 
@@ -339,7 +340,7 @@ async function handleDebugAddItem(element) {
       itemIndex: item.index,
       delta: 50
     });
-    await applyAuthoritativeDebugResult(result, "Debug strumenti");
+    await applyAuthoritativeDebugResult(result, textDescriptor("ui.debug.titles.items"));
   } finally {
     authoritativeDebugInventoryPending = false;
     root.querySelectorAll('[data-action="debug-add-item"], [data-action="shopping-center-debug-add-item"]').forEach(function(buttonElement) {

@@ -29,9 +29,9 @@ export var DAYCARE_MAX_PENDING_LEVELS = 100;
 export var DAYCARE_LEVEL_INTERVAL_SECONDS = 3600;
 
 export var TRAINING_DIFFICULTIES = [
-  { key: "easy", label: "Facile", levelDelta: -5, minLevel: 5, maxLevel: 100 },
-  { key: "medium", label: "Medio", levelDelta: 0, minLevel: 5, maxLevel: 100 },
-  { key: "hard", label: "Difficile", levelDelta: 5, minLevel: 5, maxLevel: 100 }
+  { key: "easy", levelDelta: -5, minLevel: 5, maxLevel: 100 },
+  { key: "medium", levelDelta: 0, minLevel: 5, maxLevel: 100 },
+  { key: "hard", levelDelta: 5, minLevel: 5, maxLevel: 100 }
 ];
 
 export var TRAINING_DAILY_REWARDS = [

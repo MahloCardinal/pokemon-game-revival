@@ -1,6 +1,7 @@
 import { Combatant } from "./combatant.js";
 import { HeldItemTriggerContext, runHeldItemTrigger } from "./held-items.js";
 import { random } from "./deterministic-rng.js";
+import { battleEvent, battleMoveRef, battleSpeciesRef } from "./battle-events.js";
 
 export function Team(name, pokemonList, activeIndex) {
   this.name = name;
@@ -21,7 +22,7 @@ export function Team(name, pokemonList, activeIndex) {
   this.teamMoveBoostProtectCounter = 0;
   this.teamKOTracker = false;
   this.wishHealAmount = 0;
-  this.wishSourceName = "";
+  this.wishSourceSpeciesKey = "";
   this.sleepImmunityCounter = 0;
   this.teamStatusProtectCounter = 0;
   this.teamBoostSuppressCounter = 0;
@@ -35,7 +36,7 @@ export function Team(name, pokemonList, activeIndex) {
     timer: 0,
     power: 0,
     attackerTypes: [],
-    attackerName: "",
+    attackerSpeciesKey: "",
     moveKey: "",
     targetIndex: -1
   };
@@ -58,27 +59,31 @@ Team.prototype.isAllFainted = function () {
 };
 
 Team.prototype.switchTo = function (index) {
+  var active = this.getActive();
   if (index === this.activeIndex) {
-    return { ok: false, message: this.getActive().pokemon.name + "è già in campo" };
+    return { ok: false, code: "already_active", event: battleEvent("switch.alreadyActive", { pokemon: battleSpeciesRef(active) }) };
   }
-  if (this.getActive().trappedTurns > 0 || this.getActive().trappedMoveIndex) {
-    if (this.getActive().trappedTurns >= 99) {
-      return { ok: false, message: this.getActive().pokemon.name + " non può essere sostituito" };
+  if (active.trappedTurns > 0 || active.trappedMoveIndex) {
+    if (active.trappedTurns >= 99) {
+      return { ok: false, code: "trapped", event: battleEvent("switch.trapped", { pokemon: battleSpeciesRef(active) }) };
     }
-    return { ok: false, message: this.getActive().pokemon.name + " non può essere sostituito per " + this.getActive().trappedTurns + " turni" };
+    return { ok: false, code: "trapped_turns", event: battleEvent("switch.trappedTurns", { pokemon: battleSpeciesRef(active), turns: active.trappedTurns }) };
   }
-  if (this.getActive().rooted) {
-    return { ok: false, message: this.getActive().pokemon.name + " non può essere sostituito perché ha usato Radicamento" };
+  if (active.rooted) {
+    return { ok: false, code: "rooted", event: battleEvent("switch.rooted", { pokemon: battleSpeciesRef(active) }) };
   }
-  if (this.getActive().pendingMove && !this.getActive().pendingMove.isForcedMove) {
-    return { ok: false, message: this.getActive().pokemon.name + " non può essere sostituito perché " + this.getActive().pendingMove.name + " in corso" };
+  if (active.pendingMove && !active.pendingMove.isForcedMove) {
+    return { ok: false, code: "pending_move", event: battleEvent("switch.pendingMove", { pokemon: battleSpeciesRef(active), move: battleMoveRef(active.pendingMove) }) };
   }
   this.getActive().resetSwitchModifiers();
   var previous = this.activeIndex;
   this.lastSwitchedOutIndex = previous;
   this.activeIndex = index;
   var entering = this.getActive();
-  var msg = this.combatantList[previous].pokemon.name + " ritirato, entra in campo " + entering.pokemon.name;
+  var events = [battleEvent("switch.changed", {
+    outgoing: battleSpeciesRef(this.combatantList[previous]),
+    incoming: battleSpeciesRef(entering)
+  })];
   if (this.batonPassStats) {
     var stats = this.batonPassStats;
     entering.atkBuff = stats.atkBuff;
@@ -98,14 +103,15 @@ Team.prototype.switchTo = function (index) {
     if (entering.pendingDelayedStatus && (entering.pendingDelayedStatus.status === "cnf_block" || entering.pendingDelayedStatus.status === "cnf_free")) {
       entering.pendingDelayedStatus = null;
     }
-    msg += ". Staffetta passa le alterazioni a " + entering.pokemon.name;
+    events.push(battleEvent("switch.batonPass", { pokemon: battleSpeciesRef(entering) }));
     this.batonPassStats = null;
   }
   if (this.battleManager) {
     var opponent = (this === this.battleManager.playerTeam) ? this.battleManager.enemyTeam : this.battleManager.playerTeam;
-    msg = runHeldItemTrigger(this.battleManager, "switchHazard", HeldItemTriggerContext.switchHazard(entering, opponent, msg)).message;
+    var hazardResult = runHeldItemTrigger(this.battleManager, "switchHazard", HeldItemTriggerContext.switchHazard(entering, opponent));
+    if (hazardResult.event) { events.push(hazardResult.event); }
   }
-  return { ok: true, message: msg };
+  return { ok: true, events: events };
 };
 
 Team.prototype.switchRandom = function () {
@@ -120,7 +126,7 @@ Team.prototype.switchRandom = function () {
     return entry !== this.activeIndex;
   }, this);
    if (!aliveChoices.length || this.getActive().trappedTurns > 0 || this.getActive().trappedMoveIndex) {
-    return "L'attacco fallisce";
+    return { ok: false, event: battleEvent("move.fail", {}) };
   }
   this.getActive().resetSwitchModifiers();
   var previous = this.activeIndex;
@@ -130,12 +136,13 @@ Team.prototype.switchRandom = function () {
     : aliveChoices[Math.floor(random() * aliveChoices.length)];
   this.lastSwitchedOutIndex = previous;
   var entering = this.getActive();
-  var msg = "Entra in campo " + entering.pokemon.name;
+  var events = [battleEvent("switch.entered", { pokemon: battleSpeciesRef(entering) })];
   if (this.battleManager) {
     var opponent = (this === this.battleManager.playerTeam) ? this.battleManager.enemyTeam : this.battleManager.playerTeam;
-    msg = runHeldItemTrigger(this.battleManager, "switchHazard", HeldItemTriggerContext.switchHazard(entering, opponent, msg)).message;
+    var hazardResult = runHeldItemTrigger(this.battleManager, "switchHazard", HeldItemTriggerContext.switchHazard(entering, opponent));
+    if (hazardResult.event) { events.push(hazardResult.event); }
   }
-  return msg;
+  return { ok: true, events: events };
 };
 
 Team.prototype.buffTeamAtk = function (amount) {

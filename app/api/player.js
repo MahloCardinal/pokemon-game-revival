@@ -69,7 +69,7 @@ export async function createInitialPlayerSave(starterInput) {
   var result = await chooseStarterAuthoritative(starterInput);
   if (!result.ok) return result;
   if (!result.projection || !result.projection.has_player) {
-    return { ok: false, message: "Il server non ha restituito lo stato iniziale del giocatore." };
+    return { ok: false, message: "The server did not return the player's initial state." };
   }
   return { ok: true, save: saveFromAuthoritativeProjection(result.projection) };
 }

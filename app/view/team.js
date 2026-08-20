@@ -1,6 +1,6 @@
 import { GDR_DATA } from "../data/index.js";
 import * as Engine from "../engine/index.js";
-import { resolveInventoryItems, itemDisplayDescription, ItemCategory } from "../data/items.js";
+import { resolveInventoryItems, ItemCategory } from "../data/items.js";
 import { isSingleCopyInventoryItem } from "./inventory-helpers.js";
 import { trainerSpriteByIndex } from "../data/trainers.js";
 import { state } from "../client/game-state.js";
@@ -8,12 +8,15 @@ import { assetPath, escapeHtml, getItemDisplayImage, getItemImage, getPokemonSta
 import { battlePointsMarkup, button, moneyMarkup, renderSummary, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { renderDebugPokemonCreator, renderDebugTrainerBadgeControls, renderDebugTrainerBattlePointControls, renderDebugTrainerMoneyControls } from "../client/debug-tools.js";
+import { KANTO_GYM_BADGES } from "../data/gyms.js";
+import { itemDisplayDescription, itemDisplayName, speciesDisplayName } from "../client/entity-text.js";
+import { t } from "../client/i18n.js";
 
 var GEN_FILTERS = [
-  { gen: 0, label: "Nazionale" },
-  { gen: 1, label: "1° Generazione" },
-  { gen: 2, label: "2° Generazione" },
-  { gen: 3, label: "3° Generazione" }
+  { gen: 0, key: "national" },
+  { gen: 1, key: "gen1" },
+  { gen: 2, key: "gen2" },
+  { gen: 3, key: "gen3" }
 ];
 
 function selectedPokedexGenFilter() {
@@ -70,12 +73,13 @@ function renderPokedexGrid() {
       if (isCaught) counts[generation].caught += 1;
     }
     var imageAttrs = 'decoding="async" fetchpriority="low"' + (isCaught ? "" : ' aria-hidden="true"');
-    var image = renderImage(getPokemonStaticImage(source), isCaught ? species.name : "", withPokemonSpriteClass("", source), withPokemonSpriteAttrs(source, imageAttrs));
+    var speciesName = speciesDisplayName(species.speciesKey);
+    var image = renderImage(getPokemonStaticImage(source), isCaught ? speciesName : "", withPokemonSpriteClass("", source), withPokemonSpriteAttrs(source, imageAttrs));
     var dexNumberLabel = "#" + String(dexNumber).padStart(2, "0");
     var dexMeta = '<strong>' + (isCaught
-      ? renderImage(assetPath("img_miscellaneous", "ball_icon.webp"), "Catturato", "", 'decoding="async" fetchpriority="low"')
+      ? renderImage(assetPath("img_miscellaneous", "ball_icon.webp"), t("ui.team.caught"), "", 'decoding="async" fetchpriority="low"')
       : "") + "<span>" + escapeHtml(dexNumberLabel) + "</span></strong>";
-    var name = "<em>" + (isCaught ? escapeHtml(species.name) : '<span class="trainer-pokedex-name-placeholder" aria-hidden="true">Pokemon</span>') + "</em>";
+    var name = "<em>" + (isCaught ? escapeHtml(speciesName) : '<span class="trainer-pokedex-name-placeholder" aria-hidden="true">' + escapeHtml(t("ui.team.unknownPokemon")) + "</span>") + "</em>";
     return [
       '<article class="trainer-pokedex-entry" data-caught="' + (isCaught ? "1" : "0") + '" data-gen="' + escapeHtml(generation) + '">',
       dexMeta,
@@ -87,33 +91,22 @@ function renderPokedexGrid() {
   return { html: gridHtml, counts: counts };
 }
 
-var KANTO_BADGES = [
-  { name: "Medaglia Sasso", image: "medaglia_sasso.webp" },
-  { name: "Medaglia Cascata", image: "medaglia_cascata.webp" },
-  { name: "Medaglia Tuono", image: "medaglia_tuono.webp" },
-  { name: "Medaglia Arcobaleno", image: "medaglia_arcobaleno.webp" },
-  { name: "Medaglia Anima", image: "medaglia_anima.webp" },
-  { name: "Medaglia Palude", image: "medaglia_palude.webp" },
-  { name: "Medaglia Vulcano", image: "medaglia_vulcano.webp" },
-  { name: "Medaglia Terra", image: "medaglia_terra.webp" }
-];
-
 export function renderTeamScene() {
   var pokedexGenFilter = selectedPokedexGenFilter();
   var trainerInfo = state.trainerInfo;
   var trainerSprite = trainerSpriteByIndex(trainerInfo[0]);
   var pokedollars = Number(trainerInfo[1]) || 0;
   var battlePoints = Number(trainerInfo[3]) || 0;
-  var badges = Math.max(0, Math.min(KANTO_BADGES.length, Math.floor(Number(trainerInfo[2]) || 0)));
-  var trainerName = state.playerName || state.auth.userLabel || "Allenatore";
-  var badgeImages = KANTO_BADGES.map(function (badge, index) {
+  var badges = Math.max(0, Math.min(KANTO_GYM_BADGES.length, Math.floor(Number(trainerInfo[2]) || 0)));
+  var trainerName = state.playerName || state.auth.userLabel || t("ui.team.defaultTrainer");
+  var badgeImages = KANTO_GYM_BADGES.map(function (badge, index) {
     var badgeClass = "trainer-badge-image" + (index < badges ? "" : " trainer-badge-image-locked");
-    return renderImage(assetPath("img_miscellaneous", badge.image), badge.name, badgeClass);
+    return renderImage(assetPath("img_miscellaneous", badge.image), t("ui.gyms.badges." + badge.key), badgeClass);
   }).join("");
   var trainerProfile = [
     '<section class="team-description-panel trainer-profile-panel" data-render-region="trainer-profile">',
     '  <div class="trainer-profile-media">',
-    renderImage(getTrainerImage(trainerSprite), "Allenatore", withTrainerSpriteClass("trainer-profile-image", trainerSprite), withTrainerSpriteAttrs(trainerSprite, 'loading="eager" decoding="async"')),
+    renderImage(getTrainerImage(trainerSprite), t("ui.team.trainerAlt"), withTrainerSpriteClass("trainer-profile-image", trainerSprite), withTrainerSpriteAttrs(trainerSprite, 'loading="eager" decoding="async"')),
     "  </div>",
     '  <div class="trainer-profile-content">',
     '    <h2 class="trainer-profile-name">' + escapeHtml(trainerName) + "</h2>",
@@ -121,7 +114,7 @@ export function renderTeamScene() {
     '    <p class="trainer-profile-money"><span class="trainer-money-value">' + moneyMarkup(pokedollars) + "</span>" + renderDebugTrainerMoneyControls() + "</p>",
     '    <div class="trainer-profile-badges">',
     '      <div class="trainer-badge-summary">',
-    '        <span>Medaglie Kanto: ' + escapeHtml(badges) + "/" + escapeHtml(KANTO_BADGES.length) + "</span>",
+    '        <span>' + escapeHtml(t("ui.team.kantoBadges", { count: badges, total: KANTO_GYM_BADGES.length })) + "</span>",
     '        <span class="trainer-badge-debug-controls">' + renderDebugTrainerBadgeControls() + "</span>",
     "      </div>",
     '      <div class="trainer-badge-images">' + badgeImages + "</div>",
@@ -137,16 +130,16 @@ export function renderTeamScene() {
       var moveAction;
       var cardClass = hasMoveSelection && selectedMoveIndex === index ? "is-team-move-selected" : "";
       if (hasMoveSelection && selectedMoveIndex === index) {
-        moveAction = button("Annulla", "team-move-cancel", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-dark team-move-button");
+        moveAction = button(t("ui.team.cancelMove"), "team-move-cancel", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-dark team-move-button");
       } else if (hasMoveSelection) {
-        moveAction = button("Sposta qui", "team-move-place", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-accent team-move-button");
+        moveAction = button(t("ui.team.moveHere"), "team-move-place", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-accent team-move-button");
       } else {
-        moveAction = button("Sposta", "team-move-start", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-dark team-move-button");
+        moveAction = button(t("ui.team.move"), "team-move-start", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-dark team-move-button");
       }
-      var actions = button("Deposita nel Box", "team-to-box", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-primary team-to-box-button") + moveAction;
+      var actions = button(t("ui.team.deposit"), "team-to-box", 'data-index="' + index + '"' + (state.inBattle ? " disabled" : ""), "button-primary team-to-box-button") + moveAction;
       return renderPokemonCardFrame(renderPokemonCard(pokemon, { className: cardClass }), { actions: actions });
     }).join("") + "</section>"
-    : '<section class="pokemon-grid team-pokemon-grid team-pokemon-count-1" data-render-region="trainer-team"><div class="empty-state">La squadra e\' vuota.</div></section>';
+    : '<section class="pokemon-grid team-pokemon-grid team-pokemon-count-1" data-render-region="trainer-team"><div class="empty-state">' + escapeHtml(t("ui.team.emptyTeam")) + "</div></section>";
 
   function getInventorySectionKey(item) {
     var category = item.category || "";
@@ -160,10 +153,11 @@ export function renderTeamScene() {
   }
 
   function renderInventoryItem(item) {
+    var itemName = itemDisplayName(item);
     var imageSrc = getItemDisplayImage(item);
     var itemImageClass = item.category === ItemCategory.TM ? "style-zaino-item-image style-zaino-item-image-mt" : "style-zaino-item-image";
     var imageMarkup = imageSrc
-      ? renderImage(imageSrc, item.name, itemImageClass)
+      ? renderImage(imageSrc, itemName, itemImageClass)
       : '<span class="style-zaino-item-image style-zaino-item-image-empty"></span>';
     var availabilityMarkup = isSingleCopyInventoryItem(item) ? "" : '<div class="style-zaino-item-availability"><span class="style-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
 
@@ -174,7 +168,7 @@ export function renderTeamScene() {
       availabilityMarkup,
       "  </div>",
       '  <div class="style-zaino-item-copy">',
-      '    <div class="style-zaino-item-heading"><h3 class="style-zaino-item-name">' + escapeHtml(item.name) + "</h3></div>",
+      '    <div class="style-zaino-item-heading"><h3 class="style-zaino-item-name">' + escapeHtml(itemName) + "</h3></div>",
       '    <p class="style-zaino-item-description">' + escapeHtml(itemDisplayDescription(item)) + "</p>",
       "  </div>",
       "</article>"
@@ -198,14 +192,9 @@ export function renderTeamScene() {
     ].join("");
   }
 
-  var inventorySections = [
-    { key: "tools", title: "Strumenti" },
-    { key: "held", title: "Strumenti assegnabili" },
-    { key: "battle", title: "Strumenti battaglia" },
-    { key: "balls", title: "Poké Ball" },
-    { key: "mt", title: "MT" },
-    { key: "berries", title: "Bacche" }
-  ];
+  var inventorySections = ["tools", "held", "battle", "balls", "mt", "berries"].map(function (key) {
+    return { key: key, title: t("ui.team.inventorySections." + key) };
+  });
   var inventoryItems = resolveInventoryItems(state.inventory);
 
   var debugPokemonCreator = renderDebugPokemonCreator();
@@ -217,7 +206,7 @@ export function renderTeamScene() {
   var gridResult = renderPokedexGrid();
   var filterButtons = GEN_FILTERS.map(function (f) {
     var activeClass = f.gen === pokedexGenFilter ? ' active' : '';
-    return button(f.label, "pokedex-set-filter", 'data-gen="' + f.gen + '"', "button-ghost button-slim pokedex-filter-btn" + activeClass);
+    return button(t("ui.team.generations." + f.key), "pokedex-set-filter", 'data-gen="' + f.gen + '"', "button-ghost button-slim pokedex-filter-btn" + activeClass);
   }).join('');
   var pokedexContent = '<section class="team-description-panel trainer-pokedex-panel" data-render-region="trainer-pokedex">' +
     '<div class="trainer-pokedex-heading">' +
@@ -228,7 +217,7 @@ export function renderTeamScene() {
     "</section>";
 
   return sceneShell(
-    "Scheda allenatore",
+    t("ui.team.sceneTitle"),
     "",
     '<div class="team-scene-stack">' + trainerProfile + teamSection + debugPokemonCreator + zainoContent + pokedexContent + "</div>",
     "",

@@ -3,7 +3,7 @@ import * as Moves from "./moves.js";
 function moveIndexes(moves) {
   return Object.freeze(moves.map(function (move) {
     if (!move || !Number.isFinite(Number(move.index))) {
-      throw new Error("Categoria IA PvE con mossa non valida.");
+      throw new Error("PvE AI category contains an invalid move.");
     }
     return Number(move.index);
   }));

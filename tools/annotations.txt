@@ -1,10 +1,16 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- mettere versione inglese
+- mettere versione inglese (correggere strumento di debug)
+- la battaglia ancora viene rifiutata
+- il frontend della Zona Allenamento sembra indicare un numero sbagliato di Livelli premio, è effettivamente così?
+- nel file "AGENTS" far aggiungere le specifiche: il progetto non usa Docker (poiché mi pare venga cercato continuamente); gli aggiornamenti frontend a runtime devono essere dei singoli pannelli (se effettivamente cambia un solo pannello), non il render dell'intera pagina
+- Palestre: etichette premi della sfida sono fuori asse e troppo vicine; eliminare da "Limitazioni per la sfida" la voce sulla Missioni
+- Giardino: centrare titolo nei vari panel; diminuire la trasparenza al panel della bacca giornaliera, per renderlo come quello di presentazione
+- Club Pokefan: mettere più spazio tra il panel delle sottosezioni e quello delle tabelle
 - correggere Bizzoaroma/Gonfioaroma
 - diminuire catch-rate delle pokeball
-- correggere funzionamento ricerca in Zone cattura (reset a varie azioni)
+- correggere funzionamento ricerca in Zone cattura: reset del selvatico incontrato quando si compiono altra azioni (uscire dalla schermata, acquistare, ...). Mettere blocco come per le battaglie?
 - bilanciamento team palestre e contenuto delle MT
 - inserire i 'Titoli' (es. 'Campione della Lega di Kanto')
 - inserire nelle palestre le date di vittoria da parte degli altri giocatori

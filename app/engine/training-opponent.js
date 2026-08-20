@@ -73,7 +73,7 @@ export function createTrainingOpponentPresentation() {
   var gender = trainer && trainer.gender === "f" ? "f" : "m";
   var names = TRAINER_NAME_POOLS[gender] || TRAINER_NAME_POOLS.m || [];
   return {
-    name: names.length ? names[Math.floor(random() * names.length)] : "Sfidante",
+    name: names.length ? names[Math.floor(random() * names.length)] : "Challenger",
     sprite: trainer ? trainer.file : (TRAINER_SPRITES[0] ? TRAINER_SPRITES[0].file : "bimbo.webp"),
     gender: gender
   };

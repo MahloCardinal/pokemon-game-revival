@@ -314,12 +314,11 @@ async function shopStatements(release) {
   const progression = await loadSourceModule("app/data/progression.js");
   const explicit = new Map(data.SHOPPING_CENTER_ITEMS.map((entry) => [entry.item.index, entry]));
   const unlocks = new Map(progression.ITEM_UNLOCK_RULES.map((entry) => [entry.item.index, entry.requirement]));
-  const gymRewardTM = new Set(progression.GYM_REWARD_TM_ITEMS);
   const rows = items.ITEM_LIBRARY.map((item, order) => {
     const entry = explicit.get(item.index);
     const isTM = item.category === items.ItemCategory.TM;
     const purchasePrice = data.shoppingCenterItemPrice(item);
-    const unpurchasable = purchasePrice === null || data.SHOPPING_CENTER_UNPURCHASABLE_ITEMS.indexOf(item) !== -1 || gymRewardTM.has(item.index);
+    const unpurchasable = purchasePrice === null || data.SHOPPING_CENTER_UNPURCHASABLE_ITEMS.indexOf(item) !== -1;
     const unsellable = data.SHOPPING_CENTER_UNSELLABLE_ITEMS.indexOf(item) !== -1;
     const singlePurchase = data.shoppingCenterItemIsSinglePurchase(item);
     const initialStock = data.shoppingCenterRemainingCartQuantity(item, { inventory: [], shopPurchases: {}, trainerInfo: [null, null, 8] }, {});

@@ -65,21 +65,21 @@ export var AUTHORITATIVE_TRAINING_REPEAT_REWARDS = {
 export var MAX_TRAINING_LEVELS_PER_POKEMON = 3;
 
 export var TM_TIER_RULES = {
-  0: { price: 12000, unlockBadges: 7 },
+  0: { price: null, unlockBadges: null },
   1: { price: 8000, unlockBadges: 6 },
   2: { price: 5000, unlockBadges: 4 },
   3: { price: 3000, unlockBadges: 0 }
 };
 
 export var GYM_REWARDS = [
-  { money: 3000, item: i.hp_up.index, itemQuantity: 3 },
-  { money: 5000, item: i.pure_incense.index, itemQuantity: 1 },
-  { money: 7000, item: i.pp_up.index, itemQuantity: 3 },
-  { money: 10000, item: i.black_flute.index, itemQuantity: 1 },
-  { money: 20000, item: i.odd_incense.index, itemQuantity: 1 },
-  { money: 30000, item: i.pp_max.index, itemQuantity: 3 },
-  { money: 50000, item: i.white_flute.index, itemQuantity: 1 },
-  { money: 70000, item: i.kings_rock.index, itemQuantity: 1 }
+  { money: 3000, tm: i.tm21.index, item: i.hp_up.index, itemQuantity: 3 },
+  { money: 5000, tm: i.tm54.index, item: i.pure_incense.index, itemQuantity: 1 },
+  { money: 7000, tm: i.tm24.index, item: i.pp_up.index, itemQuantity: 3 },
+  { money: 10000, tm: i.tm19.index, item: i.black_flute.index, itemQuantity: 1 },
+  { money: 20000, tm: i.tm04.index, item: i.odd_incense.index, itemQuantity: 1 },
+  { money: 30000, tm: i.tm46.index, item: i.pp_max.index, itemQuantity: 3 },
+  { money: 50000, tm: i.tm52.index, item: i.white_flute.index, itemQuantity: 1 },
+  { money: 70000, tm: i.tm51.index, item: i.kings_rock.index, itemQuantity: 1 }
 ];
 
 export var KANTO_LEAGUE_REWARDS = {
@@ -103,12 +103,6 @@ export function adminControlledBattleRewardForType(battleType) {
   }
   return null;
 }
-
-export var GYM_REWARD_TM_ITEMS = GYM_REWARDS.map(function (reward) {
-  return reward && reward.tm;
-}).filter(function (itemIndex, index, list) {
-  return itemIndex && list.indexOf(itemIndex) === index;
-});
 
 export var ITEM_UNLOCK_RULES = [
   { item: i.poke_ball, requirement: { kind: "badges", value: 0 } },
@@ -230,6 +224,10 @@ export function tmPrice(item) {
 export function tmUnlockBadges(item) {
   var rule = TM_TIER_RULES[tmTierForItem(item)] || TM_TIER_RULES[3];
   return rule.unlockBadges;
+}
+
+export function tmIsPurchasable(item) {
+  return Boolean(item && item.category === i.ItemCategory.TM && tmPrice(item) !== null);
 }
 
 export function expMultiplierForWinnerLevel(level) {

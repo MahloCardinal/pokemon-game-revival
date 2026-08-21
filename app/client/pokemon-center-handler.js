@@ -761,9 +761,9 @@ function useEvolutionItemOnPokemonInline(pokemon, item) {
   state.dialog = {
     type: "pokemon-center-evolution",
     pokemon: pokemon,
-    pokemonName: pokemon.name,
+    pokemonName: pokemon.speciesKey,
     item: item,
-    itemName: item.name,
+    itemName: item.key,
     targets: targets
   };
   renderPokemonCenter();

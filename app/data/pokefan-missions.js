@@ -1,6 +1,6 @@
 import * as i from "./items.js";
 import { getItemByIndex } from "./items.js";
-import { GYM_REWARD_TM_ITEMS } from "./progression.js";
+import { tmIsPurchasable } from "./progression.js";
 import { SHOPPING_CENTER_CATEGORIES, SHOPPING_CENTER_ITEMS, SHOPPING_CENTER_SECTIONS, SHOPPING_CENTER_UNPURCHASABLE_ITEMS } from "./shopping-center.js";
 
 export var MISSION_CATEGORY_ADVENTURE = "adventure";
@@ -13,7 +13,7 @@ export var MISSION_STATUS_SKIPPED = "skipped";
 
 var TYPE_BOOSTER_ITEMS = i.itemsSortedByIndex(i.ITEM_LIBRARY.filter(function (item) { return item && item.boostType; }));
 var ALL_PURCHASABLE_TM_ITEMS = i.itemsSortedByIndex(i.ITEM_LIBRARY.filter(function (item) {
-  return item && item.category === i.ItemCategory.TM && GYM_REWARD_TM_ITEMS.indexOf(item.index) === -1;
+  return tmIsPurchasable(item);
 })).map(function (item) { return item.index; });
 var AROMA_ITEM_INDEXES = SHOPPING_CENTER_ITEMS.filter(function (entry) {
   return entry.category === SHOPPING_CENTER_CATEGORIES.INCENSES;

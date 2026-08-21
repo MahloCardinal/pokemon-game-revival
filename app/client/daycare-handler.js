@@ -16,8 +16,8 @@ import { replaceTeamRuntimeState } from "./runtime-state.js";
 import { recordMissionEvent } from "./mission-runtime.js";
 import { clearPendingActivityRuntime, requireNotInBattle, setPendingActivityRuntime } from "./battle-scene-lock.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
-import { pokemonDisplayName, teamViolationLines, teamViolationMessage } from "./entity-text.js";
-import { messageDescriptor, textDescriptor } from "./i18n.js";
+import { moveDisplayName, pokemonDisplayName, teamViolationLines, teamViolationMessage } from "./entity-text.js";
+import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 
 var DAYCARE_LEVEL_INTERVAL_MS = 3600000;
 var daycareDepositPending = false;
@@ -116,7 +116,7 @@ function moveNameByIndex(moveIndex, fallback) {
   var move = (DATA.moveLibrary || []).find(function (entry) {
     return Number(entry && entry.index) === Number(moveIndex);
   });
-  return move && move.name || fallback || "Move " + moveIndex;
+  return moveDisplayName(move || { index: moveIndex }) || moveDisplayName({ key: fallback }) || t("entityDescriptions.moves.fallbackName");
 }
 
 function speciesChoice(targetSpeciesKey, pokemon) {

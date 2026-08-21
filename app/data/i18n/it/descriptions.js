@@ -7,6 +7,7 @@ export var IT_DESCRIPTION_TRANSLATIONS = Object.freeze({
   moves: Object.freeze(Object.assign({ fallbackName: "Mossa", fallbackDescription: "Nessun effetto in battaglia" }, IT_MOVE_DESCRIPTIONS)),
   items: Object.freeze({
     fallbackName: "Strumento",
+    tmName: "MT{number} {move}",
     capture: "Permette di catturare Pokémon selvatici.",
     captureBetter: "Permette di catturare Pokémon selvatici. È più efficace di {ball}.",
     captureGuaranteed: "Cattura infallibilmente un Pokémon selvatico.",

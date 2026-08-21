@@ -319,9 +319,14 @@ function assertStableCatalogKeys(entries, expectedCount, label) {
 }
 
 assertStableCatalogKeys(MoveDefinitions.MOVE_LIBRARY, 351, "move");
-assertStableCatalogKeys(ItemDefinitions.ITEM_LIBRARY, 164, "item");
+assertStableCatalogKeys(ItemDefinitions.ITEM_LIBRARY, 167, "item");
 assert.equal(MoveDefinitions.doom_desire.name, "doom_desire");
 assert.equal(ItemDefinitions.leek.name, "leek");
+assert.equal(new Set(ItemDefinitions.ITEM_LIBRARY.map((item) => item.index)).size, ItemDefinitions.ITEM_LIBRARY.length, "item indexes must be unique");
+assert.deepEqual(
+  [ItemDefinitions.tm53, ItemDefinitions.tm54, ItemDefinitions.tm55].map((item) => [item.index, item.number, item.move.key, item.tier]),
+  [[453, 53, "cut", 2], [454, 54, "surf", 0], [455, 55, "waterfall", 2]]
+);
 
 function pursuitTestPokemon(name, moves) {
   return new Pokemon({

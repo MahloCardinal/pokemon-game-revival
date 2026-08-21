@@ -1,5 +1,5 @@
 import * as i from "./items.js";
-import { ITEM_UNLOCK_RULES, GYM_REWARD_TM_ITEMS, tmPrice, tmUnlockBadges, normalizedBadges } from "./progression.js";
+import { ITEM_UNLOCK_RULES, tmPrice, tmUnlockBadges, normalizedBadges } from "./progression.js";
 
 function shopItem(item, section, category, price) {
   return { item: item, section: section, category: category, price: price };
@@ -181,10 +181,6 @@ function getUnlockRule(item) {
   return ITEM_UNLOCK_RULES.find(function (rule) { return rule && itemIndex(rule.item) === idx; }) || null;
 }
 
-function isItemGymRewardTM(item) {
-  return Boolean(item && item.category === i.ItemCategory.TM && GYM_REWARD_TM_ITEMS.indexOf(item.index) !== -1);
-}
-
 function isSinglePurchaseItem(item) {
   if (!item) return false;
   if (shoppingCenterIsUnsellableItem(item) && !shoppingCenterItemIsUnpurchasable(item)) return true;
@@ -219,7 +215,7 @@ function computeStockRemaining(item, state) {
 
 function itemAvailability(item, state) {
   var badges = normalizedBadges(state.trainerInfo && state.trainerInfo[2]);
-  if (shoppingCenterItemIsUnpurchasable(item) || isItemGymRewardTM(item)) {
+  if (shoppingCenterItemIsUnpurchasable(item) || shoppingCenterItemPrice(item) === null) {
     return { key: "unpurchasable", canPurchase: false };
   }
   if (isItemAlreadyOwned(item, state.inventory)) {
@@ -381,10 +377,6 @@ export function shoppingCenterRemainingCartQuantity(item, state, cart) {
 
 export function shoppingCenterItemIsUnpurchasable(item) {
   return itemInList(item, SHOPPING_CENTER_UNPURCHASABLE_ITEMS);
-}
-
-export function shoppingCenterItemIsGymRewardTM(item) {
-  return isItemGymRewardTM(item);
 }
 
 export function shoppingCenterIsSellSection(sectionName) {

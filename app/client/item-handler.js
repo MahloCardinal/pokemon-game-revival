@@ -3,7 +3,7 @@ import { state } from "./game-state.js";
 import { escapeHtml, getItemDisplayImage, renderImage } from "./asset-helpers.js";
 import { setHtml } from "./renderer.js";
 import { getResolvedInventoryItem, ItemCategory } from "../data/items.js";
-import { itemDisplayDescription } from "./entity-text.js";
+import { itemDisplayDescription, itemDisplayName } from "./entity-text.js";
 import { adjustInventoryItemQuantity } from "./runtime-state.js";
 
 registerAction("inventory-toggle-item", function(element) {
@@ -25,6 +25,7 @@ function updateInventoryItemCard(card, item, isFlipped) {
   var imageSrc;
   var nameClass;
   var quantityMarkup;
+  var displayName;
   if (!card || !item) {
     return;
   }
@@ -34,15 +35,16 @@ function updateInventoryItemCard(card, item, isFlipped) {
     return;
   }
   imageSrc = getItemDisplayImage(item);
+  displayName = itemDisplayName(item);
   var itemImageClass = item.category === ItemCategory.TM ? "inventory-item-image inventory-item-image-mt" : "inventory-item-image";
   imageMarkup = imageSrc
-    ? renderImage(imageSrc, item.name, itemImageClass)
+    ? renderImage(imageSrc, displayName, itemImageClass)
     : '<span class="inventory-item-image inventory-item-image-empty"></span>';
-  nameClass = card.classList.contains("battle-inventory-item-card") && String(item.name || "").length > 14 ? " is-long-name" : "";
+  nameClass = card.classList.contains("battle-inventory-item-card") && displayName.length > 14 ? " is-long-name" : "";
   quantityMarkup = item.category === ItemCategory.TM ? "" : '  <span class="inventory-item-quantity">x' + escapeHtml(item.quantity) + "</span>";
   setHtml(card, [
     imageMarkup,
-    '  <span class="inventory-item-name' + nameClass + '">' + escapeHtml(item.name) + "</span>",
+    '  <span class="inventory-item-name' + nameClass + '">' + escapeHtml(displayName) + "</span>",
     quantityMarkup
   ].join(""));
 }

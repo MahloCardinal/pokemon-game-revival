@@ -80,6 +80,7 @@ Il browser non è fonte autoritativa e non deve concedere ricompense. Le battagl
 - Importare l'API pubblica del motore tramite `import * as Engine from "../engine/index.js"` quando possibile.
 - Revival supporta soltanto missioni avventura, cattura e giornaliere. Non reintrodurre categorie o reset per missioni ripetibili.
 - Nel Centro Commerciale `price: null` significa sempre “non acquistabile”; non mantenere elenchi separati di disponibilità che possano divergere dal prezzo.
+- Per le MT, il Tier `0` significa premio non acquistabile e produce sempre `price: null`; Club Pokéfan, Centro Commerciale e Negozio Lotta devono filtrare tramite questa regola canonica, senza elenchi paralleli delle MT escluse.
 
 La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono strumenti intenzionali dell'utente debug; non eliminarli come presunto codice di sviluppo inutilizzato.
 
@@ -87,6 +88,7 @@ La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono st
 
 - Identificatori, chiavi persistite e valori usati dalla logica devono essere in inglese e indipendenti dalla lingua visualizzata. Non confrontare né salvare etichette tradotte.
 - Ogni testo visibile appartiene ai cataloghi sotto `app/data/i18n/`; italiano e inglese devono mantenere lo stesso schema. Non inserire stringhe UI direttamente in view, handler o motore.
+- I cataloghi di gioco conservano chiavi tecniche, indici e regole, non copie inglesi dei nomi a schermo. In particolare il nome di una MT si compone via i18n dal suo numero e dalla chiave tecnica della mossa; i consumer non devono leggere `.name` come etichetta visibile.
 - Usare `t()` per testo risolto immediatamente e `textDescriptor()` o `messageDescriptor()` per testo conservato nello stato o risolto più tardi. Nel renderer passare i descrittori a `resolveText()` prima di `escapeHtml()`.
 - Dopo modifiche i18n eseguire `node --experimental-vm-modules scripts/audit-i18n.mjs` oltre ai test ordinari.
 

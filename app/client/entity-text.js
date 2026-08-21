@@ -7,8 +7,8 @@ var ITEM_KEY_BY_INDEX = Object.freeze(ITEM_LIBRARY.reduce(function (catalog, ite
   catalog[item.index] = item.key;
   return catalog;
 }, {}));
-var ITEM_KEY_BY_CANONICAL_NAME = Object.freeze(ITEM_LIBRARY.reduce(function (catalog, item) {
-  catalog[String(item.name || "").toLocaleLowerCase("en-US")] = item.key;
+var ITEM_KEYS = Object.freeze(ITEM_LIBRARY.reduce(function (catalog, item) {
+  catalog[item.key] = true;
   return catalog;
 }, {}));
 
@@ -16,8 +16,8 @@ var MOVE_KEY_BY_INDEX = Object.freeze(MOVE_LIBRARY.reduce(function (catalog, mov
   catalog[move.index] = move.key;
   return catalog;
 }, {}));
-var MOVE_KEY_BY_CANONICAL_NAME = Object.freeze(MOVE_LIBRARY.reduce(function (catalog, move) {
-  catalog[String(move.name || "").toLocaleLowerCase("en-US")] = move.key;
+var MOVE_KEYS = Object.freeze(MOVE_LIBRARY.reduce(function (catalog, move) {
+  catalog[move.key] = true;
   return catalog;
 }, {}));
 
@@ -34,7 +34,7 @@ export function itemTranslationKey(item) {
     return "";
   }
   if (typeof item === "string") {
-    return String(ITEM_KEY_BY_CANONICAL_NAME[item.toLocaleLowerCase("en-US")] || "");
+    return ITEM_KEYS[item] ? item : "";
   }
   return String(item.key || ITEM_KEY_BY_INDEX[Number(item.index)] || "");
 }
@@ -44,18 +44,32 @@ export function moveTranslationKey(move) {
     return "";
   }
   if (typeof move === "string") {
-    return String(MOVE_KEY_BY_CANONICAL_NAME[move.toLocaleLowerCase("en-US")] || "");
+    return MOVE_KEYS[move] ? move : "";
   }
   return String(move.key || MOVE_KEY_BY_INDEX[Number(move.index)] || "");
 }
 
 export function itemDisplayName(item) {
   var key = itemTranslationKey(item);
+  var resolvedItem = item && typeof item === "object" ? item : ITEM_LIBRARY.find(function (entry) { return entry.key === key; });
+  if (resolvedItem && resolvedItem.category === ItemCategory.TM) {
+    return t("entityDescriptions.items.tmName", {
+      number: String(resolvedItem.number).padStart(2, "0"),
+      move: moveDisplayName(resolvedItem.move)
+    });
+  }
   return key ? t("entities.items." + key + ".name") : (typeof item === "string" ? item : "");
 }
 
 export function itemNameDescriptor(item) {
   var key = itemTranslationKey(item);
+  var resolvedItem = item && typeof item === "object" ? item : ITEM_LIBRARY.find(function (entry) { return entry.key === key; });
+  if (resolvedItem && resolvedItem.category === ItemCategory.TM) {
+    return textDescriptor("entityDescriptions.items.tmName", {
+      number: String(resolvedItem.number).padStart(2, "0"),
+      move: moveNameDescriptor(resolvedItem.move)
+    });
+  }
   return key ? textDescriptor("entities.items." + key + ".name") : textDescriptor("entityDescriptions.items.fallbackName");
 }
 

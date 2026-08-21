@@ -7,6 +7,7 @@ export var EN_DESCRIPTION_TRANSLATIONS = Object.freeze({
   moves: Object.freeze(Object.assign({ fallbackName: "Move", fallbackDescription: "No effect in battle" }, EN_MOVE_DESCRIPTIONS)),
   items: Object.freeze({
     fallbackName: "Item",
+    tmName: "TM{number} {move}",
     capture: "Used to catch wild Pokémon.",
     captureBetter: "Used to catch wild Pokémon. It is more effective than a {ball}.",
     captureGuaranteed: "Catches a wild Pokémon without fail.",

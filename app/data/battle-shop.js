@@ -1,4 +1,5 @@
 import * as Items from "./items.js";
+import { GYM_REWARD_TM_ITEMS } from "./progression.js";
 
 function itemOffer(item, price, group) {
   return { kind: "item", item: item, price: price, group: group };
@@ -25,7 +26,9 @@ export var BATTLE_SHOP_ITEM_OFFERS = []
     itemOffer(Items.pp_up, 20, "vitamins"),
     itemOffer(Items.pp_max, 30, "vitamins")
   ])
-  .concat(Items.ITEM_LIBRARY.filter(function (item) { return item.category === Items.ItemCategory.TM; })
+  .concat(Items.ITEM_LIBRARY.filter(function (item) {
+    return item.category === Items.ItemCategory.TM && GYM_REWARD_TM_ITEMS.indexOf(item.index) === -1;
+  })
     .map(function (item) { return itemOffer(item, 10, "tms"); }))
   .concat(EVOLUTION_ITEMS.map(function (item) { return itemOffer(item, 10, "evolution_items"); }))
   .concat(AROMAS.map(function (item) { return itemOffer(item, 100, "incenses"); }))

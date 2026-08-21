@@ -9,7 +9,7 @@
 - correggere Bizzoaroma/Gonfioaroma
 - diminuire catch-rate delle pokeball
 - correggere funzionamento ricerca in Zone cattura: reset del selvatico incontrato quando si compiono altra azioni (uscire dalla schermata, acquistare, ...). Mettere blocco come per le battaglie?
-- bilanciamento team palestre e contenuto delle MT
+- bilanciamento team palestre
 - inserire i 'Titoli' (es. 'Campione della Lega di Kanto')
 - inserire nelle palestre le date di vittoria da parte degli altri giocatori
 - inserire possibilità di vedere squadre altri giocatori

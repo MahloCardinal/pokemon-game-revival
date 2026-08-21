@@ -123,7 +123,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
       unlocked: "Acquistabili",
       locked_badges: "Acquistabili con {count} {badges}",
       unpurchasable: "Non acquistabili",
-      already_owned: "Già acquistati"
+      already_owned: "Già acquistate"
     }),
     badgeOne: "Medaglia",
     badgeMany: "Medaglie",

@@ -1,11 +1,8 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- mettere versione inglese (correggere strumento di debug)
-- correggere lista MT ritirabili al Negozio Lotta trattandola come il premio del Club Pokefan (lo scroll del Club Pokefan comunque taglia la parte in fondo dell'ultimo oggetto in lista)
 - la battaglia ancora viene rifiutata
 - il frontend della Zona Allenamento sembra indicare un numero sbagliato di Livelli premio, è effettivamente così?
-- nel file "AGENTS" far aggiungere le specifiche: il progetto non usa Docker (poiché mi pare venga cercato continuamente); gli aggiornamenti frontend a runtime devono essere dei singoli pannelli (se effettivamente cambia un solo pannello), non il render dell'intera pagina
 - Palestre: etichette premi della sfida sono fuori asse e troppo vicine; eliminare da "Limitazioni per la sfida" la voce sulla Missioni
 - Giardino: centrare titolo nei vari panel; diminuire la trasparenza al panel della bacca giornaliera, per renderlo come quello di presentazione
 - Club Pokefan: mettere più spazio tra il panel delle sottosezioni e quello delle tabelle

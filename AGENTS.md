@@ -19,6 +19,7 @@ Il progetto è esclusivamente Revival. Non reintrodurre codice legacy, modalità
 - `tools/` fa parte del repository e le sue modifiche devono essere incluse nei commit. Non modificarne autonomamente il contenuto se il compito non lo richiede.
 - Non creare o committare dump SQL generati, segreti, token, password, service-role key o webhook.
 - Non usare comandi `npm`: il repository non contiene `package.json`, lockfile o pipeline npm.
+- Il progetto non usa Docker. Non installarlo, avviarlo o verificarlo per i flussi ordinari: usare Supabase collegato e Vercel. Un avviso della CLI relativo alla sola cache o all'ambiente locale Docker non annulla un'operazione remota conclusa con successo.
 - Preferire modifiche piccole e additive. Non riscrivere migrazioni già applicate.
 - Non aumentare limiti PostgreSQL per nascondere ricorsioni, query difettose o altri errori logici.
 - Non eliminare account o dati reali durante i test. Gli account temporanei devono essere rimossi al termine anche in caso di errore.
@@ -72,15 +73,22 @@ Il browser non è fonte autoritativa e non deve concedere ricompense. Le battagl
 - Non aggiungere dispatch specifici delle funzionalità direttamente a `main.js`.
 - Una nuova schermata deve essere aggiunta coerentemente al parsing delle route, alla generazione delle route e al renderer.
 - Usare `escapeHtml()` per i valori dinamici inseriti nel markup.
-- Usare gli helper di `app/client/asset-helpers.js`; non costruire manualmente i percorsi degli asset.
+- Usare gli helper di `app/client/asset-helpers.js` e il catalogo esplicito `app/data/asset-paths.js`; non costruire percorsi a partire da etichette tradotte o chiavi tecniche.
 - Le modifiche che richiedono persistenza devono attraversare i comandi autoritativi o il flusso di salvataggio già previsto.
-- Le micro-azioni che restano nella stessa schermata devono preferire regioni DOM nominate con `data-render-region` e `renderRegions()`; usare `render()` completo soltanto quando cambia la struttura generale della scena. I popup usano `renderDialogLayer()` e non devono ricostruire la pagina sottostante.
+- Se un'azione sincrona o asincrona cambia soltanto un pannello, una lista o un indicatore della schermata corrente, aggiornare una regione DOM nominata con `data-render-region` e `renderRegions()`. Usare `render()` completo soltanto quando cambia la scena o la sua struttura generale. I popup usano `renderDialogLayer()` e non devono ricostruire la pagina sottostante.
 - Le regole di progressione restano centralizzate in `app/data/progression.js`.
 - Importare l'API pubblica del motore tramite `import * as Engine from "../engine/index.js"` quando possibile.
 - Revival supporta soltanto missioni avventura, cattura e giornaliere. Non reintrodurre categorie o reset per missioni ripetibili.
 - Nel Centro Commerciale `price: null` significa sempre “non acquistabile”; non mantenere elenchi separati di disponibilità che possano divergere dal prezzo.
 
 La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono strumenti intenzionali dell'utente debug; non eliminarli come presunto codice di sviluppo inutilizzato.
+
+### Testi e internazionalizzazione
+
+- Identificatori, chiavi persistite e valori usati dalla logica devono essere in inglese e indipendenti dalla lingua visualizzata. Non confrontare né salvare etichette tradotte.
+- Ogni testo visibile appartiene ai cataloghi sotto `app/data/i18n/`; italiano e inglese devono mantenere lo stesso schema. Non inserire stringhe UI direttamente in view, handler o motore.
+- Usare `t()` per testo risolto immediatamente e `textDescriptor()` o `messageDescriptor()` per testo conservato nello stato o risolto più tardi. Nel renderer passare i descrittori a `resolveText()` prima di `escapeHtml()`.
+- Dopo modifiche i18n eseguire `node --experimental-vm-modules scripts/audit-i18n.mjs` oltre ai test ordinari.
 
 ## Regole particolari del motore
 

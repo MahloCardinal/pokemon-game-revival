@@ -9,6 +9,7 @@ import { renderRegions } from "./renderer.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { battleShopChoiceName, battleShopOfferName, hydrateBattleShopOffers } from "./battle-shop-presentation.js";
 import { messageDescriptor, t, textDescriptor } from "./i18n.js";
+import { bindAnchoredPanel } from "./anchored-panel.js";
 
 var pendingBattleShopChoice = null;
 var battleShopChoiceCleanup = null;
@@ -78,23 +79,7 @@ function openBattleShopChoiceMenu(anchorElement, offer) {
   panel.appendChild(list);
   backdrop.appendChild(panel);
   root.appendChild(backdrop);
-  function syncPosition() {
-    if (!anchorElement || !anchorElement.isConnected || !panel.isConnected) {
-      closeBattleShopChoiceMenu();
-      return;
-    }
-    var rect = anchorElement.getBoundingClientRect();
-    panel.style.left = Math.round(rect.left + rect.width / 2) + "px";
-    panel.style.top = Math.round(rect.bottom + 10) + "px";
-    panel.style.visibility = "";
-  }
-  syncPosition();
-  window.addEventListener("scroll", syncPosition, true);
-  window.addEventListener("resize", syncPosition);
-  battleShopChoiceCleanup = function() {
-    window.removeEventListener("scroll", syncPosition, true);
-    window.removeEventListener("resize", syncPosition);
-  };
+  battleShopChoiceCleanup = bindAnchoredPanel(panel, anchorElement, closeBattleShopChoiceMenu);
 }
 
 async function buyBattleShopOffer(offerKey, element) {

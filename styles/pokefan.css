@@ -153,6 +153,7 @@
   box-sizing: border-box;
   position: fixed;
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 8px;
   width: 260px;
   max-width: calc(var(--app-viewport-width) - 20px);
@@ -165,6 +166,7 @@
   background: var(--surface-raised);
   box-shadow: 0 10px 24px rgba(31, 37, 40, 0.16);
   backdrop-filter: blur(3px);
+  overflow: hidden;
 }
 
 .pokefan-choice-title {
@@ -177,11 +179,15 @@
 }
 
 .pokefan-choice-list {
+  box-sizing: border-box;
   display: grid;
+  align-content: start;
   gap: 6px;
   overflow-y: auto;
   min-height: 0;
-  padding-right: 4px;
+  padding: 0 4px 8px 0;
+  scroll-padding-bottom: 8px;
+  overscroll-behavior: contain;
 }
 
 .pokefan-choice-button {

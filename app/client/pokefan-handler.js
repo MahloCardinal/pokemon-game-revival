@@ -17,6 +17,7 @@ import { getCurrentPlayerState } from "../api/player-command.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { itemDisplayName, speciesDisplayName } from "./entity-text.js";
 import { getLocale, messageDescriptor, t } from "./i18n.js";
+import { bindAnchoredPanel } from "./anchored-panel.js";
 
 var pendingMissionChoice = null;
 var missionChoiceCleanup = null;
@@ -126,24 +127,7 @@ function openMissionChoiceMenu(anchorElement, mission) {
   backdrop.appendChild(panel);
   root.appendChild(backdrop);
 
-  function syncPosition() {
-    if (!anchorElement || !anchorElement.isConnected || !panel.isConnected) {
-      closeMissionChoiceMenu();
-      return;
-    }
-    var rect = anchorElement.getBoundingClientRect();
-    panel.style.left = Math.round(rect.left + rect.width / 2) + "px";
-    panel.style.top = Math.round(rect.bottom + 10) + "px";
-    panel.style.visibility = "";
-  }
-
-  syncPosition();
-  window.addEventListener("scroll", syncPosition, true);
-  window.addEventListener("resize", syncPosition);
-  missionChoiceCleanup = function () {
-    window.removeEventListener("scroll", syncPosition, true);
-    window.removeEventListener("resize", syncPosition);
-  };
+  missionChoiceCleanup = bindAnchoredPanel(panel, anchorElement, closeMissionChoiceMenu);
 }
 
 function showClaimError(message) {

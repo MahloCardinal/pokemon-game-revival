@@ -4,6 +4,12 @@
   margin: 0 auto;
   gap: 16px;
 }
+.training-zone-layout > .panel {
+  /* Chromium can expose a horizontal compositor-tile seam when a large
+     backdrop-filter surface scrolls over the fixed scene background. */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 .training-zone-panel .panel-inner {
   gap: 0;
   align-items: center;

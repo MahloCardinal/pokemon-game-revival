@@ -97,7 +97,7 @@ function renderBerryCatalog() {
     var groupItems = items.filter(Boolean);
     if (!groupItems.length) return "";
     return [
-      '<section class="garden-catalog-group">',
+      '<section class="panel garden-catalog-group">',
       '  <h2 class="garden-catalog-title">' + escapeHtml(title) + "</h2>",
       '  <div class="garden-catalog-grid">',
       groupItems.map(renderBerryCard).join(""),
@@ -178,7 +178,7 @@ function renderPlotsPanel() {
   }).join("");
 
   return [
-    '<section class="garden-plots-panel">',
+    '<section class="panel garden-plots-panel">',
     '  <h2 class="garden-plots-title">' + escapeHtml(t("ui.garden.plotsTitle")) + '</h2>',
     '  <div class="garden-plots-grid" data-garden-plots>',
     plotsHtml,
@@ -211,7 +211,7 @@ function renderDailyBerryPanel() {
   }
 
   return [
-    '<section class="garden-daily-panel">',
+    '<section class="panel garden-daily-panel">',
     '  <div class="garden-daily-row">',
     content,
     "  </div>",

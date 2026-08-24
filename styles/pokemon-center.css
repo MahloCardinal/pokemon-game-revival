@@ -597,10 +597,6 @@ button.pokemon-center-move-button:focus-visible {
     text-overflow: ellipsis;
   }
 
-  .scene-content-pokemon-center .panel {
-    backdrop-filter: none;
-  }
-
   .pokemon-center-choice-popup {
     width: min(260px, calc(100vw - 16px));
   }

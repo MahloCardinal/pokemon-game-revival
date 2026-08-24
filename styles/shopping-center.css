@@ -61,12 +61,6 @@
   margin: 0 auto;
   isolation: isolate;
 }
-.shopping-center-layout .panel {
-  backdrop-filter: none;
-}
-.shopping-center-top-row > .panel {
-  box-shadow: none;
-}
 .shopping-center-top-row {
   position: relative;
   z-index: 1;

@@ -504,3 +504,16 @@
 :where(.button, .move-button, .zone-card, .dialog, .panel, .summary-group, .empty-state) {
   backdrop-filter: blur(8px);
 }
+
+/* All scene panels share the Battle Shop surface contract, including the
+   inherited blur and elevation that would otherwise vary by screen. */
+.panel {
+  --panel: var(--surface-panel);
+  --shadow: var(--shadow-soft), 0 18px 45px rgba(61, 96, 128, 0.08);
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}

@@ -125,18 +125,6 @@
 }
 .capture-search-panel {
   height: var(--capture-card-min-height);
-  border-color: rgba(255, 255, 255, 0.56);
-  background: rgba(255, 255, 255, 0.58);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.48),
-    0 14px 30px rgba(31, 37, 40, 0.11);
-}
-.capture-info-panel {
-  border-color: rgba(255, 255, 255, 0.58);
-  background: rgba(255, 255, 255, 0.54);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.46),
-    0 14px 30px rgba(31, 37, 40, 0.1);
 }
 .capture-search-panel .panel-inner {
   box-sizing: border-box;

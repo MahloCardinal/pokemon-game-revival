@@ -1,8 +1,6 @@
 ﻿.auth-panel {
   margin: 0 auto;
   width: 100%;
-  border-radius: 18px;
-  box-shadow: none;
 }
 .auth-panel > .panel-inner {
   padding: 38px 34px 34px;

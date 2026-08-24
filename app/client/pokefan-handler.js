@@ -197,7 +197,7 @@ registerAction("pokefan-debug-complete-mission", async function (element) {
   var runtimeMission;
   var result;
   var playerState;
-  if (!requireNotInBattle() || false || !isDebugUser()) return;
+  if (!requireNotInBattle() || !isDebugUser()) return;
   if (state.missions.debugCompletingMissionIndex != null) return;
   missionIndex = Number(element.dataset.missionIndex);
   mission = missionCatalogByIndex(missionIndex);

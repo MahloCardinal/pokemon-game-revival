@@ -367,7 +367,7 @@ export function recoverPendingAuthoritativeDebugTrainingStart(options) {
   options = options || {};
   if (debugTrainingStartRecovery) { return debugTrainingStartRecovery; }
   var pending = readPendingDebugTrainingStart();
-  if (!pending || false) { return Promise.resolve(false); }
+  if (!pending) { return Promise.resolve(false); }
   state.battleStartPending = true;
   if (state.scene && state.scene.name === "training-zone") { render(); }
   debugTrainingStartRecovery = startAuthoritativeDebugTrainingBattle(pending).then(function (result) {

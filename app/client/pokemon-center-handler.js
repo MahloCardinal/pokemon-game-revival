@@ -251,7 +251,7 @@ registerAction("pokemon-center-tutor-move-pick", function(element) {
   var pokemon = state.team[pokemonIndex];
   var item = scene ? getResolvedInventoryItem(state.inventory, scene.itemIndex) : null;
   var candidate;
-  if (enforceBattleRuntimeSceneLock() || !scene || scene.name !== "pokemon-center" || !pokemon || !item || false) return;
+  if (enforceBattleRuntimeSceneLock() || !scene || scene.name !== "pokemon-center" || !pokemon || !item) return;
   if (!scene.pendingAction || scene.pendingAction.type !== "choose-tutor-move" || Number(scene.pendingAction.pokemonIndex) !== pokemonIndex) return;
   candidate = Engine.pokemonMoveTutorPool(pokemon).find(function (move) { return Number(move.index) === moveIndex; });
   if (!candidate) return;

@@ -275,9 +275,18 @@ assert.match(ordinaryBattleCommit, /create_terminal_ordinary_progression[\s\S]*p
 assert.match(ordinaryBattleCommit, /apply_ordinary_money_penalty[\s\S]*money_penalty/i);
 
 const adminBattleCommit = finalFunctionBody("public", "commit_edge_admin_gym_command");
-assert.match(adminBattleCommit, /edge_jsonb_bigint\(p_next_snapshot\s*->\s*'snapshotVersion'\)\s*=\s*2/i);
-assert.match(adminBattleCommit, /jsonb_set\(p_next_snapshot,\s*'\{snapshotVersion\}',\s*'1'::jsonb,\s*false\)/i);
-assert.match(adminBattleCommit, /set\s+engine_snapshot\s*=\s*p_next_snapshot,[\s\S]*engine_snapshot_hash\s*=\s*v_snapshot_hash/i);
+assert.doesNotMatch(adminBattleCommit, /legacy|v_commit_snapshot|snapshotVersion'\)\s*=\s*2|jsonb_set\(p_next_snapshot/i);
+assert.match(adminBattleCommit, /return\s+public\.commit_edge_admin_gym_command_before_snapshot\([\s\S]*p_next_snapshot/i);
+assert.doesNotMatch(adminBattleCommit, /v_snapshot_hash|set\s+engine_snapshot/i);
+
+const playerBattleCommit = finalFunctionBody("server_authority_private", "commit_edge_battle_command");
+assert.match(playerBattleCommit, /return\s+server_authority_private\.commit_edge_battle_command_before_snapshot\(/i);
+assert.doesNotMatch(playerBattleCommit, /before_revision_conflict_response|legacy|jsonb_set\(/i);
+assert.match(migrationSql, /drop function server_authority_private\.commit_edge_battle_command_before_revision_conflict_response/i);
+
+const captureFlee = finalFunctionBody("public", "flee_edge_capture_encounter");
+assert.match(captureFlee, /if not found or v_encounter\.status <> 'active'[\s\S]*'cancelled', false[\s\S]*if v_revision <> p_expected_player_revision/i);
+assert.doesNotMatch(captureFlee, /if not found then\s+raise exception 'encounter was not found'/i);
 
 const competitiveItemNames = Array.from(shoppingCenter.matchAll(
   /shopItem\(i\.([a-z0-9_]+), SHOPPING_CENTER_SECTIONS\.PORT, SHOPPING_CENTER_CATEGORIES\.COMPETITIVE,/g

@@ -168,7 +168,6 @@ export function applyAuthoritativeProjection(scene, projection, events) {
     if (entry.presentation_state && typeof entry.presentation_state === "object") {
       Object.assign(combatant, entry.presentation_state);
     }
-    restoreLegacyGonfioaromaOriginalTypes(combatant, entry.presentation_state);
     hydrateAuthoritativeMoveState(combatant, entry);
   });
   npcEntries.forEach(function (entry, index) {
@@ -179,7 +178,6 @@ export function applyAuthoritativeProjection(scene, projection, events) {
     if (entry.presentation_state && typeof entry.presentation_state === "object") {
       Object.assign(combatant, entry.presentation_state);
     }
-    restoreLegacyGonfioaromaOriginalTypes(combatant, entry.presentation_state);
     hydrateAuthoritativeMoveState(combatant, entry);
   });
   var manager = new Engine.BattleManager(playerTeam, enemyTeam);
@@ -284,19 +282,6 @@ export function applyAuthoritativeProjection(scene, projection, events) {
   appendAuthoritativeEventLines(scene, events);
   ensureBattleBindings(scene);
   return scene;
-}
-
-function restoreLegacyGonfioaromaOriginalTypes(combatant, presentationState) {
-  var inferredTypes;
-  if (!combatant || !combatant.entryAddedType || presentationState && Array.isArray(presentationState.originalTypes)) {
-    return;
-  }
-  inferredTypes = (combatant.type || []).filter(function (type) {
-    return type !== combatant.entryAddedType;
-  });
-  if (inferredTypes.length) {
-    combatant.originalTypes = inferredTypes;
-  }
 }
 
 function hydrateAuthoritativeMoveState(combatant, entry) {

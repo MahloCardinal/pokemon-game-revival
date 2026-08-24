@@ -166,12 +166,6 @@ function restoreCombatant(manager, combatant, snapshot) {
     origType: snapshot.transformationInfo.origType.slice(),
     origMoves: snapshot.transformationInfo.origMoves.map(restoreMove)
   } : null;
-  if (!Array.isArray(combatant.originalTypes) || !combatant.originalTypes.length) {
-    combatant.originalTypes = combatant.pokemon.type.slice();
-  }
-  if (!combatant.transformationInfo && Array.isArray(combatant.type) && combatant.type.length) {
-    combatant.pokemon.type = combatant.type.slice();
-  }
   combatant.moveKoTrigger = null;
   if (snapshot.runtimeState) {
     combatant._focusBandCharges = Number.isInteger(snapshot.runtimeState.focusBandCharges) ? snapshot.runtimeState.focusBandCharges : undefined;

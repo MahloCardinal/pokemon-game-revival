@@ -307,7 +307,7 @@ function captureWildPokemonForScene(scene) {
 
 function syncCaptureSceneToActiveEncounter(scene) {
   var encounter;
-  if (!scene || scene.name !== "capture" || false) {
+  if (!scene || scene.name !== "capture") {
     return;
   }
   encounter = captureEncounterForScene(scene);

@@ -7,7 +7,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
   effectiveness: Object.freeze({ super: "È superefficace!", weak: "Non è molto efficace." }),
   summary: Object.freeze({
     weather: "Meteo: {weather}", weatherTypes: Object.freeze({ sun: "giornata di sole", rain: "pioggia", sand: "tempesta di sabbia", hail: "grandine" }),
-    activePokemon: "Pokémon in campo: {pokemon}", alivePokemon: "Pokémon disponibili: {pokemon}", koPokemon: "Pokémon KO: {pokemon}", items: "Strumenti: {items}",
+    activePokemon: "Pokémon in campo: {pokemon}", alivePokemon: "Pokémon disponibili: {pokemon}", koPokemon: "Pokémon KO: {pokemon}", items: "Strumenti: {items}", type: "Tipo: {types}",
     percentage: "%: {value}", positive: "positiva", negative: "negativa", attackBuff: "+{value} Att", attackNerf: "-{value} Att", defenseBuff: "+{value} Dif", defenseNerf: "-{value} Dif", drowsy: "Assopito", pendingStatus: "Problema di stato in attesa: {turns}",
     status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Avv", brn: "Sco", frz: "Cong", slp: "Add {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
     doubleDamageNextTurn: "Danno x2 nel prossimo turno", repeatMove: "Ripete {move} {turns}/3", pendingMove: "{move} in corso", noDefenseBoost: "Nessun aumento Difesa",

@@ -7,7 +7,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
   effectiveness: Object.freeze({ super: "It's super effective!", weak: "It's not very effective." }),
   summary: Object.freeze({
     weather: "Weather: {weather}", weatherTypes: Object.freeze({ sun: "harsh sunlight", rain: "rain", sand: "sandstorm", hail: "hail" }),
-    activePokemon: "Active Pokémon: {pokemon}", alivePokemon: "Available Pokémon: {pokemon}", koPokemon: "Knocked-out Pokémon: {pokemon}", items: "Items: {items}",
+    activePokemon: "Active Pokémon: {pokemon}", alivePokemon: "Available Pokémon: {pokemon}", koPokemon: "Knocked-out Pokémon: {pokemon}", items: "Items: {items}", type: "Type: {types}",
     percentage: "%: {value}", positive: "positive", negative: "negative", attackBuff: "+{value} Atk", attackNerf: "-{value} Atk", defenseBuff: "+{value} Def", defenseNerf: "-{value} Def", drowsy: "Drowsy", pendingStatus: "Pending status: {turns}",
     status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Psn", brn: "Brn", frz: "Frz", slp: "Slp {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
     doubleDamageNextTurn: "Double damage next turn", repeatMove: "Repeats {move} {turns}/3", pendingMove: "{move} in progress", noDefenseBoost: "No Defense boost",

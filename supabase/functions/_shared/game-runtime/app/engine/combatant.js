@@ -4,6 +4,7 @@ import { createMove } from "./moves.js";
 export function Combatant(pokemon) {
   this.pokemon = pokemon;
   this.type = pokemon.type.slice();
+  this.originalTypes = pokemon.type.slice();
   this.hp = pokemon.maxHp;
   this.level = pokemon.level;
   this.team = null;
@@ -66,6 +67,18 @@ Combatant.prototype.isFainted = function () {
     this.resetAlsoKOModifiers();
   }
   return fainted;
+};
+
+Combatant.prototype.setPersistentType = function (types) {
+  var normalizedTypes = (Array.isArray(types) ? types : []).filter(function (type, index, entries) {
+    return Boolean(type) && entries.indexOf(type) === index;
+  }).slice(0, 2);
+  if (!normalizedTypes.length) {
+    return false;
+  }
+  this.type = normalizedTypes.slice();
+  this.pokemon.type = normalizedTypes.slice();
+  return true;
 };
 
 Combatant.prototype.resetSwitchModifiers = function () {

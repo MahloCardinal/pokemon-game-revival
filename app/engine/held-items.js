@@ -529,8 +529,8 @@ function applyEntryChoice(manager, context) {
     return Object.assign({}, context, { applied: true });
   }
   if (kind === "type") {
-    combatant.type = ["normal", selectedEntry.typeName || selectedEntry.name];
     combatant.entryAddedType = selectedEntry.typeName || selectedEntry.name;
+    combatant.setPersistentType(["normal", combatant.entryAddedType]);
     manager.emit(battleEvent("heldItem.addedType", {
       item: battleItemRef(heldItem), type: battleTypeRef(combatant.entryAddedType), pokemon: battleSpeciesRef(combatant)
     }));

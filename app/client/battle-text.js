@@ -96,7 +96,11 @@ function combatantText(entry) {
   if (entry.seeded) { parts.push(tag(t("battleText.summary.leechSeed", { amount: entry.seedValue }))); }
   if (entry.perishSongTurns) { parts.push(tag(t("battleText.summary.koInTurns", { turns: entry.perishSongTurns }))); }
   changedTypes = JSON.stringify(entry.currentTypes || []) !== JSON.stringify(entry.originalTypes || []);
-  if (changedTypes) { parts.push(tag((entry.currentTypes || []).map(typeDisplayName).join("/"))); }
+  if (changedTypes) {
+    parts.push(tag(t("battleText.summary.type", {
+      types: (entry.currentTypes || []).map(typeDisplayName).join("/")
+    })));
+  }
   return speciesDisplayName(entry.speciesKey) + " [" + entry.hp + "/" + entry.maxHp + "]" + parts.join("");
 }
 

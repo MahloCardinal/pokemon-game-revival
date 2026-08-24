@@ -29,7 +29,8 @@ function combatantSummary(combatant, isActive) {
     seeded: Boolean(combatant.seedTarget), seedValue: Number(combatant.seedValue) || 0,
     perishSongTurns: Number(combatant.perishSongTurns) || 0,
     currentTypes: Array.isArray(combatant.type) ? combatant.type.slice() : [],
-    originalTypes: Array.isArray(combatant.pokemon.type) ? combatant.pokemon.type.slice() : []
+    originalTypes: Array.isArray(combatant.originalTypes) ? combatant.originalTypes.slice()
+      : Array.isArray(combatant.pokemon.type) ? combatant.pokemon.type.slice() : []
   };
 }
 

@@ -317,7 +317,7 @@ const MoveDefinitions = moveDefinitionsModule.namespace;
 const itemDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/items.js", import.meta.url)));
 if (itemDefinitionsModule.status !== "evaluated") await itemDefinitionsModule.evaluate();
 const ItemDefinitions = itemDefinitionsModule.namespace;
-const { BattleManager, createMove, Pokemon, Team } = engineExports;
+const { BattleManager, buildBattleSummary, createMove, Pokemon, Team } = engineExports;
 
 function assertStableCatalogKeys(entries, expectedCount, label) {
   const keys = entries.map((entry) => entry.key);
@@ -409,6 +409,42 @@ function pursuitTestManager() {
     Math.random = originalRandom;
   }
   assert.equal(team.activeIndex, 2, "A missing switch preference must not force team slot zero");
+}
+
+{
+  const playerPokemon = pursuitTestPokemon("Rattata", [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })]);
+  const enemyPokemon = pursuitTestPokemon("Gastly", [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })]);
+  playerPokemon.heldItemIndex = ItemDefinitions.full_incense.index;
+  enemyPokemon.type = ["ghost", "poison"];
+  const manager = new BattleManager(new Team("Giocatore", [playerPokemon], 0), new Team("Avversario", [enemyPokemon], 0));
+  const combatant = manager.playerTeam.getActive();
+  const fireChoice = manager.entryHeldItemChoiceEntries(combatant).find((entry) => entry.typeName === "fire");
+  assert.ok(fireChoice, "Gonfioaroma must offer Fire as a second type");
+  assert.equal(manager.applyEntryHeldItemChoice(combatant, fireChoice), true);
+  assert.deepEqual(combatant.type, ["normal", "fire"]);
+  assert.deepEqual(combatant.pokemon.type, ["normal", "fire"], "Gonfioaroma must persist its type change in the battle Pokemon state");
+  assert.deepEqual(combatant.originalTypes, ["normal"], "The original species type must remain separate from the current type");
+  combatant.resetSwitchModifiers();
+  assert.deepEqual(combatant.type, ["normal", "fire"], "Gonfioaroma must persist after the Pokemon is withdrawn");
+  combatant.hp = 0;
+  assert.equal(combatant.isFainted(), true);
+  assert.deepEqual(combatant.type, ["normal", "fire"], "Gonfioaroma must persist after the Pokemon is knocked out");
+  const summary = buildBattleSummary(manager.playerTeam, manager.enemyTeam, {}, {}, manager);
+  const summaryEntry = summary[1].knockedOut[0];
+  assert.deepEqual(summaryEntry.currentTypes, ["normal", "fire"]);
+  assert.deepEqual(summaryEntry.originalTypes, ["normal"]);
+}
+
+{
+  const attacker = new Team("Giocatore", [pursuitTestPokemon("Porygon", [createMove(MoveDefinitions.conversion, { power: 0, stats: 0 })])], 0).getActive();
+  const defenderPokemon = pursuitTestPokemon("Gastly", [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })]);
+  defenderPokemon.type = ["ghost", "poison"];
+  const defender = new Team("Avversario", [defenderPokemon], 0).getActive();
+  MoveDefinitions.conversion.after(attacker, defender, true);
+  assert.deepEqual(attacker.type, ["ghost", "poison"]);
+  assert.deepEqual(attacker.originalTypes, ["normal"]);
+  attacker.resetSwitchModifiers();
+  assert.deepEqual(attacker.type, ["ghost", "poison"], "Conversion must persist after the Pokemon is withdrawn");
 }
 
 console.log("Revival baseline contract checks passed.");

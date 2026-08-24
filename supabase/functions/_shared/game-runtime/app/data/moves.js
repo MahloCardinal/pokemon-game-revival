@@ -1090,8 +1090,7 @@ export const camouflage = {
         description: "Changes the user to the opponent's type",
         after: function (attacker, defender, hit) {
           if (hit) {
-            attacker.type = defender.type.slice();
-            attacker.pokemon.type = defender.pokemon.type.slice();
+            attacker.setPersistentType(defender.type);
             this.resolvedType = defender.type[0] || null;
             this.logKey = "convers";
           } else {
@@ -1124,7 +1123,7 @@ export const conversion = {
         logKey: "convers",
         after: function (attacker, defender, hit) {
           if (hit) {
-            attacker.type = defender.type.slice();
+            attacker.setPersistentType(defender.type);
             this.resolvedType = defender.type[0] || null;
           } else {
             this.logKey = "fail";
@@ -1161,8 +1160,7 @@ export const conversion_2 = {
             this.logKey = "fail";
             return;
           }
-          attacker.type = [chosenType];
-          attacker.pokemon.type = [chosenType];
+          attacker.setPersistentType([chosenType]);
           this.logKey = "convers";
         }
       };

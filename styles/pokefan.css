@@ -11,6 +11,11 @@
   margin: 0;
 }
 
+.pokefan-layout > [data-render-region="pokefan-content"] {
+  display: grid;
+  gap: 28px;
+}
+
 .pokefan-sections-panel .panel-inner,
 .pokefan-missions-panel .panel-inner {
   display: grid;

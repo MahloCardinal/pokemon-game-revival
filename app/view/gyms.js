@@ -61,9 +61,9 @@ function renderGymRewards(rewards) {
   rewards = (rewards || []).filter(Boolean);
   if (!rewards.length) { return ""; }
   return [
-    '<section class="gym_rewards-panel">',
+    '<section class="gym-rewards-panel">',
     '  <h3 class="gym-section-title">' + escapeHtml(t("ui.gyms.rewardsTitle")) + "</h3>",
-    '  <div class="gym_reward-list">',
+    '  <div class="gym-reward-list">',
     rewards.map(function (reward) {
       var item = reward.kind === "item" ? getItemByIndex(reward.itemIndex) : null;
       var image = "";
@@ -185,7 +185,7 @@ function renderKantoLeagueTrainerPanel(member, index) {
     renderTrainerFlavorText(member.key),
     "      </div>",
     renderGymRewards(member.rewards),
-    renderGymChallengeLimits(member.challengeLimits, (member.extraLimits || []).concat([{ key: "adventure_requirement" }])),
+    renderGymChallengeLimits(member.challengeLimits, member.extraLimits),
     "    </div>",
     "  </div>",
     "</article>"
@@ -253,7 +253,7 @@ function renderCampioneKantoScene() {
     renderTrainerFlavorText(champion.key),
     "      </div>",
     renderGymRewards(champion.rewards),
-    renderGymChallengeLimits(champion.challengeLimits, (champion.extraLimits || []).concat([{ key: "adventure_requirement" }])),
+    renderGymChallengeLimits(champion.challengeLimits, champion.extraLimits),
     actionHtml,
     "    </div>",
     "  </div>",
@@ -293,7 +293,7 @@ export function renderGymCityScene(scene) {
       renderTrainerFlavorText(city.key),
       "      </div>",
       renderGymRewards(leader.rewards),
-      renderGymChallengeLimits(leader.challengeLimits, (leader.extraLimits || []).concat([{ key: "adventure_requirement" }])),
+      renderGymChallengeLimits(leader.challengeLimits, leader.extraLimits),
       renderGymChallengeAction(city, leader),
       "    </div>",
       "  </div>",

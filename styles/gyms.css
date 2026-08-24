@@ -1,7 +1,8 @@
 ﻿.gym-reward-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  justify-content: center;
+  gap: 14px;
 }
 .gym-city-card {
   --gym-theme-top: rgba(255, 255, 255, 0.34);
@@ -74,6 +75,7 @@
 .gym-badge-row {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   width: max-content;
   max-width: 100%;
@@ -83,6 +85,7 @@
   background: rgba(255, 255, 255, 0.48);
   font-size: 13px;
   font-weight: 700;
+  text-align: center;
 }
 
 .gym-theme-panel {

@@ -1,4 +1,4 @@
-import { TRAINING_ZONE_DEBUG_DIFFICULTY, TRAINING_ZONE_DIFFICULTIES, normalizeTrainingOpponentProfile, trainingAssignableLevelsForTeam, trainingDifficultyConfig, trainingOpponentLevel } from "../client/training-data.js";
+import { TRAINING_ZONE_DEBUG_DIFFICULTY, TRAINING_ZONE_DIFFICULTIES, normalizeTrainingOpponentProfile, trainingDifficultyConfig, trainingOpponentLevel } from "../client/training-data.js";
 import { isDebugUser, renderDebugPokemonCreatorPanel } from "../client/debug-tools.js";
 import { state } from "../client/game-state.js";
 import * as Engine from "../engine/index.js";
@@ -22,7 +22,7 @@ export function renderTrainingZoneScene() {
   var availableDifficulties = TRAINING_ZONE_DIFFICULTIES.concat(debugTrainingEnabled ? [TRAINING_ZONE_DEBUG_DIFFICULTY] : []);
   var rewardCards = availableDifficulties.map(function (difficulty) {
     var displayDifficulty = difficulty.debug ? difficulty : trainingDifficultyConfig(difficulty.key);
-    var assignableLevels = difficulty.debug ? 0 : trainingAssignableLevelsForTeam(state.team, displayDifficulty.expLevels);
+    var rewardLevels = difficulty.debug ? 0 : Math.max(0, Math.floor(Number(displayDifficulty.expLevels) || 0));
     var activeClass = difficulty.key === selectedDifficulty ? " is-selected" : "";
     var targetLevel = trainingOpponentLevel(state.team, difficulty.key);
     var prizeSection = difficulty.debug
@@ -31,7 +31,7 @@ export function renderTrainingZoneScene() {
         '  <span class="training-zone-prize-section">',
         '    <span class="training-zone-prize-title">' + escapeHtml(t(displayDifficulty.fullRewardAvailable ? "ui.trainingZone.fullDailyReward" : "ui.trainingZone.repeatedReward")) + '</span>',
         '    <span class="training-zone-prize-list">',
-        '      <span class="gym-badge-row training-zone-prize-row">' + escapeHtml(t("ui.trainingZone.levels", { count: assignableLevels })) + "</span>",
+        '      <span class="gym-badge-row training-zone-prize-row">' + escapeHtml(t("ui.trainingZone.levels", { count: rewardLevels })) + "</span>",
         '      <span class="gym-badge-row training-zone-prize-row">' + (battlePointsMarkup(displayDifficulty.battlePoints)) + "</span>",
         "    </span>",
         "  </span>"

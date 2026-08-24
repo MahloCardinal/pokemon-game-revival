@@ -59,7 +59,7 @@
   padding: 16px;
   border: 2px solid rgba(53, 93, 115, 0.42);
   border-radius: var(--radius-card);
-  background: rgba(247, 250, 252, 0.88);
+  background: var(--surface-raised);
   box-shadow: 3px 3px 0 rgba(61, 96, 128, 0.12);
 }
 .admin-dashboard-section-title {
@@ -80,7 +80,7 @@
   padding: 10px 12px;
   border: 1px solid rgba(53, 93, 115, 0.42);
   border-radius: var(--radius-card);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--surface-raised);
   color: var(--text);
   font-family: var(--game-font);
   font-size: 15px;
@@ -116,7 +116,7 @@
   z-index: 1;
   width: 100%;
   min-height: 72px;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--surface-raised);
 }
 .admin-battle-row {
   display: grid;
@@ -124,7 +124,7 @@
   padding: 18px;
   border: 2px solid rgba(33, 46, 52, 0.22);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.36);
+  background: var(--surface-panel);
 }
 .admin-battle-row p,
 .admin-battle-row h3 {

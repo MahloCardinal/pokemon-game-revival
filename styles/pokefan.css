@@ -203,11 +203,11 @@
 }
 
 .pokefan-choice-button:hover {
-  background: rgba(232, 245, 255, 0.96);
+  background: var(--surface-raised);
   box-shadow: var(--shadow-soft-hover), 0 7px 14px rgba(61, 96, 128, 0.12);
 }
 .pokefan-choice-button:focus-visible {
-  background: rgba(232, 245, 255, 0.96);
+  background: var(--surface-raised);
   outline: none;
   box-shadow: var(--focus-ring);
 }

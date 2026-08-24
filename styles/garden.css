@@ -170,7 +170,7 @@ button.garden-berry-card:focus-visible:not(:disabled) {
   padding: 16px;
   border: 1px solid rgba(31, 37, 40, 0.14);
   border-radius: var(--radius-card);
-  background: rgba(255, 251, 245, 0.52);
+  background: var(--surface-panel);
   box-shadow: 0 12px 26px rgba(31, 37, 40, 0.07);
 }
 
@@ -262,7 +262,7 @@ button.garden-berry-card:focus-visible:not(:disabled) {
   padding: 16px;
   border: 1px solid rgba(31, 37, 40, 0.14);
   border-radius: var(--radius-card);
-  background: rgba(255, 251, 245, 0.52);
+  background: var(--surface-panel);
   box-shadow: 0 12px 26px rgba(31, 37, 40, 0.07);
 }
 

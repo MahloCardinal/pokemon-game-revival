@@ -26,7 +26,7 @@
 .home-activity-panel.is-admin-panel {
   flex: 2;
   border-color: rgba(126, 70, 70, 0.55);
-  background: #fffafa;
+  background: rgba(255, 250, 250, 0.90);
 }
 .home-activity-header {
   margin: 0;

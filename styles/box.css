@@ -100,7 +100,7 @@
   padding: 22px 16px 22px 22px;
   border-radius: var(--radius-panel);
   border: 1px solid var(--border-strong);
-  background: var(--surface-page);
+  background: var(--surface-panel);
 }
 @media (max-width: 1150px) {
   .box-pokemon-grid .pokemon-card {

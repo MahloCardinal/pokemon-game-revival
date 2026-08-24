@@ -1,7 +1,7 @@
 import { registerAction } from "./action-registry.js";
 import { createCaptureScene } from "./router.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
-import { markDirty, render, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
+import { markDirty, render, renderDialogLayer, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
 import { applyPlayerSave, state, root } from "./game-state.js";
 import { getInventoryItemByIndex, getItemByIndex, resolveInventoryItems, updateInventoryQuantity, ItemCategory, ItemSubcategory, isPlayerBattleInventoryItem, revive, max_revive } from "../data/items.js";
 import * as Engine from "../engine/index.js";
@@ -504,6 +504,9 @@ function applyAuthoritativeBattleCommandResult(scene, result) {
     setBattleAnimationLock(false);
     refreshDeferredAuthoritativeScene(scene, commandResetsBattleScroll(result.events));
     render({ preserveScroll: commandResetsBattleScroll(result.events) ? false : true, scrollBattleLogToBottom: true });
+    if (scene.authoritativeEntryChoice) {
+      openPendingBattleEntryChoice(scene);
+    }
     if (scene.authoritativeCapture && failedBall && !scene.manager.battleOver) {
       openMessage([battleText("ballEscaped")], {
         title: battleTitle("capture"), closeLabel: "Ok", closeClass: "button-accent", scrollBattleLogToBottom: true
@@ -1525,6 +1528,26 @@ registerAction("battle-start-target", function (element) {
 
 registerAction("battle-start-target-close", function () {
   closeBattleStartTargetPanel();
+});
+
+registerAction("battle-entry-choice-pick", function (element) {
+  var dialog = state.dialog;
+  var index = Number(element.dataset.index);
+  if (!dialog || dialog.type !== "battle-entry-choice" || typeof dialog.onPick !== "function"
+    || !Number.isInteger(index)) {
+    return;
+  }
+  state.dialog = null;
+  renderDialogLayer();
+  dialog.onPick(index);
+});
+
+registerAction("battle-entry-choice-cancel", function () {
+  if (!state.dialog || state.dialog.type !== "battle-entry-choice" || !state.dialog.canCancel) {
+    return;
+  }
+  state.dialog = null;
+  renderDialogLayer();
 });
 
 registerAction("open-active-battle", function () {
@@ -3560,35 +3583,48 @@ function openPostMoveSwitchDialog(scene) {
   });
 }
 
-function battleEntryChoiceTitle(kind) {
-  if (kind === "move") {
-    return battleText("chooseMoveToBlock");
-  }
-  if (kind === "type") {
-    return battleText("chooseSecondType");
-  }
-  return battleText("choose");
+function localizedBattleEntryChoiceEntries(kind, entries) {
+  return (entries || []).map(function (entry) {
+    return Object.assign({}, entry, {
+      name: kind === "move" ? moveDisplayName(entry) : typeDisplayName(entry.key || entry.typeName)
+    });
+  });
 }
 
-function battleEntryChoiceAnchor(element) {
-  return element || root.querySelector(".battle-field-panel .pokemon-card-battle-active") || root;
+function openBattleEntryChoiceDialog(scene, combatant, choice, onPick, options) {
+  var kind = String(choice && choice.kind || "");
+  var entries = localizedBattleEntryChoiceEntries(kind, choice && choice.entries);
+  var heldItem = combatant ? Engine.getActiveHeldItem(combatant) : null;
+  if (!scene || !combatant || !heldItem || ["move", "type"].indexOf(kind) === -1 || !entries.length
+    || typeof onPick !== "function") {
+    return false;
+  }
+  state.dialog = {
+    type: "battle-entry-choice",
+    battleLockScene: scene.name,
+    kind: kind,
+    item: heldItem,
+    pokemon: combatant.pokemon,
+    entries: entries,
+    canCancel: Boolean(options && options.canClose),
+    onPick: onPick
+  };
+  // Opening the choice can coincide with the asynchronous scene transition.
+  // A complete render invalidates that pending render and keeps the mandatory
+  // choice attached to the new battle scene instead of the previous page.
+  render();
+  return true;
 }
 
-function openBattleEntryChoicePanel(scene, combatant, anchorElement, onPick, options) {
+function openBattleEntryChoicePanel(scene, combatant, _anchorElement, onPick, options) {
   var kind = scene && scene.manager ? scene.manager.entryHeldItemChoiceKind(combatant) : "";
-  var entries = kind ? scene.manager.entryHeldItemChoiceEntries(combatant).map(function (entry) {
-    return Object.assign({}, entry, { name: kind === "move" ? moveDisplayName(entry) : typeDisplayName(entry.key) });
-  }) : [];
+  var entries = kind ? scene.manager.entryHeldItemChoiceEntries(combatant) : [];
   if (!kind || !entries.length) {
     return false;
   }
-  openBattleStartTargetPanel(battleEntryChoiceAnchor(anchorElement), entries, function (choiceIndex) {
+  return openBattleEntryChoiceDialog(scene, combatant, { kind: kind, entries: entries }, function (choiceIndex) {
     onPick({ index: Number(choiceIndex), kind: kind });
-  }, {
-    title: battleEntryChoiceTitle(kind),
-    canClose: options && options.canClose
-  });
-  return true;
+  }, options);
 }
 
 function completeInitialBattleEntry(scene, entryChoice) {
@@ -3637,14 +3673,13 @@ export function openPendingBattleEntryChoice(scene) {
     if (!authoritativeChoice || !Array.isArray(authoritativeChoice.entries) || !authoritativeChoice.entries.length) {
       return false;
     }
-    openBattleStartTargetPanel(battleEntryChoiceAnchor(null), authoritativeChoice.entries, function (choiceIndex) {
+    return openBattleEntryChoiceDialog(scene, combatant, authoritativeChoice, function (choiceIndex) {
       authoritativeBattleCommand(scene, function (input) {
         return resolveAuthoritativeBattleEntryChoice(Object.assign(input, {
           entryChoice: { index: Number(choiceIndex), kind: String(authoritativeChoice.kind || "") }
         }));
       });
-    }, { title: battleEntryChoiceTitle(authoritativeChoice.kind), canClose: false });
-    return true;
+    }, { canClose: false });
   }
   panelOpened = openBattleEntryChoicePanel(scene, combatant, null, function (entryChoice) {
     runBattleRuntimeAction(function () {

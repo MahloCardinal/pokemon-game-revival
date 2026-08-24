@@ -1,5 +1,5 @@
 import { trainerSpriteByIndex } from "../data/trainers.js";
-import { assetPath, escapeHtml, getGenderImage, getPokemonImage, getTrainerImage, renderImage, withPokemonSpriteAttrs, withPokemonSpriteClass, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
+import { assetPath, escapeHtml, getGenderImage, getItemImage, getPokemonImage, getTrainerImage, renderImage, withPokemonSpriteAttrs, withPokemonSpriteClass, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
 import { button } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { itemDisplayName, moveDisplayDescription, moveDisplayName, pokemonDisplayName, speciesDisplayName } from "../client/entity-text.js";
@@ -380,6 +380,37 @@ function renderKantoLeagueEntryDialog(dialog) {
   ].join("");
 }
 
+function renderBattleEntryChoiceDialog(dialog) {
+  var itemName = itemDisplayName(dialog.item);
+  var pokemonName = pokemonDisplayName(dialog.pokemon);
+  var isMoveChoice = dialog.kind === "move";
+  var choices = (dialog.entries || []).map(function (entry) {
+    return '<button type="button" class="battle-entry-choice-option" data-action="battle-entry-choice-pick" data-index="' + escapeHtml(entry.index) + '" data-choice-kind="' + escapeHtml(dialog.kind) + '"><span>'
+      + escapeHtml(entry.name) + "</span></button>";
+  }).join("");
+  return [
+    '<div class="dialog-backdrop">',
+    '  <section class="dialog battle-entry-choice-dialog" role="dialog" aria-modal="true" aria-labelledby="battle-entry-choice-title">',
+    '    <div class="battle-entry-choice-heading">',
+    renderImage(getItemImage(dialog.item && dialog.item.image), itemName, "battle-entry-choice-item-image", 'loading="eager" decoding="async"'),
+    '      <div class="battle-entry-choice-heading-copy">',
+    '        <span class="battle-entry-choice-eyebrow">' + escapeHtml(t("ui.dialogs.heldItemChoice")) + "</span>",
+    '        <h2 class="dialog-title" id="battle-entry-choice-title">' + escapeHtml(itemName) + "</h2>",
+    "      </div>",
+    "    </div>",
+    '    <div class="dialog-copy battle-entry-choice-copy"><p>' + escapeHtml(t(isMoveChoice
+      ? "ui.dialogs.entryDisableMovePrompt" : "ui.dialogs.entryAddTypePrompt", { pokemon: pokemonName, item: itemName })) + "</p></div>",
+    '    <h3 class="battle-entry-choice-subtitle">' + escapeHtml(t(isMoveChoice
+      ? "ui.dialogs.chooseMoveToBlock" : "ui.dialogs.chooseSecondType")) + "</h3>",
+    '    <div class="battle-entry-choice-list" data-choice-kind="' + escapeHtml(dialog.kind) + '">' + choices + "</div>",
+    dialog.canCancel
+      ? '    <div class="dialog-actions">' + button(t("ui.dialogs.cancel"), "battle-entry-choice-cancel", "", "button-dark") + "</div>"
+      : '    <p class="battle-entry-choice-required">' + escapeHtml(t("ui.dialogs.entryChoiceRequired")) + "</p>",
+    "  </section>",
+    "</div>"
+  ].join("");
+}
+
 export function renderDialog(dialog) {
   if (!dialog) {
     return "";
@@ -428,6 +459,9 @@ export function renderDialog(dialog) {
   }
   if (dialog.type === "kanto-league-entry") {
     return renderKantoLeagueEntryDialog(dialog);
+  }
+  if (dialog.type === "battle-entry-choice") {
+    return renderBattleEntryChoiceDialog(dialog);
   }
   return "";
 }

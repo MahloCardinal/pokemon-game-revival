@@ -1,9 +1,6 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- Palestre: etichette premi della sfida sono fuori asse e troppo vicine; eliminare da "Limitazioni per la sfida" la voce sulla Missioni
-- Giardino: centrare titolo nei vari panel
-- Club Pokefan: mettere più spazio tra il panel delle sottosezioni e quello delle tabelle
 - correggere Bizzoaroma/Gonfioaroma
 - diminuire catch-rate delle pokeball
 - bilanciamento team palestre

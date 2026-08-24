@@ -404,7 +404,13 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     changeSelection: "Change selection",
     eliteFour: "Elite Four",
     startChallenge: "Begin your challenge with {trainer}!",
-    chooseLeadPokemon: "Choose the Pokémon to send out"
+    chooseLeadPokemon: "Choose the Pokémon to send out",
+    heldItemChoice: "Held item",
+    entryDisableMovePrompt: "{pokemon} enters the battle holding {item}. Choose which opposing move to disable.",
+    entryAddTypePrompt: "{pokemon} enters the battle holding {item}. Choose the second type to add until the challenge ends.",
+    chooseMoveToBlock: "Opposing move to disable",
+    chooseSecondType: "Second type to add",
+    entryChoiceRequired: "The battle will continue after you make a choice."
   }),
   rules: Object.freeze({
     sceneTitle: "Rules",

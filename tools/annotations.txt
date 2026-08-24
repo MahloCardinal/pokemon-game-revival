@@ -1,9 +1,8 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- euristica zona allenamento: i bot non devono usare strumenti
 - Palestre: etichette premi della sfida sono fuori asse e troppo vicine; eliminare da "Limitazioni per la sfida" la voce sulla Missioni
-- Giardino: centrare titolo nei vari panel; diminuire la trasparenza al panel della bacca giornaliera, per renderlo come quello di presentazione
+- Giardino: centrare titolo nei vari panel
 - Club Pokefan: mettere più spazio tra il panel delle sottosezioni e quello delle tabelle
 - correggere Bizzoaroma/Gonfioaroma
 - diminuire catch-rate delle pokeball

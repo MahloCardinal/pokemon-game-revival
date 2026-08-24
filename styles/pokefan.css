@@ -13,7 +13,7 @@
 
 .pokefan-layout > [data-render-region="pokefan-content"] {
   display: grid;
-  gap: 28px;
+  gap: 10px;
 }
 
 .pokefan-sections-panel .panel-inner,

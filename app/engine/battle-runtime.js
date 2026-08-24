@@ -363,7 +363,7 @@ export function initializeBattleRuntime(input) {
   manager.waitingFor = manager.adminControlled && manager.firstActor === "npc" ? "admin" : "player";
   manager.npcItems = manager.adminControlled && Array.isArray(input.adminItems)
     ? input.adminItems.map(function (entry) { return [Number(entry[0]), Math.min(3, Math.max(0, Number(entry[1]) || 0))]; }).filter(function (entry) { return entry[1] > 0; })
-    : authoritativeNpcItemsForBattle({ contractKey: manager.battleType, trainingDifficulty: manager.trainingDifficulty, gymKey: input.gymKey });
+    : authoritativeNpcItemsForBattle({ contractKey: manager.battleType, gymKey: input.gymKey });
   manager.presentation = presentation;
   var initialized = withDeterministicRng(rngState, function () { manager.startInitialEntry(); });
   return serializeBattleManager(manager, initialized.rngState, { playerItems: input.playerItems || [], presentation: presentation });

@@ -32,14 +32,9 @@ var AUTOMATIC_NPC_ITEMS = [
   max_revive
 ];
 
-function reviveCounts(contractKey, trainingDifficulty, gymKey) {
+function reviveCounts(contractKey, gymKey) {
   var gym;
   var badgeIndex;
-  if (contractKey === "training") {
-    if (trainingDifficulty === "easy" || trainingDifficulty === "medium") { return [1, 1]; }
-    if (trainingDifficulty === "hard") { return [2, 2]; }
-    return null;
-  }
   if (contractKey !== "gym") {
     return null;
   }
@@ -55,7 +50,7 @@ function reviveCounts(contractKey, trainingDifficulty, gymKey) {
 export function authoritativeNpcItemsForBattle(input) {
   input = input || {};
   var contractKey = String(input.contractKey || "");
-  var counts = reviveCounts(contractKey, String(input.trainingDifficulty || ""), String(input.gymKey || ""));
+  var counts = reviveCounts(contractKey, String(input.gymKey || ""));
   if (!counts) {
     return [];
   }

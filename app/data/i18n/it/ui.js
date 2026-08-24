@@ -404,13 +404,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     changeSelection: "Cambia scelta",
     eliteFour: "Superquattro",
     startChallenge: "Inizia la tua sfida con {trainer}!",
-    chooseLeadPokemon: "Scegli il Pokémon da mandare in campo",
-    heldItemChoice: "Strumento tenuto",
-    entryDisableMovePrompt: "{pokemon} entra in campo con {item}. Scegli quale mossa avversaria bloccare.",
-    entryAddTypePrompt: "{pokemon} entra in campo con {item}. Scegli il secondo tipo da aggiungere fino alla fine della sfida.",
-    chooseMoveToBlock: "Mossa avversaria da bloccare",
-    chooseSecondType: "Secondo tipo da aggiungere",
-    entryChoiceRequired: "La battaglia proseguirà dopo la scelta."
+    chooseLeadPokemon: "Scegli il Pokémon da mandare in campo"
   }),
   rules: Object.freeze({
     sceneTitle: "Regolamento",
@@ -444,6 +438,12 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     cancelBattle: "Cancella sfida",
     abandon: "Abbandona scontro",
     chooseHeldEffect: "Scegli l'effetto dello strumento tenuto.",
+    heldItemChoice: "Strumento tenuto",
+    entryDisableMovePrompt: "{pokemon} entra in campo con {item}. Scegli quale mossa avversaria bloccare.",
+    entryAddTypePrompt: "{pokemon} entra in campo con {item}. Scegli il secondo tipo da aggiungere fino alla fine della sfida.",
+    chooseMoveToBlock: "Mossa avversaria da bloccare",
+    chooseSecondType: "Secondo tipo da aggiungere",
+    entryChoiceRequired: "La battaglia proseguirà dopo la scelta.",
     registerRewards: "Registra premi",
     exit: "Esci",
     rewardsRegistered: "Premi già registrati.",

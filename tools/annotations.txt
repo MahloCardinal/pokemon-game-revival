@@ -1,7 +1,6 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- correggere Bizzoaroma/Gonfioaroma
 - diminuire catch-rate delle pokeball
 - bilanciamento team palestre
 - inserire i 'Titoli' (es. 'Campione della Lega di Kanto')

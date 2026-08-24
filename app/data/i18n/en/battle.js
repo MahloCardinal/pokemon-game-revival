@@ -11,7 +11,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
     percentage: "%: {value}", positive: "positive", negative: "negative", attackBuff: "+{value} Atk", attackNerf: "-{value} Atk", defenseBuff: "+{value} Def", defenseNerf: "-{value} Def", drowsy: "Drowsy", pendingStatus: "Pending status: {turns}",
     status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Psn", brn: "Brn", frz: "Frz", slp: "Slp {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
     doubleDamageNextTurn: "Double damage next turn", repeatMove: "Repeats {move} {turns}/3", pendingMove: "{move} in progress", noDefenseBoost: "No Defense boost",
-    endure: "Endures until next turn", itemLocked: "Held item disabled", disabledMoves: "{moves} disabled", trapped: "Trapped", trappedTurns: "Trapped {turns}/4",
+    endure: "Endures until next turn", itemLocked: "Held item disabled", disabledMoves: "Disabled: {moves}", trapped: "Trapped", trappedTurns: "Trapped {turns}/4",
     leechSeed: "Leech Seed (-{amount})", koInTurns: "Knocked out in {turns} turns", noStatNerfs: "No stat reductions {turns}/5",
     noMoveBoosts: "No opposing move boosts {turns}/{max}", noStatus: "No status conditions {turns}/5", noSleep: "Sleep immunity {turns}/5",
     wishNextTurn: "Wish triggers in 1 turn", futureMove: "{move} strikes in {turns} turns"

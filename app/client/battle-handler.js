@@ -1,7 +1,7 @@
 import { registerAction } from "./action-registry.js";
 import { createCaptureScene } from "./router.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
-import { markDirty, render, renderDialogLayer, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
+import { markDirty, render, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
 import { applyPlayerSave, state, root } from "./game-state.js";
 import { getInventoryItemByIndex, getItemByIndex, resolveInventoryItems, updateInventoryQuantity, ItemCategory, ItemSubcategory, isPlayerBattleInventoryItem, revive, max_revive } from "../data/items.js";
 import * as Engine from "../engine/index.js";
@@ -1531,23 +1531,24 @@ registerAction("battle-start-target-close", function () {
 });
 
 registerAction("battle-entry-choice-pick", function (element) {
-  var dialog = state.dialog;
+  var scene = state.scene;
+  var panel = scene && scene.battleEntryChoicePanel;
   var index = Number(element.dataset.index);
-  if (!dialog || dialog.type !== "battle-entry-choice" || typeof dialog.onPick !== "function"
-    || !Number.isInteger(index)) {
+  if (!panel || typeof panel.onPick !== "function" || !Number.isInteger(index)) {
     return;
   }
-  state.dialog = null;
-  renderDialogLayer();
-  dialog.onPick(index);
+  scene.battleEntryChoicePanel = null;
+  render();
+  panel.onPick(index);
 });
 
 registerAction("battle-entry-choice-cancel", function () {
-  if (!state.dialog || state.dialog.type !== "battle-entry-choice" || !state.dialog.canCancel) {
+  var scene = state.scene;
+  if (!scene || !scene.battleEntryChoicePanel || !scene.battleEntryChoicePanel.canCancel) {
     return;
   }
-  state.dialog = null;
-  renderDialogLayer();
+  scene.battleEntryChoicePanel = null;
+  render();
 });
 
 registerAction("open-active-battle", function () {
@@ -3591,7 +3592,7 @@ function localizedBattleEntryChoiceEntries(kind, entries) {
   });
 }
 
-function openBattleEntryChoiceDialog(scene, combatant, choice, onPick, options) {
+function openBattleEntryChoiceOverlay(scene, combatant, choice, onPick, options) {
   var kind = String(choice && choice.kind || "");
   var entries = localizedBattleEntryChoiceEntries(kind, choice && choice.entries);
   var heldItem = combatant ? Engine.getActiveHeldItem(combatant) : null;
@@ -3599,9 +3600,7 @@ function openBattleEntryChoiceDialog(scene, combatant, choice, onPick, options) 
     || typeof onPick !== "function") {
     return false;
   }
-  state.dialog = {
-    type: "battle-entry-choice",
-    battleLockScene: scene.name,
+  scene.battleEntryChoicePanel = {
     kind: kind,
     item: heldItem,
     pokemon: combatant.pokemon,
@@ -3609,9 +3608,8 @@ function openBattleEntryChoiceDialog(scene, combatant, choice, onPick, options) 
     canCancel: Boolean(options && options.canClose),
     onPick: onPick
   };
-  // Opening the choice can coincide with the asynchronous scene transition.
-  // A complete render invalidates that pending render and keeps the mandatory
-  // choice attached to the new battle scene instead of the previous page.
+  // A complete render invalidates any pending scene transition and places the
+  // choice inside the player's battle card, preserving the battle context.
   render();
   return true;
 }
@@ -3622,7 +3620,7 @@ function openBattleEntryChoicePanel(scene, combatant, _anchorElement, onPick, op
   if (!kind || !entries.length) {
     return false;
   }
-  return openBattleEntryChoiceDialog(scene, combatant, { kind: kind, entries: entries }, function (choiceIndex) {
+  return openBattleEntryChoiceOverlay(scene, combatant, { kind: kind, entries: entries }, function (choiceIndex) {
     onPick({ index: Number(choiceIndex), kind: kind });
   }, options);
 }
@@ -3673,7 +3671,7 @@ export function openPendingBattleEntryChoice(scene) {
     if (!authoritativeChoice || !Array.isArray(authoritativeChoice.entries) || !authoritativeChoice.entries.length) {
       return false;
     }
-    return openBattleEntryChoiceDialog(scene, combatant, authoritativeChoice, function (choiceIndex) {
+    return openBattleEntryChoiceOverlay(scene, combatant, authoritativeChoice, function (choiceIndex) {
       authoritativeBattleCommand(scene, function (input) {
         return resolveAuthoritativeBattleEntryChoice(Object.assign(input, {
           entryChoice: { index: Number(choiceIndex), kind: String(authoritativeChoice.kind || "") }

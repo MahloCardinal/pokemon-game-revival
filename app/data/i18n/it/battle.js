@@ -11,7 +11,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
     percentage: "%: {value}", positive: "positiva", negative: "negativa", attackBuff: "+{value} Att", attackNerf: "-{value} Att", defenseBuff: "+{value} Dif", defenseNerf: "-{value} Dif", drowsy: "Assopito", pendingStatus: "Problema di stato in attesa: {turns}",
     status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Avv", brn: "Sco", frz: "Cong", slp: "Add {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
     doubleDamageNextTurn: "Danno x2 nel prossimo turno", repeatMove: "Ripete {move} {turns}/3", pendingMove: "{move} in corso", noDefenseBoost: "Nessun aumento Difesa",
-    endure: "Resiste fino al prossimo turno", itemLocked: "Strumento bloccato", disabledMoves: "{moves} bloccate", trapped: "Intrappolato", trappedTurns: "Intrappolato {turns}/4",
+    endure: "Resiste fino al prossimo turno", itemLocked: "Strumento bloccato", disabledMoves: "Bloccata: {moves}", trapped: "Intrappolato", trappedTurns: "Intrappolato {turns}/4",
     leechSeed: "Parassiseme (-{amount})", koInTurns: "KO tra {turns} turni", noStatNerfs: "Nessuna riduzione statistiche {turns}/5",
     noMoveBoosts: "Nessun potenziamento mosse avversarie {turns}/{max}", noStatus: "Nessun problema di stato {turns}/5", noSleep: "Immunità al sonno {turns}/5",
     wishNextTurn: "Desiderio si avvera tra 1 turno", futureMove: "{move} colpirà tra {turns} turni"

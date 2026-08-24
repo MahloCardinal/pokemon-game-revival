@@ -12,6 +12,15 @@ import { localizeBattleSummary, resolveBattleEvent } from "../client/battle-text
 
 var TEAM_MAX = Engine.TEAM_MAX;
 
+function pokemonForBattleCard(combatant) {
+  var struggleState = (combatant && combatant.moveStates || []).find(function (stateEntry) {
+    return stateEntry.enabled && stateEntry.move && stateEntry.move.key === "struggle";
+  });
+  return struggleState
+    ? Object.assign({}, combatant.pokemon, { moves: [struggleState.move] })
+    : combatant.pokemon;
+}
+
 function renderMiniCombatant(combatant, isActive, options) {
   options = options || {};
   var className = "mini-card";
@@ -34,7 +43,7 @@ function renderMiniCombatant(combatant, isActive, options) {
     statusLabel = t("ui.battle.active");
   }
 
-  return renderPokemonCardFrame(renderPokemonCard(combatant.pokemon, {
+  return renderPokemonCardFrame(renderPokemonCard(pokemonForBattleCard(combatant), {
     className: className,
     currentHp: combatant.hp
   }), {
@@ -48,6 +57,7 @@ function renderBattleSlot(combatant, title, showMoves, options) {
   options = options || {};
   var moveMarkup = "";
   var moveStates = combatant && combatant.moveStates || [];
+  var visibleMoveStates = moveStates;
   var battleHpMarkup = combatant ? '<div class="pokemon-card-hp battle-active-hp" data-battle-hp-team="' + (options.ownTeam && combatant.team === options.ownTeam ? "own" : "enemy") + '" data-battle-hp-index="' + escapeHtml(combatant.team ? combatant.team.combatantList.indexOf(combatant) : 0) + '">' + hpMarkup(combatant.hp, combatant.pokemon.maxHp) + "</div>" : "";
   function renderSlot(cardMarkup) {
     return [
@@ -66,7 +76,15 @@ function renderBattleSlot(combatant, title, showMoves, options) {
     ].join(""));
   }
   if (moveStates.length) {
-    moveMarkup = moveStates.map(function (stateEntry, index) {
+    if (moveStates.some(function (stateEntry) {
+      return stateEntry.enabled && stateEntry.move && stateEntry.move.key === "struggle";
+    })) {
+      visibleMoveStates = moveStates.filter(function (stateEntry) {
+        return stateEntry.move && stateEntry.move.key === "struggle";
+      });
+    }
+    moveMarkup = visibleMoveStates.map(function (stateEntry) {
+      var index = Number.isInteger(stateEntry.idx) ? stateEntry.idx : moveStates.indexOf(stateEntry);
       var description = moveDisplayDescription(stateEntry.move);
       var moveContent = '<span class="move-name">' + escapeHtml(moveDisplayName(stateEntry.move)) + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span>";
       var weatherBlocked = options.manager && options.manager.isWeatherMoveBlocked(options.moveActor, stateEntry.move);
@@ -76,7 +94,7 @@ function renderBattleSlot(combatant, title, showMoves, options) {
         return '<button type="button" class="move-button battle-move-preview' + (disabled ? " is-disabled" : "") + '" disabled>' + moveContent + "</button>";
       }
 
-      return '<button type="button" class="move-button ' + (disabled ? "is-disabled" : "") + '" data-action="' + escapeHtml(options.moveAction || "battle-move") + '" data-index="' + index + '" ' + (disabled ? "disabled" : "") + ">" + moveContent + "</button>";
+      return '<button type="button" class="move-button ' + (disabled ? "is-disabled" : "") + '" data-action="' + escapeHtml(options.moveAction || "battle-move") + '" data-index="' + escapeHtml(index) + '" ' + (disabled ? "disabled" : "") + ">" + moveContent + "</button>";
     }).join("");
   }
 
@@ -118,7 +136,10 @@ function renderBattleLog(logEntries, scene) {
           lines: []
         };
       }
-      currentGroup.lines.push(resolveBattleEvent(entry, scene));
+      currentGroup.lines.push({
+        text: resolveBattleEvent(entry, scene),
+        team: entry.key === "turn.started"
+      });
       return;
     }
     if (!currentGroup) {
@@ -128,7 +149,7 @@ function renderBattleLog(logEntries, scene) {
         lines: []
       };
     }
-    currentGroup.lines.push(resolveBattleEvent(entry, scene));
+    currentGroup.lines.push({ text: resolveBattleEvent(entry, scene), team: false });
   });
 
   flushGroup();
@@ -141,11 +162,10 @@ function renderBattleLog(logEntries, scene) {
     return [
       '<div class="log-line log-turn-group">',
       group.title ? '<p class="log-turn-title">' + escapeHtml(group.title) + "</p>" : "",
-      group.lines.map(function (line, index) {
-        var className = index === 0
-          ? "log-turn-entry log-turn-team"
-          : "log-turn-entry";
-        return '<p class="' + className + '">' + escapeHtml(line) + "</p>";
+      group.lines.map(function (line) {
+        var className = line.team ? "log-turn-entry log-turn-team" : "log-turn-entry";
+        var content = escapeHtml(line.text);
+        return '<p class="' + className + '">' + (line.team ? "<strong>" + content + "</strong>" : content) + "</p>";
       }).join(""),
       "</div>"
     ].join("");
@@ -167,18 +187,45 @@ export function renderBattleScene(scene) {
     var choices = Array.from({ length: TEAM_MAX }, function (_, index) {
       var combatant = team.combatantList[index];
       if (!combatant) {
-        return '<button type="button" class="capture-starter-slot battle-switch-choice is-empty" disabled></button>';
+        return '<button type="button" class="battle-context-choice-option battle-switch-choice is-empty" disabled></button>';
       }
       var isKo = combatant.isFainted();
       var disabled = isKo || index === activeIndex;
       var label = pokemonDisplayName(combatant.pokemon);
-      return '<button type="button" class="capture-starter-slot battle-switch-choice' + (isKo ? " is-ko" : "") + '" data-action="' + escapeHtml(switchAction || "battle-switch") + '" data-index="' + escapeHtml(index) + '" ' + (disabled ? "disabled" : "") + ">" + escapeHtml(label) + "</button>";
+      return '<button type="button" class="battle-context-choice-option battle-switch-choice' + (isKo ? " is-ko" : "") + '" data-action="' + escapeHtml(switchAction || "battle-switch") + '" data-index="' + escapeHtml(index) + '" ' + (disabled ? "disabled" : "") + ">" + escapeHtml(label) + "</button>";
     }).join("");
     return [
       '<div class="battle-ko-switch-overlay">',
-      '  <section class="battle-ko-switch-panel pokemon_choice-panel">',
+      '  <section class="battle-ko-switch-panel battle-context-choice-panel pokemon_choice-panel">',
       '    <h3>' + escapeHtml(t("ui.battle.chooseFieldPokemon")) + '</h3>',
       '    <div class="capture-starter-grid battle-switch-grid battle-switch-grid-count-' + Math.min(3, Math.max(1, availableCount)) + '">' + choices + "</div>",
+      "  </section>",
+      "</div>"
+    ].join("");
+  }
+
+  function renderEntryChoiceOverlay(panel) {
+    var itemName = itemDisplayName(panel.item);
+    var pokemonName = pokemonDisplayName(panel.pokemon);
+    var isMoveChoice = panel.kind === "move";
+    var choices = (panel.entries || []).map(function (entry) {
+      return '<button type="button" class="battle-context-choice-option" data-action="battle-entry-choice-pick" data-index="' + escapeHtml(entry.index) + '">' + escapeHtml(entry.name) + "</button>";
+    }).join("");
+    return [
+      '<div class="battle-ko-switch-overlay battle-entry-choice-overlay">',
+      '  <section class="battle-ko-switch-panel battle-context-choice-panel battle-entry-choice-panel">',
+      '    <div class="battle-entry-choice-heading">',
+      renderImage(getItemImage(panel.item && panel.item.image), itemName, "battle-entry-choice-item-image"),
+      '      <div><span class="battle-entry-choice-eyebrow">' + escapeHtml(t("ui.battle.heldItemChoice")) + '</span><h3>' + escapeHtml(itemName) + "</h3></div>",
+      "    </div>",
+      '    <p class="battle-entry-choice-copy">' + escapeHtml(t(isMoveChoice
+        ? "ui.battle.entryDisableMovePrompt" : "ui.battle.entryAddTypePrompt", { pokemon: pokemonName, item: itemName })) + "</p>",
+      '    <p class="battle-entry-choice-subtitle">' + escapeHtml(t(isMoveChoice
+        ? "ui.battle.chooseMoveToBlock" : "ui.battle.chooseSecondType")) + "</p>",
+      '    <div class="battle-entry-choice-list">' + choices + "</div>",
+      panel.canCancel
+        ? '    <div class="battle-entry-choice-actions">' + button(t("ui.dialogs.cancel"), "battle-entry-choice-cancel", "", "button-dark button-slim") + "</div>"
+        : '    <p class="battle-entry-choice-required">' + escapeHtml(t("ui.battle.entryChoiceRequired")) + "</p>",
       "  </section>",
       "</div>"
     ].join("");
@@ -195,6 +242,7 @@ export function renderBattleScene(scene) {
   var adminEntryChoiceActive = scene.adminBattle && pendingAdminEntryChoice;
   var authoritativeAdminEntryChoice = scene.adminBattle && scene.authoritativeAdminEntryChoice;
   var playerActionLocked = playerNeedsSwitch || playerPostMoveSwitch || waitingForAdmin || scene.adminBattle
+    || Boolean(scene.battleEntryChoicePanel)
     || scene.authoritativeCommandPending || scene.authoritativeCommandUncertain;
   var adminActionEnabled = scene.adminBattle && waitingForAdmin;
   var ownNeedsSwitch = adminPerspective ? adminNeedsSwitch : playerNeedsSwitch;
@@ -214,6 +262,10 @@ export function renderBattleScene(scene) {
   var ownSlotOptions = ownNeedsSwitch ? {
     className: "has-fainted-overlay has-forced-switch",
     overlayContent: renderForcedSwitchOverlay(ownTeam, ownSwitchAction),
+    moveAction: ownMoveAction
+  } : scene.battleEntryChoicePanel && !adminPerspective ? {
+    className: "has-fainted-overlay has-entry-choice-overlay",
+    overlayContent: renderEntryChoiceOverlay(scene.battleEntryChoicePanel),
     moveAction: ownMoveAction
   } : { moveAction: ownMoveAction };
   var opponentSlotOptions = opponentNeedsSwitch ? { className: "has-fainted-overlay" } : {};

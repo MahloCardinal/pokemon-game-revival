@@ -100,6 +100,11 @@ export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
     fleeFailed: "The escape from the wild Pokémon could not be verified.",
     previousProgression: "Complete the previous battle progression first.",
     encounterUnavailable: "The encounter is no longer available.",
+    stateChanged: "The player state changed. The data was refreshed; try again.",
+    teamLevelLimit: "The team contains a Pokémon above the level allowed by your current Badges.",
+    battleAlreadyStarted: "This wild Pokémon is already involved in an active battle. Resume or abandon that battle.",
+    snapshotIncompatible: "The battle format is not compatible with the current backend. Reload the page and try again.",
+    runtimeLocked: "The battle is open in another tab. Continue from that tab or reload it.",
     startFailed: "The capture battle could not be started.",
     verifyStartFailed: "The start of the capture battle could not be verified."
   }),

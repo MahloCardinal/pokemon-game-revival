@@ -100,6 +100,11 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
     fleeFailed: "Impossibile verificare la fuga dal Pokémon selvatico.",
     previousProgression: "Completa prima la progressione della battaglia precedente.",
     encounterUnavailable: "L'incontro non è più disponibile.",
+    stateChanged: "Lo stato del giocatore è cambiato. I dati sono stati aggiornati: riprova.",
+    teamLevelLimit: "La squadra contiene un Pokémon di livello superiore al limite consentito dalle Medaglie.",
+    battleAlreadyStarted: "Questo Pokémon selvatico è già coinvolto in una battaglia attiva. Riprendi o abbandona quella battaglia.",
+    snapshotIncompatible: "La battaglia usa un formato non compatibile con il backend attuale. Aggiorna la pagina e riprova.",
+    runtimeLocked: "La battaglia è aperta in un'altra scheda. Continua da quella scheda oppure aggiornala.",
     startFailed: "Impossibile avviare la battaglia di cattura.",
     verifyStartFailed: "Impossibile verificare l'avvio della battaglia di cattura."
   }),

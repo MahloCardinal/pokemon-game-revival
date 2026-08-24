@@ -151,6 +151,23 @@ export function databaseError(error: { code?: string; message?: string } | null)
   if (code === "55000" && /pending ordinary progression/i.test(message)) {
     return new BattleEdgeError("activity_in_progress", "Completa prima la progressione della battaglia precedente.", 409);
   }
+  if (code === "55000" && /initialized capture battle/i.test(message)) {
+    return new BattleEdgeError(
+      "capture_battle_active",
+      "Il Pokémon selvatico è già coinvolto in una battaglia attiva.",
+      409
+    );
+  }
+  if (code === "22023" && /next engine snapshot is invalid/i.test(message)) {
+    return new BattleEdgeError(
+      "battle_snapshot_incompatible",
+      "Il formato della battaglia non è compatibile con il backend distribuito.",
+      409
+    );
+  }
+  if (code === "22023" && /encounter is no longer active/i.test(message)) {
+    return new BattleEdgeError("encounter_unavailable", "L'incontro non è più disponibile.", 409);
+  }
   if (code === "22023" && /Pokemon di livello superiore al limite consentito dalle medaglie/i.test(message)) {
     return new BattleEdgeError(
       "team_level_limit_exceeded",

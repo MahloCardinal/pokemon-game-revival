@@ -119,6 +119,8 @@ prepare_edge_battle_command
 
 - Il `core` è il lettore terminale e non deve richiamare uno degli altri livelli della catena.
 - Gli aggregati terminali e gli altri dati transitori devono conservare le retention configurate.
+- Un incontro selvatico non ancora legato a una battaglia appartiene alla revisione giocatore che lo ha creato: qualsiasi successiva mutazione autoritativa lo annulla atomicamente. Le battaglie di cattura già inizializzate restano protette; le altre schede si aggiornano tramite la normale invalidazione della revisione.
+- La versione snapshot accettata da PostgreSQL deve corrispondere a `BATTLE_SNAPSHOT_VERSION` in `app/engine/battle-runtime.js`; il test Revival deve fallire se le due versioni divergono.
 
 ## Runtime Edge e cataloghi
 

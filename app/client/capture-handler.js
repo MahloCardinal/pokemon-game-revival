@@ -42,6 +42,19 @@ import { getCurrentPlayerState } from "../api/player-command.js";
 var authoritativeCaptureCommandPending = false;
 var CAPTURE_START_STORAGE_KEY = "pokemon-game-revival:pending-capture-battle-start";
 
+function captureFailureMessage(result, fallbackKey) {
+  var keyByCode = {
+    activity_in_progress: "capture.activeBattle",
+    battle_snapshot_incompatible: "capture.snapshotIncompatible",
+    capture_battle_active: "capture.battleAlreadyStarted",
+    encounter_unavailable: "capture.encounterUnavailable",
+    revision_conflict: "capture.stateChanged",
+    runtime_locked: "capture.runtimeLocked",
+    team_level_limit_exceeded: "capture.teamLevelLimit"
+  };
+  return messageDescriptor(keyByCode[String(result && result.code || "")] || fallbackKey);
+}
+
 function captureStartPayload(input) {
   return JSON.stringify({
     expectedPlayerRevision: Number(input.expectedPlayerRevision),
@@ -232,7 +245,7 @@ registerAction("capture-flee", async function() {
       return;
     }
     if (result.uncertain || !refreshed || captureEncounterForScene(captureScene)) {
-      openMessage([messageDescriptor("capture.fleeFailed")], { title: messageDescriptor("capture.fleeTitle") });
+      openMessage([captureFailureMessage(result, "capture.fleeFailed")], { title: messageDescriptor("capture.fleeTitle") });
     }
   } finally {
     authoritativeCaptureCommandPending = false;
@@ -491,7 +504,7 @@ async function buildBattleScene(captureScene, rosterIndex) {
     }
     await clearPendingCaptureStart(pending);
     authoritativeCaptureCommandPending = false;
-    openMessage([messageDescriptor("capture.startFailed")], { title: messageDescriptor("capture.title") });
+    openMessage([captureFailureMessage(result, "capture.startFailed")], { title: messageDescriptor("capture.title") });
   } catch (error) {
     authoritativeCaptureCommandPending = false;
     if (pending) {
@@ -522,7 +535,7 @@ async function recoverAuthoritativeCaptureStart(startResult, pending, captureSce
       return;
     }
     if (!readResult.uncertain) { await clearPendingCaptureStart(pending); }
-    openMessage([messageDescriptor("capture.verifyStartFailed")], { title: messageDescriptor("capture.title") });
+    openMessage([captureFailureMessage(readResult, "capture.verifyStartFailed")], { title: messageDescriptor("capture.title") });
   } catch (error) {
     authoritativeCaptureCommandPending = false;
     openMessage([messageDescriptor("capture.verifyStartFailed")], { title: messageDescriptor("capture.title") });

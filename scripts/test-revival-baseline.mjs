@@ -33,6 +33,7 @@ const discordAudienceMigration = read("supabase/migrations/20260814131000_notify
 const discordTurnMigration = read("supabase/migrations/20260814132000_admin_battle_turn_discord_notifications.sql");
 const battleSnapshotMigration = read("supabase/migrations/20260824123000_accept_battle_snapshot_version_3.sql");
 const encounterActivityMigration = read("supabase/migrations/20260824124000_cancel_unbound_wild_encounters_on_activity.sql");
+const trainingMissionReceiptMigration = read("supabase/migrations/20260825090000_fix_training_mission_receipt_trigger.sql");
 const renderUtils = read("app/client/render-utils.js");
 const assetPaths = read("app/data/asset-paths.js");
 const captureZonesData = read("app/data/capture-zones.js");
@@ -96,6 +97,10 @@ assert.match(battleSnapshotMigration, /snapshotVersion'\) <> 3/);
 assert.match(battleEdgeHelpers, /next engine snapshot is invalid[\s\S]*battle_snapshot_incompatible/i);
 assert.match(encounterActivityMigration, /origin_player_revision[\s\S]*player_revision_cancel_unbound_wild_encounters/);
 assert.match(encounterActivityMigration, /engine_runtime_state = 'pending'[\s\S]*delete from public\.authoritative_battle/);
+assert.match(trainingMissionReceiptMigration, /command_type = 'training_terminal_reward'[\s\S]*apply_mission_fact\([\s\S]*'training_victory'/);
+assert.match(trainingMissionReceiptMigration, /command_type = 'training_allocate'[\s\S]*apply_mission_fact\([\s\S]*'pokemon_level_up'/);
+assert.match(trainingMissionReceiptMigration, /command_type = 'training_resolve'[\s\S]*apply_mission_fact\([\s\S]*'pokemon_evolved'/);
+assert.doesNotMatch(trainingMissionReceiptMigration, /emit_mission_source_event|apply_training_victory_missions/);
 assert.match(captureHandler, /captureFailureMessage[\s\S]*battle_snapshot_incompatible[\s\S]*capture\.snapshotIncompatible/);
 assert.match(renderer, /export function renderRegions\(regionNames, options\)/);
 assert.match(renderer, /data-render-region/);

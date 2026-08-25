@@ -284,6 +284,10 @@ assert.match(playerBattleCommit, /return\s+server_authority_private\.commit_edge
 assert.doesNotMatch(playerBattleCommit, /before_revision_conflict_response|legacy|jsonb_set\(/i);
 assert.match(migrationSql, /drop function server_authority_private\.commit_edge_battle_command_before_revision_conflict_response/i);
 
+const battlePrepareCore = finalFunctionBody("server_authority_private", "prepare_edge_battle_command_core");
+assert.match(battlePrepareCore, /p_battle_id is null[\s\S]*battle\.status in \('active', 'needs_player_switch'\)[\s\S]*battle\.engine_runtime_state = 'pending'/i);
+assert.doesNotMatch(battlePrepareCore, /p_battle_id is null or battle\.id = p_battle_id/i);
+
 const captureFlee = finalFunctionBody("public", "flee_edge_capture_encounter");
 assert.match(captureFlee, /if not found or v_encounter\.status <> 'active'[\s\S]*'cancelled', false[\s\S]*if v_revision <> p_expected_player_revision/i);
 assert.doesNotMatch(captureFlee, /if not found then\s+raise exception 'encounter was not found'/i);

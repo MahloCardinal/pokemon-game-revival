@@ -907,11 +907,11 @@ function openNextAuthoritativeTrainingChoice() {
   var moveIndex;
   var knownSlot;
   if (!session) { return; }
-  if (session.source === "ordinary" && !session.levelShown && session.beforePokemon && session.afterPokemon) {
+  if (!session.levelShown && session.beforePokemon && session.afterPokemon) {
     state.dialog = { type: "level-up", pokemonName: session.pokemon.name,
       resultLines: [textDescriptor("messages.progression.levelReached", { pokemon: pokemonNameDescriptor(session.pokemon), level: session.afterPokemon.level })],
       beforePokemon: session.beforePokemon, afterPokemon: session.afterPokemon,
-      continueAction: "ordinary-progression-level-continue" };
+      continueAction: "authoritative-progression-level-continue" };
     render();
     return;
   }
@@ -959,7 +959,9 @@ function resumeAuthoritativeTrainingChoices() {
     source: "training", resolution: resolution, pokemon: pokemon,
     offers: Array.isArray(options.level_moves) ? options.level_moves : [],
     evolutions: Array.isArray(options.evolutions) ? options.evolutions : [],
-    offerIndex: 0, choices: [], commandId: globalThis.crypto.randomUUID(),
+    offerIndex: 0, choices: [], commandId: globalThis.crypto.randomUUID(), levelShown: false,
+    beforePokemon: options.before_state ? Engine.Pokemon.fromJSON(options.before_state) : null,
+    afterPokemon: options.after_state ? Engine.Pokemon.fromJSON(options.after_state) : null,
     moves: (pokemon.moves || []).map(function (move) { return { index: Number(move.index), name: move.name }; })
   };
   openNextAuthoritativeTrainingChoice();
@@ -1174,8 +1176,8 @@ registerAction("open-pending-ordinary-progression", function () {
   resumeAuthoritativeOrdinaryProgression();
 });
 
-registerAction("ordinary-progression-level-continue", function () {
-  if (!activeAuthoritativeTrainingResolution || activeAuthoritativeTrainingResolution.source !== "ordinary") { return; }
+registerAction("authoritative-progression-level-continue", function () {
+  if (!activeAuthoritativeTrainingResolution) { return; }
   activeAuthoritativeTrainingResolution.levelShown = true;
   state.dialog = null;
   openNextAuthoritativeTrainingChoice();

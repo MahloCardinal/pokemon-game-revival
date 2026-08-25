@@ -500,6 +500,7 @@ async function zoneStatements(release) {
   });
   Object.entries(data.RARITY_WEIGHTS).forEach(([key, weight]) => rows.push(upsert("catalog_rarity_rule", ["catalog_release_id", "rarity_key", "encounter_weight", "catch_multiplier"], [releaseId(release), key, weight, data.CATCH_RARITY_MULTIPLIERS[key]], ["catalog_release_id", "rarity_key"], ["encounter_weight", "catch_multiplier"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
   data.CATCH_HP_THRESHOLDS.forEach((entry, index) => rows.push(upsert("catalog_capture_hp_threshold", ["catalog_release_id", "threshold_order", "max_hp_fraction", "catch_multiplier"], [releaseId(release), index, entry.maxHpFraction, entry.multiplier], ["catalog_release_id", "threshold_order"], ["max_hp_fraction", "catch_multiplier"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
+  Object.entries(data.CATCH_STATUS_MULTIPLIERS).forEach(([statusKey, multiplier]) => rows.push(upsert("catalog_capture_status_multiplier", ["catalog_release_id", "status_key", "catch_multiplier"], [releaseId(release), statusKey, multiplier], ["catalog_release_id", "status_key"], ["catch_multiplier"]).replace(sqlLiteral(releaseId(release)), releaseId(release))));
   return { rows, manifests: new Map([[primary, {
     primaryRows: Object.keys(data.CAPTURE_ZONES).length,
     entityCounts: {

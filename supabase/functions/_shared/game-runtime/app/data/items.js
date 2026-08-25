@@ -85,19 +85,19 @@ export function normalizeItemDefinition(item) {
 export const poke_ball = normalizeItemDefinition({
     index: 100,    image: "poke_ball.webp",
     category: ItemCategory.Ball,
-    value: 50
+    value: 1
   });
 
 export const great_ball = normalizeItemDefinition({
     index: 101,    image: "mega_ball.webp",
     category: ItemCategory.Ball,
-    value: 75
+    value: 1.5
   });
 
 export const ultra_ball = normalizeItemDefinition({
     index: 102,    image: "ultra_ball.webp",
     category: ItemCategory.Ball,
-    value: 90
+    value: 2
   });
 
 export const potion = normalizeItemDefinition({

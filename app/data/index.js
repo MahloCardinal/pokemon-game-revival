@@ -3,7 +3,7 @@ import { ITEM_LIBRARY, itemsSortedByIndex } from "./items.js";
 import { SPECIES_LIBRARY as SPECIES_LIBRARY_I } from "./species_I.js";
 import { SPECIES_LIBRARY as SPECIES_LIBRARY_II } from "./species_II.js";
 import { SPECIES_LIBRARY as SPECIES_LIBRARY_III } from "./species_III.js";
-import { CAPTURE_ZONES, CATCH_HP_THRESHOLDS, CATCH_RARITY_MULTIPLIERS, RARITY_WEIGHTS } from "./capture-zones.js";
+import { CAPTURE_ZONES, CATCH_FORMULA, CATCH_HP_THRESHOLDS, CATCH_RARITY_MULTIPLIERS, CATCH_STATUS_MULTIPLIERS, RARITY_WEIGHTS } from "./capture-zones.js";
 
 const SPECIES_LIBRARY = { ...SPECIES_LIBRARY_I, ...SPECIES_LIBRARY_II, ...SPECIES_LIBRARY_III };
 const ITEM_LIBRARY_BY_INDEX = itemsSortedByIndex(ITEM_LIBRARY);
@@ -17,6 +17,8 @@ export const GDR_DATA = {
   rarityWeights: RARITY_WEIGHTS,
   catchRarityMultipliers: CATCH_RARITY_MULTIPLIERS,
   catchHpThresholds: CATCH_HP_THRESHOLDS,
+  catchStatusMultipliers: CATCH_STATUS_MULTIPLIERS,
+  catchFormula: CATCH_FORMULA,
   hpByLevel: HP_BY_LEVEL,
   powerByLevel: PW_BY_LEVEL,
   statsByLevel: STATS_BY_LEVEL
@@ -29,6 +31,8 @@ export {
   CAPTURE_ZONES as ZONES,
   CATCH_RARITY_MULTIPLIERS,
   CATCH_HP_THRESHOLDS,
+  CATCH_STATUS_MULTIPLIERS,
+  CATCH_FORMULA,
   RARITY_WEIGHTS,
   HP_BY_LEVEL,
   PW_BY_LEVEL,

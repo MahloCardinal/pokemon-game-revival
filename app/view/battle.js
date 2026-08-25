@@ -271,7 +271,7 @@ export function renderBattleScene(scene) {
   var opponentSlotOptions = opponentNeedsSwitch ? { className: "has-fainted-overlay" } : {};
   var authoritativeRefresh = scene.authoritativeBattle && waitingForAdmin && !scene.adminBattle;
   var authoritativeUncertaintyMessage = scene.authoritativeCommandUncertain
-    ? '<p class="battle-authoritative-uncertain-message">' + escapeHtml(scene.authoritativeUncertaintyMessage || t("ui.battle.commandUncertain")) + "</p>"
+    ? '<p class="battle-authoritative-uncertain-message">' + escapeHtml(resolveText(scene.authoritativeUncertaintyMessage, t("ui.battle.commandUncertain"))) + "</p>"
     : "";
   var battleInfoFooter = scene.authoritativeCommandUncertain
     ? '<div class="battle-info-actions">' + authoritativeUncertaintyMessage

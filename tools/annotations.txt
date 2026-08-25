@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- diminuire catch-rate delle pokeball
+- correggere sfondo delle zone cattura
 - bilanciamento team palestre
 - inserire i 'Titoli' (es. 'Campione della Lega di Kanto')
 - inserire nelle palestre le date di vittoria da parte degli altri giocatori

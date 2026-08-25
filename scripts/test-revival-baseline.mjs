@@ -29,6 +29,8 @@ const itemCatalog = read("app/data/items.js");
 const teamRuleItems = read("app/data/team-rule-items.js");
 const catalogGenerator = read("scripts/generate-catalog-seed.mjs");
 const gameDataChangeGenerator = read("scripts/create-game-data-change.mjs");
+const captureFormulaMigration = read("supabase/migrations/20260825103839_update_capture_formula.sql");
+const captureStatusFixMigration = read("supabase/migrations/20260825110000_fix_capture_status_persistence.sql");
 const discordAudienceMigration = read("supabase/migrations/20260814131000_notify_all_admin_battle_players.sql");
 const discordTurnMigration = read("supabase/migrations/20260814132000_admin_battle_turn_discord_notifications.sql");
 const battleSnapshotMigration = read("supabase/migrations/20260824123000_accept_battle_snapshot_version_3.sql");
@@ -171,6 +173,15 @@ assert.match(shoppingCenter, /entry\.price === null/);
 assert.match(catalogGenerator, /purchasePrice === null/);
 assert.match(gameDataChangeGenerator, /begin_game_data_change/);
 assert.match(gameDataChangeGenerator, /finish_game_data_change/);
+assert.match(captureFormulaMigration, /catalog_capture_status_multiplier/);
+assert.match(captureFormulaMigration, /power\([\s\S]*\/255::numeric,0\.75::numeric\)/);
+assert.match(captureFormulaMigration, /least\(95::numeric/);
+assert.match(captureFormulaMigration, /revoke all on function public\.attempt_wild_capture_authoritative/i);
+assert.match(captureFormulaMigration, /c74469809755a830d86351d3d4e71de44f8a35873897175d8fb34d3591f8457f/);
+assert.match(captureStatusFixMigration, /alter table public\.authoritative_battle_participant[\s\S]*add column status text/i);
+assert.match(captureStatusFixMigration, /sync_authoritative_battle_participant_statuses/);
+assert.match(captureStatusFixMigration, /combatant\.value #>> '\{state,status\}'/);
+assert.match(battleView, /resolveText\(scene\.authoritativeUncertaintyMessage, t\("ui\.battle\.commandUncertain"\)\)/);
 
 for (const functionName of [
   "register-with-username",
@@ -342,6 +353,9 @@ const MoveDefinitions = moveDefinitionsModule.namespace;
 const itemDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/items.js", import.meta.url)));
 if (itemDefinitionsModule.status !== "evaluated") await itemDefinitionsModule.evaluate();
 const ItemDefinitions = itemDefinitionsModule.namespace;
+const captureCalcModule = await loadEsModule(fileURLToPath(new URL("../app/engine/capture-calc.js", import.meta.url)));
+if (captureCalcModule.status !== "evaluated") await captureCalcModule.evaluate();
+const CaptureCalc = captureCalcModule.namespace;
 const { BattleManager, buildBattleSummary, createMove, Pokemon, Team } = engineExports;
 
 function assertStableCatalogKeys(entries, expectedCount, label) {
@@ -360,6 +374,26 @@ assert.deepEqual(
   [ItemDefinitions.tm53, ItemDefinitions.tm54, ItemDefinitions.tm55].map((item) => [item.index, item.number, item.move.key, item.tier]),
   [[453, 53, "cut", 2], [454, 54, "surf", 0], [455, 55, "waterfall", 2]]
 );
+
+function captureTarget(hpFraction, status) {
+  return { pokemon: { speciesKey: "1", maxHp: 100 }, hp: hpFraction * 100, status: status || null };
+}
+
+{
+  const fullHealth = CaptureCalc.computeBallCaptureRate(ItemDefinitions.poke_ball, captureTarget(1));
+  const poisoned = CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05, "psn"));
+  const asleep = CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05, "slp"));
+  const paralyzedBlocked = CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05, "par_block"));
+  const paralyzedFree = CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05, "par_free"));
+  const frozen = CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05, "frz"));
+  assert.ok(Math.abs(fullHealth - 21.7234120411) < 0.000001, "Poké Ball against a common Pokémon at full HP must use the new formula");
+  assert.ok(Math.abs(poisoned - 81.2713019248) < 0.000001, "Non-favourable statuses must not increase the catch rate");
+  assert.equal(asleep, 95, "Ultra Ball, common Pokémon, 5% HP and Sonno must reach the artificial cap");
+  assert.equal(paralyzedBlocked, 95, "Paralisi bloccante must use the capture multiplier");
+  assert.equal(paralyzedFree, 95, "Paralisi non bloccante must use the capture multiplier");
+  assert.equal(frozen, 95, "Congelamento must use the same capture multiplier as Sonno and Paralisi");
+  assert.equal(CaptureCalc.computeBallCaptureRate(ItemDefinitions.master_ball, captureTarget(1)), 100, "Master Ball must display a 100% capture rate");
+}
 
 function pursuitTestPokemon(name, moves) {
   return new Pokemon({

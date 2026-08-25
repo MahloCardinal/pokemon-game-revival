@@ -1,4 +1,4 @@
-import { CATCH_HP_THRESHOLDS, CATCH_RARITY_MULTIPLIERS } from "../data/capture-zones.js";
+import { CATCH_FORMULA, CATCH_HP_THRESHOLDS, CATCH_RARITY_MULTIPLIERS, CATCH_STATUS_MULTIPLIERS } from "../data/capture-zones.js";
 import { random } from "./deterministic-rng.js";
 import { findSpecies } from "./species.js";
 
@@ -18,6 +18,9 @@ export function computeBallCaptureResult(ballItem, wildCombatant) {
 }
 
 export function computeBallCaptureRate(ballItem, wildCombatant) {
+  if (Number(ballItem && ballItem.index) === MASTER_BALL_INDEX) {
+    return 100;
+  }
   var baseRate = Number(ballItem && ballItem.value) || 0;
   var pokemon = wildCombatant && wildCombatant.pokemon;
   var species = pokemon ? findSpecies(pokemon.speciesKey) : null;
@@ -28,7 +31,10 @@ export function computeBallCaptureRate(ballItem, wildCombatant) {
   var hp = Number(wildCombatant && wildCombatant.hp);
   var hpFraction = maxHp > 0 ? Math.max(0, Math.min(1, hp / maxHp)) : 1;
   var hpMult = hpMultiplierForFraction(hpFraction);
-  return Math.min(100, Math.max(0, baseRate * rarityMult * hpMult));
+  var statusMult = statusMultiplierForStatus(wildCombatant && wildCombatant.status);
+  var amount = hpMult * rarityMult * baseRate * statusMult;
+  var rate = Math.pow(amount / CATCH_FORMULA.denominator, CATCH_FORMULA.exponent) * 100;
+  return Math.min(CATCH_FORMULA.maximumRate, Math.max(0, rate));
 }
 
 function hpMultiplierForFraction(hpFraction) {
@@ -39,4 +45,8 @@ function hpMultiplierForFraction(hpFraction) {
     }
   }
   return 1.0;
+}
+
+function statusMultiplierForStatus(status) {
+  return CATCH_STATUS_MULTIPLIERS[status] || 1.0;
 }

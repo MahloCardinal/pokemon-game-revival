@@ -9,7 +9,7 @@ import { broadcastAuthoritativeRevision, initializeTeamBoxRuntime } from "./runt
 import { handleCaptureEncounterRuntimeInvalidation, initializeCaptureEncounterRuntime } from "./capture-handler.js";
 import { render, setScene } from "./renderer.js";
 import { LOCALE_CHANGE_EVENT, t } from "./i18n.js";
-import { bindHistoryNavigation } from "./router.js";
+import { bindHistoryNavigation, rememberCaptureSearchPreferences } from "./router.js";
 import { initializeSession } from "./session.js";
 import { getResolvedInventoryItem } from "../data/items.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
@@ -332,6 +332,7 @@ root.addEventListener("change", function (event) {
       if (state.scene.searchError) {
         clearCaptureSearchErrorInline();
       }
+      rememberCaptureSearchPreferences(state.scene);
     }
     return;
   }
@@ -340,6 +341,7 @@ root.addEventListener("change", function (event) {
     state.scene.levelText = event.target.value.replace(/\D/g, "").slice(0, 2);
     event.target.value = state.scene.levelText;
     clearCaptureSearchErrorInline();
+    rememberCaptureSearchPreferences(state.scene);
     return;
   }
 
@@ -350,6 +352,7 @@ root.addEventListener("change", function (event) {
       state.scene.useBlackFlute = event.target.checked;
     }
     clearCaptureSearchErrorInline();
+    rememberCaptureSearchPreferences(state.scene);
     return;
   }
 });

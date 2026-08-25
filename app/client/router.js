@@ -6,6 +6,7 @@ var nextSceneId = 1;
 var nextHistoryIndex = 1;
 var currentHistoryIndex = 0;
 var currentHistoryRoute = "";
+var CAPTURE_SEARCH_PREFERENCE_PREFIX = "pokemon_game_revival:capture_search_preferences:";
 
 // --- Route registry ---
 var routeMap = {
@@ -228,20 +229,62 @@ function routeForScene(scene) {
   return routeMap[scene.name] || "/";
 }
 
+function captureSearchPreferenceKey(zoneName) {
+  return CAPTURE_SEARCH_PREFERENCE_PREFIX + String(zoneName || "");
+}
+
+function captureSearchPreferences(zoneName) {
+  var preferences = null;
+  if (typeof window === "undefined" || !window.sessionStorage) {
+    return null;
+  }
+  try {
+    preferences = JSON.parse(window.sessionStorage.getItem(captureSearchPreferenceKey(zoneName)) || "null");
+  } catch (error) {}
+  return preferences && typeof preferences === "object" ? preferences : null;
+}
+
+export function rememberCaptureSearchPreferences(scene) {
+  var zoneName = String(scene && scene.zoneName || "");
+  var zoneTypes = Engine.getZoneTypes(zoneName);
+  var preferences;
+  if (!zoneName || !zoneTypes.length || typeof window === "undefined" || !window.sessionStorage) {
+    return false;
+  }
+  preferences = {
+    selectedType: zoneTypes.indexOf(String(scene.selectedType || "")) !== -1 ? String(scene.selectedType) : zoneTypes[0] || "",
+    selectedRangeIndex: Math.max(0, Math.floor(Number(scene.selectedRangeIndex) || 0)),
+    useWhiteFlute: scene.useWhiteFlute === true,
+    useBlackFlute: scene.useBlackFlute === true,
+    levelText: String(scene.levelText || "").replace(/\D/g, "").slice(0, 2)
+  };
+  try {
+    window.sessionStorage.setItem(captureSearchPreferenceKey(zoneName), JSON.stringify(preferences));
+  } catch (error) {
+    return false;
+  }
+  return true;
+}
+
 export function createCaptureScene(zoneName, sourceScene) {
   var zoneTypes = Engine.getZoneTypes(zoneName);
+  var preferences;
   if (!zoneName || !zoneTypes.length) {
     return { name: "zones" };
   }
+  if (sourceScene && sourceScene.zoneName === zoneName) {
+    rememberCaptureSearchPreferences(sourceScene);
+  }
+  preferences = sourceScene && sourceScene.zoneName === zoneName ? sourceScene : captureSearchPreferences(zoneName);
   return {
     name: "capture",
     zoneName: zoneName,
-    selectedType: sourceScene && sourceScene.selectedType && zoneTypes.indexOf(sourceScene.selectedType) !== -1
-      ? sourceScene.selectedType : zoneTypes[0] || "",
-    selectedRangeIndex: sourceScene ? sourceScene.selectedRangeIndex : 0,
-    useWhiteFlute: Boolean(sourceScene && sourceScene.useWhiteFlute),
-    useBlackFlute: Boolean(sourceScene && sourceScene.useBlackFlute),
-    levelText: sourceScene && sourceScene.levelText || "",
+    selectedType: preferences && preferences.selectedType && zoneTypes.indexOf(preferences.selectedType) !== -1
+      ? preferences.selectedType : zoneTypes[0] || "",
+    selectedRangeIndex: preferences ? preferences.selectedRangeIndex : 0,
+    useWhiteFlute: Boolean(preferences && preferences.useWhiteFlute),
+    useBlackFlute: Boolean(preferences && preferences.useBlackFlute),
+    levelText: preferences && preferences.levelText || "",
     wildPokemon: null,
     encounterId: null,
     searchError: ""

@@ -24,7 +24,7 @@ import { saveAfterStateChange } from "./save-runtime.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { currentUserId, getSupabaseClient } from "../api/supabase.js";
 import { applyPlayerSave, root, state, registerPokedexPokemon, consumeFluteDailyUseLocally } from "./game-state.js";
-import { createCaptureScene } from "./router.js";
+import { createCaptureScene, rememberCaptureSearchPreferences } from "./router.js";
 import * as Engine from "../engine/index.js";
 import { button } from "./render-utils.js";
 import { setHtml } from "./renderer.js";
@@ -139,6 +139,7 @@ registerAction("capture-search", async function(element) {
   scene.useWhiteFlute = useWhiteFlute;
   scene.useBlackFlute = useBlackFlute;
   scene.selectedType = selectedType;
+  rememberCaptureSearchPreferences(scene);
   if (!selectedRange || !selectedType || zoneTypes.indexOf(selectedType) === -1) {
     scene.searchError = "";
     flashCaptureLevelHint();
@@ -416,6 +417,9 @@ function updateCaptureToolUsageInline(fluteKey) {
     buttonLabel.classList.remove("is-selected");
     buttonLabel.classList.add("is-unavailable");
   }
+  if (state.scene && state.scene.name === "capture") {
+    rememberCaptureSearchPreferences(state.scene);
+  }
 }
 
 var captureLevelHintTimer = null;
@@ -459,6 +463,7 @@ async function buildBattleScene(captureScene, rosterIndex) {
     return;
   }
   syncCaptureSceneToActiveEncounter(captureScene);
+  rememberCaptureSearchPreferences(captureScene);
   if (authoritativeCaptureCommandPending || !captureScene.encounterId) { return; }
   authoritativeCaptureCommandPending = true;
   var ownerId = authoritativeBattleRuntimeOwnerId();

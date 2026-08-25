@@ -59,6 +59,9 @@ export function backgroundKeyForScene(scene) {
     return gymBackgroundKey(scene.cityKey);
   }
   if (name === "battle" || name === "battle-restore" || name === "admin-battle" || name === "admin-battle-restore") {
+    if (scene && backgroundAssetForKey(scene.sourceBackgroundKey)) {
+      return String(scene.sourceBackgroundKey);
+    }
     captureScene = scene && scene.captureScene;
     gymScene = scene && scene.gymScene;
     if (captureScene && captureScene.zoneName) {

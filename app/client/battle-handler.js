@@ -1,5 +1,6 @@
 import { registerAction } from "./action-registry.js";
 import { createCaptureScene } from "./router.js";
+import { backgroundKeyForScene } from "../data/scene-backgrounds.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
 import { markDirty, render, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
 import { applyPlayerSave, state, root } from "./game-state.js";
@@ -151,6 +152,9 @@ export function applyAuthoritativeProjection(scene, projection, events) {
   var isCapture = String(projection && projection.contract_key || "") === "capture";
   var isBattleTower = String(projection && projection.contract_key || "") === "battle_tower";
   var captureContext = projection && projection.capture_context || {};
+  var captureZoneName = String(captureContext.zone_key
+    || projection && projection.presentation && projection.presentation.zoneKey
+    || scene && scene.captureScene && scene.captureScene.zoneName || "");
   var leagueMemberIndex = Number(projection && projection.league_member_index);
   var participants = Array.isArray(projection && projection.participants) ? projection.participants : [];
   var playerEntries = participants.filter(function (entry) { return entry.side === "player"; }).sort(function (a, b) { return a.slot_index - b.slot_index; });
@@ -247,9 +251,7 @@ export function applyAuthoritativeProjection(scene, projection, events) {
       attemptedToday: Boolean(state.battleTower && state.battleTower.attemptedToday)
     };
   }
-  scene.captureScene = isCapture ? Object.assign({}, scene.captureScene || {}, {
-    name: "capture",
-    zoneName: String(captureContext.zone_key || presentation.zoneKey || ""),
+  scene.captureScene = isCapture ? Object.assign(createCaptureScene(captureZoneName, scene.captureScene), {
     encounterId: String(projection.encounter_id || captureContext.encounter_id || "")
   }) : scene.captureScene;
   scene.kantoLeague = isLeague;
@@ -305,6 +307,8 @@ export function openAuthoritativeBattleProjection(projection, events, options) {
   var isGym = ["gym", "admin_gym"].indexOf(String(projection && projection.contract_key || "")) !== -1;
   var isLeague = String(projection && projection.contract_key || "") === "league";
   var leagueMemberIndex = Number(projection && projection.league_member_index);
+  var sourceScene = options && options.sourceScene || state.scene;
+  var sourceBackgroundKey = sourceScene ? backgroundKeyForScene(sourceScene) : "";
   var scene = { name: "battle", authoritativeBattle: true, authoritativeLastEventSeq: 0, trainingBattle: isTraining,
     trainingScene: isTraining ? { name: "training-zone", trainingDifficulty: projection.contract_key === "debug_training"
       ? "debug" : String(projection.training_difficulty || "") } : null,
@@ -312,7 +316,8 @@ export function openAuthoritativeBattleProjection(projection, events, options) {
       : isLeague ? (leagueMemberIndex === 4 ? { name: "gym-city", cityKey: "kanto_champion" }
         : { name: "gym-city", cityKey: "elite_four", e4MemberIndex: leagueMemberIndex }) : null,
     manager: { log: [] },
-    captureScene: options && options.captureScene ? Object.assign({}, options.captureScene) : null };
+    captureScene: options && options.captureScene ? Object.assign({}, options.captureScene) : null,
+    sourceBackgroundKey: sourceBackgroundKey };
   applyAuthoritativeProjection(scene, projection, events);
   activateBattleRuntimeOwnership();
   setActiveBattleMeta({ battleType: scene.battleType, firstActor: scene.manager.firstActor, authoritative: true }, { ownsRuntime: true });

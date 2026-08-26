@@ -3555,11 +3555,12 @@ function cancelUncertainAuthoritativeBattle(scene) {
 }
 
 function setBattleBottomPanel(mode) {
-  var nextMode = mode === "teams" ? "teams" : mode === "items" ? "items" : "info";
+  var nextMode;
   var layout;
   if (!state.scene || (state.scene.name !== "battle" && state.scene.name !== "admin-battle")) {
     return;
   }
+  nextMode = mode === "teams" ? "teams" : mode === "items" && !state.scene.battleTower ? "items" : "info";
   state.scene.battleBottomPanel = nextMode;
   layout = root.querySelector(".battle-layout");
   if (layout) {

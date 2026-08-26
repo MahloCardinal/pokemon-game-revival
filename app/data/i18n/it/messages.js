@@ -123,8 +123,7 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
   }),
   system: Object.freeze({
     activeActivity: "Completa prima l'attività in corso.",
-    exit: "Esci",
-    finishBattleBeforeExit: "Concludi o abbandona lo scontro prima di uscire."
+    exit: "Esci"
   }),
   pokemonCenter: Object.freeze({
     invalidData: "I dati del Pokémon non rispettano i limiti previsti.",

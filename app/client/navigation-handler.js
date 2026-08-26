@@ -1,8 +1,6 @@
 import { registerAction } from "./action-registry.js";
 import { battleReturnScene } from "./battle-handler.js";
 import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
-import { openConfirm, openMessage } from "./dialog-handler.js";
-import { messageDescriptor } from "./i18n.js";
 import {
   markDirty,
   render,
@@ -190,10 +188,6 @@ registerAction("parent-back", function(element) {
       return;
     }
     if (state.scene.name === "battle") {
-      if (!state.scene.terminalExitReady) {
-        openMessage([messageDescriptor("system.finishBattleBeforeExit")]);
-        return;
-      }
       setScene(battleReturnScene(state.scene));
       return;
     }

@@ -54,6 +54,7 @@ const authView = read("app/view/auth.js");
 const gymsView = read("app/view/gyms.js");
 const gymsHandler = read("app/client/gyms-handler.js");
 const battleHandler = read("app/client/battle-handler.js");
+const navigationHandler = read("app/client/navigation-handler.js");
 const captureHandler = read("app/client/capture-handler.js");
 const adminBattleHandler = read("app/client/admin-battle-handler.js");
 const battleView = read("app/view/battle.js");
@@ -150,6 +151,16 @@ assert.doesNotMatch(gymsHandler, /Completa le Missioni avventura ["']?\s*\+\s*ad
 assert.match(gymsView, /ui\.gyms\.adventureRequirement/);
 assert.doesNotMatch(adminBattleHandler, /registerAction\("admin-battle-refresh"/);
 assert.doesNotMatch(battleView, /admin-battle-refresh|button\("Aggiorna"/);
+assert.match(battleView, /!scene\.battleTower && scene\.battleBottomPanel === "items"/);
+assert.match(battleView, /scene\.battleTower \? "" : button\(t\("ui\.battle\.items"\)/);
+assert.match(battleHandler, /mode === "items" && !state\.scene\.battleTower \? "items" : "info"/);
+const parentBackAction = navigationHandler.slice(
+  navigationHandler.indexOf('registerAction("parent-back"'),
+  navigationHandler.indexOf('registerAction("open-box"')
+);
+assert.match(parentBackAction, /state\.scene\.name === "battle"[\s\S]*setScene\(battleReturnScene\(state\.scene\)\)/);
+assert.doesNotMatch(parentBackAction, /terminalExitReady|finishBattleBeforeExit|openMessage/);
+assert.doesNotMatch(i18nItalian + i18nEnglish, /finishBattleBeforeExit/);
 assert.match(battleHandler, /\["item", "switch"\]\.indexOf\(data\.command_type\)/);
 assert.match(battleHandler, /battleText\(scene\.authoritativeCapture \? "lostMoneyConfusion" : "lostMoney"/);
 assert.doesNotMatch(battleHandler, /Nella confusione perdi|Pokédollari/);

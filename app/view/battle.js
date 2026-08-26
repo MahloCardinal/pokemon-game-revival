@@ -179,7 +179,9 @@ export function renderBattleScene(scene) {
   var summaryLines = localizeBattleSummary(Engine.buildBattleSummary(renderScene.playerTeam, renderScene.enemyTeam, renderScene.manager.usedItems, renderScene.manager.enemyUsedItems, renderScene.manager), renderScene);
   var logLines = renderBattleLog(renderScene.manager.log, renderScene);
   var battleInfoPanel = scene.battleInfoPanel === "summary" ? "summary" : "log";
-  var battleBottomPanel = scene.battleBottomPanel === "teams" ? "teams" : scene.battleBottomPanel === "items" ? "items" : "info";
+  var battleBottomPanel = scene.battleBottomPanel === "teams"
+    ? "teams"
+    : !scene.battleTower && scene.battleBottomPanel === "items" ? "items" : "info";
 
   function renderForcedSwitchOverlay(team, switchAction) {
     var activeIndex = team.activeIndex;
@@ -444,7 +446,7 @@ export function renderBattleScene(scene) {
       '      <div class="battle-mobile-tabs" data-battle-mobile-tabs>',
       button(t("ui.battle.info"), "battle-bottom-tab", 'data-panel="info"', "button-slim battle-mobile-tab" + (battleBottomPanel === "info" ? " button-primary" : " button-ghost")),
       button(t("ui.battle.teams"), "battle-bottom-tab", 'data-panel="teams"', "button-slim battle-mobile-tab" + (battleBottomPanel === "teams" ? " button-primary" : " button-ghost")),
-      button(t("ui.battle.items"), "battle-bottom-tab", 'data-panel="items"', "button-slim battle-mobile-tab" + (battleBottomPanel === "items" ? " button-primary" : " button-ghost")),
+      scene.battleTower ? "" : button(t("ui.battle.items"), "battle-bottom-tab", 'data-panel="items"', "button-slim battle-mobile-tab" + (battleBottomPanel === "items" ? " button-primary" : " button-ghost")),
       "      </div>",
       infoCard,
       "  </div>",

@@ -115,7 +115,7 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
     previousBadgeRequired: "Devi prima ottenere la Medaglia precedente.",
     gymUnavailable: "Questa Palestra non è ancora pronta per la sfida.",
     emptyTeam: "Non hai Pokémon in squadra.",
-    adventureRequired: "Completa le Missioni avventura necessarie prima di affrontare questa Palestra.",
+    adventureRequired: "Completa le Missioni Palestre necessarie prima di affrontare questa Palestra.",
     stateChanged: "Lo stato autoritativo è cambiato. Aggiorna la scena e riprova.",
     gymStartFailed: "Impossibile avviare la sfida in Palestra.",
     leagueStateChanged: "Lo stato della Lega è cambiato. Aggiorna la scena e riprova.",

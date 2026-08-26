@@ -71,11 +71,16 @@ function missionChoiceEntries(mission) {
   var reward = mission && mission.reward || {};
   var badges = Math.max(0, Math.min(8, Number(state.trainerInfo && state.trainerInfo[2]) || 0));
   if (reward.kind === "pokemon_choice") {
-    var level = reward.levelMode === "badge_cap" ? levelLimitForBadges(badges) : 5;
+    var level = reward.levelMode === "badge_cap"
+      ? levelLimitForBadges(badges)
+      : Math.max(5, Math.min(100, Math.floor(Number(reward.level) || 5)));
     return Object.keys(SPECIES_LIBRARY).map(function (speciesKey) {
       var species = SPECIES_LIBRARY[speciesKey];
       var encounter = species && species.encounter || {};
-      return species && encounter.rarity !== "legendary" && (!reward.excludeFossils || encounter.rarity !== "fossil")
+      var matchesRarity = reward.requiredRarity
+        ? encounter.rarity === reward.requiredRarity
+        : encounter.rarity !== "legendary";
+      return species && matchesRarity && (!reward.excludeFossils || encounter.rarity !== "fossil")
         && minimumPokemonRewardLevel(speciesKey) <= level
         ? { kind: "pokemon", speciesKey: speciesKey, level: level, label: speciesDisplayName(speciesKey) + " (" + t("common.units.levelShort") + ". " + level + ")" }
         : null;

@@ -124,6 +124,7 @@ export var state = {
   battleShopPurchasePending: false,
   pendingActivity: null,
   playerDex: [],
+  trainerTitles: [],
   pokedexDirty: false,
   inventory: createStartingInventory(),
   inventoryFlippedItems: {},
@@ -229,6 +230,7 @@ export function resetPlayerState() {
   state.battleShopPurchasePending = false;
   state.pendingActivity = null;
   state.playerDex = [];
+  state.trainerTitles = [];
   state.pokedexDirty = false;
   resetBoxFilter();
   state.pendingBoxUpserts = [];
@@ -334,6 +336,9 @@ export function applyPlayerSave(save) {
   state.inventory = Array.isArray(save.items) ? save.items : createStartingInventory();
   state.inventoryFlippedItems = {};
   state.playerDex = normalizePokedexNumbers(save.dex);
+  state.trainerTitles = Array.isArray(save.trainerTitles) ? save.trainerTitles.map(function (entry) {
+    return { titleKey: String(entry && entry.titleKey || ""), unlockedAt: entry && entry.unlockedAt || null };
+  }).filter(function (entry) { return entry.titleKey; }) : [];
   state.pokedexDirty = false;
   state.shoppingCenterCart = {};
   state.shoppingCenterSellCart = {};

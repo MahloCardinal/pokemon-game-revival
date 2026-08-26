@@ -215,6 +215,87 @@
   padding: 28px 0 0;
   background: transparent;
 }
+.trainer-titles-panel {
+  box-sizing: border-box;
+  align-self: center;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  width: var(--trainer-sprite-width);
+  min-height: 150px;
+  max-height: var(--trainer-sprite-height);
+  padding: 12px;
+  border: 5px ridge #e6bd58;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+}
+.trainer-titles-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.trainer-titles-heading h3 {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: center;
+}
+.trainer-titles-info-button {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+.trainer-titles-info-button:hover,
+.trainer-titles-info-button:focus-visible {
+  background: rgba(230, 189, 88, 0.2);
+}
+.trainer-titles-list-wrap {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 3px;
+}
+.trainer-title-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.trainer-title-list li,
+.trainer-title-empty {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.trainer-title-list li + li {
+  padding-top: 7px;
+  border-top: 1px solid rgba(230, 189, 88, 0.5);
+}
+.trainer-title-empty {
+  display: grid;
+  min-height: 78px;
+  place-items: center;
+  color: var(--text-soft);
+  font-weight: 600;
+}
 .trainer-profile-name {
   margin: 0;
   font-size: 14px;
@@ -366,7 +447,7 @@
   max-width: 100%;
 }
 .scene-content-team .trainer-profile-panel {
-  grid-template-columns: minmax(0, var(--trainer-sprite-width)) minmax(0, 360px);
+  grid-template-columns: minmax(0, var(--trainer-sprite-width)) minmax(0, 360px) minmax(0, var(--trainer-sprite-width));
   justify-content: center;
   overflow: hidden;
 }
@@ -394,6 +475,18 @@
   }
 
 }
+@media (max-width: 880px) and (min-width: 681px) {
+  .scene-content-team .trainer-profile-panel {
+    grid-template-columns: minmax(0, var(--trainer-sprite-width)) minmax(0, 360px);
+  }
+
+  .scene-content-team .trainer-titles-panel {
+    grid-column: 1 / -1;
+    width: min(100%, 360px);
+    max-height: 220px;
+    justify-self: center;
+  }
+}
 @media (max-width: 680px) {
   .trainer-profile-panel {
     grid-template-columns: 1fr;
@@ -416,6 +509,11 @@
     justify-items: center;
     padding-top: 0;
     text-align: center;
+  }
+
+  .scene-content-team .trainer-titles-panel {
+    width: min(100%, 360px);
+    max-height: 220px;
   }
 
   .trainer-profile-badges {

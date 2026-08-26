@@ -29,6 +29,15 @@ function missionRowsFromProjection(rows) {
   }).filter(function (row) { return Number.isFinite(row.missionIndex); });
 }
 
+function titleRowsFromProjection(rows) {
+  return (Array.isArray(rows) ? rows : []).map(function (row) {
+    return {
+      titleKey: String(row && row.title_key || ""),
+      unlockedAt: row && row.unlocked_at || null
+    };
+  }).filter(function (row) { return row.titleKey; });
+}
+
 export function saveFromAuthoritativeProjection(projection) {
   var profile = projection && projection.profile;
   return {
@@ -52,6 +61,7 @@ export function saveFromAuthoritativeProjection(projection) {
     battleTowerRecord: Math.max(0, Number(profile && profile.battle_tower_record) || 0),
     battleShopOffers: projection && Array.isArray(projection.battle_shop_offers)
       ? projection.battle_shop_offers : undefined,
+    trainerTitles: titleRowsFromProjection(projection && projection.titles),
     missions: missionRowsFromProjection(projection && projection.missions),
     authoritativeRevision: Number(projection && projection.revision) || 0,
     catalogReleaseId: profile && profile.catalog_release_id || null

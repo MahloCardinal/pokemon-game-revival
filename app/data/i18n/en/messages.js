@@ -115,7 +115,7 @@ export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
     previousBadgeRequired: "You must obtain the previous Badge first.",
     gymUnavailable: "This Gym is not ready for the challenge yet.",
     emptyTeam: "You have no Pokémon in your team.",
-    adventureRequired: "Complete the required Adventure Missions before challenging this Gym.",
+    adventureRequired: "Complete the required Gym Missions before challenging this Gym.",
     stateChanged: "The authoritative state changed. Refresh the scene and try again.",
     gymStartFailed: "The Gym challenge could not be started.",
     leagueStateChanged: "The League state changed. Refresh the scene and try again.",

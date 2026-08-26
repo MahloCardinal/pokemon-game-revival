@@ -1,9 +1,7 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- correggere sfondo delle zone cattura
 - bilanciamento team palestre
-- inserire i 'Titoli' (es. 'Campione della Lega di Kanto')
 - inserire nelle palestre le date di vittoria da parte degli altri giocatori
 - inserire possibilità di vedere squadre altri giocatori
 - implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)

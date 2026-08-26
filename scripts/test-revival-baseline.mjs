@@ -21,6 +21,7 @@ const deploymentEndpoint = read("api/deployment-version.js");
 const renderer = read("app/client/renderer.js");
 const vercel = read("vercel.json");
 const missionCatalog = read("app/data/pokefan-missions.js");
+const titleCatalog = read("app/data/titles.js");
 const missionRuntime = read("app/client/mission-runtime.js");
 const missionReset = read("app/client/mission-reset.js");
 const missionView = read("app/view/pokefan.js");
@@ -37,6 +38,7 @@ const battleSnapshotMigration = read("supabase/migrations/20260824123000_accept_
 const encounterActivityMigration = read("supabase/migrations/20260824124000_cancel_unbound_wild_encounters_on_activity.sql");
 const trainingMissionReceiptMigration = read("supabase/migrations/20260825090000_fix_training_mission_receipt_trigger.sql");
 const segmentedTrainingProgressionMigration = read("supabase/migrations/20260825100000_segment_training_level_progression.sql");
+const trainerTitlesMigration = read("supabase/migrations/20260826120000_trainer_titles.sql");
 const renderUtils = read("app/client/render-utils.js");
 const assetPaths = read("app/data/asset-paths.js");
 const captureZonesData = read("app/data/capture-zones.js");
@@ -169,6 +171,14 @@ assert.match(deploymentEndpoint, /VERCEL_GIT_COMMIT_SHA/);
 for (const missionSource of [missionCatalog, missionRuntime, missionReset, missionView, catalogGenerator]) {
   assert.doesNotMatch(missionSource, /repeatable|ripetibil/i);
 }
+assert.match(missionCatalog, /missionIndex:\s*3012[\s\S]*type:\s*"title_collection"[\s\S]*requiredRarity:\s*"legendary"/);
+assert.match(titleCatalog, /TRAINER_TITLE_COLLECTION_KEY = "trainer_titles_initial"/);
+assert.match(trainerTitlesMigration, /create table public\.player_title\s*\(/i);
+assert.match(trainerTitlesMigration, /after insert on public\.player_dex_entry/i);
+assert.match(trainerTitlesMigration, /after insert on public\.player_league_victory/i);
+assert.match(trainerTitlesMigration, /after update of battle_tower_record/i);
+assert.match(trainerTitlesMigration, /species\.encounter_rarity_key = v_reward ->> 'requiredRarity'/i);
+assert.doesNotMatch(trainerTitlesMigration, /cron|pg_cron|schedule\s*\(/i);
 assert.match(shoppingCenter, /entry\.price === null/);
 assert.match(catalogGenerator, /purchasePrice === null/);
 assert.match(gameDataChangeGenerator, /begin_game_data_change/);
@@ -353,6 +363,9 @@ const MoveDefinitions = moveDefinitionsModule.namespace;
 const itemDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/items.js", import.meta.url)));
 if (itemDefinitionsModule.status !== "evaluated") await itemDefinitionsModule.evaluate();
 const ItemDefinitions = itemDefinitionsModule.namespace;
+const titleDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/titles.js", import.meta.url)));
+if (titleDefinitionsModule.status !== "evaluated") await titleDefinitionsModule.evaluate();
+const TitleDefinitions = titleDefinitionsModule.namespace;
 const captureCalcModule = await loadEsModule(fileURLToPath(new URL("../app/engine/capture-calc.js", import.meta.url)));
 if (captureCalcModule.status !== "evaluated") await captureCalcModule.evaluate();
 const CaptureCalc = captureCalcModule.namespace;
@@ -367,6 +380,15 @@ function assertStableCatalogKeys(entries, expectedCount, label) {
 
 assertStableCatalogKeys(MoveDefinitions.MOVE_LIBRARY, 351, "move");
 assertStableCatalogKeys(ItemDefinitions.ITEM_LIBRARY, 167, "item");
+assertStableCatalogKeys(TitleDefinitions.TRAINER_TITLES, 21, "trainer title");
+assert.equal(TitleDefinitions.INITIAL_TRAINER_TITLE_COUNT, 21);
+assert.ok(TitleDefinitions.TRAINER_TITLES.filter(function (title) {
+  return title.unlockType === "pokedex_type_complete";
+}).every(function (title) {
+  return title.excludedRarities.includes("fossil")
+    && title.excludedRarities.includes("legendary")
+    && !title.excludedRarities.includes("mythic");
+}));
 assert.equal(MoveDefinitions.doom_desire.name, "doom_desire");
 assert.equal(ItemDefinitions.leek.name, "leek");
 assert.equal(new Set(ItemDefinitions.ITEM_LIBRARY.map((item) => item.index)).size, ItemDefinitions.ITEM_LIBRARY.length, "item indexes must be unique");

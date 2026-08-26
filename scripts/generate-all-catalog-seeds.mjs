@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 const FAMILIES = [
   "metadata", "zones", "moves", "items", "species", "progression", "shop", "battle-shop",
-  "combat-rules", "zone-access", "missions", "opponents", "admin-battles", "trainers"
+  "combat-rules", "zone-access", "missions", "titles", "opponents", "admin-battles", "trainers"
 ];
 
 function argument(name) {

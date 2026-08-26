@@ -81,6 +81,9 @@ Il browser non è fonte autoritativa e non deve concedere ricompense. Le battagl
 - Revival supporta soltanto missioni avventura, cattura e giornaliere. Non reintrodurre categorie o reset per missioni ripetibili.
 - Nel Centro Commerciale `price: null` significa sempre “non acquistabile”; non mantenere elenchi separati di disponibilità che possano divergere dal prezzo.
 - Per le MT, il Tier `0` significa premio non acquistabile e produce sempre `price: null`; Club Pokéfan, Centro Commerciale e Negozio Lotta devono filtrare tramite questa regola canonica, senza elenchi paralleli delle MT escluse.
+- I Titoli Allenatore sono definiti tecnicamente in `app/data/titles.js`; nomi e requisiti visibili appartengono soltanto a i18n. Gli sblocchi sono automatici, permanenti e autoritativi: non aggiungere polling o controlli frontend che concedano titoli.
+- I Titoli basati sui tipi usano le registrazioni del Pokédex da qualsiasi fonte. Considerano tutte le specie del catalogo e ogni tipo di una specie doppio tipo, escludendo soltanto le rarità `fossil` e `legendary`; la rarità tecnica `mythic` resta valida.
+- La missione della prima collezione resta legata alla collezione stabile `trainer_titles_initial`, non a ogni eventuale Titolo aggiunto in futuro.
 
 La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono strumenti intenzionali dell'utente debug; non eliminarli come presunto codice di sviluppo inutilizzato.
 

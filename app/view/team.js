@@ -9,6 +9,7 @@ import { battlePointsMarkup, button, moneyMarkup, renderSummary, sceneShell } fr
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { renderDebugPokemonCreator, renderDebugTrainerBadgeControls, renderDebugTrainerBattlePointControls, renderDebugTrainerMoneyControls } from "../client/debug-tools.js";
 import { KANTO_GYM_BADGES } from "../data/gyms.js";
+import { TRAINER_TITLES } from "../data/titles.js";
 import { itemDisplayDescription, itemDisplayName, speciesDisplayName } from "../client/entity-text.js";
 import { t } from "../client/i18n.js";
 
@@ -36,6 +37,29 @@ function emptyPokedexCounts() {
 function pokedexCountLabel(counts, filterGen) {
   var count = counts[filterGen] || counts[0];
   return count.caught + "/" + count.total;
+}
+
+function renderTrainerTitlesPanel() {
+  var unlockedKeys = new Set((state.trainerTitles || []).map(function (entry) {
+    return String(entry && entry.titleKey || "");
+  }));
+  var unlockedTitles = TRAINER_TITLES.filter(function (title) {
+    return unlockedKeys.has(title.key);
+  });
+  var titleList = unlockedTitles.length
+    ? '<ul class="trainer-title-list">' + unlockedTitles.map(function (title) {
+      return '<li>' + escapeHtml(t("ui.team.trainerTitles.entries." + title.key + ".name")) + "</li>";
+    }).join("") + "</ul>"
+    : '<p class="trainer-title-empty">' + escapeHtml(t("ui.team.trainerTitles.empty")) + "</p>";
+  return [
+    '<aside class="trainer-titles-panel">',
+    '  <div class="trainer-titles-heading">',
+    '    <h3>' + escapeHtml(t("ui.team.trainerTitles.panelTitle")) + "</h3>",
+    '    <button type="button" class="trainer-titles-info-button" data-action="trainer-titles-info" aria-label="' + escapeHtml(t("ui.team.trainerTitles.infoAria")) + '">?</button>',
+    "  </div>",
+    '  <div class="trainer-titles-list-wrap">' + titleList + "</div>",
+    "</aside>"
+  ].join("");
 }
 
 function renderPokedexGrid() {
@@ -120,6 +144,7 @@ export function renderTeamScene() {
     '      <div class="trainer-badge-images">' + badgeImages + "</div>",
     "    </div>",
     "  </div>",
+    renderTrainerTitlesPanel(),
     "</section>"
   ].join("");
   var teamCount = Math.min(3, state.team.length);

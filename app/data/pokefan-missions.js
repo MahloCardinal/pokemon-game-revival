@@ -107,12 +107,29 @@ export var AUTHORITATIVE_CAPTURE_MISSIONS = [
   differentSpeciesMission(3008, 150, itemChoiceReward("incense", AROMA_ITEM_INDEXES)),
   differentSpeciesMission(3009, 200, { kind: "item", itemIndex: i.heart_scale.index, quantity: 3 }),
   differentSpeciesMission(3010, 250, { kind: "item", itemIndex: i.master_ball.index, quantity: 1 }),
-  differentSpeciesMission(3011, 300, pokemonChoiceReward("pokemon_level_5_no_fossil", "fixed_5", false))
+  differentSpeciesMission(3011, 300, pokemonChoiceReward("pokemon_level_5_no_fossil", "fixed_5", false)),
+  defineMission({
+    missionIndex: 3012,
+    category: MISSION_CATEGORY_CAPTURE,
+    type: "title_collection",
+    target: 21,
+    collectionKey: "trainer_titles_initial",
+    reward: {
+      kind: "pokemon_choice",
+      choiceKey: "legendary_pokemon_level_100",
+      levelMode: "fixed",
+      level: 100,
+      requiredRarity: "legendary"
+    }
+  })
 ].map(function (mission) {
   if (mission.type === "total_captures") {
     return Object.freeze(Object.assign({}, mission, { type: "zone_captures" }));
   }
-  return Object.freeze(Object.assign({}, mission, { type: "pokedex_species_count" }));
+  if (mission.type === "species_different") {
+    return Object.freeze(Object.assign({}, mission, { type: "pokedex_species_count" }));
+  }
+  return mission;
 });
 
 export var DAILY_MISSIONS = [

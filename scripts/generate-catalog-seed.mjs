@@ -9,7 +9,7 @@ const DATA_ROOT = resolve(ROOT, "app/data");
 const ENGINE_ROOT = resolve(ROOT, "app/engine");
 const SUPPORTED_FAMILIES = new Set([
   "metadata", "zones", "moves", "items", "species", "progression", "shop", "battle-shop",
-  "combat-rules", "zone-access", "missions", "opponents", "admin-battles", "trainers"
+  "combat-rules", "zone-access", "missions", "titles", "opponents", "admin-battles", "trainers"
 ]);
 const moduleCache = new Map();
 const context = vm.createContext({});
@@ -17,7 +17,7 @@ const context = vm.createContext({});
 function usage(message) {
   if (message) console.error(message);
   console.error("Usage: node --experimental-vm-modules scripts/generate-catalog-seed.mjs --release <version> --family <family> [--checksum <draft-label>] [--chunk <index>/<total>]");
-  console.error("Families: metadata, zones, moves, items, species, progression, shop, battle-shop, combat-rules, zone-access, missions, opponents, admin-battles, trainers");
+  console.error("Families: metadata, zones, moves, items, species, progression, shop, battle-shop, combat-rules, zone-access, missions, titles, opponents, admin-battles, trainers");
   console.error("--chunk is 1-based and supported for species, the only currently large family.");
   process.exit(1);
 }
@@ -393,6 +393,23 @@ async function missionStatements(release) {
   return familyResult(primary, rows, { catalog_mission: rows.length }, rows.length);
 }
 
+async function titleStatements(release) {
+  const primary = "app/data/titles.js";
+  const data = await loadSourceModule(primary);
+  const rows = data.TRAINER_TITLES.map((title) => {
+    const unlockRules = rulesWithout(title, new Set(["key", "collectionKey", "sortOrder", "unlockType"]), "title " + title.key, null);
+    return upsertJson(
+      "catalog_title",
+      ["catalog_release_id", "title_key", "collection_key", "sort_order", "unlock_type", "unlock_rules"],
+      [releaseId(release), title.key, title.collectionKey, title.sortOrder, title.unlockType, unlockRules],
+      new Set([5]),
+      ["catalog_release_id", "title_key"],
+      ["collection_key", "sort_order", "unlock_type", "unlock_rules"]
+    ).replace(sqlLiteral(releaseId(release)), releaseId(release));
+  });
+  return familyResult(primary, rows, { catalog_title: rows.length }, rows.length);
+}
+
 function opponentPokemonRows(release, opponentKey, team, rows, counts) {
   team.forEach((pokemon, slot) => {
     const speciesKey = String(pokemon.speciesKey);
@@ -644,6 +661,7 @@ async function familyStatements(release, family, chunk) {
   if (family === "combat-rules") return combatRuleStatements(release);
   if (family === "zone-access") return zoneAccessStatements(release);
   if (family === "missions") return missionStatements(release);
+  if (family === "titles") return titleStatements(release);
   if (family === "opponents") return opponentStatements(release);
   if (family === "admin-battles") return adminBattleStatements(release);
   if (family === "trainers") return trainerStatements(release);

@@ -52,7 +52,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     championTitle: "Kanto Champion",
     rewardsTitle: "Rewards",
     limitationsTitle: "Challenge restrictions",
-    adventureRequirement: "Complete the required Adventure Missions",
+    adventureRequirement: "Complete the required Gym Missions",
     fightLeader: "Battle {leader}!",
     startLeague: "Begin the Indigo Plateau challenge!",
     resumeLeague: "Resume the League challenge",
@@ -101,7 +101,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
       port_items_none: "The challenger's Pokémon may not hold Port Items",
       port_items_distinct: "The challenger's Pokémon may hold at most {count} Port Items, and they must all be different",
       super_effective_max: "The challenger's team may include at most {count} Pokémon that are super effective against the Gym Leader's Pokémon",
-      adventure_requirement: "Complete the required Adventure Missions"
+      adventure_requirement: "Complete the required Gym Missions"
     }),
     requirements: Object.freeze({
       previous_badge: "You must first obtain the {badge}",
@@ -142,7 +142,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
   }),
   pokefan: Object.freeze({
     sceneTitle: "Pokéfan Club",
-    categories: Object.freeze({ adventure: "Adventure Missions", capture: "Catch Missions", daily: "Daily Missions" }),
+    categories: Object.freeze({ adventure: "Gym Missions", capture: "Adventure Missions", daily: "Daily Missions" }),
     categoriesAria: "Mission categories",
     activeMissions: "Active missions",
     completedMissions: "Completed missions",
@@ -168,7 +168,8 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
       incense: "Incense of your choice",
       pokemon_level_5_no_fossil_legendary: "Level 5 Pokémon of your choice (no Fossil or Legendary Pokémon)",
       pokemon_badge_cap_no_fossil_legendary: "Pokémon of your choice at the maximum trainable level (no Fossil or Legendary Pokémon)",
-      pokemon_level_5_no_fossil: "Level 5 Pokémon of your choice (no Fossil Pokémon)"
+      pokemon_level_5_no_fossil: "Level 5 Pokémon of your choice (no Fossil Pokémon)",
+      legendary_pokemon_level_100: "Level 100 Legendary Pokémon of your choice"
     }),
     requirements: Object.freeze({
       "1000": "Log in for the day",
@@ -203,7 +204,8 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
       "3008": "Register 150 species in the National Pokédex",
       "3009": "Register 200 species in the National Pokédex",
       "3010": "Register 250 species in the National Pokédex",
-      "3011": "Register 300 species in the National Pokédex"
+      "3011": "Register 300 species in the National Pokédex",
+      "3012": "Obtain every Trainer Title"
     })
   }),
   zoneAccess: Object.freeze({
@@ -261,6 +263,35 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     deposit: "Deposit in Box",
     emptyTeam: "Your team is empty.",
     inventorySections: Object.freeze({ tools: "Items", held: "Held items", battle: "Battle items", balls: "Poké Balls", mt: "TMs", berries: "Berries" }),
+    trainerTitles: Object.freeze({
+      panelTitle: "Trainer Titles",
+      infoAria: "Show titles and requirements",
+      infoTitle: "Trainer Titles",
+      empty: "No titles obtained yet",
+      entries: Object.freeze({
+        steel_will: Object.freeze({ name: "Iron Will", requirement: "Register every Steel-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        expert_angler: Object.freeze({ name: "Expert Angler", requirement: "Register every Water-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        creature_of_the_night: Object.freeze({ name: "Creature of the Night", requirement: "Register every Dark-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        bug_catching_enthusiast: Object.freeze({ name: "Bug-Catching Enthusiast", requirement: "Register every Bug-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        dragon_tamer: Object.freeze({ name: "Dragon Tamer", requirement: "Register every Dragon-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        picnic_enthusiast: Object.freeze({ name: "Picnic Enthusiast", requirement: "Register every Grass-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        electric_personality: Object.freeze({ name: "Electric Personality", requirement: "Register every Electric-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        fairy_catcher: Object.freeze({ name: "Fairy Catcher", requirement: "Register every Fairy-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        flame_ranger: Object.freeze({ name: "Flame Ranger", requirement: "Register every Fire-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        ice_king: Object.freeze({ name: "Ice King", requirement: "Register every Ice-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        placid_trainer: Object.freeze({ name: "Placid Trainer", requirement: "Register every Normal-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        relentless_black_belt: Object.freeze({ name: "Relentless Black Belt", requirement: "Register every Fighting-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        medium: Object.freeze({ name: "Medium", requirement: "Register every Psychic-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        tough_bone: Object.freeze({ name: "Tough as Nails", requirement: "Register every Rock-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        halloween_lover: Object.freeze({ name: "Halloween Lover", requirement: "Register every Ghost-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        desert_bedouin: Object.freeze({ name: "Desert Bedouin", requirement: "Register every Ground-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        trap_expert: Object.freeze({ name: "Trap Expert", requirement: "Register every Poison-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        red_baron: Object.freeze({ name: "Red Baron", requirement: "Register every Flying-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
+        green_thumb: Object.freeze({ name: "Green Thumb", requirement: "Harvest 100 Berries from plants." }),
+        kanto_champion: Object.freeze({ name: "Kanto Champion", requirement: "Defeat the Kanto Champion NPC." }),
+        battle_tower_champion: Object.freeze({ name: "Battle Tower Champion", requirement: "Defeat 10 consecutive challengers in the Battle Tower." })
+      })
+    }),
     generations: Object.freeze({ national: "National", gen1: "Generation I", gen2: "Generation II", gen3: "Generation III" })
   }),
   auth: Object.freeze({

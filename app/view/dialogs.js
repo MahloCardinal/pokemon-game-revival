@@ -4,6 +4,27 @@ import { button } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { itemDisplayName, moveDisplayDescription, moveDisplayName, pokemonDisplayName, speciesDisplayName } from "../client/entity-text.js";
 import { resolveText, t } from "../client/i18n.js";
+import { TRAINER_TITLES } from "../data/titles.js";
+
+function renderTrainerTitlesInfoDialog() {
+  return [
+    '<div class="dialog-backdrop">',
+    '  <section class="dialog trainer-titles-dialog">',
+    '    <h2 class="dialog-title">' + escapeHtml(t("ui.team.trainerTitles.infoTitle")) + "</h2>",
+    '    <dl class="trainer-titles-info-list">',
+    TRAINER_TITLES.map(function (title) {
+      return '<div class="trainer-title-info-entry"><dt>'
+        + escapeHtml(t("ui.team.trainerTitles.entries." + title.key + ".name"))
+        + "</dt><dd>"
+        + escapeHtml(t("ui.team.trainerTitles.entries." + title.key + ".requirement"))
+        + "</dd></div>";
+    }).join(""),
+    "    </dl>",
+    '    <div class="dialog-actions">' + button(t("ui.dialogs.close"), "dialog-close", "", "button-primary") + "</div>",
+    "  </section>",
+    "</div>"
+  ].join("");
+}
 
 function renderTeamChoiceDialog(dialog) {
   var activeIndex = dialog.activeIndex;
@@ -428,6 +449,9 @@ export function renderDialog(dialog) {
   }
   if (dialog.type === "kanto-league-entry") {
     return renderKantoLeagueEntryDialog(dialog);
+  }
+  if (dialog.type === "trainer-titles-info") {
+    return renderTrainerTitlesInfoDialog();
   }
   return "";
 }

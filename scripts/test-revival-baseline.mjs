@@ -58,6 +58,7 @@ const captureHandler = read("app/client/capture-handler.js");
 const adminBattleHandler = read("app/client/admin-battle-handler.js");
 const battleView = read("app/view/battle.js");
 const teamView = read("app/view/team.js");
+const teamStyles = read("styles/team.css");
 const inventoryViewHelpers = read("app/view/inventory-helpers.js");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
@@ -156,6 +157,9 @@ assert.match(captureHandler, /await refreshCaptureEncounterState\(captureScene\)
 assert.match(captureHandler, /state\.ordinaryProgression[\s\S]*openActiveProgressionScene\(\)/);
 assert.match(inventoryViewHelpers, /SINGLE_COPY_INVENTORY_ITEM_INDEXES[\s\S]*go_goggles\.index[\s\S]*silph_scope\.index[\s\S]*white_flute\.index[\s\S]*black_flute\.index/);
 assert.match(teamView, /isSingleCopyInventoryItem\(item\) \? ""/);
+assert.match(teamView, /trainerTitles\.infoTooltip/);
+assert.match(teamStyles, /\.trainer-titles-panel\s*\{[\s\S]*?width:\s*300px;/);
+assert.match(teamStyles, /grid-template-columns:\s*var\(--trainer-sprite-width\) max-content 300px;/);
 assert.match(recoveryEdge, /https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery/);
 assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RECOVERY_REDIRECT_URL/);
 assert.doesNotMatch(recoveryEdge, /Deno\.env\.get\("APP_URL"\)|localhost|web-gdr-staging/);

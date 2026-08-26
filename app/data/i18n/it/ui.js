@@ -266,6 +266,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     trainerTitles: Object.freeze({
       panelTitle: "Titoli Allenatore",
       infoAria: "Mostra titoli e requisiti",
+      infoTooltip: "Clicca per info sui titoli",
       infoTitle: "Titoli Allenatore",
       empty: "Nessun titolo ancora ottenuto",
       entries: Object.freeze({

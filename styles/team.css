@@ -207,7 +207,9 @@
   object-position: center bottom;
 }
 .trainer-profile-content {
+  width: max-content;
   min-width: 0;
+  max-width: 100%;
   min-height: var(--trainer-sprite-height);
   display: grid;
   align-content: start;
@@ -221,8 +223,7 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 10px;
-  width: 100%;
-  min-width: 300px;
+  width: 300px;
   min-height: 200px;
   max-height: var(--trainer-sprite-height);
   padding: 12px;
@@ -283,7 +284,7 @@
 }
 .trainer-title-list li {
   margin: 0;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.25;
   overflow-wrap: anywhere;
@@ -296,7 +297,7 @@
 .trainer-title-empty {
   margin: 0;
   color: var(--text-soft);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.25;
   overflow-wrap: anywhere;
@@ -466,8 +467,8 @@
   max-width: 100%;
 }
 .scene-content-team .trainer-profile-panel {
-  grid-template-columns: minmax(0, var(--trainer-sprite-width)) minmax(220px, 360px) minmax(300px, 1fr);
-  justify-content: center;
+  grid-template-columns: var(--trainer-sprite-width) max-content 300px;
+  justify-content: space-between;
   overflow: hidden;
 }
 .scene-content-team .trainer-inventory-stack {
@@ -494,15 +495,15 @@
   }
 
 }
-@media (max-width: 880px) and (min-width: 681px) {
+@media (max-width: 900px) and (min-width: 681px) {
   .scene-content-team .trainer-profile-panel {
-    grid-template-columns: minmax(0, var(--trainer-sprite-width)) minmax(0, 360px);
+    grid-template-columns: var(--trainer-sprite-width) max-content;
+    justify-content: space-around;
   }
 
   .scene-content-team .trainer-titles-panel {
     grid-column: 1 / -1;
-    width: min(100%, 360px);
-    min-width: 0;
+    width: min(300px, 100%);
     max-height: 220px;
     justify-self: center;
   }
@@ -532,8 +533,7 @@
   }
 
   .scene-content-team .trainer-titles-panel {
-    width: min(100%, 360px);
-    min-width: 0;
+    width: min(300px, 100%);
     max-height: 220px;
   }
 

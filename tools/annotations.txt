@@ -1,9 +1,9 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
+- aggiungere nuove statistiche, metodo di apparizione, e sprite degli Shiny, e statistiche dei Leggendari
 - bilanciamento team palestre
-- inserire nelle palestre le date di vittoria da parte degli altri giocatori
-- inserire possibilità di vedere squadre altri giocatori
+- inserire possibilità di vedere squadre altri giocatori (e squadre con cui hanno vinto le palestre?)
 - implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)
 - verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
 

@@ -55,7 +55,7 @@ function renderTrainerTitlesPanel() {
     '<aside class="trainer-titles-panel">',
     '  <div class="trainer-titles-heading">',
     '    <h3>' + escapeHtml(t("ui.team.trainerTitles.panelTitle")) + "</h3>",
-    '    <button type="button" class="trainer-titles-info-button" data-action="trainer-titles-info" aria-label="' + escapeHtml(t("ui.team.trainerTitles.infoAria")) + '">?</button>',
+    '    <button type="button" class="trainer-titles-info-button" data-action="trainer-titles-info" aria-label="' + escapeHtml(t("ui.team.trainerTitles.infoAria")) + '" title="' + escapeHtml(t("ui.team.trainerTitles.infoTooltip")) + '">?</button>',
     "  </div>",
     '  <div class="trainer-titles-list-wrap">' + titleList + "</div>",
     '  <div class="trainer-titles-debug-controls">' + renderDebugTrainerTitleControls() + "</div>",

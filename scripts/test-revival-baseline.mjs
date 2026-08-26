@@ -159,6 +159,9 @@ assert.match(inventoryViewHelpers, /SINGLE_COPY_INVENTORY_ITEM_INDEXES[\s\S]*go_
 assert.match(teamView, /isSingleCopyInventoryItem\(item\) \? ""/);
 assert.match(teamView, /trainerTitles\.infoTooltip/);
 assert.match(teamStyles, /\.trainer-titles-panel\s*\{[\s\S]*?width:\s*300px;/);
+assert.match(teamStyles, /\.trainer-titles-panel\s*\{[^}]*height:\s*250px;/);
+assert.doesNotMatch(teamStyles, /\.trainer-titles-panel\s*\{[^}]*(?:min-height|max-height):/);
+assert.doesNotMatch(teamStyles, /\.scene-content-team \.trainer-titles-panel\s*\{[^}]*max-height:/);
 assert.match(teamStyles, /grid-template-columns:\s*var\(--trainer-sprite-width\) max-content 300px;/);
 assert.match(recoveryEdge, /https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery/);
 assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RECOVERY_REDIRECT_URL/);

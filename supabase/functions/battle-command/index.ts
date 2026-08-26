@@ -32,7 +32,7 @@ import { notifyDiscordAdminBattleStarted, notifyDiscordAdminBattleTurnReady } fr
 const unchangedTerminalEffects = { reward: "none", inventory: "unchanged", team: "unchanged" };
 const commonKeys = ["action", "battleId", "commandId", "expectedPlayerRevision", "expectedBattleVersion", "runtimeOwnerId"];
 const allowedActions = new Set([
-  "roles", "debug_money", "debug_badges", "debug_battle_points", "debug_create_pokemon", "inventory_adjust", "debug_complete_mission",
+  "roles", "debug_money", "debug_badges", "debug_titles", "debug_battle_points", "debug_create_pokemon", "inventory_adjust", "debug_complete_mission",
   "admin_list", "admin_read", "admin_entry_choice", "start", "prepare_training", "discard_training", "activate_training", "start_training", "start_debug_training", "start_capture", "flee_capture", "start_gym",
   "start_admin_gym", "start_league", "start_tower", "read", "restore", "read_training", "read_ordinary_progression",
   "resolve_ordinary_progression", "allocate_training", "resolve_training", "move", "switch", "entry_choice", "item", "ball",
@@ -267,6 +267,25 @@ Deno.serve(async (request) => {
     if (action === "roles") {
       requireExactKeys(body, ["action"], []);
       return jsonResponse({ ok: true, roles: await rolesForUser(clients.serviceClient, clients.userId) });
+    }
+
+    if (action === "debug_titles") {
+      requireExactKeys(body, ["action", "commandId", "expectedPlayerRevision", "delta"],
+        ["commandId", "expectedPlayerRevision", "delta"]);
+      requireRevivalProject();
+      await requireServerRole(clients.serviceClient, clients.userId, "debug");
+      const delta = integer(body.delta, "delta", -1, 1);
+      if (delta !== -1 && delta !== 1) {
+        throw new BattleEdgeError("invalid_request", "La variazione dei titoli deve essere -1 oppure 1.");
+      }
+      const adjusted = await clients.serviceClient.rpc("adjust_debug_trainer_title", {
+        p_auth_user_id: clients.userId,
+        p_command_id: uuid(body.commandId, "commandId"),
+        p_expected_player_revision: integer(body.expectedPlayerRevision, "expectedPlayerRevision", 0, Number.MAX_SAFE_INTEGER),
+        p_delta: delta
+      });
+      if (adjusted.error) throw databaseError(adjusted.error);
+      return jsonResponse(adjusted.data as Record<string, unknown>);
     }
 
     if (["debug_money", "debug_badges", "debug_battle_points", "debug_create_pokemon", "inventory_adjust"].includes(action)) {

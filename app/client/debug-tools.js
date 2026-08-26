@@ -10,10 +10,11 @@ var TEAM_MAX = Engine.TEAM_MAX;
 import { escapeHtml } from "./asset-helpers.js";
 import { button } from "./render-utils.js";
 import { SPECIES_LIBRARY } from "../data/index.js";
+import { TRAINER_TITLES } from "../data/titles.js";
 import * as MoveConstants from "../data/moves.js";
 import { getItemByIndex } from "../data/items.js";
 import * as ItemConstants from "../data/items.js";
-import { addAuthoritativeDebugBattlePoints, adjustAuthoritativeDebugBadges, adjustAuthoritativeDebugInventory, adjustAuthoritativeDebugMoney, createAuthoritativeDebugPokemon } from "../api/debug.js";
+import { addAuthoritativeDebugBattlePoints, adjustAuthoritativeDebugBadges, adjustAuthoritativeDebugInventory, adjustAuthoritativeDebugMoney, adjustAuthoritativeDebugTrainerTitles, createAuthoritativeDebugPokemon } from "../api/debug.js";
 import { authoritativeDebugPlayerState } from "../api/debug-contract.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { getCurrentPlayerState } from "../api/player-command.js";
@@ -26,6 +27,7 @@ var DEBUG_POKEMON_MAX_POWER = 999;
 var DEBUG_POKEMON_MAX_STATS = 999;
 var authoritativeDebugInventoryPending = false;
 var authoritativeDebugBattlePointsPending = false;
+var authoritativeDebugTrainerTitlesPending = false;
 
 
 
@@ -52,6 +54,14 @@ export function renderDebugTrainerBattlePointControls() {
 export function renderDebugTrainerBadgeControls() {
   return renderDebugButton("-1", "trainer-debug-adjust-badges", 'data-delta="-1"', "button-ghost button-slim trainer-badge-debug") +
     renderDebugButton("+1", "trainer-debug-adjust-badges", 'data-delta="1"', "button-ghost button-slim trainer-badge-debug");
+}
+
+export function renderDebugTrainerTitleControls() {
+  var titleCount = Array.isArray(state.trainerTitles) ? state.trainerTitles.length : 0;
+  var removeAttrs = 'data-delta="-1"' + (authoritativeDebugTrainerTitlesPending || titleCount === 0 ? " disabled" : "");
+  var addAttrs = 'data-delta="1"' + (authoritativeDebugTrainerTitlesPending || titleCount >= TRAINER_TITLES.length ? " disabled" : "");
+  return renderDebugButton("-1", "trainer-debug-adjust-titles", removeAttrs, "button-ghost button-slim trainer-title-debug") +
+    renderDebugButton("+1", "trainer-debug-adjust-titles", addAttrs, "button-ghost button-slim trainer-title-debug");
 }
 
 export function renderDebugPokemonCreator() {
@@ -297,6 +307,23 @@ registerDebugAction("trainer-debug-adjust-badges", async function (element) {
   var result = await adjustAuthoritativeDebugBadges({ expectedPlayerRevision: state.authoritativeRevision, delta: delta });
   await applyAuthoritativeDebugResult(result, textDescriptor("ui.debug.titles.badges"));
   return;
+});
+
+registerDebugAction("trainer-debug-adjust-titles", async function (element) {
+  if (authoritativeDebugTrainerTitlesPending) return;
+  var delta = Number(element.dataset.delta) || 0;
+  authoritativeDebugTrainerTitlesPending = true;
+  render();
+  try {
+    var result = await adjustAuthoritativeDebugTrainerTitles({
+      expectedPlayerRevision: state.authoritativeRevision,
+      delta: delta
+    });
+    await applyAuthoritativeDebugResult(result, textDescriptor("ui.debug.titles.trainerTitles"));
+  } finally {
+    authoritativeDebugTrainerTitlesPending = false;
+    render();
+  }
 });
 
 registerDebugAction("trainer-debug-create-pokemon", async function (element) {

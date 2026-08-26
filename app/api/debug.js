@@ -56,6 +56,10 @@ export function adjustAuthoritativeDebugBadges(input) {
   return runDebugCommand("debug_badges", input.expectedPlayerRevision, { delta: Math.floor(Number(input.delta)) });
 }
 
+export function adjustAuthoritativeDebugTrainerTitles(input) {
+  return runDebugCommand("debug_titles", input.expectedPlayerRevision, { delta: Math.floor(Number(input.delta)) });
+}
+
 export function addAuthoritativeDebugBattlePoints(input) {
   return runDebugCommand("debug_battle_points", input.expectedPlayerRevision, {});
 }

@@ -375,7 +375,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
   debug: Object.freeze({
     createPokemonTitle: "Create Pokémon (debug)", createPokemon: "Create Pokémon", move: "Move {number}",
     speciesIndex: "Species index", level: "Level", hp: "HP", heldItem: "Held item", power: "Power", stats: "Stats",
-    titles: Object.freeze({ money: "Money debug", battlePoints: "BP debug", badges: "Badge debug", pokemon: "Pokémon debug", items: "Item debug" })
+    titles: Object.freeze({ money: "Money debug", battlePoints: "BP debug", badges: "Badge debug", trainerTitles: "Trainer Title debug", pokemon: "Pokémon debug", items: "Item debug" })
   }),
   admin: Object.freeze({
     title: "Admin",

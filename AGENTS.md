@@ -265,6 +265,7 @@ Le proiezioni complete restano nella risposta Edge, ma gli RPC di commit ricevon
 - `aaa`: ruolo server `debug`, strumenti di debug e accesso alla pagina `/styles`.
 
 Le funzionalità di `aaa` sono intenzionali e devono essere preservate. Ogni privilegio deve essere validato anche dal backend e non soltanto nascosto o mostrato nel browser.
+I controlli debug `+1`/`-1` dei Titoli usano il comando Edge autoritativo `debug_titles`: aggiungono il primo Titolo non posseduto o rimuovono il primo Titolo posseduto secondo `sortOrder`. Non sostituirli con scritture browser su `player_title`.
 
 ## Versione frontend e cache
 

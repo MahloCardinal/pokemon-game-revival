@@ -39,6 +39,7 @@ const encounterActivityMigration = read("supabase/migrations/20260824124000_canc
 const trainingMissionReceiptMigration = read("supabase/migrations/20260825090000_fix_training_mission_receipt_trigger.sql");
 const segmentedTrainingProgressionMigration = read("supabase/migrations/20260825100000_segment_training_level_progression.sql");
 const trainerTitlesMigration = read("supabase/migrations/20260826120000_trainer_titles.sql");
+const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_debug_trainer_title_controls.sql");
 const renderUtils = read("app/client/render-utils.js");
 const assetPaths = read("app/data/asset-paths.js");
 const captureZonesData = read("app/data/capture-zones.js");
@@ -179,6 +180,10 @@ assert.match(trainerTitlesMigration, /after insert on public\.player_league_vict
 assert.match(trainerTitlesMigration, /after update of battle_tower_record/i);
 assert.match(trainerTitlesMigration, /species\.encounter_rarity_key = v_reward ->> 'requiredRarity'/i);
 assert.doesNotMatch(trainerTitlesMigration, /cron|pg_cron|schedule\s*\(/i);
+assert.match(edge, /action === "debug_titles"[\s\S]*requireServerRole\(clients\.serviceClient, clients\.userId, "debug"\)/);
+assert.match(debugTrainerTitlesMigration, /user_has_server_role\(p_auth_user_id, 'debug'\)/i);
+assert.match(debugTrainerTitlesMigration, /order by title\.sort_order[\s\S]*limit 1/i);
+assert.match(debugTrainerTitlesMigration, /revoke all on function public\.adjust_debug_trainer_title[\s\S]*from public, anon, authenticated/i);
 assert.match(shoppingCenter, /entry\.price === null/);
 assert.match(catalogGenerator, /purchasePrice === null/);
 assert.match(gameDataChangeGenerator, /begin_game_data_change/);

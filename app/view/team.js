@@ -7,7 +7,7 @@ import { state } from "../client/game-state.js";
 import { assetPath, escapeHtml, getItemDisplayImage, getItemImage, getPokemonStaticImage, getTrainerImage, renderImage, withPokemonSpriteAttrs, withPokemonSpriteClass, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
 import { battlePointsMarkup, button, moneyMarkup, renderSummary, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
-import { renderDebugPokemonCreator, renderDebugTrainerBadgeControls, renderDebugTrainerBattlePointControls, renderDebugTrainerMoneyControls } from "../client/debug-tools.js";
+import { renderDebugPokemonCreator, renderDebugTrainerBadgeControls, renderDebugTrainerBattlePointControls, renderDebugTrainerMoneyControls, renderDebugTrainerTitleControls } from "../client/debug-tools.js";
 import { KANTO_GYM_BADGES } from "../data/gyms.js";
 import { TRAINER_TITLES } from "../data/titles.js";
 import { itemDisplayDescription, itemDisplayName, speciesDisplayName } from "../client/entity-text.js";
@@ -58,6 +58,7 @@ function renderTrainerTitlesPanel() {
     '    <button type="button" class="trainer-titles-info-button" data-action="trainer-titles-info" aria-label="' + escapeHtml(t("ui.team.trainerTitles.infoAria")) + '">?</button>',
     "  </div>",
     '  <div class="trainer-titles-list-wrap">' + titleList + "</div>",
+    '  <div class="trainer-titles-debug-controls">' + renderDebugTrainerTitleControls() + "</div>",
     "</aside>"
   ].join("");
 }

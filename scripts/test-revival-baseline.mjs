@@ -174,6 +174,7 @@ assert.match(teamStyles, /\.trainer-titles-panel\s*\{[^}]*height:\s*250px;/);
 assert.doesNotMatch(teamStyles, /\.trainer-titles-panel\s*\{[^}]*(?:min-height|max-height):/);
 assert.doesNotMatch(teamStyles, /\.scene-content-team \.trainer-titles-panel\s*\{[^}]*max-height:/);
 assert.match(teamStyles, /grid-template-columns:\s*var\(--trainer-sprite-width\) max-content 300px;/);
+assert.match(teamStyles, /@media \(max-width: 680px\)[\s\S]*?\.scene-content-team \.trainer-profile-panel\s*\{[\s\S]*?--trainer-sprite-width:\s*clamp\(110px, 38vw, 140px\);/);
 assert.match(recoveryEdge, /https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery/);
 assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RECOVERY_REDIRECT_URL/);
 assert.doesNotMatch(recoveryEdge, /Deno\.env\.get\("APP_URL"\)|localhost|web-gdr-staging/);

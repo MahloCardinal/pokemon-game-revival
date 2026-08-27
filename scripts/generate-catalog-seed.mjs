@@ -266,7 +266,8 @@ async function progressionStatements(release) {
     ["flute_daily_use_limit", data.FLUTE_DAILY_USE_LIMIT], ["garden_harvest_quantity", data.GARDEN_HARVEST_QUANTITY],
     ["daycare_withdraw_base_cost", data.DAYCARE_WITHDRAW_BASE_COST], ["daycare_withdraw_level_cost", data.DAYCARE_WITHDRAW_LEVEL_COST],
     ["daycare_max_pending_levels", data.DAYCARE_MAX_PENDING_LEVELS], ["daycare_level_interval_seconds", data.DAYCARE_LEVEL_INTERVAL_SECONDS],
-    ["training_max_levels_per_pokemon", data.MAX_TRAINING_LEVELS_PER_POKEMON]
+    ["training_max_levels_per_pokemon", data.MAX_TRAINING_LEVELS_PER_POKEMON],
+    ["shiny_odds_denominator", data.SHINY_ODDS_DENOMINATOR]
   ].forEach((entry, index) => add("constant", entry[0], index, { value: entry[1] }));
   data.TRAINING_DIFFICULTIES.forEach((entry, index) => add("training_difficulty", entry.key, index, withoutPresentationFields(entry)));
   data.BADGE_LEVEL_LIMITS.forEach((_levelCap, badges) => Object.keys(data.AUTHORITATIVE_TRAINING_DAILY_REWARDS).sort().forEach((difficulty, index) => add("training_daily_reward", badges + "." + difficulty, badges * 10 + index, { badges, difficulty, money: 0, ...data.AUTHORITATIVE_TRAINING_DAILY_REWARDS[difficulty] })));
@@ -360,7 +361,13 @@ async function combatRuleStatements(release) {
     rows.push(upsert("catalog_type_effectiveness", ["catalog_release_id", "attacker_type_key", "defender_type_key", "multiplier"], [releaseId(release), attacker, defender, types.TYPE_CHART[attacker][defender]], ["catalog_release_id", "attacker_type_key", "defender_type_key"], ["multiplier"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
   }));
   for (let level = 5; level <= 100; level += 1) {
-    rows.push(upsert("catalog_level_rule", ["catalog_release_id", "level", "base_hp", "base_power", "base_stats", "max_hp", "max_power", "max_stats"], [releaseId(release), level, baseValueForLevel(stats.HP_BY_LEVEL, level, 3), baseValueForLevel(stats.PW_BY_LEVEL, level, 2), baseValueForLevel(stats.STATS_BY_LEVEL, level, 2), stats.maxHpForLevel(level), stats.maxPowerForLevel(level), stats.maxStatsForLevel(level)], ["catalog_release_id", "level"], ["base_hp", "base_power", "base_stats", "max_hp", "max_power", "max_stats"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
+    const shinyHpBonus = stats.shinyHpBonusForLevel(level);
+    const shinyPowerBonus = stats.shinyPowerBonusForLevel(level);
+    const shinyStatsBonus = stats.shinyStatsBonusForLevel(level);
+    const normalMaxHp = stats.maxHpForLevel(level);
+    const normalMaxPower = stats.maxPowerForLevel(level);
+    const normalMaxStats = stats.maxStatsForLevel(level);
+    rows.push(upsert("catalog_level_rule", ["catalog_release_id", "level", "base_hp", "base_power", "base_stats", "max_hp", "max_power", "max_stats", "normal_max_hp", "normal_max_power", "normal_max_stats", "shiny_hp_bonus", "shiny_power_bonus", "shiny_stats_bonus"], [releaseId(release), level, baseValueForLevel(stats.HP_BY_LEVEL, level, 3), baseValueForLevel(stats.PW_BY_LEVEL, level, 2), baseValueForLevel(stats.STATS_BY_LEVEL, level, 2), normalMaxHp + shinyHpBonus, normalMaxPower + shinyPowerBonus, normalMaxStats + shinyStatsBonus, normalMaxHp, normalMaxPower, normalMaxStats, shinyHpBonus, shinyPowerBonus, shinyStatsBonus], ["catalog_release_id", "level"], ["base_hp", "base_power", "base_stats", "max_hp", "max_power", "max_stats", "normal_max_hp", "normal_max_power", "normal_max_stats", "shiny_hp_bonus", "shiny_power_bonus", "shiny_stats_bonus"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
   }
   let pveCount = 0;
   Object.keys(pve.PVE_MOVE_CATEGORIES).sort().forEach((category) => pve.PVE_MOVE_CATEGORIES[category].forEach((moveIndex, order) => {

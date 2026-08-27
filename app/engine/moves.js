@@ -107,11 +107,11 @@ export function moveFromJSON(data) {
   });
 }
 
-export function buildMoveList(moveDefs, level) {
+export function buildMoveList(moveDefs, level, options) {
   return moveDefs.map(function (moveDef) {
     return createMove(moveDef, {
-      power: powerForLevel(level),
-      stats: statsForLevel(level)
+      power: powerForLevel(level, options),
+      stats: statsForLevel(level, options)
     });
   });
 }

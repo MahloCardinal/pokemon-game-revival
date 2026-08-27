@@ -1,4 +1,5 @@
 import { GDR_DATA as DATA } from "../data/index.js";
+import { shinyHpBonusForLevel, shinyPowerBonusForLevel, shinyStatsBonusForLevel } from "../data/stat-tables.js";
 
 import { random } from "./deterministic-rng.js";
 
@@ -6,7 +7,12 @@ export function randInt(min, max) {
   return min + Math.floor(random() * (max - min + 1));
 }
 
-export function hpForLevel(level) {
+function shinyOriginLevel(level, options) {
+  options = options || {};
+  return options.isShiny ? Number(options.shinyOriginLevel || level) : 0;
+}
+
+export function hpForLevel(level, options) {
   var tableValue = DATA.hpByLevel[level];
   var maxDelta = 0;
   if (tableValue === undefined) {
@@ -20,10 +26,11 @@ export function hpForLevel(level) {
   } else if (level >= 15) {
     maxDelta = 2;
   }
-  return tableValue - randInt(0, maxDelta);
+  var originLevel = shinyOriginLevel(level, options);
+  return tableValue - randInt(0, maxDelta) + (originLevel ? shinyHpBonusForLevel(originLevel) : 0);
 }
 
-export function powerForLevel(level) {
+export function powerForLevel(level, options) {
   var tableValue = DATA.powerByLevel[level];
   var maxDelta = 0;
   if (tableValue === undefined) {
@@ -39,10 +46,11 @@ export function powerForLevel(level) {
   } else if (level >= 10) {
     maxDelta = 2;
   }
-  return tableValue - randInt(0, maxDelta);
+  var originLevel = shinyOriginLevel(level, options);
+  return tableValue - randInt(0, maxDelta) + (originLevel ? shinyPowerBonusForLevel(originLevel) : 0);
 }
 
-export function statsForLevel(level) {
+export function statsForLevel(level, options) {
   var tableValue = DATA.statsByLevel[level];
   var maxDelta = 0;
   if (tableValue === undefined) {
@@ -54,5 +62,6 @@ export function statsForLevel(level) {
   if (level >= 40) {
     maxDelta = 2;
   }
-  return tableValue - randInt(0, maxDelta);
+  var originLevel = shinyOriginLevel(level, options);
+  return tableValue - randInt(0, maxDelta) + (originLevel ? shinyStatsBonusForLevel(originLevel) : 0);
 }

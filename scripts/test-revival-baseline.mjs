@@ -40,6 +40,10 @@ const trainingMissionReceiptMigration = read("supabase/migrations/20260825090000
 const segmentedTrainingProgressionMigration = read("supabase/migrations/20260825100000_segment_training_level_progression.sql");
 const trainerTitlesMigration = read("supabase/migrations/20260826120000_trainer_titles.sql");
 const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_debug_trainer_title_controls.sql");
+const shinyMigration = read("supabase/migrations/20260827120000_authoritative_shiny_pokemon.sql");
+const statTables = read("app/data/stat-tables.js");
+const pokemonEngine = read("app/engine/pokemon.js");
+const assetHelpers = read("app/client/asset-helpers.js");
 const renderUtils = read("app/client/render-utils.js");
 const assetPaths = read("app/data/asset-paths.js");
 const captureZonesData = read("app/data/capture-zones.js");
@@ -203,6 +207,13 @@ assert.match(edge, /action === "debug_titles"[\s\S]*requireServerRole\(clients\.
 assert.match(debugTrainerTitlesMigration, /user_has_server_role\(p_auth_user_id, 'debug'\)/i);
 assert.match(debugTrainerTitlesMigration, /order by title\.sort_order[\s\S]*limit 1/i);
 assert.match(debugTrainerTitlesMigration, /revoke all on function public\.adjust_debug_trainer_title[\s\S]*from public, anon, authenticated/i);
+assert.match(shinyMigration, /rule_key = 'shiny_odds_denominator'[\s\S]*v_is_shiny := floor\(random\(\) \* v_shiny_odds\)::integer = 0/i);
+assert.match(shinyMigration, /'sh',1,'shl',v_encounter\.shiny_origin_level/i);
+assert.match(shinyMigration, /pokemon_stat_caps[\s\S]*origin_rule\.shiny_hp_bonus/i);
+assert.match(shinyMigration, /p_requires_battle_idle => true/i);
+assert.match(statTables, /55:\s*51,\s*56:\s*53,\s*57:\s*54/);
+assert.match(pokemonEngine, /data\.shl = this\.shinyOriginLevel/);
+assert.match(assetHelpers, /replace\(\/_shiny\(\?=\\\.webp\$\)\/, ""\)/);
 assert.match(shoppingCenter, /entry\.price === null/);
 assert.match(catalogGenerator, /purchasePrice === null/);
 assert.match(gameDataChangeGenerator, /begin_game_data_change/);
@@ -390,6 +401,9 @@ const ItemDefinitions = itemDefinitionsModule.namespace;
 const titleDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/titles.js", import.meta.url)));
 if (titleDefinitionsModule.status !== "evaluated") await titleDefinitionsModule.evaluate();
 const TitleDefinitions = titleDefinitionsModule.namespace;
+const statDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/stat-tables.js", import.meta.url)));
+if (statDefinitionsModule.status !== "evaluated") await statDefinitionsModule.evaluate();
+const StatDefinitions = statDefinitionsModule.namespace;
 const captureCalcModule = await loadEsModule(fileURLToPath(new URL("../app/engine/capture-calc.js", import.meta.url)));
 if (captureCalcModule.status !== "evaluated") await captureCalcModule.evaluate();
 const CaptureCalc = captureCalcModule.namespace;
@@ -420,6 +434,33 @@ assert.deepEqual(
   [ItemDefinitions.tm53, ItemDefinitions.tm54, ItemDefinitions.tm55].map((item) => [item.index, item.number, item.move.key, item.tier]),
   [[453, 53, "cut", 2], [454, 54, "surf", 0], [455, 55, "waterfall", 2]]
 );
+assert.equal(StatDefinitions.STATS_BY_LEVEL[56], 53);
+assert.deepEqual(
+  [5, 10, 20, 30, 40, 60].map((level) => [
+    level,
+    StatDefinitions.shinyHpBonusForLevel(level),
+    StatDefinitions.shinyPowerBonusForLevel(level),
+    StatDefinitions.shinyStatsBonusForLevel(level)
+  ]),
+  [[5, 4, 1, 1], [10, 6, 2, 1], [20, 12, 5, 2], [30, 17, 9, 5], [40, 20, 15, 15], [60, 20, 15, 15]]
+);
+
+{
+  const shiny = new Pokemon({
+    name: "Charmander", speciesKey: "4", ndex: 4, level: 25, type: ["fire"], maxHp: 84,
+    isShiny: true, shinyOriginLevel: 25, moves: [createMove(MoveDefinitions.tackle, { power: 55, stats: 16 })]
+  });
+  const saved = shiny.toJSON();
+  assert.equal(saved.sh, 1);
+  assert.equal(saved.shl, 25);
+  shiny.level = 40;
+  assert.equal(StatDefinitions.maxHpForPokemon(shiny), StatDefinitions.maxHpForLevel(40) + 14,
+    "A Shiny Pokemon must keep the HP bonus from its acquisition level after leveling");
+  assert.equal(StatDefinitions.maxPowerForPokemon(shiny), StatDefinitions.maxPowerForLevel(40) + 7,
+    "A Shiny Pokemon must keep the move Power bonus from its acquisition level after leveling");
+  assert.equal(StatDefinitions.maxStatsForPokemon(shiny), StatDefinitions.maxStatsForLevel(40) + 4,
+    "A Shiny Pokemon must keep the Stats bonus from its acquisition level after leveling");
+}
 
 function captureTarget(hpFraction, status) {
   return { pokemon: { speciesKey: "1", maxHp: 100 }, hp: hpFraction * 100, status: status || null };

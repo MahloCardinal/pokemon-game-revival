@@ -35,9 +35,58 @@ export var STATS_BY_LEVEL = {
   40: 34, 41: 36, 42: 37, 43: 38, 44: 39,
   45: 40, 46: 41, 47: 42, 48: 43, 49: 44,
   50: 45, 51: 46, 52: 47, 53: 48, 54: 49,
-  55: 51, 56: 55, 57: 54, 58: 56, 59: 57,
+  55: 51, 56: 53, 57: 54, 58: 56, 59: 57,
   60: 59
 };
+
+export var SHINY_HP_BONUS_BY_LEVEL = {
+  5: 4, 6: 4, 7: 5, 8: 5, 9: 6, 10: 6,
+  11: 7, 12: 7, 13: 8, 14: 8, 15: 9, 16: 9,
+  17: 10, 18: 10, 19: 11, 20: 12, 21: 12, 22: 13,
+  23: 13, 24: 14, 25: 14, 26: 15, 27: 15, 28: 16,
+  29: 16, 30: 17, 31: 17, 32: 17, 33: 18, 34: 18,
+  35: 18, 36: 19, 37: 19, 38: 19, 39: 20, 40: 20
+};
+
+export var SHINY_POWER_BONUS_BY_LEVEL = {
+  5: 1, 6: 1, 7: 1, 8: 2, 9: 2, 10: 2,
+  11: 2, 12: 3, 13: 3, 14: 3, 15: 4, 16: 4,
+  17: 4, 18: 5, 19: 5, 20: 5, 21: 6, 22: 6,
+  23: 6, 24: 7, 25: 7, 26: 8, 27: 8, 28: 8,
+  29: 9, 30: 9, 31: 10, 32: 10, 33: 11, 34: 11,
+  35: 12, 36: 12, 37: 13, 38: 13, 39: 14, 40: 15
+};
+
+export var SHINY_STATS_BONUS_BY_LEVEL = {
+  5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1,
+  11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 2,
+  17: 2, 18: 2, 19: 2, 20: 2, 21: 3, 22: 3,
+  23: 3, 24: 3, 25: 4, 26: 4, 27: 4, 28: 5,
+  29: 5, 30: 5, 31: 6, 32: 6, 33: 7, 34: 7,
+  35: 8, 36: 9, 37: 10, 38: 12, 39: 13, 40: 15
+};
+
+function shinyBonusForLevel(table, level) {
+  var numericLevel = Math.max(5, Math.min(40, Math.floor(Number(level) || 5)));
+  return Number(table[numericLevel]) || 0;
+}
+
+export function shinyHpBonusForLevel(level) {
+  return shinyBonusForLevel(SHINY_HP_BONUS_BY_LEVEL, level);
+}
+
+export function shinyPowerBonusForLevel(level) {
+  return shinyBonusForLevel(SHINY_POWER_BONUS_BY_LEVEL, level);
+}
+
+export function shinyStatsBonusForLevel(level) {
+  return shinyBonusForLevel(SHINY_STATS_BONUS_BY_LEVEL, level);
+}
+
+export function shinyOriginLevelForPokemon(pokemon) {
+  if (!pokemon || !pokemon.isShiny) { return 0; }
+  return Math.max(5, Math.min(100, Math.floor(Number(pokemon.shinyOriginLevel || pokemon.level) || 5)));
+}
 
 var HP_CAPS = {
   5: 40, 10: 60, 20: 90, 30: 120, 40: 165, 50: 230, 60: 280, 70: 310, 80: 340, 90: 370, 100: 400
@@ -83,13 +132,27 @@ export function maxStatsForLevel(level) {
   return STATS_CAPS[tbl] + (numericLevel - tbl) * 2;
 }
 
+export function maxHpForPokemon(pokemon) {
+  var originLevel = shinyOriginLevelForPokemon(pokemon);
+  return maxHpForLevel(pokemon && pokemon.level) + (originLevel ? shinyHpBonusForLevel(originLevel) : 0);
+}
+
+export function maxPowerForPokemon(pokemon) {
+  var originLevel = shinyOriginLevelForPokemon(pokemon);
+  return maxPowerForLevel(pokemon && pokemon.level) + (originLevel ? shinyPowerBonusForLevel(originLevel) : 0);
+}
+
+export function maxStatsForPokemon(pokemon) {
+  var originLevel = shinyOriginLevelForPokemon(pokemon);
+  return maxStatsForLevel(pokemon && pokemon.level) + (originLevel ? shinyStatsBonusForLevel(originLevel) : 0);
+}
+
 export function clampToLimits(pokemon) {
   if (!pokemon) { return; }
-  var level = pokemon.level || 5;
-  pokemon.maxHp = Math.min(pokemon.maxHp, maxHpForLevel(level));
+  pokemon.maxHp = Math.min(pokemon.maxHp, maxHpForPokemon(pokemon));
   if (pokemon.moves && Array.isArray(pokemon.moves)) {
-    var powerCap = maxPowerForLevel(level);
-    var statsCap = maxStatsForLevel(level);
+    var powerCap = maxPowerForPokemon(pokemon);
+    var statsCap = maxStatsForPokemon(pokemon);
     pokemon.moves.forEach(function (move) {
       if (move) {
         if (typeof move.power === "number") { move.power = Math.min(move.power, powerCap); }

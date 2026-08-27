@@ -2,34 +2,39 @@ from pathlib import Path
 import requests
 
 STATIC = False
+SHINY = False
 
-if STATIC:
-    BASE_URL = "https://s3.pokeos.com/pokeos-uploads/assets/pokemon/home/render/{}.png?v=3"
-    OUTPUT_DIR = Path("pokemon_static")
-    EXTENSION = "png"
-else:
-    BASE_URL = "https://s3.pokeos.com/pokeos-uploads/assets/pokemon/home/animated/{}.gif?v=3"
-    OUTPUT_DIR = Path("pokemon_gif")
-    EXTENSION = "gif"
-
+OUTPUT_DIR = Path("pokemon_download")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-for value in range(301, 302):
-    url = BASE_URL.format(value)
-    output_path = OUTPUT_DIR / f"{value}.{EXTENSION}"
+for value in range(1, 387):
+    if STATIC:
+        variants = [("https://s3.pokeos.com/pokeos-uploads/assets/pokemon/home/render/{}.png?v=3", "", "png")]
+    elif SHINY:
+        variants = [
+            ("https://s3.pokeos.com/pokeos-uploads/assets/pokemon/home/animated/shiny/{}.gif?v=3", "_shiny", "gif"),
+            ("https://s3.pokeos.com/pokeos-uploads/assets/pokemon/home/animated/shiny/female/{}.gif?v=3", "_f_shiny", "gif")]
+    else:
+        variants = [
+            ("https://s3.pokeos.com/pokeos-uploads/assets/pokemon/home/animated/{}.gif?v=3", "", "gif"),
+            ("https://s3.pokeos.com/pokeos-uploads/assets/pokemon/home/animated/female/{}.gif?v=3", "_f", "gif")]
 
-    try:
-        response = requests.get(url, timeout=20)
-        response.raise_for_status()
+    for base_url, suffix, extension in variants:
+        url = base_url.format(value)
+        output_path = OUTPUT_DIR / f"{value}{suffix}.{extension}"
 
-        output_path.write_bytes(response.content)
-        print(f"Scaricato: {output_path}")
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
 
-    except requests.RequestException as error:
-        print(f"Errore download con {value}: {error}")
+            output_path.write_bytes(response.content)
+            print(f"Scaricato: {output_path}")
 
-    except OSError as error:
-        print(f"Errore salvataggio con {value}: {error}")
+        except requests.RequestException as error:
+            print(f"Errore download {url}: {error}")
+
+        except OSError as error:
+            print(f"Errore salvataggio {output_path}: {error}")
 
 print("Cartella di lavoro corrente:", Path.cwd())
 print("Cartella dello script:", Path(__file__).parent)

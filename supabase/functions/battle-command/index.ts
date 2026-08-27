@@ -319,10 +319,11 @@ Deno.serve(async (request) => {
         if (!pokemon || typeof pokemon !== "object" || Array.isArray(pokemon)) {
           throw new BattleEdgeError("invalid_request", "I dati del Pokemon devono essere un oggetto.");
         }
-        requireExactKeys(pokemon, ["speciesKey", "level", "maxHp", "heldItemIndex", "moves"],
-          ["speciesKey", "level", "maxHp", "heldItemIndex", "moves"]);
+        requireExactKeys(pokemon, ["speciesKey", "level", "maxHp", "heldItemIndex", "moves", "isShiny"],
+          ["speciesKey", "level", "maxHp", "heldItemIndex", "moves", "isShiny"]);
         const speciesKey = String(pokemon.speciesKey || "");
         if (!/^[A-Za-z0-9_-]{1,80}$/.test(speciesKey)) throw new BattleEdgeError("invalid_request", "L'identificativo della specie non è valido.");
+        if (typeof pokemon.isShiny !== "boolean") throw new BattleEdgeError("invalid_request", "Il valore shiny deve essere booleano.");
         if (!Array.isArray(pokemon.moves) || pokemon.moves.length < 1 || pokemon.moves.length > 4) {
           throw new BattleEdgeError("invalid_request", "Il Pokemon deve avere da una a quattro mosse.");
         }
@@ -343,6 +344,7 @@ Deno.serve(async (request) => {
           level: integer(pokemon.level, "level", 5, 100),
           maxHp: integer(pokemon.maxHp, "maxHp", 1, 999),
           heldItemIndex: integer(pokemon.heldItemIndex, "heldItemIndex", 0, 100000),
+          isShiny: pokemon.isShiny === true,
           moves
         };
       }

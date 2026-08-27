@@ -91,6 +91,8 @@ function authoritativePokemon(entry) {
     name: String(entry.display_name || entry.species_key || "Pokemon"), speciesKey: String(entry.species_key || ""),
     ndex: Number(entry.ndex) || 0, level: Number(entry.level) || 1,
     type: Array.isArray(entry.type_keys) ? entry.type_keys.slice() : [], maxHp: Number(entry.max_hp) || 1,
+    gender: entry.gender || null, isShiny: Boolean(entry.is_shiny),
+    shinyOriginLevel: Boolean(entry.is_shiny) ? Number(entry.shiny_origin_level || entry.level) : 0,
     moves: (entry.moves || []).map(function (move) { return Engine.moveFromJSON([Number(move.move_index), Number(move.power) || 0, Number(move.stats) || 0]); }),
     expCurrent: Number(entry.exp_current) || 0, expCap: Number(entry.exp_cap) || 0,
     instanceId: entry.pokemon_instance_id || null, heldItemIndex: Number(entry.held_item_index) || 0

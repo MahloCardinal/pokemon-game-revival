@@ -1,5 +1,5 @@
 import { ItemCategory, ItemSubcategory, itemCanTriggerEvolution, pokemonCanHoldItem } from "../data/items.js";
-import { maxHpForLevel } from "../data/index.js";
+import { maxHpForPokemon, maxPowerForPokemon, maxStatsForPokemon } from "../data/index.js";
 import * as Engine from "../engine/index.js";
 
 export function pokemonCenterLimit(pokemon, catalogLimit) {
@@ -71,7 +71,7 @@ export function pokemonCenterPokemonMatchesItem(mode, item, pokemon, compatibili
   }
   if (mode === "use-item") {
     if (item.category === ItemCategory.Vitamin) {
-      return item.effect === "max_hp" && Number(pokemon.maxHp) < pokemonCenterLimit(pokemon, maxHpForLevel(pokemon.level));
+      return item.effect === "max_hp" && Number(pokemon.maxHp) < pokemonCenterLimit(pokemon, maxHpForPokemon(pokemon));
     }
     if (item.category === ItemCategory.Item && item.subcategory === ItemSubcategory.MoveTutor) {
       return Engine.pokemonMoveTutorPool(pokemon).length > 0;
@@ -97,8 +97,8 @@ export function pokemonCenterMoveMatchesItem(scene, mode, item, pokemon, pokemon
   }
   return Boolean(
     targetMode === "move" && item && pokemon && move && item.category === ItemCategory.Vitamin && item.effect === "move_power"
-      && (Number(move.power) < pokemonCenterLimit(pokemon, Engine.powerForLevel(pokemon.level))
-        || Number(move.stats) < pokemonCenterLimit(pokemon, Engine.statsForLevel(pokemon.level)))
+      && (Number(move.power) < pokemonCenterLimit(pokemon, maxPowerForPokemon(pokemon))
+        || Number(move.stats) < pokemonCenterLimit(pokemon, maxStatsForPokemon(pokemon)))
   );
 }
 

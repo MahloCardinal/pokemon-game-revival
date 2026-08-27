@@ -103,6 +103,15 @@ La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono st
 - La UI di livello, mosse ed evoluzione appartiene al client, mentre l'esito canonico appartiene al backend.
 - Conservare le regole di composizione della squadra nel motore e non duplicarle nei renderer.
 
+### Pokémon Shiny
+
+- Gli incontri selvatici applicano un tiro autoritativo con probabilità canonica `1/2000`; il frontend non decide mai se un Pokémon è Shiny.
+- Lo stato compatto usa `sh: 1` e `shl: <livello di ottenimento>`. Il bonus Shiny dipende da `shl` e resta fisso per tutta la vita del Pokémon, anche dopo livelli ed evoluzioni; non ricalcolarlo dal livello corrente.
+- `PP` nelle specifiche Shiny indica la potenza della mossa (`power`), non i punti utilizzo delle mosse.
+- Tabelle, cap e bonus canonici sono in `app/data/stat-tables.js`; la probabilità è in `app/data/progression.js`. PostgreSQL conserva cap normali, bonus Shiny e cap assoluti in `catalog_level_rule` e valida ogni istanza con il cap relativo al proprio `shl`.
+- Gli sprite Shiny restano in `assets/img_pokemon/` con suffisso finale `_shiny` (`25_shiny.webp`, `25_f_shiny.webp`) e devono ereditare scala e allineamento dallo sprite normale corrispondente.
+- Lo strumento debug di `aaa` può creare uno Shiny, ma il relativo comando deve continuare a essere validato dalla Edge Function e dal database.
+
 ## Battaglie autoritative
 
 - `battle-command` è l'unico ingresso Edge per le battaglie del giocatore e le funzioni debug previste.

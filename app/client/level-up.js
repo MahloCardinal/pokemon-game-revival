@@ -1,4 +1,4 @@
-import { GDR_DATA as DATA, clampToLimits } from "../data/index.js";
+import { GDR_DATA as DATA, clampToLimits, shinyPowerBonusForLevel, shinyStatsBonusForLevel, shinyOriginLevelForPokemon } from "../data/index.js";
 import * as Engine from "../engine/index.js";
 import { registerPokedexPokemon, root, state } from "./game-state.js";
 import { markDirty, render, setScene } from "./renderer.js";
@@ -60,10 +60,10 @@ function createLearnedMove(pokemon, moveDef) {
   var strongestStats = strongestKnownValue(pokemon.moves, "stats");
   var power = strongestPower > 0
     ? strongestPower + Engine.randInt(2, 3)
-    : progressionValue(DATA.powerByLevel, pokemon.level);
+    : progressionValue(DATA.powerByLevel, pokemon.level) + (pokemon.isShiny ? shinyPowerBonusForLevel(shinyOriginLevelForPokemon(pokemon)) : 0);
   var stats = strongestStats > 0
     ? strongestStats + Engine.randInt(2, 3)
-    : progressionValue(DATA.statsByLevel, pokemon.level);
+    : progressionValue(DATA.statsByLevel, pokemon.level) + (pokemon.isShiny ? shinyStatsBonusForLevel(shinyOriginLevelForPokemon(pokemon)) : 0);
 
   return Engine.createMove(moveDef, {
     power: power,

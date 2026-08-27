@@ -6,7 +6,7 @@ import { saveAfterStateChange } from "./save-runtime.js";
 import { applyPlayerSave, root, state, registerPokedexPokemon } from "./game-state.js";
 import * as Engine from "../engine/index.js";
 import { getItemByIndex, getResolvedInventoryItem, resolveInventoryItems, ItemCategory, ItemSubcategory, itemCanTriggerEvolution, pokemonCanHoldItem } from "../data/items.js";
-import { clampToLimits, maxHpForLevel, maxPowerForLevel, maxStatsForLevel } from "../data/index.js";
+import { clampToLimits, maxHpForPokemon, maxPowerForPokemon, maxStatsForPokemon } from "../data/index.js";
 import { adjustInventoryItemQuantity, markTeamRuntimeStateChanged } from "./runtime-state.js";
 import { renderPokemonCenterItemPanelContent, renderPokemonCenterMoveButton } from "../view/pokemon-center.js";
 import { getLocale, messageDescriptor, t, textDescriptor } from "./i18n.js";
@@ -778,7 +778,7 @@ function useVitaminOnPokemonInline(pokemon, item, pokemonIndex, targetKind, move
     return;
   }
   if (item.effect === "max_hp") {
-    if (pokemon.maxHp >= pokemonCenterLimit(pokemon, maxHpForLevel(pokemon.level))) {
+    if (pokemon.maxHp >= pokemonCenterLimit(pokemon, maxHpForPokemon(pokemon))) {
       clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.noEffect"));
       updatePokemonCenterModeDom();
       return;
@@ -799,8 +799,8 @@ function useVitaminOnPokemonInline(pokemon, item, pokemonIndex, targetKind, move
       updatePokemonCenterModeDom();
       return;
     }
-    if (move.power >= pokemonCenterLimit(pokemon, maxPowerForLevel(pokemon.level))
-      && move.stats >= pokemonCenterLimit(pokemon, maxStatsForLevel(pokemon.level))) {
+    if (move.power >= pokemonCenterLimit(pokemon, maxPowerForPokemon(pokemon))
+      && move.stats >= pokemonCenterLimit(pokemon, maxStatsForPokemon(pokemon))) {
       clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.noEffect"));
       updatePokemonCenterModeDom();
       return;

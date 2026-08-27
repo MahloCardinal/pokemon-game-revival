@@ -40,6 +40,7 @@ export function Pokemon(data) {
   this.maxHp = data.maxHp;
   this.gender = data.gender || null;
   this.isShiny = Boolean(data.isShiny);
+  this.shinyOriginLevel = this.isShiny ? Math.max(5, Math.floor(Number(data.shinyOriginLevel || data.level) || 5)) : 0;
   this.isMega = Boolean(data.isMega);
   this.expCurrent = data.expCurrent || 0;
   this.expCap = data.expCap || 0;
@@ -74,6 +75,7 @@ Pokemon.prototype.toJSON = function () {
   }
   if (this.isShiny) {
     data.sh = 1;
+    data.shl = this.shinyOriginLevel;
   }
   if (this.heldItemIndex) {
     data.i = this.heldItemIndex;
@@ -109,6 +111,7 @@ Pokemon.fromJSON = function (data) {
     type: speciesData.type.slice(),
     gender: data.g || null,
     isShiny: Boolean(data.sh),
+    shinyOriginLevel: Boolean(data.sh) ? Number(data.shl || level) : 0,
     isMega: Boolean(data.mg),
     level: level,
     maxHp: maxHp,
@@ -142,17 +145,19 @@ export function createPokemonFromSpecies(speciesName, level, options) {
     ndex: speciesData.dexNumber,
     level: level,
     type: speciesData.type.slice(),
-    maxHp: options.maxHp || hpForLevel(level),
+    maxHp: options.maxHp || hpForLevel(level, options),
     gender: gender,
     isShiny: Boolean(options.isShiny),
+    shinyOriginLevel: options.isShiny ? Number(options.shinyOriginLevel || level) : 0,
     isMega: Boolean(options.isMega),
     expCurrent: options.expCurrent || 0,
     expCap: options.expCap !== undefined ? options.expCap : speciesData.exp,
-    moves: buildMoveList(moveDefs, level)
+    moves: buildMoveList(moveDefs, level, options)
   });
 }
 
-export function createWildPokemon(speciesData, level) {
+export function createWildPokemon(speciesData, level, options) {
+  options = options || {};
   var movePool = movePoolForLevel(speciesData, level);
   var selectedKeys = sample(movePool, Math.min(4, movePool.length));
   selectedKeys = shuffle(selectedKeys);
@@ -162,13 +167,14 @@ export function createWildPokemon(speciesData, level) {
     ndex: speciesData.dexNumber,
     level: Math.max(1, level),
     type: speciesData.type.slice(),
-    maxHp: hpForLevel(level),
+    maxHp: hpForLevel(level, options),
     gender: speciesData.gender && speciesData.gender.length ? speciesData.gender[Math.floor(random() * speciesData.gender.length)] : null,
-    isShiny: false,
+    isShiny: Boolean(options.isShiny),
+    shinyOriginLevel: options.isShiny ? Number(options.shinyOriginLevel || level) : 0,
     isMega: false,
     expCurrent: 0,
     expCap: speciesData.exp,
-    moves: buildMoveList(selectedKeys, level)
+    moves: buildMoveList(selectedKeys, level, options)
   });
 }
 

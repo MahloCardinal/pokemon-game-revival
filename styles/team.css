@@ -471,6 +471,13 @@
   column-gap: clamp(18px, 4vw, 64px);
   overflow: hidden;
 }
+.trainer-debug-pokemon-panel .trainer-debug-pokemon-checkbox {
+  align-content: end;
+}
+.trainer-debug-pokemon-panel .trainer-debug-pokemon-checkbox input {
+  width: 38px;
+  accent-color: var(--accent);
+}
 .scene-content-team .trainer-inventory-stack {
   grid-template-columns: repeat(auto-fill, 300px);
   align-content: start;

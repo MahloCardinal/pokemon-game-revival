@@ -102,6 +102,7 @@ export function renderDebugPokemonCreatorPanel(options) {
     '    <label><span>' + escapeHtml(t("ui.debug.level")) + '</span><input type="number" min="5" max="100" step="1" data-debug-pokemon-field="level" value="100" inputmode="numeric"></label>',
     '    <label><span>' + escapeHtml(t("ui.debug.hp")) + '</span><input type="number" min="1" max="999" step="1" data-debug-pokemon-field="max-hp" value="999" inputmode="numeric"></label>',
     '    <label><span>' + escapeHtml(t("ui.debug.heldItem")) + '</span><input type="text" data-debug-pokemon-field="held-item" placeholder="poke_ball" autocomplete="off"></label>',
+    '    <label class="trainer-debug-pokemon-checkbox"><span>' + escapeHtml(t("ui.debug.shiny")) + '</span><input type="checkbox" data-debug-pokemon-field="is-shiny"></label>',
     "  </div>",
     '  <div class="trainer-debug-pokemon-moves">',
     moveRows,
@@ -124,6 +125,11 @@ function registerDebugAction(action, handler) {
 function readDebugPokemonField(panel, field) {
   var input = panel ? panel.querySelector('[data-debug-pokemon-field="' + field + '"]') : null;
   return input ? String(input.value || "").trim() : "";
+}
+
+function readDebugPokemonCheckbox(panel, field) {
+  var input = panel ? panel.querySelector('[data-debug-pokemon-field="' + field + '"]') : null;
+  return Boolean(input && input.checked);
 }
 
 function parsePositiveInteger(value, label, errors) {
@@ -200,6 +206,7 @@ export function createDebugPokemonFromPanel(panel) {
   var level = parsePositiveInteger(readDebugPokemonField(panel, "level"), t("ui.debug.level"), errors);
   var maxHp = parsePositiveInteger(readDebugPokemonField(panel, "max-hp"), t("ui.debug.hp"), errors);
   var heldItem = resolveHeldItemConstant(readDebugPokemonField(panel, "held-item"), errors);
+  var isShiny = readDebugPokemonCheckbox(panel, "is-shiny");
   var moves = buildDebugPokemonMoves(panel, errors);
   var pokemon;
 
@@ -229,7 +236,9 @@ export function createDebugPokemonFromPanel(panel) {
 
   pokemon = Engine.createPokemonFromSpecies(speciesKey, level, {
     maxHp: maxHp,
-    moveDefs: []
+    moveDefs: [],
+    isShiny: isShiny,
+    shinyOriginLevel: isShiny ? level : 0
   });
   pokemon.moves = moves.length ? moves : [buildDebugPokemonFallbackMove()];
   pokemon.heldItemIndex = heldItem ? heldItem.index : 0;
@@ -241,6 +250,7 @@ export function createDebugPokemonFromPanel(panel) {
       level: level,
       maxHp: maxHp,
       heldItemIndex: pokemon.heldItemIndex,
+      isShiny: isShiny,
       moves: pokemon.moves.map(function (move) {
         return { moveIndex: move.index, power: move.power, stats: move.stats };
       })

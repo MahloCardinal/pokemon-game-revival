@@ -323,12 +323,16 @@ function pokemonSpriteFileName(pokemon) {
   return fileNameWithExtension(pokemonSpriteFileBaseName(pokemon), "webp");
 }
 
+function pokemonSpriteMetadataFileName(pokemon) {
+  return pokemonSpriteFileName(pokemon).replace(/_shiny(?=\.webp$)/, "");
+}
+
 function getPokemonSpriteScaleClass(pokemon) {
-  return POKEMON_SPRITE_SCALE_CLASS_BY_FILE[pokemonSpriteFileName(pokemon)] || "";
+  return POKEMON_SPRITE_SCALE_CLASS_BY_FILE[pokemonSpriteMetadataFileName(pokemon)] || "";
 }
 
 function getPokemonSpriteVerticalAlignClass(pokemon) {
-  return POKEMON_SPRITE_VERTICAL_ALIGN_CLASS_BY_FILE[pokemonSpriteFileName(pokemon)] || "";
+  return POKEMON_SPRITE_VERTICAL_ALIGN_CLASS_BY_FILE[pokemonSpriteMetadataFileName(pokemon)] || "";
 }
 
 function getPokemonSpriteClass(pokemon) {

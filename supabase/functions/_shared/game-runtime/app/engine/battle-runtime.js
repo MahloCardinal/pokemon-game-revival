@@ -298,6 +298,7 @@ export function initializeBattleRuntime(input) {
       maxHp: Number(entry.max_hp),
       gender: entry.gender || null,
       isShiny: Boolean(entry.is_shiny),
+      shinyOriginLevel: Boolean(entry.is_shiny) ? Number(entry.shiny_origin_level || entry.level) : 0,
       isMega: Boolean(entry.is_mega),
       expCurrent: Number(entry.exp_current) || 0,
       expCap: Number(entry.exp_cap) || 0,

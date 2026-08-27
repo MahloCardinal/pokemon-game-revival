@@ -411,7 +411,10 @@ const StatDefinitions = statDefinitionsModule.namespace;
 const captureCalcModule = await loadEsModule(fileURLToPath(new URL("../app/engine/capture-calc.js", import.meta.url)));
 if (captureCalcModule.status !== "evaluated") await captureCalcModule.evaluate();
 const CaptureCalc = captureCalcModule.namespace;
-const { BattleManager, buildBattleSummary, createMove, Pokemon, Team } = engineExports;
+const assetHelpersModule = await loadEsModule(fileURLToPath(new URL("../app/client/asset-helpers.js", import.meta.url)));
+if (assetHelpersModule.status !== "evaluated") await assetHelpersModule.evaluate();
+const AssetHelpers = assetHelpersModule.namespace;
+const { BattleManager, buildBattleSummary, createMove, Pokemon, projectBattle, Team } = engineExports;
 
 function assertStableCatalogKeys(entries, expectedCount, label) {
   const keys = entries.map((entry) => entry.key);
@@ -473,6 +476,33 @@ assert.deepEqual(
     "A Shiny Pokemon must use the move Power cap for its current level");
   assert.equal(StatDefinitions.maxStatsForPokemon(shiny), StatDefinitions.maxStatsForLevel(40) + 15,
     "A Shiny Pokemon must use the Stats cap for its current level");
+}
+
+{
+  const femaleShiny = new Pokemon({
+    name: "Venusaur", speciesKey: "3", ndex: 3, level: 40, type: ["grass", "poison"], maxHp: 185,
+    gender: "female", isShiny: true,
+    moves: [createMove(MoveDefinitions.tackle, { power: 113, stats: 49 })]
+  });
+  const opponent = new Pokemon({
+    name: "Bulbasaur", speciesKey: "1", ndex: 1, level: 5, type: ["grass", "poison"], maxHp: 23,
+    gender: "male", moves: [createMove(MoveDefinitions.tackle, { power: 4, stats: 1 })]
+  });
+  const manager = new BattleManager(new Team("Player", [femaleShiny]), new Team("NPC", [opponent]));
+  const participant = projectBattle(manager, { status: "active", resultKey: null }, []).participants[0];
+  const femaleNormalPath = AssetHelpers.getPokemonImage(Object.assign({}, femaleShiny, { isShiny: false }));
+  const femaleShinyPath = AssetHelpers.getPokemonImage(femaleShiny);
+  const maleShinyPath = AssetHelpers.getPokemonImage(Object.assign({}, femaleShiny, { gender: "male" }));
+
+  assert.equal(femaleNormalPath, "/assets/img_pokemon/3_f.webp");
+  assert.equal(femaleShinyPath, "/assets/img_pokemon/3_f_shiny.webp");
+  assert.equal(maleShinyPath, "/assets/img_pokemon/3_shiny.webp");
+  [femaleNormalPath, femaleShinyPath, maleShinyPath].forEach((assetPath) => {
+    assert.equal(existsSync(new URL(".." + assetPath, import.meta.url)), true, `Missing Pokemon sprite: ${assetPath}`);
+  });
+  assert.equal(participant.gender, "female", "Battle projections must preserve the sprite gender");
+  assert.equal(participant.is_shiny, true, "Battle projections must preserve the Shiny marker");
+  assert.equal(participant.is_mega, false, "Battle projections must preserve the Mega marker");
 }
 
 {

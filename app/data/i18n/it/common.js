@@ -26,6 +26,7 @@ export var IT_COMMON_TRANSLATIONS = Object.freeze({
       experienceShort: "Esp",
       battlePointsShort: "PL"
     }),
+    emptyPocket: "Tasca vuota",
     opponent: "Avversario"
   }),
   settings: Object.freeze({
@@ -47,7 +48,7 @@ export var IT_COMMON_TRANSLATIONS = Object.freeze({
     captureZones: "Zone cattura",
     city: "Città",
     battleArea: "Area Lotta",
-    team: "Scheda",
+    team: "Scheda Allenatore",
     box: "Box",
     missions: "Missioni",
     experience: "Esperienza",

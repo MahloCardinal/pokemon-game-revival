@@ -205,8 +205,9 @@ export function renderTeamScene() {
     var sectionItems = inventoryItems.filter(function (item) {
       return getInventorySectionKey(item) === section.key;
     });
-    if (!sectionItems.length) return "";
-    var sectionContent = sectionItems.map(renderInventoryItem).join("");
+    var sectionContent = sectionItems.length
+      ? sectionItems.map(renderInventoryItem).join("")
+      : '<p class="style-zaino-empty">' + escapeHtml(t("common.emptyPocket")) + "</p>";
 
     return [
       '<section class="style-zaino-pocket">',

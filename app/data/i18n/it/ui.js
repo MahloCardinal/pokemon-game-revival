@@ -490,7 +490,6 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     towerChallenge: "Sfida {number}",
     use: "Usa",
     inventorySections: Object.freeze({ battle: "Strumenti battaglia", berries: "Bacche", balls: "Poké Ball", all: "Strumenti" }),
-    noItems: "Nessuno strumento disponibile.",
     opponentBag: "Zaino avversario",
     opponentPokemon: "Pokémon avversario",
     playerPokemon: "Pokémon del giocatore",

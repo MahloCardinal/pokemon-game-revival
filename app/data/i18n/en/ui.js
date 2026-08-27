@@ -490,7 +490,6 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     towerChallenge: "Challenge {number}",
     use: "Use",
     inventorySections: Object.freeze({ battle: "Battle items", berries: "Berries", balls: "Poké Balls", all: "Items" }),
-    noItems: "No items available.",
     opponentBag: "Opponent's Bag",
     opponentPokemon: "Opponent's Pokémon",
     playerPokemon: "Player's Pokémon",

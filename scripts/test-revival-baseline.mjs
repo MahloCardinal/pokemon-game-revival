@@ -173,6 +173,18 @@ assert.match(captureHandler, /await refreshCaptureEncounterState\(captureScene\)
 assert.match(captureHandler, /state\.ordinaryProgression[\s\S]*openActiveProgressionScene\(\)/);
 assert.match(inventoryViewHelpers, /SINGLE_COPY_INVENTORY_ITEM_INDEXES[\s\S]*go_goggles\.index[\s\S]*silph_scope\.index[\s\S]*white_flute\.index[\s\S]*black_flute\.index/);
 assert.match(teamView, /isSingleCopyInventoryItem\(item\) \? ""/);
+assert.match(teamView, /sectionItems\.length[\s\S]*t\("common\.emptyPocket"\)/);
+assert.doesNotMatch(teamView, /if \(!sectionItems\.length\) return ""/);
+assert.match(battleView, /sectionItems\.length[\s\S]*t\("common\.emptyPocket"\)/);
+assert.match(battleView, /battleInventorySections\.map\(function \(section\)/);
+const battleInventoryOrder = battleView.slice(
+  battleView.indexOf("var battleInventorySections"),
+  battleView.indexOf("function renderBattleInventoryStack")
+);
+assert.ok(
+  battleInventoryOrder.indexOf('key: "balls"') < battleInventoryOrder.indexOf('key: "berries"'),
+  "Battle Ball pockets must appear before Berry pockets"
+);
 assert.match(teamView, /trainerTitles\.infoTooltip/);
 assert.match(teamStyles, /\.trainer-titles-panel\s*\{[\s\S]*?width:\s*300px;/);
 assert.match(teamStyles, /\.trainer-titles-panel\s*\{[^}]*height:\s*250px;/);

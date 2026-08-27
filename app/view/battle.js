@@ -372,6 +372,7 @@ export function renderBattleScene(scene) {
       ].join("");
     }
     function renderBattleInventorySection(section, inventoryItems, options) {
+      options = options || {};
       var sectionItems = Array.isArray(options.items)
         ? options.items
         : inventoryItems.filter(function (item) {
@@ -379,7 +380,7 @@ export function renderBattleScene(scene) {
         });
       var sectionContent = sectionItems.length
         ? sectionItems.map(function (item) { return renderBattleInventoryItem(item, options); }).join("")
-        : "";
+        : '<p class="battle-zaino-empty">' + escapeHtml(t("common.emptyPocket")) + "</p>";
 
       return [
         '<section class="battle-zaino-pocket battle-inventory-section battle-inventory-section-' + escapeHtml(section.key) + '">',
@@ -391,32 +392,26 @@ export function renderBattleScene(scene) {
       ].join("");
     }
     var battleInventorySections = [
-      { key: "battle", title: t("ui.battle.inventorySections.battle") },
-      { key: "berries", title: t("ui.battle.inventorySections.berries") }
+      { key: "battle", title: t("ui.battle.inventorySections.battle") }
     ];
     if (!renderScene.trainingBattle && String(renderScene.battleType || "").indexOf("gym_") !== 0) {
       battleInventorySections.push({ key: "balls", title: t("ui.battle.inventorySections.balls") });
     }
-    function getAvailableBattleInventoryItems(inventoryItems) {
-      return inventoryItems.filter(function (item) {
-        return Boolean(getBattleInventorySectionKey(item));
-      });
-    }
+    battleInventorySections.push({ key: "berries", title: t("ui.battle.inventorySections.berries") });
     function renderBattleInventoryStack(inventoryItems, options) {
-      var availableItems = getAvailableBattleInventoryItems(inventoryItems);
-
-      return availableItems.length
-        ? battleInventorySections.filter(function (section) {
-          return inventoryItems.some(function (item) { return getBattleInventorySectionKey(item) === section.key; });
-        }).map(function (section) { return renderBattleInventorySection(section, inventoryItems, options); }).join("")
-        : '<p class="battle-zaino-empty">' + escapeHtml(t("ui.battle.noItems")) + '</p>';
+      return battleInventorySections.map(function (section) {
+        return renderBattleInventorySection(section, inventoryItems, options);
+      }).join("");
     }
     function renderMobileBattleInventoryStack(inventoryItems, options) {
-      var availableItems = getAvailableBattleInventoryItems(inventoryItems);
-
-      return availableItems.length
-        ? renderBattleInventorySection({ key: "all", title: t("ui.battle.inventorySections.all") }, inventoryItems, Object.assign({}, options, { items: availableItems }))
-        : '<p class="battle-zaino-empty">' + escapeHtml(t("ui.battle.noItems")) + '</p>';
+      var availableItems = inventoryItems.filter(function (item) {
+        return Boolean(getBattleInventorySectionKey(item));
+      });
+      return renderBattleInventorySection(
+        { key: "all", title: t("ui.battle.inventorySections.all") },
+        inventoryItems,
+        Object.assign({}, options, { items: availableItems })
+      );
     }
     battleItemsPanel = '<section class="panel battle-inventory-panel" data-battle-panel-section="items"><div class="battle-inventory-stack battle-zaino-stack battle-inventory-desktop-stack">' +
       renderBattleInventoryStack(ownInventoryItems, { readonly: playerItemsReadonly }) +

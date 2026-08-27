@@ -26,6 +26,7 @@ export var EN_COMMON_TRANSLATIONS = Object.freeze({
       experienceShort: "Exp",
       battlePointsShort: "BP"
     }),
+    emptyPocket: "Empty pocket",
     opponent: "Opponent"
   }),
   settings: Object.freeze({

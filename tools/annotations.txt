@@ -1,7 +1,6 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- gli sprite degli Shiny non vengono letti in battaglia (e in altre zone?)
 - bilanciamento team palestre
 - inserire possibilità di vedere squadre altri giocatori (e squadre con cui hanno vinto le palestre?)
 - implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)

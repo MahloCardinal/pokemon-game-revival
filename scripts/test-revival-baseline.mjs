@@ -41,6 +41,7 @@ const segmentedTrainingProgressionMigration = read("supabase/migrations/20260825
 const trainerTitlesMigration = read("supabase/migrations/20260826120000_trainer_titles.sql");
 const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_debug_trainer_title_controls.sql");
 const shinyMigration = read("supabase/migrations/20260827120000_authoritative_shiny_pokemon.sql");
+const rarityStatsMigration = read("supabase/migrations/20260827150000_current_level_shiny_and_legendary_stats.sql");
 const statTables = read("app/data/stat-tables.js");
 const pokemonEngine = read("app/engine/pokemon.js");
 const assetHelpers = read("app/client/asset-helpers.js");
@@ -208,11 +209,14 @@ assert.match(debugTrainerTitlesMigration, /user_has_server_role\(p_auth_user_id,
 assert.match(debugTrainerTitlesMigration, /order by title\.sort_order[\s\S]*limit 1/i);
 assert.match(debugTrainerTitlesMigration, /revoke all on function public\.adjust_debug_trainer_title[\s\S]*from public, anon, authenticated/i);
 assert.match(shinyMigration, /rule_key = 'shiny_odds_denominator'[\s\S]*v_is_shiny := floor\(random\(\) \* v_shiny_odds\)::integer = 0/i);
-assert.match(shinyMigration, /'sh',1,'shl',v_encounter\.shiny_origin_level/i);
-assert.match(shinyMigration, /pokemon_stat_caps[\s\S]*origin_rule\.shiny_hp_bonus/i);
 assert.match(shinyMigration, /p_requires_battle_idle => true/i);
+assert.match(rarityStatsMigration, /state = state - 'shl'/i);
+assert.match(rarityStatsMigration, /drop column shiny_origin_level/i);
+assert.match(rarityStatsMigration, /rule\.normal_max_hp[\s\S]*p_state ->> 'sh'[\s\S]*species\.encounter_rarity_key = 'legendary'/i);
+assert.match(rarityStatsMigration, /legendary_hp_bonus_for_level\(v_level\)/i);
+assert.match(rarityStatsMigration, /p_requires_battle_idle => true/i);
 assert.match(statTables, /55:\s*51,\s*56:\s*53,\s*57:\s*54/);
-assert.match(pokemonEngine, /data\.shl = this\.shinyOriginLevel/);
+assert.doesNotMatch(pokemonEngine, /shinyOriginLevel|\bshl\b/);
 assert.match(assetHelpers, /replace\(\/_shiny\(\?=\\\.webp\$\)\/, ""\)/);
 assert.match(shoppingCenter, /entry\.price === null/);
 assert.match(catalogGenerator, /purchasePrice === null/);
@@ -444,22 +448,47 @@ assert.deepEqual(
   ]),
   [[5, 4, 1, 1], [10, 6, 2, 1], [20, 12, 5, 2], [30, 17, 9, 5], [40, 20, 15, 15], [60, 20, 15, 15]]
 );
+assert.deepEqual(
+  [30, 60, 100].map((level) => [
+    level,
+    StatDefinitions.legendaryHpBonusForLevel(level),
+    StatDefinitions.legendaryPowerBonusForLevel(level),
+    StatDefinitions.legendaryStatsBonusForLevel(level)
+  ]),
+  [[30, 40, 33, 33], [60, 80, 65, 65], [100, 80, 65, 65]]
+);
 
 {
   const shiny = new Pokemon({
     name: "Charmander", speciesKey: "4", ndex: 4, level: 25, type: ["fire"], maxHp: 84,
-    isShiny: true, shinyOriginLevel: 25, moves: [createMove(MoveDefinitions.tackle, { power: 55, stats: 16 })]
+    isShiny: true, moves: [createMove(MoveDefinitions.tackle, { power: 55, stats: 16 })]
   });
   const saved = shiny.toJSON();
   assert.equal(saved.sh, 1);
-  assert.equal(saved.shl, 25);
+  assert.equal(saved.shl, undefined);
   shiny.level = 40;
-  assert.equal(StatDefinitions.maxHpForPokemon(shiny), StatDefinitions.maxHpForLevel(40) + 14,
-    "A Shiny Pokemon must keep the HP bonus from its acquisition level after leveling");
-  assert.equal(StatDefinitions.maxPowerForPokemon(shiny), StatDefinitions.maxPowerForLevel(40) + 7,
-    "A Shiny Pokemon must keep the move Power bonus from its acquisition level after leveling");
-  assert.equal(StatDefinitions.maxStatsForPokemon(shiny), StatDefinitions.maxStatsForLevel(40) + 4,
-    "A Shiny Pokemon must keep the Stats bonus from its acquisition level after leveling");
+  assert.equal(StatDefinitions.maxHpForPokemon(shiny), StatDefinitions.maxHpForLevel(40) + 20,
+    "A Shiny Pokemon must use the HP cap for its current level");
+  assert.equal(StatDefinitions.maxPowerForPokemon(shiny), StatDefinitions.maxPowerForLevel(40) + 15,
+    "A Shiny Pokemon must use the move Power cap for its current level");
+  assert.equal(StatDefinitions.maxStatsForPokemon(shiny), StatDefinitions.maxStatsForLevel(40) + 15,
+    "A Shiny Pokemon must use the Stats cap for its current level");
+}
+
+{
+  const legendary = new Pokemon({
+    name: "Mewtwo", speciesKey: "150", ndex: 150, level: 100, type: ["psychic"], maxHp: 460,
+    moves: [createMove(MoveDefinitions.tackle, { power: 325, stats: 219 })]
+  });
+  assert.equal(legendary.rarityKey, "legendary");
+  assert.equal(StatDefinitions.maxHpForPokemon(legendary), 480);
+  assert.equal(StatDefinitions.maxPowerForPokemon(legendary), 385);
+  assert.equal(StatDefinitions.maxStatsForPokemon(legendary), 235);
+
+  legendary.isShiny = true;
+  assert.equal(StatDefinitions.maxHpForPokemon(legendary), 500);
+  assert.equal(StatDefinitions.maxPowerForPokemon(legendary), 400);
+  assert.equal(StatDefinitions.maxStatsForPokemon(legendary), 250);
 }
 
 function captureTarget(hpFraction, status) {

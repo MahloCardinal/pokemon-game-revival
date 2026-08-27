@@ -1,5 +1,12 @@
 import { GDR_DATA as DATA } from "../data/index.js";
-import { shinyHpBonusForLevel, shinyPowerBonusForLevel, shinyStatsBonusForLevel } from "../data/stat-tables.js";
+import {
+  legendaryHpBonusForLevel,
+  legendaryPowerBonusForLevel,
+  legendaryStatsBonusForLevel,
+  shinyHpBonusForLevel,
+  shinyPowerBonusForLevel,
+  shinyStatsBonusForLevel
+} from "../data/stat-tables.js";
 
 import { random } from "./deterministic-rng.js";
 
@@ -7,9 +14,10 @@ export function randInt(min, max) {
   return min + Math.floor(random() * (max - min + 1));
 }
 
-function shinyOriginLevel(level, options) {
+function acquisitionBonus(level, options, shinyBonusForLevel, legendaryBonusForLevel) {
   options = options || {};
-  return options.isShiny ? Number(options.shinyOriginLevel || level) : 0;
+  return (options.isShiny ? shinyBonusForLevel(level) : 0)
+    + (options.isLegendary ? legendaryBonusForLevel(level) : 0);
 }
 
 export function hpForLevel(level, options) {
@@ -26,8 +34,8 @@ export function hpForLevel(level, options) {
   } else if (level >= 15) {
     maxDelta = 2;
   }
-  var originLevel = shinyOriginLevel(level, options);
-  return tableValue - randInt(0, maxDelta) + (originLevel ? shinyHpBonusForLevel(originLevel) : 0);
+  return tableValue - randInt(0, maxDelta)
+    + acquisitionBonus(level, options, shinyHpBonusForLevel, legendaryHpBonusForLevel);
 }
 
 export function powerForLevel(level, options) {
@@ -46,8 +54,8 @@ export function powerForLevel(level, options) {
   } else if (level >= 10) {
     maxDelta = 2;
   }
-  var originLevel = shinyOriginLevel(level, options);
-  return tableValue - randInt(0, maxDelta) + (originLevel ? shinyPowerBonusForLevel(originLevel) : 0);
+  return tableValue - randInt(0, maxDelta)
+    + acquisitionBonus(level, options, shinyPowerBonusForLevel, legendaryPowerBonusForLevel);
 }
 
 export function statsForLevel(level, options) {
@@ -62,6 +70,6 @@ export function statsForLevel(level, options) {
   if (level >= 40) {
     maxDelta = 2;
   }
-  var originLevel = shinyOriginLevel(level, options);
-  return tableValue - randInt(0, maxDelta) + (originLevel ? shinyStatsBonusForLevel(originLevel) : 0);
+  return tableValue - randInt(0, maxDelta)
+    + acquisitionBonus(level, options, shinyStatsBonusForLevel, legendaryStatsBonusForLevel);
 }

@@ -1,4 +1,4 @@
-import { GDR_DATA as DATA, clampToLimits, shinyPowerBonusForLevel, shinyStatsBonusForLevel, shinyOriginLevelForPokemon } from "../data/index.js";
+import { GDR_DATA as DATA, clampToLimits, isLegendaryPokemon, legendaryPowerBonusForLevel, legendaryStatsBonusForLevel, shinyPowerBonusForLevel, shinyStatsBonusForLevel } from "../data/index.js";
 import * as Engine from "../engine/index.js";
 import { registerPokedexPokemon, root, state } from "./game-state.js";
 import { markDirty, render, setScene } from "./renderer.js";
@@ -58,12 +58,16 @@ function strongestKnownValue(moves, key) {
 function createLearnedMove(pokemon, moveDef) {
   var strongestPower = strongestKnownValue(pokemon.moves, "power");
   var strongestStats = strongestKnownValue(pokemon.moves, "stats");
+  var powerBonus = (pokemon.isShiny ? shinyPowerBonusForLevel(pokemon.level) : 0)
+    + (isLegendaryPokemon(pokemon) ? legendaryPowerBonusForLevel(pokemon.level) : 0);
+  var statsBonus = (pokemon.isShiny ? shinyStatsBonusForLevel(pokemon.level) : 0)
+    + (isLegendaryPokemon(pokemon) ? legendaryStatsBonusForLevel(pokemon.level) : 0);
   var power = strongestPower > 0
     ? strongestPower + Engine.randInt(2, 3)
-    : progressionValue(DATA.powerByLevel, pokemon.level) + (pokemon.isShiny ? shinyPowerBonusForLevel(shinyOriginLevelForPokemon(pokemon)) : 0);
+    : progressionValue(DATA.powerByLevel, pokemon.level) + powerBonus;
   var stats = strongestStats > 0
     ? strongestStats + Engine.randInt(2, 3)
-    : progressionValue(DATA.statsByLevel, pokemon.level) + (pokemon.isShiny ? shinyStatsBonusForLevel(shinyOriginLevelForPokemon(pokemon)) : 0);
+    : progressionValue(DATA.statsByLevel, pokemon.level) + statsBonus;
 
   return Engine.createMove(moveDef, {
     power: power,

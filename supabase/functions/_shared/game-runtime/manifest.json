@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "429840015afd63fa0679c5c10b4d7d1f3c1f6a94552feb2b3b34ab4991aece4a",
+  "bundleChecksum": "ab45a29472ef41e96789f831196ce12fe74e05e596b8da7b543982d8ee2fda09",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -29,8 +29,8 @@
     },
     {
       "source": "app/data/index.js",
-      "sha256": "1ba4bfe1fd4dd12543c39198d636cd82436ae5672486f908a86d0b6dbbc3de17",
-      "bytes": 2210
+      "sha256": "31f634234cfdaf768b8b4462ff76fd3ae200daf41d10a590f8569d902b47043b",
+      "bytes": 2576
     },
     {
       "source": "app/data/items.js",
@@ -69,8 +69,8 @@
     },
     {
       "source": "app/data/stat-tables.js",
-      "sha256": "e2d9b98985cb9b8f6fe836c226baba061d197bee52d132832d5d6606fb482e5b",
-      "bytes": 5950
+      "sha256": "bdd0843b1536976dcc925cc44c83cfe98c8c8b65739df84379fdd59483047c0b",
+      "bytes": 6817
     },
     {
       "source": "app/data/team-rule-items.js",
@@ -99,8 +99,8 @@
     },
     {
       "source": "app/engine/battle-runtime.js",
-      "sha256": "eb6d622f9122fdbbc249f4a4d7c2f046ae3bdf3ae37454a2a424fac51f1d10b6",
-      "bytes": 40357
+      "sha256": "2c5f6f30de99f0aae0f5e90d0a235617811b577a757abf4c5b6a0177fc4c7b6a",
+      "bytes": 40253
     },
     {
       "source": "app/engine/battle-summary.js",
@@ -134,8 +134,8 @@
     },
     {
       "source": "app/engine/level-calc.js",
-      "sha256": "1418f108fd57e1c545e68a9870fe599d6c0f6cb4831ef4a4e6d887ec55e53d2b",
-      "bytes": 2005
+      "sha256": "000d00cc0fc7b665861a9d3bad511c4c44c3eb5f90a62712cd87cb887390e8a8",
+      "bytes": 2132
     },
     {
       "source": "app/engine/moves.js",
@@ -144,8 +144,8 @@
     },
     {
       "source": "app/engine/pokemon.js",
-      "sha256": "04cfe207d5214f39f0884a12f4eba04e5215360aa3f9654d756ef3ed05e451d0",
-      "bytes": 6309
+      "sha256": "1fb77155905d421037a0b509799cdc53750c00d109355a37c1591a60dc0e824b",
+      "bytes": 6725
     },
     {
       "source": "app/engine/pve_move_manager.js",

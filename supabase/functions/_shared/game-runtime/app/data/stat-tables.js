@@ -66,6 +66,10 @@ export var SHINY_STATS_BONUS_BY_LEVEL = {
   35: 8, 36: 9, 37: 10, 38: 12, 39: 13, 40: 15
 };
 
+export var LEGENDARY_HP_BONUS_AT_LEVEL_60 = 80;
+export var LEGENDARY_POWER_BONUS_AT_LEVEL_60 = 65;
+export var LEGENDARY_STATS_BONUS_AT_LEVEL_60 = 65;
+
 function shinyBonusForLevel(table, level) {
   var numericLevel = Math.max(5, Math.min(40, Math.floor(Number(level) || 5)));
   return Number(table[numericLevel]) || 0;
@@ -83,9 +87,26 @@ export function shinyStatsBonusForLevel(level) {
   return shinyBonusForLevel(SHINY_STATS_BONUS_BY_LEVEL, level);
 }
 
-export function shinyOriginLevelForPokemon(pokemon) {
-  if (!pokemon || !pokemon.isShiny) { return 0; }
-  return Math.max(5, Math.min(100, Math.floor(Number(pokemon.shinyOriginLevel || pokemon.level) || 5)));
+function legendaryBonusForLevel(maxBonus, level) {
+  var numericLevel = Math.max(1, Math.min(100, Math.floor(Number(level) || 1)));
+  if (numericLevel >= 60) { return maxBonus; }
+  return Math.round(maxBonus * numericLevel / 60);
+}
+
+export function legendaryHpBonusForLevel(level) {
+  return legendaryBonusForLevel(LEGENDARY_HP_BONUS_AT_LEVEL_60, level);
+}
+
+export function legendaryPowerBonusForLevel(level) {
+  return legendaryBonusForLevel(LEGENDARY_POWER_BONUS_AT_LEVEL_60, level);
+}
+
+export function legendaryStatsBonusForLevel(level) {
+  return legendaryBonusForLevel(LEGENDARY_STATS_BONUS_AT_LEVEL_60, level);
+}
+
+export function isLegendaryPokemon(pokemon) {
+  return Boolean(pokemon && (pokemon.rarityKey === "legendary" || pokemon.rarity === "legendary"));
 }
 
 var HP_CAPS = {
@@ -133,18 +154,24 @@ export function maxStatsForLevel(level) {
 }
 
 export function maxHpForPokemon(pokemon) {
-  var originLevel = shinyOriginLevelForPokemon(pokemon);
-  return maxHpForLevel(pokemon && pokemon.level) + (originLevel ? shinyHpBonusForLevel(originLevel) : 0);
+  var level = pokemon && pokemon.level;
+  return maxHpForLevel(level)
+    + (pokemon && pokemon.isShiny ? shinyHpBonusForLevel(level) : 0)
+    + (isLegendaryPokemon(pokemon) ? legendaryHpBonusForLevel(level) : 0);
 }
 
 export function maxPowerForPokemon(pokemon) {
-  var originLevel = shinyOriginLevelForPokemon(pokemon);
-  return maxPowerForLevel(pokemon && pokemon.level) + (originLevel ? shinyPowerBonusForLevel(originLevel) : 0);
+  var level = pokemon && pokemon.level;
+  return maxPowerForLevel(level)
+    + (pokemon && pokemon.isShiny ? shinyPowerBonusForLevel(level) : 0)
+    + (isLegendaryPokemon(pokemon) ? legendaryPowerBonusForLevel(level) : 0);
 }
 
 export function maxStatsForPokemon(pokemon) {
-  var originLevel = shinyOriginLevelForPokemon(pokemon);
-  return maxStatsForLevel(pokemon && pokemon.level) + (originLevel ? shinyStatsBonusForLevel(originLevel) : 0);
+  var level = pokemon && pokemon.level;
+  return maxStatsForLevel(level)
+    + (pokemon && pokemon.isShiny ? shinyStatsBonusForLevel(level) : 0)
+    + (isLegendaryPokemon(pokemon) ? legendaryStatsBonusForLevel(level) : 0);
 }
 
 export function clampToLimits(pokemon) {

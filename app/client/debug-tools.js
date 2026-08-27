@@ -237,8 +237,7 @@ export function createDebugPokemonFromPanel(panel) {
   pokemon = Engine.createPokemonFromSpecies(speciesKey, level, {
     maxHp: maxHp,
     moveDefs: [],
-    isShiny: isShiny,
-    shinyOriginLevel: isShiny ? level : 0
+    isShiny: isShiny
   });
   pokemon.moves = moves.length ? moves : [buildDebugPokemonFallbackMove()];
   pokemon.heldItemIndex = heldItem ? heldItem.index : 0;

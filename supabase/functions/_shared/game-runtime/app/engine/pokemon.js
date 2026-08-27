@@ -32,6 +32,8 @@ function resolveSpeciesEntry(speciesIdentifier) {
 }
 
 export function Pokemon(data) {
+  var speciesEntry = resolveSpeciesEntry(data.speciesKey);
+  var encounter = speciesEntry && speciesEntry.data && speciesEntry.data.encounter || {};
   this.name = data.name;
   this.speciesKey = data.speciesKey;
   this.ndex = data.ndex;
@@ -40,7 +42,7 @@ export function Pokemon(data) {
   this.maxHp = data.maxHp;
   this.gender = data.gender || null;
   this.isShiny = Boolean(data.isShiny);
-  this.shinyOriginLevel = this.isShiny ? Math.max(5, Math.floor(Number(data.shinyOriginLevel || data.level) || 5)) : 0;
+  this.rarityKey = data.rarityKey || encounter.rarity || null;
   this.isMega = Boolean(data.isMega);
   this.expCurrent = data.expCurrent || 0;
   this.expCap = data.expCap || 0;
@@ -75,7 +77,6 @@ Pokemon.prototype.toJSON = function () {
   }
   if (this.isShiny) {
     data.sh = 1;
-    data.shl = this.shinyOriginLevel;
   }
   if (this.heldItemIndex) {
     data.i = this.heldItemIndex;
@@ -111,7 +112,7 @@ Pokemon.fromJSON = function (data) {
     type: speciesData.type.slice(),
     gender: data.g || null,
     isShiny: Boolean(data.sh),
-    shinyOriginLevel: Boolean(data.sh) ? Number(data.shl || level) : 0,
+    rarityKey: (speciesData.encounter || {}).rarity || null,
     isMega: Boolean(data.mg),
     level: level,
     maxHp: maxHp,
@@ -132,12 +133,16 @@ export function createPokemonFromSpecies(speciesName, level, options) {
   var genderOptions;
   var moveDefs;
   var gender;
+  var generationOptions;
   if (!speciesEntry) {
     throw new Error("Pokemon species not found: " + speciesName);
   }
   genderOptions = speciesData.gender || [];
   moveDefs = options.moveDefs ? options.moveDefs.slice(0, 4) : movePoolForLevel(speciesData, level);
   gender = options.gender || (genderOptions.length ? genderOptions[Math.floor(random() * genderOptions.length)] : null);
+  generationOptions = Object.assign({}, options, {
+    isLegendary: speciesData.encounter && speciesData.encounter.rarity === "legendary"
+  });
 
   return new Pokemon({
     speciesKey: speciesEntry.key,
@@ -145,19 +150,23 @@ export function createPokemonFromSpecies(speciesName, level, options) {
     ndex: speciesData.dexNumber,
     level: level,
     type: speciesData.type.slice(),
-    maxHp: options.maxHp || hpForLevel(level, options),
+    maxHp: options.maxHp || hpForLevel(level, generationOptions),
     gender: gender,
     isShiny: Boolean(options.isShiny),
-    shinyOriginLevel: options.isShiny ? Number(options.shinyOriginLevel || level) : 0,
+    rarityKey: speciesData.encounter && speciesData.encounter.rarity || null,
     isMega: Boolean(options.isMega),
     expCurrent: options.expCurrent || 0,
     expCap: options.expCap !== undefined ? options.expCap : speciesData.exp,
-    moves: buildMoveList(moveDefs, level, options)
+    moves: buildMoveList(moveDefs, level, generationOptions)
   });
 }
 
 export function createWildPokemon(speciesData, level, options) {
   options = options || {};
+  var rarityKey = speciesData.rarity !== undefined
+    ? speciesData.rarity
+    : speciesData.encounter && speciesData.encounter.rarity;
+  var generationOptions = Object.assign({}, options, { isLegendary: rarityKey === "legendary" });
   var movePool = movePoolForLevel(speciesData, level);
   var selectedKeys = sample(movePool, Math.min(4, movePool.length));
   selectedKeys = shuffle(selectedKeys);
@@ -167,14 +176,14 @@ export function createWildPokemon(speciesData, level, options) {
     ndex: speciesData.dexNumber,
     level: Math.max(1, level),
     type: speciesData.type.slice(),
-    maxHp: hpForLevel(level, options),
+    maxHp: hpForLevel(level, generationOptions),
     gender: speciesData.gender && speciesData.gender.length ? speciesData.gender[Math.floor(random() * speciesData.gender.length)] : null,
     isShiny: Boolean(options.isShiny),
-    shinyOriginLevel: options.isShiny ? Number(options.shinyOriginLevel || level) : 0,
+    rarityKey: rarityKey || null,
     isMega: false,
     expCurrent: 0,
     expCap: speciesData.exp,
-    moves: buildMoveList(selectedKeys, level, options)
+    moves: buildMoveList(selectedKeys, level, generationOptions)
   });
 }
 

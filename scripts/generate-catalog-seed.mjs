@@ -364,10 +364,13 @@ async function combatRuleStatements(release) {
     const shinyHpBonus = stats.shinyHpBonusForLevel(level);
     const shinyPowerBonus = stats.shinyPowerBonusForLevel(level);
     const shinyStatsBonus = stats.shinyStatsBonusForLevel(level);
+    const legendaryHpBonus = stats.legendaryHpBonusForLevel(level);
+    const legendaryPowerBonus = stats.legendaryPowerBonusForLevel(level);
+    const legendaryStatsBonus = stats.legendaryStatsBonusForLevel(level);
     const normalMaxHp = stats.maxHpForLevel(level);
     const normalMaxPower = stats.maxPowerForLevel(level);
     const normalMaxStats = stats.maxStatsForLevel(level);
-    rows.push(upsert("catalog_level_rule", ["catalog_release_id", "level", "base_hp", "base_power", "base_stats", "max_hp", "max_power", "max_stats", "normal_max_hp", "normal_max_power", "normal_max_stats", "shiny_hp_bonus", "shiny_power_bonus", "shiny_stats_bonus"], [releaseId(release), level, baseValueForLevel(stats.HP_BY_LEVEL, level, 3), baseValueForLevel(stats.PW_BY_LEVEL, level, 2), baseValueForLevel(stats.STATS_BY_LEVEL, level, 2), normalMaxHp + shinyHpBonus, normalMaxPower + shinyPowerBonus, normalMaxStats + shinyStatsBonus, normalMaxHp, normalMaxPower, normalMaxStats, shinyHpBonus, shinyPowerBonus, shinyStatsBonus], ["catalog_release_id", "level"], ["base_hp", "base_power", "base_stats", "max_hp", "max_power", "max_stats", "normal_max_hp", "normal_max_power", "normal_max_stats", "shiny_hp_bonus", "shiny_power_bonus", "shiny_stats_bonus"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
+    rows.push(upsert("catalog_level_rule", ["catalog_release_id", "level", "base_hp", "base_power", "base_stats", "max_hp", "max_power", "max_stats", "normal_max_hp", "normal_max_power", "normal_max_stats", "shiny_hp_bonus", "shiny_power_bonus", "shiny_stats_bonus", "legendary_hp_bonus", "legendary_power_bonus", "legendary_stats_bonus"], [releaseId(release), level, baseValueForLevel(stats.HP_BY_LEVEL, level, 3), baseValueForLevel(stats.PW_BY_LEVEL, level, 2), baseValueForLevel(stats.STATS_BY_LEVEL, level, 2), normalMaxHp + shinyHpBonus + legendaryHpBonus, normalMaxPower + shinyPowerBonus + legendaryPowerBonus, normalMaxStats + shinyStatsBonus + legendaryStatsBonus, normalMaxHp, normalMaxPower, normalMaxStats, shinyHpBonus, shinyPowerBonus, shinyStatsBonus, legendaryHpBonus, legendaryPowerBonus, legendaryStatsBonus], ["catalog_release_id", "level"], ["base_hp", "base_power", "base_stats", "max_hp", "max_power", "max_stats", "normal_max_hp", "normal_max_power", "normal_max_stats", "shiny_hp_bonus", "shiny_power_bonus", "shiny_stats_bonus", "legendary_hp_bonus", "legendary_power_bonus", "legendary_stats_bonus"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
   }
   let pveCount = 0;
   Object.keys(pve.PVE_MOVE_CATEGORIES).sort().forEach((category) => pve.PVE_MOVE_CATEGORIES[category].forEach((moveIndex, order) => {

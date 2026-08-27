@@ -106,11 +106,17 @@ La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono st
 ### Pokémon Shiny
 
 - Gli incontri selvatici applicano un tiro autoritativo con probabilità canonica `1/2000`; il frontend non decide mai se un Pokémon è Shiny.
-- Lo stato compatto usa `sh: 1` e `shl: <livello di ottenimento>`. Il bonus Shiny dipende da `shl` e resta fisso per tutta la vita del Pokémon, anche dopo livelli ed evoluzioni; non ricalcolarlo dal livello corrente.
+- Lo stato compatto usa soltanto `sh: 1`. Il bonus ricevuto all'ottenimento resta incorporato nei valori persistiti del Pokémon, che da quel momento crescono normalmente; non conservare il livello di ottenimento o duplicare i bonus nello stato.
 - `PP` nelle specifiche Shiny indica la potenza della mossa (`power`), non i punti utilizzo delle mosse.
-- Tabelle, cap e bonus canonici sono in `app/data/stat-tables.js`; la probabilità è in `app/data/progression.js`. PostgreSQL conserva cap normali, bonus Shiny e cap assoluti in `catalog_level_rule` e valida ogni istanza con il cap relativo al proprio `shl`.
+- I cap Shiny dipendono dal livello corrente, non dal livello di ottenimento. Tabelle, cap e bonus canonici sono in `app/data/stat-tables.js`; la probabilità è in `app/data/progression.js`.
 - Gli sprite Shiny restano in `assets/img_pokemon/` con suffisso finale `_shiny` (`25_shiny.webp`, `25_f_shiny.webp`) e devono ereditare scala e allineamento dallo sprite normale corrispondente.
 - Lo strumento debug di `aaa` può creare uno Shiny, ma il relativo comando deve continuare a essere validato dalla Edge Function e dal database.
+
+### Pokémon Legendary
+
+- La rarità tecnica `legendary` concede all'ottenimento un bonus massimo di `+80 PV`, `+65 Power` e `+65 Stats`; sotto il livello 60 il bonus scala linearmente, dal livello 60 in poi resta pieno.
+- I valori ricevuti restano incorporati nel Pokémon e crescono normalmente. I cap aggiungono gli stessi bonus Legendary in base al livello corrente: al livello 100 sono `480 PV`, `385 Power` e `235 Stats` per un Legendary non Shiny.
+- Shiny e Legendary sono proprietà indipendenti e i relativi bonus e cap si sommano.
 
 ## Battaglie autoritative
 

@@ -48,7 +48,7 @@ export var IT_COMMON_TRANSLATIONS = Object.freeze({
     captureZones: "Zone cattura",
     city: "Città",
     battleArea: "Area Lotta",
-    team: "Scheda Allenatore",
+    team: "Scheda",
     box: "Box",
     missions: "Missioni",
     experience: "Esperienza",

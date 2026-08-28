@@ -12,7 +12,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     rules: Object.freeze({ title: "Regolamento", description: "Entrate qui per avere tutte le info e gli aggiornamenti sul GdR" }),
     zones: Object.freeze({ title: "Zone cattura", description: "È l'ora di andare a catturare qualche Pokémon!" }),
     city: Object.freeze({ title: "Città", description: "In città troverete molti luoghi utili per l'avventura" }),
-    team: Object.freeze({ title: "Scheda allenatore", description: "La vostra Scheda Allenatore,\nPokédex incluso" }),
+    team: Object.freeze({ title: "Scheda Allenatore", description: "La vostra Scheda Allenatore,\nPokédex incluso" }),
     player_directory: Object.freeze({ title: "Schede giocatori", description: "Scopri le squadre e i progressi degli altri allenatori" }),
     box: Object.freeze({ title: "Box", description: "Quando non c'è posto in squadra...\nCi si ritrova qua!" }),
     battle_area: Object.freeze({ title: "Area Lotta", description: "Nuove sfide e ricompense attendono gli allenatori più determinati" }),
@@ -264,7 +264,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     genders: Object.freeze({ male: "Maschio", female: "Femmina", genderless: "Senza sesso" })
   }),
   team: Object.freeze({
-    sceneTitle: "Scheda allenatore",
+    sceneTitle: "Scheda Allenatore",
     defaultTrainer: "Allenatore",
     trainerAlt: "Allenatore",
     caught: "Catturato",

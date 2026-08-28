@@ -30,15 +30,15 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
   }),
   playerDirectory: Object.freeze({
     sceneTitle: "Schede giocatori",
-    description: "Consulta le squadre attuali, le Medaglie, il titolo preferito e i dettagli dei Pokémon degli altri giocatori.",
+    description: "Consulta le squadre Pokémon e le Medaglie degli altri giocatori!",
     loading: "Caricamento delle schede giocatori...",
     empty: "Non ci sono ancora giocatori disponibili.",
     emptyTeam: "Squadra vuota",
     badges: "Medaglie: {count}/8",
     trainerAlt: "Allenatore {name}",
     teamLabel: "Squadra di {name}",
-    showTeam: "Clicca per vedere la squadra",
-    hideTeam: "Nascondi la squadra",
+    showTeam: "Mostra squadra",
+    hideTeam: "Nascondi squadra",
   }),
   home: Object.freeze({
     defaultTrainer: "Allenatore",

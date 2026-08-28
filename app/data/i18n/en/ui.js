@@ -30,15 +30,15 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
   }),
   playerDirectory: Object.freeze({
     sceneTitle: "Player Cards",
-    description: "View other players' current teams, Badges, preferred title, and Pokémon details.",
+    description: "View other players' Pokémon's teams and Badges!",
     loading: "Loading player cards...",
     empty: "There are no players available yet.",
     emptyTeam: "Empty team",
     badges: "Badges: {count}/8",
     trainerAlt: "Trainer {name}",
     teamLabel: "{name}'s team",
-    showTeam: "Click to view the team",
-    hideTeam: "Hide the team",
+    showTeam: "Show team",
+    hideTeam: "Hide team",
   }),
   home: Object.freeze({
     defaultTrainer: "Trainer",

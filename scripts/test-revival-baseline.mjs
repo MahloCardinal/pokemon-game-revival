@@ -87,7 +87,9 @@ assert.match(supabaseConfig, /site_url = "https:\/\/pokemon-game-revival\.vercel
 assert.match(supabaseConfig, /additional_redirect_urls = \[[^\]]*"https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery"/);
 assert.match(engine, /BATTLE_ENGINE_VERSION = "pokemon-game-revival"/);
 assert.doesNotMatch(moveCatalogSource, /\bdescription\b/, "Move presentation text must live only in i18n");
+assert.doesNotMatch(moveCatalogSource, /\bname\b/, "Move names must live only in i18n");
 assert.doesNotMatch(moveEngineSource, /\bdescription\b/, "Move instances must not retain obsolete presentation text");
+assert.doesNotMatch(moveEngineSource, /\bname\b/, "Move instances must identify moves by stable keys");
 assert.match(edge, /requireServerRole\(clients\.serviceClient, clients\.userId, "debug"\)/);
 assert.match(edge, /requireRevivalProject\(\)/);
 const debugTrainingAction = edge.slice(
@@ -494,6 +496,9 @@ function assertStableCatalogKeys(entries, expectedCount, label) {
 }
 
 assertStableCatalogKeys(MoveDefinitions.MOVE_LIBRARY, 351, "move");
+assert.ok(MoveDefinitions.MOVE_LIBRARY.every(function (move) {
+  return !Object.prototype.hasOwnProperty.call(move, "name");
+}), "Move catalog entries must not retain presentation names");
 assertStableCatalogKeys(ItemDefinitions.ITEM_LIBRARY, 167, "item");
 assertStableCatalogKeys(TitleDefinitions.TRAINER_TITLES, 22, "trainer title");
 assert.equal(TitleDefinitions.INITIAL_TRAINER_TITLE_COUNT, 21);
@@ -506,7 +511,7 @@ assert.ok(TitleDefinitions.TRAINER_TITLES.filter(function (title) {
     && title.excludedRarities.includes("legendary")
     && !title.excludedRarities.includes("mythic");
 }));
-assert.equal(MoveDefinitions.doom_desire.name, "doom_desire");
+assert.equal(MoveDefinitions.doom_desire.key, "doom_desire");
 assert.equal(ItemDefinitions.leek.name, "leek");
 assert.equal(new Set(ItemDefinitions.ITEM_LIBRARY.map((item) => item.index)).size, ItemDefinitions.ITEM_LIBRARY.length, "item indexes must be unique");
 assert.deepEqual(
@@ -575,6 +580,9 @@ assert.deepEqual(
   assert.equal(participant.gender, "female", "Battle projections must preserve the sprite gender");
   assert.equal(participant.is_shiny, true, "Battle projections must preserve the Shiny marker");
   assert.equal(participant.is_mega, false, "Battle projections must preserve the Mega marker");
+  assert.equal(participant.moves[0].display_name, "tackle", "Database projections must carry the stable move key");
+  assert.equal(Object.prototype.hasOwnProperty.call(femaleShiny.moves[0], "name"), false,
+    "Runtime moves must not retain presentation names");
 }
 
 {
@@ -878,8 +886,8 @@ for (const thawingMove of [MoveDefinitions.sacred_fire, MoveDefinitions.flame_wh
   player.status = "frz";
   enemy.semiInvulnerable = "fly";
   manager.resolveMoveAction("player", player.pokemon.moves[0]);
-  assert.equal(player.status, null, `${thawingMove.name} must thaw the user before checking whether the target can be hit`);
-  assert.equal(enemy.hp, 200, `${thawingMove.name} must still obey ordinary semi-invulnerability rules`);
+  assert.equal(player.status, null, `${thawingMove.key} must thaw the user before checking whether the target can be hit`);
+  assert.equal(enemy.hp, 200, `${thawingMove.key} must still obey ordinary semi-invulnerability rules`);
 }
 
 {
@@ -911,10 +919,10 @@ for (const buffLossDefinition of [MoveDefinitions.superpower, MoveDefinitions.ov
   const enemy = manager.enemyTeam.getActive();
   player.atkBuff = 10;
   manager.resolveMoveAction("player", player.pokemon.moves[0]);
-  assert.equal(enemy.hp, 140, `${buffLossDefinition.name} must include the existing Attack boost in its doubled damage`);
-  assert.equal(player.atkBuff, 0, `${buffLossDefinition.name} must remove the Attack boost only after damage is calculated`);
+  assert.equal(enemy.hp, 140, `${buffLossDefinition.key} must include the existing Attack boost in its doubled damage`);
+  assert.equal(player.atkBuff, 0, `${buffLossDefinition.key} must remove the Attack boost only after damage is calculated`);
   assert.ok(manager.log.some((entry) => entry.key === "move.dmg_double_lost_atk_buff"),
-    `${buffLossDefinition.name} must explicitly log that the Attack boost was lost`);
+    `${buffLossDefinition.key} must explicitly log that the Attack boost was lost`);
 }
 
 {

@@ -488,7 +488,7 @@ function applyEntryChoiceEntries(manager, context) {
     opponent = combatant && combatant.team === manager.playerTeam ? manager.enemyTeam.getActive() : manager.playerTeam.getActive();
     entries = opponent && opponent.pokemon && Array.isArray(opponent.pokemon.moves)
       ? opponent.pokemon.moves.map(function (move, index) {
-        return { key: move.key, name: move.name, index: index };
+        return { key: move.key, index: index };
       })
       : [];
   } else if (kind === "type") {

@@ -183,7 +183,7 @@ function moveExportKeys(namespace) {
 }
 
 function moveReferenceSet(namespace) {
-  return new Set(Object.values(namespace).filter((value) => value && Number.isInteger(value.index) && value.name));
+  return new Set(Object.values(namespace).filter((value) => value && Number.isInteger(value.index) && value.key));
 }
 
 function plainValue(value, path, references) {
@@ -544,7 +544,7 @@ async function moveStatements(release) {
   const primary = "app/data/moves.js";
   const data = await loadSourceModule(primary);
   const keys = moveExportKeys(data);
-  const excluded = new Set(["key", "index", "name", "before", "after", "effect_before", "effect_after"]);
+  const excluded = new Set(["key", "index", "before", "after", "effect_before", "effect_after"]);
   const rows = data.MOVE_LIBRARY.map((move) => {
     const key = keys.get(move.index);
     const rules = rulesWithout(move, excluded, "move " + key, null);
@@ -561,7 +561,7 @@ async function moveStatements(release) {
     rules.semiInvulnerableAllowedMoveKeys = data.SEMI_INVULN_ALLOWED[key]
       ? Object.keys(data.SEMI_INVULN_ALLOWED[key]).sort()
       : [];
-    return upsertJson("catalog_move", ["catalog_release_id", "move_index", "move_key", "display_name", "rules_key", "rules"], [releaseId(release), move.index, key, move.name, "move." + key, rules], new Set([5]), ["catalog_release_id", "move_index"], ["move_key", "display_name", "rules_key", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release));
+    return upsertJson("catalog_move", ["catalog_release_id", "move_index", "move_key", "display_name", "rules_key", "rules"], [releaseId(release), move.index, key, move.key, "move." + key, rules], new Set([5]), ["catalog_release_id", "move_index"], ["move_key", "display_name", "rules_key", "rules"]).replace(sqlLiteral(releaseId(release)), releaseId(release));
   });
   return { rows, manifests: new Map([[primary, {
     primaryRows: data.MOVE_LIBRARY.length,

@@ -292,7 +292,7 @@ function hydrateAuthoritativeMoveState(combatant, entry) {
   var pendingSlot = entry.pending_move_slot === null || entry.pending_move_slot === undefined
     ? null : Number(entry.pending_move_slot);
   combatant.disabledMoves = disabledSlots.map(function (slot) {
-    return combatant.pokemon.moves[slot] && combatant.pokemon.moves[slot].name;
+    return combatant.pokemon.moves[slot] && combatant.pokemon.moves[slot].key;
   }).filter(Boolean);
   combatant.pendingMove = Number.isInteger(pendingSlot) ? combatant.pokemon.moves[pendingSlot] || null : null;
   combatant.updateMovesState();
@@ -887,7 +887,7 @@ function resumeAuthoritativeOrdinaryChoices() {
     offerIndex: 0, choices: [], commandId: globalThis.crypto.randomUUID(), levelShown: false,
     beforePokemon: options.before_state ? Engine.Pokemon.fromJSON(options.before_state) : null,
     afterPokemon: options.after_state ? Engine.Pokemon.fromJSON(options.after_state) : null,
-    moves: (pokemon.moves || []).map(function (move) { return { index: Number(move.index), name: move.name }; })
+    moves: (pokemon.moves || []).map(function (move) { return { index: Number(move.index) }; })
   };
   openNextAuthoritativeTrainingChoice();
 }
@@ -968,7 +968,7 @@ function resumeAuthoritativeTrainingChoices() {
     offerIndex: 0, choices: [], commandId: globalThis.crypto.randomUUID(), levelShown: false,
     beforePokemon: options.before_state ? Engine.Pokemon.fromJSON(options.before_state) : null,
     afterPokemon: options.after_state ? Engine.Pokemon.fromJSON(options.after_state) : null,
-    moves: (pokemon.moves || []).map(function (move) { return { index: Number(move.index), name: move.name }; })
+    moves: (pokemon.moves || []).map(function (move) { return { index: Number(move.index) }; })
   };
   openNextAuthoritativeTrainingChoice();
 }

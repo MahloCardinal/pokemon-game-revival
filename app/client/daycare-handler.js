@@ -236,7 +236,7 @@ function startAuthoritativeDaycareResolution(slot) {
     offerIndex: 0,
     choices: [],
     moves: (slot.pokemon.moves || []).map(function (move) {
-      return { index: Number(move.index), name: move.name };
+      return { index: Number(move.index) };
     })
   };
   openNextAuthoritativeDaycareChoice();

@@ -35,7 +35,6 @@ function Move(moveDef, overrides) {
   overrides = overrides || {};
   this.key = moveDef.key;
   this.index = moveDef.index || 0;
-  this.name = moveDef.name;
   this.power = overrides.power !== undefined ? overrides.power : 0;
   this.stats = overrides.stats !== undefined ? overrides.stats : 0;
   this.damagingMove = moveDef.damagingMove !== undefined ? moveDef.damagingMove : true;

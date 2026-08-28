@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "1570b5e23573d738570504df392ffdb813ef36cdc7e7fe96389896437e49ae9e",
+  "bundleChecksum": "fc81470b63838667f6594c46183d0649a0fac417d347e42385ca46f46d4ee7d2",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -39,8 +39,8 @@
     },
     {
       "source": "app/data/moves.js",
-      "sha256": "da38c4d73198f8d2c240aeab51cf1d4c205638d8a6421af7052639b4773d2d54",
-      "bytes": 104114
+      "sha256": "c2ff6bd9ffdb59661311ce24f71ab1a02f205a43f69e1dea2a615130752f5763",
+      "bytes": 97855
     },
     {
       "source": "app/data/progression.js",
@@ -99,8 +99,8 @@
     },
     {
       "source": "app/engine/battle-runtime.js",
-      "sha256": "2213afd16a10a04aaed7f3aa5897b7c394d10311f1f8f6198b18071c18328106",
-      "bytes": 40692
+      "sha256": "caa582857284fd5c375a9e41f8a774d5ddcddfdee2ddc5fc59edd7abb7ea8581",
+      "bytes": 40690
     },
     {
       "source": "app/engine/battle-summary.js",
@@ -124,8 +124,8 @@
     },
     {
       "source": "app/engine/held-items.js",
-      "sha256": "6f01b549d0dda5912b00082354f44f1ea942630f9dae81d36eb66fe2d51718a8",
-      "bytes": 29564
+      "sha256": "13213f45d51d25a6b25d4a9400a7a70393711fdebbcc41dac70e4a772060be70",
+      "bytes": 29546
     },
     {
       "source": "app/engine/index.js",
@@ -139,8 +139,8 @@
     },
     {
       "source": "app/engine/moves.js",
-      "sha256": "42689f3c07866e7207bd245ca7644a4cf664e7b3005f139c06e0287c3b4b2c07",
-      "bytes": 3933
+      "sha256": "888e7164681f8b00d797377a11cc4dead2675cad8c70a40f941e5e0fe40191e8",
+      "bytes": 3905
     },
     {
       "source": "app/engine/pokemon.js",

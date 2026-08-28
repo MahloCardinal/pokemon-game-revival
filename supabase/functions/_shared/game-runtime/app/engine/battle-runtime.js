@@ -746,7 +746,7 @@ export function projectBattle(manager, status, playerItems) {
         confusion_counter: Number(combatant.confCounter) || 0,
         type_keys: combatant.type.slice(),
         moves: combatant.pokemon.moves.map(function (move, moveIndex) {
-          return { move_index: move.index, display_name: move.name, power: move.power, stats: move.stats,
+          return { move_index: move.index, display_name: move.key, power: move.power, stats: move.stats,
             available: availableSlots.indexOf(moveIndex) !== -1 };
         }),
         pending_move_slot: combatant.pendingMove ? (pendingSlot >= 0 ? pendingSlot : 0) : null,

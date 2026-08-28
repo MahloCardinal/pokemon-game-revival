@@ -329,7 +329,6 @@ function openMoveLearnDialog(session, moveDef) {
     state.dialog = {
       type: "move-learn-result",
       pokemonName: session.pokemon.name,
-      moveName: move.name,
       message: messageDescriptor("progression.learned", { pokemon: pokemonNameDescriptor(session.pokemon), move: moveNameDescriptor(move) }),
       pokemon: session.pokemon
     };
@@ -825,7 +824,6 @@ export function replaceProgressionMove(index) {
   state.dialog = {
     type: "move-learn-result",
     pokemonName: activeSession.pokemon.name,
-    moveName: learnedMove.name,
     message: messageDescriptor("progression.learned", { pokemon: pokemonNameDescriptor(activeSession.pokemon), move: moveNameDescriptor(learnedMove) }),
     pokemon: activeSession.pokemon
   };
@@ -965,7 +963,6 @@ export function skipProgressionMove() {
   state.dialog = {
     type: "move-learn-result",
     pokemonName: activeSession.pokemon.name,
-    moveName: skippedMove.name,
     message: messageDescriptor("progression.notLearned", { pokemon: pokemonNameDescriptor(activeSession.pokemon), move: moveNameDescriptor(skippedMove) }),
     pokemon: null
   };

@@ -33,7 +33,8 @@ function titleRowsFromProjection(rows) {
   return (Array.isArray(rows) ? rows : []).map(function (row) {
     return {
       titleKey: String(row && row.title_key || ""),
-      unlockedAt: row && row.unlocked_at || null
+      unlockedAt: row && row.unlocked_at || null,
+      isPreferred: Boolean(row && row.is_preferred)
     };
   }).filter(function (row) { return row.titleKey; });
 }

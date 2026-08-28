@@ -337,7 +337,11 @@ export function applyPlayerSave(save) {
   state.inventoryFlippedItems = {};
   state.playerDex = normalizePokedexNumbers(save.dex);
   state.trainerTitles = Array.isArray(save.trainerTitles) ? save.trainerTitles.map(function (entry) {
-    return { titleKey: String(entry && entry.titleKey || ""), unlockedAt: entry && entry.unlockedAt || null };
+    return {
+      titleKey: String(entry && entry.titleKey || ""),
+      unlockedAt: entry && entry.unlockedAt || null,
+      isPreferred: Boolean(entry && entry.isPreferred)
+    };
   }).filter(function (entry) { return entry.titleKey; }) : [];
   state.pokedexDirty = false;
   state.shoppingCenterCart = {};

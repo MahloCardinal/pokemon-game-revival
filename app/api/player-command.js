@@ -202,6 +202,12 @@ export function getBattleShopOffers() {
   return runRpc("get_battle_shop_offers");
 }
 
+export function setPreferredTrainerTitle(titleKey) {
+  return runRpc("set_preferred_trainer_title", {
+    p_title_key: String(titleKey || "")
+  });
+}
+
 export function chooseStarterAuthoritative(input) {
   return runPlayerCommand("choose_starter_authoritative", {
     p_expected_revision: Number(input.expectedRevision) || 0,

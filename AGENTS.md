@@ -82,6 +82,8 @@ Il browser non è fonte autoritativa e non deve concedere ricompense. Le battagl
 - Nel Centro Commerciale `price: null` significa sempre “non acquistabile”; non mantenere elenchi separati di disponibilità che possano divergere dal prezzo.
 - Per le MT, il Tier `0` significa premio non acquistabile e produce sempre `price: null`; Club Pokéfan, Centro Commerciale e Negozio Lotta devono filtrare tramite questa regola canonica, senza elenchi paralleli delle MT escluse.
 - I Titoli Allenatore sono definiti tecnicamente in `app/data/titles.js`; nomi e requisiti visibili appartengono soltanto a i18n. Gli sblocchi sono automatici, permanenti e autoritativi: non aggiungere polling o controlli frontend che concedano titoli.
+- `Nuovo arrivato` appartiene alla collezione onboarding ed è concesso quando viene scelto lo starter; non fa parte della collezione stabile `trainer_titles_initial`. Il Titolo preferito è marcato su `player_title`, può essere scelto soltanto tra quelli posseduti tramite RPC autoritativo e non incrementa la revisione di gioco.
+- Le Schede giocatori espongono soltanto il Titolo preferito. Non reintrodurre l'ultimo Titolo ottenuto né l'elenco completo dei Titoli nella proiezione pubblica.
 - I Titoli basati sui tipi usano le registrazioni del Pokédex da qualsiasi fonte. Considerano tutte le specie del catalogo e ogni tipo di una specie doppio tipo, escludendo soltanto le rarità `fossil` e `legendary`; la rarità tecnica `mythic` resta valida.
 - La missione della prima collezione resta legata alla collezione stabile `trainer_titles_initial`, non a ogni eventuale Titolo aggiunto in futuro.
 

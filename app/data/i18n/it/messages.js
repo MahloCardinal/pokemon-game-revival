@@ -159,7 +159,8 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
     moveDuringBattle: "Non puoi spostare Pokémon durante un combattimento.",
     minimumOne: "Devi avere almeno un Pokémon in squadra!",
     depositFailed: "Deposito nel Box non riuscito.",
-    moveFailed: "Spostamento in squadra non riuscito."
+    moveFailed: "Spostamento in squadra non riuscito.",
+    preferredTitleFailed: "Impossibile impostare il Titolo preferito."
   }),
   starter: Object.freeze({
     invalidSelection: "Seleziona il personaggio e un Pokémon iniziale valido.",

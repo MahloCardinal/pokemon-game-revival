@@ -30,12 +30,10 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
   }),
   playerDirectory: Object.freeze({
     sceneTitle: "Player Cards",
-    description: "View other players' current teams, badges, titles, and Pokémon details.",
+    description: "View other players' current teams, Badges, preferred title, and Pokémon details.",
     loading: "Loading player cards...",
     empty: "There are no players available yet.",
     emptyTeam: "Empty team",
-    emptyTitles: "No titles unlocked yet",
-    titles: "Trainer Titles",
     badges: "Badges: {count}/8",
   }),
   home: Object.freeze({
@@ -275,12 +273,12 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     emptyTeam: "Your team is empty.",
     inventorySections: Object.freeze({ tools: "Items", held: "Held items", battle: "Battle items", balls: "Poké Balls", mt: "TMs", berries: "Berries" }),
     trainerTitles: Object.freeze({
-      panelTitle: "Trainer Titles",
-      infoAria: "Show titles and requirements",
+      panelTitle: "Obtained Titles",
       infoTooltip: "Click for title information",
-      infoTitle: "Trainer Titles",
-      empty: "No titles obtained yet",
+      infoTitle: "Available Titles",
+      preferred: "Preferred",
       entries: Object.freeze({
+        newcomer: Object.freeze({ name: "New Arrival", requirement: "Choose your starter Pokémon." }),
         steel_will: Object.freeze({ name: "Iron Will", requirement: "Register every Steel-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
         expert_angler: Object.freeze({ name: "Expert Angler", requirement: "Register every Water-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),
         creature_of_the_night: Object.freeze({ name: "Creature of the Night", requirement: "Register every Dark-type Pokémon in the Pokédex, excluding Fossil and Legendary Pokémon." }),

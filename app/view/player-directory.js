@@ -1,6 +1,6 @@
 import * as Engine from "../engine/index.js";
 import { KANTO_GYM_BADGES } from "../data/gyms.js";
-import { TRAINER_TITLES } from "../data/titles.js";
+import { trainerTitleByKey } from "../data/titles.js";
 import { assetPath, escapeHtml, renderImage } from "../client/asset-helpers.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { sceneShell } from "../client/render-utils.js";
@@ -11,25 +11,21 @@ function playerDirectoryState() {
   return state.scene && state.scene.playerDirectory || { loading: true, loaded: false, players: [], error: null };
 }
 
-function playerBadgesMarkup(badges, onlyObtained) {
+function playerBadgesMarkup(badges) {
   var count = Math.max(0, Math.min(KANTO_GYM_BADGES.length, Math.floor(Number(badges) || 0)));
-  var badgeList = onlyObtained ? KANTO_GYM_BADGES.slice(0, count) : KANTO_GYM_BADGES;
-  return badgeList.map(function (badge, index) {
-    var className = "player-directory-badge" + (index < count ? "" : " player-directory-badge--locked");
+  return KANTO_GYM_BADGES.slice(0, count).map(function (badge) {
     return renderImage(
       assetPath("img_miscellaneous", badge.image),
       t("ui.gyms.badges." + badge.key),
-      className,
+      "player-directory-badge",
       'loading="lazy" decoding="async" fetchpriority="low"'
     );
   }).join("");
 }
 
-function titleNames(titleKeys) {
-  var unlocked = new Set((Array.isArray(titleKeys) ? titleKeys : []).map(String));
-  return TRAINER_TITLES.filter(function (title) { return unlocked.has(title.key); }).map(function (title) {
-    return t("ui.team.trainerTitles.entries." + title.key + ".name");
-  });
+function preferredTitleName(titleKey) {
+  var title = trainerTitleByKey(titleKey);
+  return title ? t("ui.team.trainerTitles.entries." + title.key + ".name") : "";
 }
 
 function hydratePokemon(entry) {
@@ -57,29 +53,19 @@ function renderTeamDetails(team) {
 
 function renderPlayerRow(player) {
   var badges = Math.max(0, Math.min(8, Math.floor(Number(player && player.badges) || 0)));
-  var titles = titleNames(player && player.titles);
   var team = Array.isArray(player && player.team) ? player.team : [];
-  var lastTitle = player && player.last_title ? titleNames([player.last_title])[0] : "";
+  var preferredTitle = preferredTitleName(player && player.preferred_title);
   return [
     '<li class="player-directory-entry">',
     '  <details class="player-directory-player">',
     '    <summary class="player-directory-summary">',
     '      <span class="player-directory-summary-main">',
     '        <strong class="player-directory-player-name">' + escapeHtml(player && player.username || t("ui.home.defaultTrainer")) + "</strong>",
-    '        <span class="player-directory-last-title">' + escapeHtml(lastTitle || t("ui.playerDirectory.emptyTitles")) + "</span>",
-    '        <span class="player-directory-summary-badges" aria-label="' + escapeHtml(t("ui.playerDirectory.badges", { count: badges })) + '">' + playerBadgesMarkup(badges, true) + "</span>",
+    preferredTitle ? '        <span class="player-directory-preferred-title">' + escapeHtml(preferredTitle) + "</span>" : "",
+    '        <span class="player-directory-summary-badges" aria-label="' + escapeHtml(t("ui.playerDirectory.badges", { count: badges })) + '">' + playerBadgesMarkup(badges) + "</span>",
     "      </span>",
     "    </summary>",
     '    <div class="player-directory-player-body">',
-    '      <div class="player-directory-meta">',
-    '        <div class="player-directory-badges" aria-label="' + escapeHtml(t("ui.playerDirectory.badges", { count: badges })) + '">' + playerBadgesMarkup(badges) + "</div>",
-    '        <div class="player-directory-titles">',
-    '          <h3>' + escapeHtml(t("ui.playerDirectory.titles")) + "</h3>",
-    titles.length
-      ? '<ul>' + titles.map(function (title) { return "<li>" + escapeHtml(title) + "</li>"; }).join("") + "</ul>"
-      : '<p class="player-directory-empty">' + escapeHtml(t("ui.playerDirectory.emptyTitles")) + "</p>",
-    "        </div>",
-    "      </div>",
     renderTeamDetails(team),
     "    </div>",
     "  </details>",
@@ -103,9 +89,11 @@ function renderDirectoryContent() {
 
 export function renderPlayerDirectoryScene() {
   var body = [
-    '<section class="player-directory-layout">',
-    '  <p class="player-directory-intro">' + escapeHtml(t("ui.playerDirectory.description")) + "</p>",
-    '  <div data-render-region="player-directory-content">' + renderDirectoryContent() + "</div>",
+    '<section class="panel player-directory-panel">',
+    '  <div class="panel-inner player-directory-layout">',
+    '    <p class="player-directory-intro">' + escapeHtml(t("ui.playerDirectory.description")) + "</p>",
+    '    <div data-render-region="player-directory-content">' + renderDirectoryContent() + "</div>",
+    "  </div>",
     "</section>"
   ].join("");
   return sceneShell(t("ui.playerDirectory.sceneTitle"), "", body, "", "scene-content-player-directory", "parent-back");

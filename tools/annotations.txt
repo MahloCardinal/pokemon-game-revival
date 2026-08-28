@@ -2,7 +2,6 @@
 # TODO
 #--------------------------------------------------------------------
 - bilanciamento team palestre
-- inserire possibilità di vedere squadre altri giocatori (e squadre con cui hanno vinto le palestre?)
 - implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)
 - verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
 
@@ -16,7 +15,7 @@ Ho un gdr pokemon online, e mi servono gli sfondi per modalità desktop e mobile
 Lo stile dev'essere pixellato, il contenuto semplice e generico, con immagini non troppo dettagliate dato che si tratta di uno sfondo.
 Ci devono essere pochi riferimenti a pokemon, non sono strettamente necessari.
 Non devono esserci scritte. Non deve esserci un pubblico.
-Mi servono una versione 1672x941 (desktop) e una versione 1086x1448 (mobile).
+Mi servono una versione 1672x941 (desktop) e una versione 1086x1448 (mobile) delle sezioni [INSERIRE_SEZIONI]
 
 - Caricare il progetto aggiornato da GitHub
 git pull

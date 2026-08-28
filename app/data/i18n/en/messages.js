@@ -159,7 +159,8 @@ export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
     moveDuringBattle: "You cannot move Pokémon during a battle.",
     minimumOne: "You must keep at least one Pokémon in your team!",
     depositFailed: "The Pokémon could not be deposited in the Box.",
-    moveFailed: "The team order could not be changed."
+    moveFailed: "The team order could not be changed.",
+    preferredTitleFailed: "The preferred Trainer Title could not be set."
   }),
   starter: Object.freeze({
     invalidSelection: "Choose a character and a valid starter Pokémon.",

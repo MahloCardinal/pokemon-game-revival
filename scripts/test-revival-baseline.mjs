@@ -40,6 +40,7 @@ const trainingMissionReceiptMigration = read("supabase/migrations/20260825090000
 const segmentedTrainingProgressionMigration = read("supabase/migrations/20260825100000_segment_training_level_progression.sql");
 const trainerTitlesMigration = read("supabase/migrations/20260826120000_trainer_titles.sql");
 const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_debug_trainer_title_controls.sql");
+const preferredTrainerTitlesMigration = read("supabase/migrations/20260828110000_preferred_trainer_titles.sql");
 const shinyMigration = read("supabase/migrations/20260827120000_authoritative_shiny_pokemon.sql");
 const rarityStatsMigration = read("supabase/migrations/20260827150000_current_level_shiny_and_legendary_stats.sql");
 const statTables = read("app/data/stat-tables.js");
@@ -65,6 +66,9 @@ const adminBattleHandler = read("app/client/admin-battle-handler.js");
 const battleView = read("app/view/battle.js");
 const teamView = read("app/view/team.js");
 const teamStyles = read("styles/team.css");
+const teamHandler = read("app/client/team-handler.js");
+const playerDirectoryView = read("app/view/player-directory.js");
+const playerDirectoryStyles = read("styles/player-directory.css");
 const inventoryViewHelpers = read("app/view/inventory-helpers.js");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
@@ -186,6 +190,14 @@ assert.ok(
   "Battle Ball pockets must appear before Berry pockets"
 );
 assert.match(teamView, /trainerTitles\.infoTooltip/);
+assert.match(teamView, /data-action="trainer-title-select"/);
+assert.match(teamView, /leftPreferred !== rightPreferred/);
+assert.match(teamView, /trainerTitles\.preferred/);
+assert.doesNotMatch(teamView, /trainerTitles\.empty|trainerTitles\.infoAria/);
+assert.match(teamStyles, /\.trainer-title-button/);
+assert.match(teamStyles, /\.trainer-title-preferred\s*\{[^}]*color:\s*#c96f6f/);
+assert.match(teamHandler, /setPreferredTrainerTitle\(titleKey\)/);
+assert.match(teamHandler, /renderRegions\(\["trainer-profile"\]\)/);
 assert.match(teamStyles, /\.trainer-titles-panel\s*\{[\s\S]*?width:\s*300px;/);
 assert.match(teamStyles, /\.trainer-titles-panel\s*\{[^}]*height:\s*250px;/);
 assert.doesNotMatch(teamStyles, /\.trainer-titles-panel\s*\{[^}]*(?:min-height|max-height):/);
@@ -210,6 +222,7 @@ for (const missionSource of [missionCatalog, missionRuntime, missionReset, missi
 }
 assert.match(missionCatalog, /missionIndex:\s*3012[\s\S]*type:\s*"title_collection"[\s\S]*requiredRarity:\s*"legendary"/);
 assert.match(titleCatalog, /TRAINER_TITLE_COLLECTION_KEY = "trainer_titles_initial"/);
+assert.match(titleCatalog, /NEWCOMER_TITLE_COLLECTION_KEY = "trainer_titles_onboarding"/);
 assert.match(trainerTitlesMigration, /create table public\.player_title\s*\(/i);
 assert.match(trainerTitlesMigration, /after insert on public\.player_dex_entry/i);
 assert.match(trainerTitlesMigration, /after insert on public\.player_league_victory/i);
@@ -220,6 +233,17 @@ assert.match(edge, /action === "debug_titles"[\s\S]*requireServerRole\(clients\.
 assert.match(debugTrainerTitlesMigration, /user_has_server_role\(p_auth_user_id, 'debug'\)/i);
 assert.match(debugTrainerTitlesMigration, /order by title\.sort_order[\s\S]*limit 1/i);
 assert.match(debugTrainerTitlesMigration, /revoke all on function public\.adjust_debug_trainer_title[\s\S]*from public, anon, authenticated/i);
+assert.match(preferredTrainerTitlesMigration, /'newcomer', 'trainer_titles_onboarding', 22, 'starter_selected'/i);
+assert.match(preferredTrainerTitlesMigration, /after insert on public\.player_starter_selection/i);
+assert.match(preferredTrainerTitlesMigration, /add column is_preferred boolean not null default false/i);
+assert.match(preferredTrainerTitlesMigration, /create unique index player_title_one_preferred_idx[\s\S]*where is_preferred/i);
+assert.match(preferredTrainerTitlesMigration, /create or replace function public\.set_preferred_trainer_title/i);
+assert.match(preferredTrainerTitlesMigration, /'preferred_title', title_data\.preferred_title/i);
+assert.doesNotMatch(preferredTrainerTitlesMigration, /last_title|jsonb_agg\(owned\.title_key/);
+assert.match(playerDirectoryView, /player\.preferred_title/);
+assert.doesNotMatch(playerDirectoryView, /last_title|playerDirectory\.titles|playerDirectory\.emptyTitles/);
+assert.match(playerDirectoryView, /class="panel player-directory-panel"/);
+assert.match(playerDirectoryStyles, /\.player-directory-panel\s*\{[^}]*width:\s*100%/);
 assert.match(shinyMigration, /rule_key = 'shiny_odds_denominator'[\s\S]*v_is_shiny := floor\(random\(\) \* v_shiny_odds\)::integer = 0/i);
 assert.match(shinyMigration, /p_requires_battle_idle => true/i);
 assert.match(rarityStatsMigration, /state = state - 'shl'/i);
@@ -437,8 +461,10 @@ function assertStableCatalogKeys(entries, expectedCount, label) {
 
 assertStableCatalogKeys(MoveDefinitions.MOVE_LIBRARY, 351, "move");
 assertStableCatalogKeys(ItemDefinitions.ITEM_LIBRARY, 167, "item");
-assertStableCatalogKeys(TitleDefinitions.TRAINER_TITLES, 21, "trainer title");
+assertStableCatalogKeys(TitleDefinitions.TRAINER_TITLES, 22, "trainer title");
 assert.equal(TitleDefinitions.INITIAL_TRAINER_TITLE_COUNT, 21);
+assert.equal(TitleDefinitions.trainerTitleByKey("newcomer").unlockType, "starter_selected");
+assert.equal(TitleDefinitions.trainerTitleByKey("newcomer").collectionKey, "trainer_titles_onboarding");
 assert.ok(TitleDefinitions.TRAINER_TITLES.filter(function (title) {
   return title.unlockType === "pokedex_type_complete";
 }).every(function (title) {

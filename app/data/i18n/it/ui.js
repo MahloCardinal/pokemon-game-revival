@@ -30,12 +30,10 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
   }),
   playerDirectory: Object.freeze({
     sceneTitle: "Schede giocatori",
-    description: "Consulta le squadre attuali, le medaglie, i titoli e i dettagli dei Pokémon degli altri giocatori.",
+    description: "Consulta le squadre attuali, le Medaglie, il titolo preferito e i dettagli dei Pokémon degli altri giocatori.",
     loading: "Caricamento delle schede giocatori...",
     empty: "Non ci sono ancora giocatori disponibili.",
     emptyTeam: "Squadra vuota",
-    emptyTitles: "Nessun titolo ancora ottenuto",
-    titles: "Titoli Allenatore",
     badges: "Medaglie: {count}/8",
   }),
   home: Object.freeze({
@@ -275,12 +273,12 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     emptyTeam: "La squadra è vuota.",
     inventorySections: Object.freeze({ tools: "Strumenti", held: "Strumenti assegnabili", battle: "Strumenti battaglia", balls: "Poké Ball", mt: "MT", berries: "Bacche" }),
     trainerTitles: Object.freeze({
-      panelTitle: "Titoli Allenatore",
-      infoAria: "Mostra titoli e requisiti",
+      panelTitle: "Titoli ottenuti",
       infoTooltip: "Clicca per info sui titoli",
-      infoTitle: "Titoli Allenatore",
-      empty: "Nessun titolo ancora ottenuto",
+      infoTitle: "Titoli disponibili",
+      preferred: "Preferito",
       entries: Object.freeze({
+        newcomer: Object.freeze({ name: "Nuovo arrivato", requirement: "Scegli il Pokémon iniziale." }),
         steel_will: Object.freeze({ name: "Volontà d'acciaio", requirement: "Registra nel Pokédex tutti i Pokémon di tipo Acciaio, esclusi Fossili e Leggendari." }),
         expert_angler: Object.freeze({ name: "Pescatore provetto", requirement: "Registra nel Pokédex tutti i Pokémon di tipo Acqua, esclusi Fossili e Leggendari." }),
         creature_of_the_night: Object.freeze({ name: "Creatura della notte", requirement: "Registra nel Pokédex tutti i Pokémon di tipo Buio, esclusi Fossili e Leggendari." }),

@@ -1,4 +1,5 @@
 export var TRAINER_TITLE_COLLECTION_KEY = "trainer_titles_initial";
+export var NEWCOMER_TITLE_COLLECTION_KEY = "trainer_titles_onboarding";
 
 function typeTitle(key, typeKey, sortOrder) {
   return Object.freeze({
@@ -12,6 +13,12 @@ function typeTitle(key, typeKey, sortOrder) {
 }
 
 export var TRAINER_TITLES = Object.freeze([
+  Object.freeze({
+    key: "newcomer",
+    collectionKey: NEWCOMER_TITLE_COLLECTION_KEY,
+    sortOrder: 22,
+    unlockType: "starter_selected"
+  }),
   typeTitle("steel_will", "steel", 1),
   typeTitle("expert_angler", "water", 2),
   typeTitle("creature_of_the_night", "dark", 3),
@@ -53,7 +60,9 @@ export var TRAINER_TITLES = Object.freeze([
   })
 ]);
 
-export var INITIAL_TRAINER_TITLE_COUNT = TRAINER_TITLES.length;
+export var INITIAL_TRAINER_TITLE_COUNT = TRAINER_TITLES.filter(function (title) {
+  return title.collectionKey === TRAINER_TITLE_COLLECTION_KEY;
+}).length;
 
 export function trainerTitleByKey(titleKey) {
   var normalizedKey = String(titleKey || "");

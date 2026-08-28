@@ -283,24 +283,51 @@
 }
 .trainer-title-list li {
   margin: 0;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.25;
   overflow-wrap: anywhere;
-  text-align: left;
 }
 .trainer-title-list li + li {
   padding-top: 7px;
   border-top: 1px solid rgba(230, 189, 88, 0.5);
 }
-.trainer-title-empty {
-  margin: 0;
-  color: var(--text-soft);
+.trainer-title-button {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  gap: 5px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.25;
-  overflow-wrap: anywhere;
   text-align: left;
+  box-shadow: none;
+  transform: none;
+}
+.trainer-title-button:hover {
+  border-color: rgba(230, 189, 88, 0.65);
+  background: rgba(255, 255, 255, 0.38);
+  box-shadow: none;
+  filter: none;
+  transform: none;
+}
+.trainer-title-button.is-preferred:disabled {
+  border-color: rgba(211, 117, 117, 0.34);
+  background: rgba(255, 228, 228, 0.24);
+  color: var(--text);
+  cursor: default;
+  filter: none;
+  opacity: 1;
+}
+.trainer-title-preferred {
+  color: #c96f6f;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 .trainer-titles-debug-controls {
   display: flex;

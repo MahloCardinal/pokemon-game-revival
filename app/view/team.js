@@ -40,22 +40,31 @@ function pokedexCountLabel(counts, filterGen) {
 }
 
 function renderTrainerTitlesPanel() {
-  var unlockedKeys = new Set((state.trainerTitles || []).map(function (entry) {
-    return String(entry && entry.titleKey || "");
+  var titleStateByKey = new Map((state.trainerTitles || []).map(function (entry) {
+    return [String(entry && entry.titleKey || ""), entry];
   }));
   var unlockedTitles = TRAINER_TITLES.filter(function (title) {
-    return unlockedKeys.has(title.key);
+    return titleStateByKey.has(title.key);
+  }).sort(function (left, right) {
+    var leftPreferred = Boolean(titleStateByKey.get(left.key) && titleStateByKey.get(left.key).isPreferred);
+    var rightPreferred = Boolean(titleStateByKey.get(right.key) && titleStateByKey.get(right.key).isPreferred);
+    if (leftPreferred !== rightPreferred) return leftPreferred ? -1 : 1;
+    return left.sortOrder - right.sortOrder;
   });
-  var titleList = unlockedTitles.length
-    ? '<ul class="trainer-title-list">' + unlockedTitles.map(function (title) {
-      return '<li>' + escapeHtml(t("ui.team.trainerTitles.entries." + title.key + ".name")) + "</li>";
-    }).join("") + "</ul>"
-    : '<p class="trainer-title-empty">' + escapeHtml(t("ui.team.trainerTitles.empty")) + "</p>";
+  var titleList = '<ul class="trainer-title-list">' + unlockedTitles.map(function (title) {
+    var preferred = Boolean(titleStateByKey.get(title.key) && titleStateByKey.get(title.key).isPreferred);
+    return '<li><button type="button" class="trainer-title-button' + (preferred ? " is-preferred" : "")
+      + '" data-action="trainer-title-select" data-title-key="' + escapeHtml(title.key)
+      + '" aria-pressed="' + (preferred ? "true" : "false") + '"' + (preferred ? " disabled" : "") + ">"
+      + '<span>' + escapeHtml(t("ui.team.trainerTitles.entries." + title.key + ".name")) + "</span>"
+      + (preferred ? '<span class="trainer-title-preferred">(' + escapeHtml(t("ui.team.trainerTitles.preferred")) + ")</span>" : "")
+      + "</button></li>";
+  }).join("") + "</ul>";
   return [
     '<aside class="trainer-titles-panel">',
     '  <div class="trainer-titles-heading">',
     '    <h3>' + escapeHtml(t("ui.team.trainerTitles.panelTitle")) + "</h3>",
-    '    <button type="button" class="trainer-titles-info-button" data-action="trainer-titles-info" aria-label="' + escapeHtml(t("ui.team.trainerTitles.infoAria")) + '" title="' + escapeHtml(t("ui.team.trainerTitles.infoTooltip")) + '">?</button>',
+    '    <button type="button" class="trainer-titles-info-button" data-action="trainer-titles-info" aria-label="' + escapeHtml(t("ui.team.trainerTitles.infoTooltip")) + '" title="' + escapeHtml(t("ui.team.trainerTitles.infoTooltip")) + '">?</button>',
     "  </div>",
     '  <div class="trainer-titles-list-wrap">' + titleList + "</div>",
     '  <div class="trainer-titles-debug-controls">' + renderDebugTrainerTitleControls() + "</div>",

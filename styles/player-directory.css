@@ -2,6 +2,10 @@
   width: min(var(--section-width), 100%);
 }
 
+.player-directory-panel {
+  width: 100%;
+}
+
 .player-directory-layout {
   display: grid;
   gap: 18px;
@@ -59,7 +63,7 @@
   overflow-wrap: anywhere;
 }
 
-.player-directory-last-title {
+.player-directory-preferred-title {
   color: var(--text-soft);
   font-size: 12px;
   line-height: 1.35;
@@ -80,55 +84,11 @@
   border-top: 1px solid var(--border-soft);
 }
 
-.player-directory-meta {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.55fr);
-  gap: 18px;
-  padding-top: 14px;
-}
-
-.player-directory-badges {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: start;
-  gap: 6px;
-}
-
 .player-directory-badge {
   width: 30px;
   height: 30px;
   object-fit: contain;
   filter: drop-shadow(0 4px 8px rgba(31, 37, 40, 0.16));
-}
-
-.player-directory-badge--locked {
-  opacity: 0.28;
-  filter: grayscale(1);
-}
-
-.player-directory-titles {
-  min-width: 0;
-}
-
-.player-directory-titles h3 {
-  margin: 0 0 8px;
-  font-size: 13px;
-  line-height: 1.2;
-}
-
-.player-directory-titles ul {
-  display: grid;
-  gap: 5px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.player-directory-titles li {
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
 }
 
 .player-directory-team {
@@ -162,9 +122,5 @@
 @media (max-width: 700px) {
   .player-directory-summary {
     align-items: start;
-  }
-
-  .player-directory-meta {
-    grid-template-columns: 1fr;
   }
 }

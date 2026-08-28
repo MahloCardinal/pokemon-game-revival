@@ -5,19 +5,39 @@ import { reindexActionButtons } from "./action-dom.js";
 import { markDirty, render, renderDialogLayer, renderRegions } from "./renderer.js";
 import { saveAfterStateChange } from "./save-runtime.js";
 import { applyPlayerSave, state } from "./game-state.js";
-import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
+import { broadcastAuthoritativeRevision, broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { updateCaptureTeamRuntimeInline } from "./capture-handler.js";
 import { assignNextBoxIndex, queueBoxUpsert, removePokemonCardInline } from "./box-handler.js";
-import { getCurrentPlayerState, moveTeamPokemonToBoxAuthoritative, swapTeamPokemonSlotsAuthoritative } from "../api/player-command.js";
+import { getCurrentPlayerState, moveTeamPokemonToBoxAuthoritative, setPreferredTrainerTitle, swapTeamPokemonSlotsAuthoritative } from "../api/player-command.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { messageDescriptor } from "./i18n.js";
 
 var authoritativeTeamCommandPending = false;
 var authoritativeRuntimeRefreshInFlight = null;
+var preferredTrainerTitlePending = false;
 
 registerAction("trainer-titles-info", function() {
   state.dialog = { type: "trainer-titles-info" };
   renderDialogLayer();
+});
+
+registerAction("trainer-title-select", async function(element) {
+  var titleKey = String(element && element.dataset.titleKey || "");
+  var result;
+  if (!titleKey || preferredTrainerTitlePending) return;
+  preferredTrainerTitlePending = true;
+  try {
+    result = await setPreferredTrainerTitle(titleKey);
+    if (!result.ok || !result.projection || !result.projection.has_player) {
+      openInlineMessage([messageDescriptor("team.preferredTitleFailed")], { title: messageDescriptor("team.title") });
+      return;
+    }
+    applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
+    broadcastAuthoritativeRevision(state.authoritativeRevision);
+    renderRegions(["trainer-profile"]);
+  } finally {
+    preferredTrainerTitlePending = false;
+  }
 });
 
 registerAction("team-to-box", async function(element) {

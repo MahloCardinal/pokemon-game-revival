@@ -1140,6 +1140,9 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   if (effectiveMove.boostSuppressed && effectiveMove.logKey === "dmg_double") {
     effectiveMove.logKey = "dmg";
   }
+  if (effectiveMove.boostSuppressed && effectiveMove.logKey === "dmg_double_lost_atk_buff") {
+    effectiveMove.logKey = "dmg_lost_atk_buff";
+  }
 
   runHeldItemTrigger(this, "selfStatusChanged", HeldItemTriggerContext.selfStatusChanged(attacker, attackerStatusBeforeBefore));
 

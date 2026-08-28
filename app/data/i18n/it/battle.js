@@ -12,8 +12,10 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
     status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Avv", brn: "Sco", frz: "Cong", slp: "Add {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
     doubleDamageNextTurn: "Danno x2 nel prossimo turno", repeatMove: "Ripete {move} {turns}/3", pendingMove: "{move} in corso", noDefenseBoost: "Nessun aumento Difesa",
     endure: "Resiste fino al prossimo turno", itemLocked: "Strumento bloccato", disabledMoves: "Bloccata: {moves}", trapped: "Intrappolato", trappedTurns: "Intrappolato {turns}/4",
+    teamAttackBuff: "+{value} Att {turns}/5", teamDefenseBuff: "+{value} Dif {turns}/5", noBurn: "No Scottatura",
+    moveCounter: "{move} {turns}/{max}", moveDamage: "{move} (-{amount})",
     leechSeed: "Parassiseme (-{amount})", koInTurns: "KO tra {turns} turni", noStatNerfs: "Nessuna riduzione statistiche {turns}/5",
-    noMoveBoosts: "Nessun potenziamento mosse avversarie {turns}/{max}", noStatus: "Nessun problema di stato {turns}/5", noSleep: "Immunità al sonno {turns}/5",
+    noMoveBoosts: "No boost avversari {turns}/{max}", noStatus: "No Status {turns}/5", noSleep: "Immunità al sonno {turns}/5",
     wishNextTurn: "Desiderio si avvera tra 1 turno", futureMove: "{move} colpirà tra {turns} turni"
   }),
   dialog: Object.freeze({
@@ -112,7 +114,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
       dmg: "{attacker} usa {move} e infligge {damage} PS di danno.", dmg_1hp: "{attacker} usa {move}: {defender} resiste con 1 PS.",
       dmg_bind: "{attacker} usa {move}, infligge {damage} PS di danno e impedisce a {defender} di cambiare per {turns} turni.",
       dmg_brn: "{attacker} usa {move}, infligge {damage} PS di danno e scotta {defender}.", dmg_cnf: "{attacker} usa {move}, infligge {damage} PS di danno e confonde {defender}.",
-      dmg_double: "{attacker} usa {move}: la potenza raddoppia e infligge {damage} PS di danno.", dmg_enem_atk: "{attacker} usa {move}, infligge {damage} PS di danno e riduce di {stats} l’Attacco di {defender}.",
+      dmg_double: "{attacker} usa {move}: la potenza raddoppia e infligge {damage} PS di danno.", dmg_double_lost_atk_buff: "{attacker} usa {move}: la potenza raddoppia, infligge {damage} PS di danno e perde il bonus Attacco.", dmg_lost_atk_buff: "{attacker} usa {move}, infligge {damage} PS di danno e perde il bonus Attacco.", dmg_enem_atk: "{attacker} usa {move}, infligge {damage} PS di danno e riduce di {stats} l’Attacco di {defender}.",
       dmg_enem_def: "{attacker} usa {move}, infligge {damage} PS di danno e riduce di {stats} la Difesa di {defender}.", dmg_frz: "{attacker} usa {move}, infligge {damage} PS di danno e congela {defender}.",
       dmg_los_hp: "{attacker} usa {move}, infligge {damage} PS di danno e ne perde {recoil} per il contraccolpo.", dmg_los_perc: "{attacker} usa {move}, infligge {damage} PS di danno e perde la percentuale.",
       dmg_one_half: "{attacker} usa {move}: l’effetto si attiva e infligge {damage} PS di danno.", dmg_par: "{attacker} usa {move}, infligge {damage} PS di danno e paralizza {defender}.",

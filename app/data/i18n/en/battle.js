@@ -12,8 +12,10 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
     status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Psn", brn: "Brn", frz: "Frz", slp: "Slp {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
     doubleDamageNextTurn: "Double damage next turn", repeatMove: "Repeats {move} {turns}/3", pendingMove: "{move} in progress", noDefenseBoost: "No Defense boost",
     endure: "Endures until next turn", itemLocked: "Held item disabled", disabledMoves: "Disabled: {moves}", trapped: "Trapped", trappedTurns: "Trapped {turns}/4",
+    teamAttackBuff: "+{value} Atk {turns}/5", teamDefenseBuff: "+{value} Def {turns}/5", noBurn: "No Burn",
+    moveCounter: "{move} {turns}/{max}", moveDamage: "{move} (-{amount})",
     leechSeed: "Leech Seed (-{amount})", koInTurns: "Knocked out in {turns} turns", noStatNerfs: "No stat reductions {turns}/5",
-    noMoveBoosts: "No opposing move boosts {turns}/{max}", noStatus: "No status conditions {turns}/5", noSleep: "Sleep immunity {turns}/5",
+    noMoveBoosts: "No opposing boosts {turns}/{max}", noStatus: "No Status {turns}/5", noSleep: "Sleep immunity {turns}/5",
     wishNextTurn: "Wish triggers in 1 turn", futureMove: "{move} strikes in {turns} turns"
   }),
   dialog: Object.freeze({
@@ -109,7 +111,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
       def_raise_block: "{attacker} uses {move}: {defender} cannot raise its Defense.", destiny_bond: "{attacker} uses {move}: if it is knocked out by the next move, the opponent will be knocked out too.",
       dmg: "{attacker} uses {move} and deals {damage} HP of damage.", dmg_1hp: "{attacker} uses {move}: {defender} hangs on with 1 HP.",
       dmg_bind: "{attacker} uses {move}, deals {damage} HP of damage, and traps {defender} for {turns} turns.", dmg_brn: "{attacker} uses {move}, deals {damage} HP of damage, and burns {defender}.",
-      dmg_cnf: "{attacker} uses {move}, deals {damage} HP of damage, and confuses {defender}.", dmg_double: "{attacker} uses {move}: its power doubles and it deals {damage} HP of damage.",
+      dmg_cnf: "{attacker} uses {move}, deals {damage} HP of damage, and confuses {defender}.", dmg_double: "{attacker} uses {move}: its power doubles and it deals {damage} HP of damage.", dmg_double_lost_atk_buff: "{attacker} uses {move}: its power doubles, it deals {damage} HP of damage, and it loses its Attack boost.", dmg_lost_atk_buff: "{attacker} uses {move}, deals {damage} HP of damage, and loses its Attack boost.",
       dmg_enem_atk: "{attacker} uses {move}, deals {damage} HP of damage, and lowers {defender}'s Attack by {stats}.", dmg_enem_def: "{attacker} uses {move}, deals {damage} HP of damage, and lowers {defender}'s Defense by {stats}.",
       dmg_frz: "{attacker} uses {move}, deals {damage} HP of damage, and freezes {defender}.", dmg_los_hp: "{attacker} uses {move}, deals {damage} HP of damage, and loses {recoil} HP to recoil.",
       dmg_los_perc: "{attacker} uses {move}, deals {damage} HP of damage, and loses the percentage.", dmg_one_half: "{attacker} uses {move}: the effect activates and deals {damage} HP of damage.",

@@ -473,6 +473,9 @@ const CaptureCalc = captureCalcModule.namespace;
 const assetHelpersModule = await loadEsModule(fileURLToPath(new URL("../app/client/asset-helpers.js", import.meta.url)));
 if (assetHelpersModule.status !== "evaluated") await assetHelpersModule.evaluate();
 const AssetHelpers = assetHelpersModule.namespace;
+const battleTextModule = await loadEsModule(fileURLToPath(new URL("../app/client/battle-text.js", import.meta.url)));
+if (battleTextModule.status !== "evaluated") await battleTextModule.evaluate();
+const { localizeBattleSummary } = battleTextModule.namespace;
 const { BattleManager, buildBattleSummary, createMove, Pokemon, projectBattle, Team } = engineExports;
 
 function assertStableCatalogKeys(entries, expectedCount, label) {
@@ -723,6 +726,49 @@ function moveMechanicsManager(playerMoves, enemyMoves, options = {}) {
 
 {
   const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  player.stockpileUsed = true;
+  player.defenseCurlUsed = true;
+  player.burnImmune = true;
+  player.destinyBondActive = true;
+  player.destinyBondTurns = 1;
+  player.magicCoatActive = true;
+  player.magicCoatTurns = 2;
+  player.nightmareActive = true;
+  player.seedTarget = manager.enemyTeam.getActive();
+  player.seedValue = 25;
+  manager.playerTeam.teamAtkBuff = 12;
+  manager.playerTeam.buffAtkCounter = 3;
+  manager.playerTeam.teamDefBuff = 9;
+  manager.playerTeam.buffDefCounter = 4;
+  manager.playerTeam.teamMoveBoostProtectCounter = 3;
+  manager.playerTeam.teamStatusProtectCounter = 2;
+
+  const summaryText = localizeBattleSummary(
+    buildBattleSummary(manager.playerTeam, manager.enemyTeam, {}, {}, manager), {}
+  ).map((line) => line.text).join("\n");
+  [
+    "[Accumulo]", "[Ricciolscudo]", "[No Scottatura]", "[Destinobbligato 1/1]",
+    "[Magivelo 2/2]", "[Incubo (-66)]", "[Parassiseme (-25)]",
+    "[+12 Att 3/5, +9 Dif 4/5, No boost avversari 3/5, No Status 2/5]"
+  ].forEach((expectedText) => {
+    assert.ok(summaryText.includes(expectedText), `Battle summary must include ${expectedText}`);
+  });
+
+  manager.playerTeam.teamMoveBoostProtectCounter = 0;
+  manager.playerTeam.teamBoostSuppressCounter = 1;
+  const hiddenPowerSummaryText = localizeBattleSummary(
+    buildBattleSummary(manager.playerTeam, manager.enemyTeam, {}, {}, manager), {}
+  ).map((line) => line.text).join("\n");
+  assert.ok(hiddenPowerSummaryText.includes("[+12 Att 3/5, +9 Dif 4/5, No Status 2/5, No boost avversari 1/1]"),
+    "Hidden Power must show the one-action opposing-boost suppression counter");
+}
+
+{
+  const manager = moveMechanicsManager(
     [createMove(MoveDefinitions.magic_coat, { power: 20, stats: 0 }), createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
     [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
     { enemyBench: [pursuitTestPokemon("EnemyBench", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })])] }
@@ -859,6 +905,21 @@ for (const buffLossDefinition of [MoveDefinitions.superpower, MoveDefinitions.ov
   manager.resolveMoveAction("player", player.pokemon.moves[0]);
   assert.equal(enemy.hp, 140, `${buffLossDefinition.name} must include the existing Attack boost in its doubled damage`);
   assert.equal(player.atkBuff, 0, `${buffLossDefinition.name} must remove the Attack boost only after damage is calculated`);
+  assert.ok(manager.log.some((entry) => entry.key === "move.dmg_double_lost_atk_buff"),
+    `${buffLossDefinition.name} must explicitly log that the Attack boost was lost`);
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.superpower, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  player.atkBuff = 10;
+  manager.enemyTeam.teamMoveBoostProtectCounter = 1;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.ok(manager.log.some((entry) => entry.key === "move.dmg_lost_atk_buff"),
+    "Superpower must still log the lost Attack boost when Protect suppresses its damage multiplier");
 }
 
 {

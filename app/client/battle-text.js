@@ -83,9 +83,20 @@ function combatantText(entry) {
   }
   if (entry.defRaiseBlocked) { parts.push(tag(t("battleText.summary.noDefenseBoost"))); }
   if (entry.endure) { parts.push(tag(t("battleText.summary.endure"))); }
-  if (entry.destinyBond) { parts.push(tag(moveDisplayName({ key: "destiny_bond" }))); }
+  if (entry.stockpiled) { parts.push(tag(moveDisplayName({ key: "stockpile" }))); }
+  if (entry.defenseCurl) { parts.push(tag(moveDisplayName({ key: "defense_curl" }))); }
+  if (entry.burnImmune) { parts.push(tag(t("battleText.summary.noBurn"))); }
+  if (entry.destinyBond) {
+    parts.push(tag(t("battleText.summary.moveCounter", {
+      move: moveDisplayName({ key: "destiny_bond" }), turns: entry.destinyBondTurns, max: 1
+    })));
+  }
   if (entry.grudge) { parts.push(tag(moveDisplayName({ key: "grudge" }))); }
-  if (entry.magicCoat) { parts.push(tag(moveDisplayName({ key: "magic_coat" }))); }
+  if (entry.magicCoat) {
+    parts.push(tag(t("battleText.summary.moveCounter", {
+      move: moveDisplayName({ key: "magic_coat" }), turns: entry.magicCoatTurns, max: 2
+    })));
+  }
   if (entry.rooted) { parts.push(tag(moveDisplayName({ key: "ingrain" }))); }
   if (entry.itemLocked) { parts.push(tag(t("battleText.summary.itemLocked"))); }
   if (entry.exclusive) { parts.push(tag(moveDisplayName({ key: "imprison" }))); }
@@ -93,6 +104,11 @@ function combatantText(entry) {
     parts.push(tag(t("battleText.summary.disabledMoves", { moves: entry.disabledMoveKeys.map(function (key) { return moveDisplayName({ key: key }); }).join(", ") })));
   }
   if (entry.trappedTurns) { parts.push(tag(t(entry.trappedTurns >= 99 ? "battleText.summary.trapped" : "battleText.summary.trappedTurns", { turns: entry.trappedTurns }))); }
+  if (entry.nightmare) {
+    parts.push(tag(t("battleText.summary.moveDamage", {
+      move: moveDisplayName({ key: "nightmare" }), amount: entry.nightmareDamage
+    })));
+  }
   if (entry.seeded) { parts.push(tag(t("battleText.summary.leechSeed", { amount: entry.seedValue }))); }
   if (entry.perishSongTurns) { parts.push(tag(t("battleText.summary.koInTurns", { turns: entry.perishSongTurns }))); }
   changedTypes = JSON.stringify(entry.currentTypes || []) !== JSON.stringify(entry.originalTypes || []);
@@ -106,8 +122,8 @@ function combatantText(entry) {
 
 function teamEffectsText(effects) {
   var parts = [];
-  if (effects.attackBuff) { parts.push("+" + effects.attackBuff + " Atk " + effects.attackBuffTurns + "/5"); }
-  if (effects.defenseBuff) { parts.push("+" + effects.defenseBuff + " Def " + effects.defenseBuffTurns + "/5"); }
+  if (effects.attackBuff) { parts.push(t("battleText.summary.teamAttackBuff", { value: effects.attackBuff, turns: effects.attackBuffTurns })); }
+  if (effects.defenseBuff) { parts.push(t("battleText.summary.teamDefenseBuff", { value: effects.defenseBuff, turns: effects.defenseBuffTurns })); }
   if (effects.mistTurns) { parts.push(t("battleText.summary.noStatNerfs", { turns: effects.mistTurns })); }
   if (effects.moveBoostProtectionTurns) { parts.push(t("battleText.summary.noMoveBoosts", { turns: effects.moveBoostProtectionTurns, max: 5 })); }
   if (effects.statusProtectionTurns) { parts.push(t("battleText.summary.noStatus", { turns: effects.statusProtectionTurns })); }

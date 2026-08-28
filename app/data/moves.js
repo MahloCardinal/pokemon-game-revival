@@ -194,6 +194,7 @@ function buffLossMove(name, description) {
     after: function (attacker) {
       if (this.removesAttackBuff) {
         attacker.atkBuff = 0;
+        this.logKey = "dmg_double_lost_atk_buff";
       }
       this.removesAttackBuff = false;
       this.moveMult = 1;

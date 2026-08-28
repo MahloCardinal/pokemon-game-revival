@@ -35,10 +35,8 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     empty: "There are no players available yet.",
     emptyTeam: "Empty team",
     emptyTitles: "No titles unlocked yet",
-    team: "Current team",
     titles: "Trainer Titles",
     badges: "Badges: {count}/8",
-    moveValues: "power: {power}, stats: {stats}"
   }),
   home: Object.freeze({
     defaultTrainer: "Trainer",

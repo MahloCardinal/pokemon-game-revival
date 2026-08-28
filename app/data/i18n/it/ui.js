@@ -35,10 +35,8 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     empty: "Non ci sono ancora giocatori disponibili.",
     emptyTeam: "Squadra vuota",
     emptyTitles: "Nessun titolo ancora ottenuto",
-    team: "Squadra attuale",
     titles: "Titoli Allenatore",
     badges: "Medaglie: {count}/8",
-    moveValues: "potenza: {power}, stats: {stats}"
   }),
   home: Object.freeze({
     defaultTrainer: "Allenatore",

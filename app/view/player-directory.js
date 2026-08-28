@@ -4,7 +4,6 @@ import { TRAINER_TITLES } from "../data/titles.js";
 import { assetPath, escapeHtml, renderImage } from "../client/asset-helpers.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { sceneShell } from "../client/render-utils.js";
-import { speciesDisplayName } from "../client/entity-text.js";
 import { resolveText, t } from "../client/i18n.js";
 import { state } from "../client/game-state.js";
 
@@ -12,9 +11,10 @@ function playerDirectoryState() {
   return state.scene && state.scene.playerDirectory || { loading: true, loaded: false, players: [], error: null };
 }
 
-function playerBadgesMarkup(badges) {
+function playerBadgesMarkup(badges, onlyObtained) {
   var count = Math.max(0, Math.min(KANTO_GYM_BADGES.length, Math.floor(Number(badges) || 0)));
-  return KANTO_GYM_BADGES.map(function (badge, index) {
+  var badgeList = onlyObtained ? KANTO_GYM_BADGES.slice(0, count) : KANTO_GYM_BADGES;
+  return badgeList.map(function (badge, index) {
     var className = "player-directory-badge" + (index < count ? "" : " player-directory-badge--locked");
     return renderImage(
       assetPath("img_miscellaneous", badge.image),
@@ -40,14 +40,6 @@ function hydratePokemon(entry) {
   }
 }
 
-function teamSummary(team) {
-  var names = (Array.isArray(team) ? team : []).map(function (entry) {
-    var pokemon = hydratePokemon(entry);
-    return pokemon ? speciesDisplayName(pokemon) + " (" + t("common.units.levelShort") + " " + pokemon.level + ")" : "";
-  }).filter(Boolean);
-  return names.length ? names.join(" · ") : t("ui.playerDirectory.emptyTeam");
-}
-
 function renderTeamDetails(team) {
   var cards = (Array.isArray(team) ? team : []).map(function (entry) {
     var pokemon = hydratePokemon(entry);
@@ -55,7 +47,6 @@ function renderTeamDetails(team) {
     return renderPokemonCardFrame(renderPokemonCard(pokemon, {
       className: "player-directory-pokemon-card",
       staticSprite: true,
-      showMoveValues: true,
       imageAttrs: 'loading="lazy" decoding="async" fetchpriority="low"'
     }));
   }).filter(Boolean).join("");
@@ -68,15 +59,16 @@ function renderPlayerRow(player) {
   var badges = Math.max(0, Math.min(8, Math.floor(Number(player && player.badges) || 0)));
   var titles = titleNames(player && player.titles);
   var team = Array.isArray(player && player.team) ? player.team : [];
+  var lastTitle = player && player.last_title ? titleNames([player.last_title])[0] : "";
   return [
     '<li class="player-directory-entry">',
     '  <details class="player-directory-player">',
     '    <summary class="player-directory-summary">',
     '      <span class="player-directory-summary-main">',
     '        <strong class="player-directory-player-name">' + escapeHtml(player && player.username || t("ui.home.defaultTrainer")) + "</strong>",
-    '        <span class="player-directory-team-summary">' + escapeHtml(teamSummary(team)) + "</span>",
+    '        <span class="player-directory-last-title">' + escapeHtml(lastTitle || t("ui.playerDirectory.emptyTitles")) + "</span>",
+    '        <span class="player-directory-summary-badges" aria-label="' + escapeHtml(t("ui.playerDirectory.badges", { count: badges })) + '">' + playerBadgesMarkup(badges, true) + "</span>",
     "      </span>",
-    '      <span class="player-directory-badge-count">' + escapeHtml(t("ui.playerDirectory.badges", { count: badges })) + "</span>",
     "    </summary>",
     '    <div class="player-directory-player-body">',
     '      <div class="player-directory-meta">',
@@ -88,7 +80,6 @@ function renderPlayerRow(player) {
       : '<p class="player-directory-empty">' + escapeHtml(t("ui.playerDirectory.emptyTitles")) + "</p>",
     "        </div>",
     "      </div>",
-    '      <h3 class="player-directory-team-title">' + escapeHtml(t("ui.playerDirectory.team")) + "</h3>",
     renderTeamDetails(team),
     "    </div>",
     "  </details>",

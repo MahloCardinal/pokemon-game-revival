@@ -39,12 +39,9 @@ function itemByIndex(itemIndex) {
   return getItemByIndex(itemIndex);
 }
 
-function renderPokemonCardMove(move, showMoveValues) {
+function renderPokemonCardMove(move) {
   var description = moveDisplayDescription(move);
-  var valueMarkup = showMoveValues
-    ? ' <span class="move-values">(' + escapeHtml(t("ui.playerDirectory.moveValues", { power: Number(move && move.power) || 0, stats: Number(move && move.stats) || 0 })) + ")</span>"
-    : "";
-  return '<button type="button" class="move-button pokemon-move-line" disabled><span class="move-name">' + escapeHtml(moveDisplayName(move)) + valueMarkup + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span></button>";
+  return '<button type="button" class="move-button pokemon-move-line" disabled><span class="move-name">' + escapeHtml(moveDisplayName(move)) + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span></button>";
 }
 
 function renderPokemonCardSprite(pokemon, options, imageAttrs) {
@@ -81,7 +78,6 @@ export function renderPokemonCard(pokemon, options) {
   var heldItem = pokemon && pokemon.heldItemIndex ? itemByIndex(pokemon.heldItemIndex) : null;
   var showVitals = options.showVitals !== false;
   var showMoves = options.showMoves !== false;
-  var showMoveValues = options.showMoveValues === true;
   var imageAttrs = options.imageAttrs || "";
   var extraContent = options.extraContent || "";
   var currentHp = options.currentHp !== undefined ? options.currentHp : pokemon.maxHp;
@@ -128,7 +124,7 @@ export function renderPokemonCard(pokemon, options) {
     "    </div>",
     "  </div>",
     extraContent,
-    showMoves ? '  <div class="pokemon-card-moves">' + pokemon.moves.map(function (move) { return renderPokemonCardMove(move, showMoveValues); }).join("") + "</div>" : "",
+    showMoves ? '  <div class="pokemon-card-moves">' + pokemon.moves.map(renderPokemonCardMove).join("") + "</div>" : "",
     "",
     overlayContent,
     "</article>"

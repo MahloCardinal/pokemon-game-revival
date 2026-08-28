@@ -54,11 +54,11 @@ const assetPaths = read("app/data/asset-paths.js");
 const captureZonesData = read("app/data/capture-zones.js");
 const i18nRuntime = read("app/client/i18n.js");
 const languageSettings = read("app/client/language-settings.js");
-const i18nCatalogIndex = read("app/data/i18n/index.js");
-const i18nItalian = read("app/data/i18n/it.js");
-const i18nEnglish = read("app/data/i18n/en.js");
-const i18nItalianScenes = read("app/data/i18n/it/scenes.js");
-const i18nEnglishScenes = read("app/data/i18n/en/scenes.js");
+const i18nCatalogIndex = read("app/i18n/index.js");
+const i18nItalian = read("app/i18n/it.js");
+const i18nEnglish = read("app/i18n/en.js");
+const i18nItalianScenes = read("app/i18n/it/scenes.js");
+const i18nEnglishScenes = read("app/i18n/en/scenes.js");
 const authView = read("app/view/auth.js");
 const gymsView = read("app/view/gyms.js");
 const gymsHandler = read("app/client/gyms-handler.js");
@@ -68,10 +68,10 @@ const captureHandler = read("app/client/capture-handler.js");
 const adminBattleHandler = read("app/client/admin-battle-handler.js");
 const battleView = read("app/view/battle.js");
 const teamView = read("app/view/team.js");
-const teamStyles = read("styles/team.css");
+const teamStyles = read("app/styles/team.css");
 const teamHandler = read("app/client/team-handler.js");
 const playerDirectoryView = read("app/view/player-directory.js");
-const playerDirectoryStyles = read("styles/player-directory.css");
+const playerDirectoryStyles = read("app/styles/player-directory.css");
 const playerDirectoryHandler = read("app/client/player-directory-handler.js");
 const inventoryViewHelpers = read("app/view/inventory-helpers.js");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
@@ -162,10 +162,10 @@ assert.match(i18nEnglishScenes, /name: "Ghost Tower"/);
 assert.match(i18nEnglishScenes, /name: "Safari Zone"/);
 assert.match(authView, /escapeHtml\(resolveText\(message\)\)/);
 assert.doesNotMatch(assetPaths, /presentationKey\s*:/);
-const listedAssetPaths = Array.from(assetPaths.matchAll(/"\/assets\/([^"\r\n]+)"/g), (match) => match[1]);
+const listedAssetPaths = Array.from(assetPaths.matchAll(/"\/app\/assets\/([^"\r\n]+)"/g), (match) => match[1]);
 assert.ok(listedAssetPaths.length >= 30, "Expected an explicit presentation asset catalog");
 for (const relativeAssetPath of listedAssetPaths) {
-  assert.ok(existsSync(new URL("../assets/" + relativeAssetPath, import.meta.url)), `Missing listed asset: ${relativeAssetPath}`);
+  assert.ok(existsSync(new URL("../app/assets/" + relativeAssetPath, import.meta.url)), `Missing listed asset: ${relativeAssetPath}`);
 }
 assert.doesNotMatch(gymsView, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
 assert.doesNotMatch(gymsHandler, /Completa le Missioni avventura ["']?\s*\+\s*adventurePhaseForGym/);
@@ -573,9 +573,9 @@ assert.deepEqual(
   const femaleShinyPath = AssetHelpers.getPokemonImage(femaleShiny);
   const maleShinyPath = AssetHelpers.getPokemonImage(Object.assign({}, femaleShiny, { gender: "male" }));
 
-  assert.equal(femaleNormalPath, "/assets/img_pokemon/3_f.webp");
-  assert.equal(femaleShinyPath, "/assets/img_pokemon/3_f_shiny.webp");
-  assert.equal(maleShinyPath, "/assets/img_pokemon/3_shiny.webp");
+  assert.equal(femaleNormalPath, "/app/assets/img_pokemon/3_f.webp");
+  assert.equal(femaleShinyPath, "/app/assets/img_pokemon/3_f_shiny.webp");
+  assert.equal(maleShinyPath, "/app/assets/img_pokemon/3_shiny.webp");
   [femaleNormalPath, femaleShinyPath, maleShinyPath].forEach((assetPath) => {
     assert.equal(existsSync(new URL(".." + assetPath, import.meta.url)), true, `Missing Pokemon sprite: ${assetPath}`);
   });

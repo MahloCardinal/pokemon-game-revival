@@ -3,7 +3,7 @@ import {
   SUPPORTED_LOCALES,
   normalizeLocale,
   translationCatalogValue
-} from "../data/i18n/index.js";
+} from "../i18n/index.js";
 
 var LOCALE_STORAGE_KEY = "pokemon-game-revival:locale";
 var LOCALE_CHANGE_EVENT = "pokemon-game-revival:locale-change";

@@ -19,12 +19,6 @@
       ]
     },
     {
-      "source": "/styles/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }
-      ]
-    },
-    {
       "source": "/api/deployment-version",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, max-age=0" },

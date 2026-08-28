@@ -5,14 +5,14 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const I18N_ROOT = resolve(ROOT, "app/data/i18n");
+const I18N_ROOT = resolve(ROOT, "app/i18n");
 const moduleCache = new Map();
 const context = vm.createContext({});
 
 function moduleFor(filename) {
   const normalized = resolve(filename);
   if (normalized !== I18N_ROOT && !normalized.startsWith(I18N_ROOT + sep)) {
-    throw new Error("i18n audit rejected module outside app/data/i18n: " + normalized);
+    throw new Error("i18n audit rejected module outside app/i18n: " + normalized);
   }
   if (moduleCache.has(normalized)) return moduleCache.get(normalized);
   const module = new vm.SourceTextModule(readFileSync(normalized, "utf8"), {
@@ -77,8 +77,8 @@ if (!vm.SourceTextModule) {
   throw new Error("Run the i18n audit with --experimental-vm-modules");
 }
 
-const italian = await loadCatalog("app/data/i18n/it.js", "IT_TRANSLATIONS");
-const english = await loadCatalog("app/data/i18n/en.js", "EN_TRANSLATIONS");
+const italian = await loadCatalog("app/i18n/it.js", "IT_TRANSLATIONS");
+const english = await loadCatalog("app/i18n/en.js", "EN_TRANSLATIONS");
 compareCatalogs(italian, english, "");
 
 function valueAtPath(object, path) {

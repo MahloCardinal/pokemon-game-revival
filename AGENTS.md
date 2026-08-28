@@ -16,6 +16,7 @@ Il progetto è esclusivamente Revival. Non reintrodurre codice legacy, modalità
 
 - Controllare `git status` prima e dopo ogni intervento.
 - Preservare modifiche locali dell'utente non pertinenti al compito.
+- Prima di ogni push, verificare e committare anche le modifiche locali già presenti dell'utente; se non appartengono all'intervento corrente, salvarle in un commit separato precedente. Restano esclusi segreti, dump e gli altri file che queste regole vietano di committare.
 - `tools/` fa parte del repository e le sue modifiche devono essere incluse nei commit. Non modificarne autonomamente il contenuto se il compito non lo richiede.
 - Non creare o committare dump SQL generati, segreti, token, password, service-role key o webhook.
 - Non usare comandi `npm`: il repository non contiene `package.json`, lockfile o pipeline npm.
@@ -32,8 +33,9 @@ Il progetto è esclusivamente Revival. Non reintrodurre codice legacy, modalità
 - `app/client/`: stato, sessione, routing, eventi, persistenza e coordinamento UI.
 - `app/view/`: markup delle schermate. Effetti, callback e stato restano nel client.
 - `app/api/`: adattatori verso Supabase; restituiscono dati di trasporto e non devono importare lo stato client.
-- `styles/`: CSS suddiviso per schermata o funzionalità.
-- `assets/`: immagini, sprite, icone, sfondi e musica.
+- `app/i18n/`: cataloghi dei testi visibili, separati dai dati tecnici di gioco.
+- `app/styles/`: CSS suddiviso per schermata o funzionalità.
+- `app/assets/`: immagini, sprite, icone, sfondi e musica.
 
 ### Regole del gioco
 
@@ -87,12 +89,12 @@ Il browser non è fonte autoritativa e non deve concedere ricompense. Le battagl
 - I Titoli basati sui tipi usano le registrazioni del Pokédex da qualsiasi fonte. Considerano tutte le specie del catalogo e ogni tipo di una specie doppio tipo, escludendo soltanto le rarità `fossil` e `legendary`; la rarità tecnica `mythic` resta valida.
 - La missione della prima collezione resta legata alla collezione stabile `trainer_titles_initial`, non a ogni eventuale Titolo aggiunto in futuro.
 
-La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono strumenti intenzionali dell'utente debug; non eliminarli come presunto codice di sviluppo inutilizzato.
+La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` sono strumenti intenzionali dell'utente debug; non eliminarli come presunto codice di sviluppo inutilizzato.
 
 ### Testi e internazionalizzazione
 
 - Identificatori, chiavi persistite e valori usati dalla logica devono essere in inglese e indipendenti dalla lingua visualizzata. Non confrontare né salvare etichette tradotte.
-- Ogni testo visibile appartiene ai cataloghi sotto `app/data/i18n/`; italiano e inglese devono mantenere lo stesso schema. Non inserire stringhe UI direttamente in view, handler o motore.
+- Ogni testo visibile appartiene ai cataloghi sotto `app/i18n/`; italiano e inglese devono mantenere lo stesso schema. Non inserire stringhe UI direttamente in view, handler o motore.
 - I cataloghi di gioco conservano chiavi tecniche, indici e regole, non copie inglesi dei nomi a schermo. In particolare il nome di una MT si compone via i18n dal suo numero e dalla chiave tecnica della mossa; i consumer non devono leggere `.name` come etichetta visibile.
 - Usare `t()` per testo risolto immediatamente e `textDescriptor()` o `messageDescriptor()` per testo conservato nello stato o risolto più tardi. Nel renderer passare i descrittori a `resolveText()` prima di `escapeHtml()`.
 - Dopo modifiche i18n eseguire `node --experimental-vm-modules scripts/audit-i18n.mjs` oltre ai test ordinari.
@@ -111,7 +113,7 @@ La pagina `/styles`, `app/view/styles.js` e `styles/style-proposals.css` sono st
 - Lo stato compatto usa soltanto `sh: 1`. Il bonus ricevuto all'ottenimento resta incorporato nei valori persistiti del Pokémon, che da quel momento crescono normalmente; non conservare il livello di ottenimento o duplicare i bonus nello stato.
 - `PP` nelle specifiche Shiny indica la potenza della mossa (`power`), non i punti utilizzo delle mosse.
 - I cap Shiny dipendono dal livello corrente, non dal livello di ottenimento. Tabelle, cap e bonus canonici sono in `app/data/stat-tables.js`; la probabilità è in `app/data/progression.js`.
-- Gli sprite Shiny restano in `assets/img_pokemon/` con suffisso finale `_shiny` (`25_shiny.webp`, `25_f_shiny.webp`) e devono ereditare scala e allineamento dallo sprite normale corrispondente.
+- Gli sprite Shiny restano in `app/assets/img_pokemon/` con suffisso finale `_shiny` (`25_shiny.webp`, `25_f_shiny.webp`) e devono ereditare scala e allineamento dallo sprite normale corrispondente.
 - Lo strumento debug di `aaa` può creare uno Shiny, ma il relativo comando deve continuare a essere validato dalla Edge Function e dal database.
 
 ### Pokémon Legendary
@@ -361,7 +363,7 @@ La connessione remota GitHub–Vercel deve restare attiva per i deploy automatic
 | Chiamata Supabase dal browser | `app/api/` |
 | Progressione | `app/data/progression.js` |
 | Combattimento | `app/engine/` |
-| Stili | `styles/` |
-| Asset | `assets/` e `app/client/asset-helpers.js` |
+| Stili | `app/styles/` |
+| Asset | `app/assets/` e `app/client/asset-helpers.js` |
 | Tabelle o funzioni SQL | nuova migrazione in `supabase/migrations/` |
 | Autenticazione o battaglie Edge | `supabase/functions/` |

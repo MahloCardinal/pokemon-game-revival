@@ -108,14 +108,14 @@ export function assetPath(folderName, fileName) {
   if (!fileName) {
     return "";
   }
-  return "/assets/" + folderName + "/" + encodeURIComponent(fileNameWithExtension(fileName, "webp"));
+  return "/app/assets/" + folderName + "/" + encodeURIComponent(fileNameWithExtension(fileName, "webp"));
 }
 
 export function musicPath(fileName) {
   if (!fileName) {
     return "";
   }
-  return "/assets/music/" + encodeURIComponent(fileName);
+  return "/app/assets/music/" + encodeURIComponent(fileName);
 }
 
 export function getZoneImage(zoneName) {

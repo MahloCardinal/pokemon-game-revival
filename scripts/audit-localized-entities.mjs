@@ -31,10 +31,11 @@ if (!vm.SourceTextModule) {
 }
 
 const moves = (await loadModule("app/data/moves.js")).MOVE_LIBRARY;
-const items = (await loadModule("app/data/items.js")).ITEM_LIBRARY;
+const itemModule = await loadModule("app/data/items.js");
+const items = itemModule.ITEM_LIBRARY;
 const species = (await loadModule("app/data/index.js")).SPECIES_LIBRARY;
-const italianCatalog = (await loadModule("app/data/i18n/it.js")).IT_TRANSLATIONS;
-const englishCatalog = (await loadModule("app/data/i18n/en.js")).EN_TRANSLATIONS;
+const italianCatalog = (await loadModule("app/i18n/it.js")).IT_TRANSLATIONS;
+const englishCatalog = (await loadModule("app/i18n/en.js")).EN_TRANSLATIONS;
 const italian = italianCatalog.entities;
 const english = englishCatalog.entities;
 
@@ -47,8 +48,14 @@ function assertNames(entries, catalogKey, keyForEntry) {
 }
 
 assertNames(moves, "moves", (move) => move.key);
-assertNames(items, "items", (item) => item.key);
+assertNames(items.filter((item) => item.category !== itemModule.ItemCategory.TM), "items", (item) => item.key);
 assertNames(Object.keys(species), "species", (key) => key);
+items.filter((item) => item.category === itemModule.ItemCategory.TM).forEach((item) => {
+  assert.ok(Number.isFinite(item.number), `Missing canonical TM number for ${item.key}`);
+  assert.ok(item.move?.key && moves.some((move) => move.key === item.move.key), `Missing canonical move for ${item.key}`);
+});
+assert.equal(typeof italianCatalog.entityDescriptions?.items?.tmName, "string", "Missing Italian TM name template");
+assert.equal(typeof englishCatalog.entityDescriptions?.items?.tmName, "string", "Missing English TM name template");
 moves.forEach((move) => {
   assert.equal(typeof italianCatalog.entityDescriptions?.moves?.[move.key]?.description, "string", `Missing Italian move description for ${move.key}`);
   assert.equal(typeof englishCatalog.entityDescriptions?.moves?.[move.key]?.description, "string", `Missing English move description for ${move.key}`);

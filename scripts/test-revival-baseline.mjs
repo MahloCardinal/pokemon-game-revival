@@ -107,7 +107,11 @@ assert.match(discordBattleEdge, /allowed_mentions:\s*\{ parse: \[\] \}/);
 assert.match(discordBattleEdge, /content,/);
 assert.match(discordBattleEdge, /notifyDiscordAdminBattleTurnReady/);
 assert.doesNotMatch(discordBattleEdge, /debug_training/);
-assert.match(edge, /projectionForDatabase\(projection\)/);
+const adminCommandCommit = edge.slice(
+  edge.indexOf("if (adminAction) {", edge.indexOf("const transition = adminAction")),
+  edge.indexOf("} else {", edge.indexOf("if (adminAction) {", edge.indexOf("const transition = adminAction")))
+);
+assert.match(adminCommandCommit, /projectionForDatabase\(projection, "disabled_edge_first_slice"\)/);
 assert.match(edge, /notifyAdminTurnBestEffort\(clients\.serviceClient, result/);
 assert.match(battleEdgeHelpers, /pending ordinary progression[\s\S]*activity_in_progress/i);
 assert.match(battleEdgeHelpers, /Pokemon di livello superiore al limite consentito dalle medaglie[\s\S]*team_level_limit_exceeded/i);

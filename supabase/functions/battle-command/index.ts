@@ -917,7 +917,7 @@ Deno.serve(async (request) => {
         p_input_snapshot_hash: prepared.input_snapshot_hash,
         p_next_snapshot: transition.snapshot,
         p_events: transition.events,
-        p_projection: projectionForDatabase(projection)
+        p_projection: projectionForDatabase(projection, "disabled_edge_first_slice")
       });
       if (committed.error) throw databaseError(committed.error);
       if ((committed.data as Record<string, unknown> | null)?.ok === false

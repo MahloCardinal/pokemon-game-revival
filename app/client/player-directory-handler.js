@@ -24,3 +24,15 @@ registerAction("open-player-directory", function () {
     playerDirectory: { loading: true, loaded: false, players: [], error: null }
   });
 });
+
+registerAction("player-directory-toggle-team", function (element) {
+  var entry = element && element.closest(".player-directory-entry");
+  var teamPanel = entry && entry.querySelector(".player-directory-team-panel");
+  var willOpen;
+  if (!entry || !teamPanel) return;
+  willOpen = teamPanel.hidden;
+  teamPanel.hidden = !willOpen;
+  entry.classList.toggle("is-team-open", willOpen);
+  element.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  element.textContent = willOpen ? element.dataset.closeLabel : element.dataset.openLabel;
+});

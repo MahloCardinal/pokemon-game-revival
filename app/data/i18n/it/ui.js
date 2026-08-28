@@ -35,6 +35,10 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     empty: "Non ci sono ancora giocatori disponibili.",
     emptyTeam: "Squadra vuota",
     badges: "Medaglie: {count}/8",
+    trainerAlt: "Allenatore {name}",
+    teamLabel: "Squadra di {name}",
+    showTeam: "Clicca per vedere la squadra",
+    hideTeam: "Nascondi la squadra",
   }),
   home: Object.freeze({
     defaultTrainer: "Allenatore",

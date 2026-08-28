@@ -1,7 +1,8 @@
 import * as Engine from "../engine/index.js";
 import { KANTO_GYM_BADGES } from "../data/gyms.js";
+import { trainerSpriteByIndex } from "../data/trainers.js";
 import { trainerTitleByKey } from "../data/titles.js";
-import { assetPath, escapeHtml, renderImage } from "../client/asset-helpers.js";
+import { assetPath, escapeHtml, getTrainerImage, renderImage, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { sceneShell } from "../client/render-utils.js";
 import { resolveText, t } from "../client/i18n.js";
@@ -51,24 +52,35 @@ function renderTeamDetails(team) {
     : '<p class="player-directory-empty">' + escapeHtml(t("ui.playerDirectory.emptyTeam")) + "</p>";
 }
 
-function renderPlayerRow(player) {
+function renderPlayerRow(player, playerIndex) {
   var badges = Math.max(0, Math.min(8, Math.floor(Number(player && player.badges) || 0)));
   var team = Array.isArray(player && player.team) ? player.team : [];
   var preferredTitle = preferredTitleName(player && player.preferred_title);
+  var playerName = player && player.username || t("ui.home.defaultTrainer");
+  var trainerSprite = trainerSpriteByIndex(player && player.trainer_index);
+  var playerId = "player-directory-player-" + Math.max(0, Number(playerIndex) || 0);
+  var teamId = playerId + "-team";
   return [
     '<li class="player-directory-entry">',
-    '  <details class="player-directory-player">',
-    '    <summary class="player-directory-summary">',
-    '      <span class="player-directory-summary-main">',
-    '        <strong class="player-directory-player-name">' + escapeHtml(player && player.username || t("ui.home.defaultTrainer")) + "</strong>",
-    preferredTitle ? '        <span class="player-directory-preferred-title">' + escapeHtml(preferredTitle) + "</span>" : "",
-    '        <span class="player-directory-summary-badges" aria-label="' + escapeHtml(t("ui.playerDirectory.badges", { count: badges })) + '">' + playerBadgesMarkup(badges) + "</span>",
-    "      </span>",
-    "    </summary>",
-    '    <div class="player-directory-player-body">',
-    renderTeamDetails(team),
+    '  <article class="player-directory-trainer-card" aria-labelledby="' + escapeHtml(playerId) + '-name">',
+    '    <div class="player-directory-trainer-media">',
+    renderImage(
+      getTrainerImage(trainerSprite),
+      t("ui.playerDirectory.trainerAlt", { name: playerName }),
+      withTrainerSpriteClass("player-directory-trainer-image", trainerSprite),
+      withTrainerSpriteAttrs(trainerSprite, 'loading="lazy" decoding="async" fetchpriority="low"')
+    ),
     "    </div>",
-    "  </details>",
+    '    <div class="player-directory-trainer-info">',
+    '      <strong class="player-directory-player-name" id="' + escapeHtml(playerId) + '-name">' + escapeHtml(playerName) + "</strong>",
+    preferredTitle ? '      <span class="player-directory-preferred-title">' + escapeHtml(preferredTitle) + "</span>" : "",
+    '      <span class="player-directory-summary-badges" aria-label="' + escapeHtml(t("ui.playerDirectory.badges", { count: badges })) + '">' + playerBadgesMarkup(badges) + "</span>",
+    '      <button type="button" class="button button-primary player-directory-team-toggle" data-action="player-directory-toggle-team" aria-expanded="false" aria-controls="' + escapeHtml(teamId) + '" data-open-label="' + escapeHtml(t("ui.playerDirectory.showTeam")) + '" data-close-label="' + escapeHtml(t("ui.playerDirectory.hideTeam")) + '">' + escapeHtml(t("ui.playerDirectory.showTeam")) + "</button>",
+    "    </div>",
+    "  </article>",
+    '  <section class="player-directory-team-panel" id="' + escapeHtml(teamId) + '" aria-label="' + escapeHtml(t("ui.playerDirectory.teamLabel", { name: playerName })) + '" hidden>',
+    renderTeamDetails(team),
+    "  </section>",
     "</li>"
   ].join("");
 }

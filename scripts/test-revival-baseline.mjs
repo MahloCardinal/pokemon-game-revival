@@ -13,6 +13,8 @@ const discordBattleEdge = read("supabase/functions/_shared/discord-admin-battle.
 const recoveryEdge = read("supabase/functions/request-password-recovery/index.ts");
 const schema = read("supabase/migrations/20260812000000_revival_baseline.sql");
 const engine = read("app/engine/battle-runtime.js");
+const moveCatalogSource = read("app/data/moves.js");
+const moveEngineSource = read("app/engine/moves.js");
 const main = read("app/client/main.js");
 const supabaseApi = read("app/api/supabase.js");
 const session = read("app/client/session.js");
@@ -84,6 +86,8 @@ assert.doesNotMatch(config, /ompjckjbvauemoxwggdi|viliofosdnmfnfboqnwu|web-gdr-s
 assert.match(supabaseConfig, /site_url = "https:\/\/pokemon-game-revival\.vercel\.app"/);
 assert.match(supabaseConfig, /additional_redirect_urls = \[[^\]]*"https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery"/);
 assert.match(engine, /BATTLE_ENGINE_VERSION = "pokemon-game-revival"/);
+assert.doesNotMatch(moveCatalogSource, /\bdescription\b/, "Move presentation text must live only in i18n");
+assert.doesNotMatch(moveEngineSource, /\bdescription\b/, "Move instances must not retain obsolete presentation text");
 assert.match(edge, /requireServerRole\(clients\.serviceClient, clients\.userId, "debug"\)/);
 assert.match(edge, /requireRevivalProject\(\)/);
 const debugTrainingAction = edge.slice(

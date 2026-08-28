@@ -39,7 +39,6 @@ function Move(moveDef, overrides) {
   this.power = overrides.power !== undefined ? overrides.power : 0;
   this.stats = overrides.stats !== undefined ? overrides.stats : 0;
   this.damagingMove = moveDef.damagingMove !== undefined ? moveDef.damagingMove : true;
-  this.description = moveDef.description || "";
   this.logKey = moveDef.logKey || null;
   this.requestsBattleFlee = false;
   this.requestsBattleSwitch = Boolean(moveDef.requestsBattleSwitch);

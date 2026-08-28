@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "b71eb3a1d1c74d8a6c126a15f4ee94a4b6230163f2aed9adf4ef68f0e9b48080",
+  "bundleChecksum": "1570b5e23573d738570504df392ffdb813ef36cdc7e7fe96389896437e49ae9e",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -39,8 +39,8 @@
     },
     {
       "source": "app/data/moves.js",
-      "sha256": "f6a24d76b8567aa9d5488a7b2e4acf2f02fdd637b6cdfa359e1dd54f4f9c4f6a",
-      "bytes": 120124
+      "sha256": "da38c4d73198f8d2c240aeab51cf1d4c205638d8a6421af7052639b4773d2d54",
+      "bytes": 104114
     },
     {
       "source": "app/data/progression.js",
@@ -139,8 +139,8 @@
     },
     {
       "source": "app/engine/moves.js",
-      "sha256": "ee7fd3ef8490e168a7a560dc0d1fd00a9663a8d5e3a774edf1781587ae633843",
-      "bytes": 4102
+      "sha256": "42689f3c07866e7207bd245ca7644a4cf664e7b3005f139c06e0287c3b4b2c07",
+      "bytes": 3933
     },
     {
       "source": "app/engine/pokemon.js",

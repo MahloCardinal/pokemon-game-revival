@@ -268,7 +268,8 @@ assert.match(playerDirectoryStyles, /\.player-directory-entry\.is-team-open \.pl
 assert.match(playerDirectoryStyles, /\.player-directory-team-panel\s*\{[\s\S]*?margin-top:\s*-1px/);
 assert.match(playerDirectoryStyles, /\.player-directory-team-toggle\s*\{[^}]*justify-self:\s*center/);
 assert.match(playerDirectoryStyles, /\.player-directory-trainer-media\s*\{[^}]*height:\s*calc\(var\(--player-directory-trainer-width\) \* 1\.5\)/);
-assert.match(playerDirectoryStyles, /\.player-directory-trainer-image\s*\{[^}]*width:\s*auto;[^}]*height:\s*auto;[^}]*max-width:\s*100%;[^}]*max-height:\s*100%/);
+assert.match(playerDirectoryStyles, /\.player-directory-trainer-media\s*\{[^}]*position:\s*relative/);
+assert.match(playerDirectoryStyles, /\.player-directory-trainer-image\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*contain/);
 assert.match(playerDirectoryStyles, /\.player-directory-trainer-image\.sprite-scale\s*\{[^}]*transform:\s*scale\(var\(--sprite-scale-factor\)\)/);
 assert.match(playerDirectoryStyles, /\.player-directory-team\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*var\(--pokemon-card-width\)\)\)[^}]*justify-content:\s*center/);
 assert.doesNotMatch(playerDirectoryStyles, /box-shadow:\s*var\(--shadow-soft\)/);

@@ -18,6 +18,7 @@ import { renderShoppingCenterScene } from "../view/shopping-center.js";
 import { renderStarterScene } from "../view/starter.js";
 import { renderStylesScene } from "../view/styles.js";
 import { renderTeamScene } from "../view/team.js";
+import { renderPlayerDirectoryScene } from "../view/player-directory.js";
 import { renderTrainingZoneScene } from "../view/training-zone.js";
 import { renderZonesScene } from "../view/zones.js";
 import { renderGardenScene } from "../view/garden.js";
@@ -34,7 +35,7 @@ import { applySceneBackground, prepareSceneBackground, preloadSceneMarkup } from
 
 var RENDERABLE_SCENES = [
   "login", "starter", "home", "city", "battle-area", "battle-tower", "battle-shop", "pokemon-center", "shopping-center", "training-zone", "city-daycare", "city-garden",
-  "rules", "privacy-policy", "terms", "styles", "gyms", "gym-city", "city-fanclub", "zones", "team", "box", "capture", "battle", "battle-restore", "admin-home", "admin-battles", "admin-battle", "admin-battle-restore"
+  "rules", "privacy-policy", "terms", "styles", "gyms", "gym-city", "city-fanclub", "zones", "team", "box", "player-directory", "capture", "battle", "battle-restore", "admin-home", "admin-battles", "admin-battle", "admin-battle-restore"
 ];
 var renderRequestId = 0;
 
@@ -158,6 +159,9 @@ function currentSceneMarkup() {
   }
   if (state.scene.name === "box") {
     return renderBoxScene();
+  }
+  if (state.scene.name === "player-directory") {
+    return renderPlayerDirectoryScene();
   }
   if (state.scene.name === "capture") {
     return renderCaptureScene(state.scene);
@@ -514,6 +518,11 @@ export function setScene(scene, options) {
   if (scene.name === "battle-shop" && !state.battleShopOffersLoaded && !state.battleShopOffersLoading) {
     import("./battle-shop-handler.js").then(function (module) {
       module.refreshBattleShopOffers();
+    });
+  }
+  if (scene.name === "player-directory") {
+    import("./player-directory-handler.js").then(function (module) {
+      module.loadPlayerDirectory(scene);
     });
   }
 }

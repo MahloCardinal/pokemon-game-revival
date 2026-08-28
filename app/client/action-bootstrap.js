@@ -20,6 +20,7 @@ import "./debug-tools.js";
 import "./audio-handler.js";
 import "./language-settings.js";
 import "./activity-feed-handler.js";
+import "./player-directory-handler.js";
 import { closeProgressionMoveConfirmPanel, continueAfterEvolutionResult, continueAfterLevelUp, continueAfterMoveResult, replaceProgressionMove, resolveProgressionEvolution, showProgressionMoveConfirmPanel, skipProgressionMove } from "./level-up.js";
 import { registerAction } from "./action-registry.js";
 

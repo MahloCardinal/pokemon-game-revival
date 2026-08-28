@@ -13,6 +13,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     zones: Object.freeze({ title: "Catch Zones", description: "Time to go catch some Pokémon!" }),
     city: Object.freeze({ title: "City", description: "The city offers many useful places for your adventure" }),
     team: Object.freeze({ title: "Trainer Card", description: "Your Trainer Card,\nPokédex included" }),
+    player_directory: Object.freeze({ title: "Player Cards", description: "View the teams and progress of other Trainers" }),
     box: Object.freeze({ title: "Box", description: "When there is no room in your team...\nThis is where they go!" }),
     battle_area: Object.freeze({ title: "Battle Frontier", description: "New challenges and rewards await the most determined Trainers" }),
     gyms: Object.freeze({ title: "Gyms", description: "Put your skills as a Trainer to the test" }),
@@ -26,6 +27,18 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     fanclub: Object.freeze({ title: "Pokéfan Club", description: "Try to catch them all!\nYour dedication will be rewarded" }),
     daycare: Object.freeze({ title: "Day Care", description: "In the right hands, every Pokémon can grow well" }),
     styles: Object.freeze({ title: "Styles", description: "Visual catalog and debugging tools" })
+  }),
+  playerDirectory: Object.freeze({
+    sceneTitle: "Player Cards",
+    description: "View other players' current teams, badges, titles, and Pokémon details.",
+    loading: "Loading player cards...",
+    empty: "There are no players available yet.",
+    emptyTeam: "Empty team",
+    emptyTitles: "No titles unlocked yet",
+    team: "Current team",
+    titles: "Trainer Titles",
+    badges: "Badges: {count}/8",
+    moveValues: "power: {power}, stats: {stats}"
   }),
   home: Object.freeze({
     defaultTrainer: "Trainer",

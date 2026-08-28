@@ -6,9 +6,12 @@ import {
   renderImage,
   renderPokemonSprite,
   getPokemonImage,
+  getPokemonStaticImage,
   getGenderImage,
   getItemImage,
-  renderTypeIcons
+  renderTypeIcons,
+  withPokemonSpriteAttrs,
+  withPokemonSpriteClass
 } from "./asset-helpers.js";
 
 var POKEMON_CARD_TYPE_COLORS = {
@@ -36,9 +39,24 @@ function itemByIndex(itemIndex) {
   return getItemByIndex(itemIndex);
 }
 
-function renderPokemonCardMove(move) {
+function renderPokemonCardMove(move, showMoveValues) {
   var description = moveDisplayDescription(move);
-  return '<button type="button" class="move-button pokemon-move-line" disabled><span class="move-name">' + escapeHtml(moveDisplayName(move)) + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span></button>";
+  var valueMarkup = showMoveValues
+    ? ' <span class="move-values">(' + escapeHtml(t("ui.playerDirectory.moveValues", { power: Number(move && move.power) || 0, stats: Number(move && move.stats) || 0 })) + ")</span>"
+    : "";
+  return '<button type="button" class="move-button pokemon-move-line" disabled><span class="move-name">' + escapeHtml(moveDisplayName(move)) + valueMarkup + (description ? ' <span class="move-effect">(' + escapeHtml(description) + ")</span>" : "") + "</span></button>";
+}
+
+function renderPokemonCardSprite(pokemon, options, imageAttrs) {
+  if (!options.staticSprite) {
+    return renderPokemonSprite(pokemon, "", imageAttrs);
+  }
+  return renderImage(
+    getPokemonStaticImage(pokemon.speciesKey),
+    speciesDisplayName(pokemon),
+    withPokemonSpriteClass("pokemon-sprite", pokemon),
+    withPokemonSpriteAttrs(pokemon, imageAttrs)
+  );
 }
 
 function pokemonCardTypeStyle(types) {
@@ -63,6 +81,7 @@ export function renderPokemonCard(pokemon, options) {
   var heldItem = pokemon && pokemon.heldItemIndex ? itemByIndex(pokemon.heldItemIndex) : null;
   var showVitals = options.showVitals !== false;
   var showMoves = options.showMoves !== false;
+  var showMoveValues = options.showMoveValues === true;
   var imageAttrs = options.imageAttrs || "";
   var extraContent = options.extraContent || "";
   var currentHp = options.currentHp !== undefined ? options.currentHp : pokemon.maxHp;
@@ -93,7 +112,7 @@ export function renderPokemonCard(pokemon, options) {
     '<article class="' + cardClassName + '"' + pokemonCardTypeStyle(pokemon && pokemon.type) + (attrs ? " " + attrs : "") + ">",
     '  <div class="pokemon-card-summary">',
     '    <div class="pokemon-visual">',
-    renderPokemonSprite(pokemon, "", imageAttrs),
+    renderPokemonCardSprite(pokemon, options, imageAttrs),
     "    </div>",
     '    <div class="pokemon-card-main">',
     '      <div class="pokemon-card-name-row">',
@@ -109,7 +128,7 @@ export function renderPokemonCard(pokemon, options) {
     "    </div>",
     "  </div>",
     extraContent,
-    showMoves ? '  <div class="pokemon-card-moves">' + pokemon.moves.map(renderPokemonCardMove).join("") + "</div>" : "",
+    showMoves ? '  <div class="pokemon-card-moves">' + pokemon.moves.map(function (move) { return renderPokemonCardMove(move, showMoveValues); }).join("") + "</div>" : "",
     "",
     overlayContent,
     "</article>"

@@ -194,6 +194,9 @@ export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
     loadFailed: "Recent activity could not be loaded.",
     saveFailed: "The recent activity could not be saved."
   }),
+  playerDirectory: Object.freeze({
+    loadFailed: "Player cards could not be loaded."
+  }),
   missions: Object.freeze({
     refreshFailed: "The missions could not be updated.",
     invalidReward: "Invalid mission or reward."

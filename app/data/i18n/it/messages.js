@@ -194,6 +194,9 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
     loadFailed: "Impossibile caricare le attività recenti.",
     saveFailed: "Impossibile salvare l'attività recente."
   }),
+  playerDirectory: Object.freeze({
+    loadFailed: "Impossibile caricare le schede giocatori."
+  }),
   missions: Object.freeze({
     refreshFailed: "Impossibile aggiornare le missioni.",
     invalidReward: "Missione o ricompensa non valida."

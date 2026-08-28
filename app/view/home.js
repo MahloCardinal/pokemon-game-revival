@@ -130,10 +130,11 @@ export function renderHomeScene() {
     homeCard("rules", "open-rules", "regolamento_bottone.webp", "/rules"),
     homeCard("zones", "open-zones", "zone_cattura_bottone.webp", "/zones"),
     homeCard("city", "open-city", "citta_bottone.webp", "/city"),
-    homeCard("team", "open-team", "scheda_bottone.webp", "/team"),
+    homeCard("team", "open-team", "scheda_allenatore_bottone.webp", "/team"),
     homeCard("box", "open-box", "box_bottone.webp", "/box"),
     homeCard("battle_area", "open-battle-area", "area_lotta_bottone.webp", "/battle-area"),
-    homeCard("kanto_league", "open-gyms", "lega_kanto_bottone.webp", "/gyms")
+    homeCard("kanto_league", "open-gyms", "lega_kanto_bottone.webp", "/gyms"),
+    homeCard("player_directory", "open-player-directory", "schede_giocatori_bottone.webp", "/players")
   ];
 
   if (isDebugUser()) {

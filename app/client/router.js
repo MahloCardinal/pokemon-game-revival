@@ -34,6 +34,7 @@ var routeMap = {
   "admin-battle": "/admin/battle",
   "team": "/team",
   "box": "/box",
+  "player-directory": "/players",
   "battle": "/battle"
 };
 
@@ -49,7 +50,8 @@ var sceneByPage = {
   "styles": { name: "styles" },
   "battle-area": { name: "battle-area" },
   "team": { name: "team" },
-  "box": { name: "box" }
+  "box": { name: "box" },
+  "players": { name: "player-directory" }
 };
 
 var backSceneParents = {
@@ -65,7 +67,8 @@ var backSceneParents = {
   "admin-battles": { name: "home" },
   "admin-battle": { name: "admin-battles" },
   "team": { name: "home" },
-  "box": { name: "home" }
+  "box": { name: "home" },
+  "players": { name: "home" }
 };
 
 function canUseHistory() {

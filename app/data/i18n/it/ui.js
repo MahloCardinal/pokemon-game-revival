@@ -12,7 +12,8 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     rules: Object.freeze({ title: "Regolamento", description: "Entrate qui per avere tutte le info e gli aggiornamenti sul GdR" }),
     zones: Object.freeze({ title: "Zone cattura", description: "È l'ora di andare a catturare qualche Pokémon!" }),
     city: Object.freeze({ title: "Città", description: "In città troverete molti luoghi utili per l'avventura" }),
-    team: Object.freeze({ title: "Scheda", description: "La vostra Scheda Allenatore,\nPokédex incluso" }),
+    team: Object.freeze({ title: "Scheda allenatore", description: "La vostra Scheda Allenatore,\nPokédex incluso" }),
+    player_directory: Object.freeze({ title: "Schede giocatori", description: "Scopri le squadre e i progressi degli altri allenatori" }),
     box: Object.freeze({ title: "Box", description: "Quando non c'è posto in squadra...\nCi si ritrova qua!" }),
     battle_area: Object.freeze({ title: "Area Lotta", description: "Nuove sfide e ricompense attendono gli allenatori più determinati" }),
     gyms: Object.freeze({ title: "Palestre", description: "Mettete alla prova le vostre abilità da allenatori" }),
@@ -26,6 +27,18 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     fanclub: Object.freeze({ title: "Club Pokéfan", description: "Prova a catturarli tutti!\nIl tuo impegno sarà ricompensato" }),
     daycare: Object.freeze({ title: "Pensione", description: "Nelle mani giuste, ogni Pokémon ha modo di crescere bene" }),
     styles: Object.freeze({ title: "Stili", description: "Catalogo visuale e strumenti di debug" })
+  }),
+  playerDirectory: Object.freeze({
+    sceneTitle: "Schede giocatori",
+    description: "Consulta le squadre attuali, le medaglie, i titoli e i dettagli dei Pokémon degli altri giocatori.",
+    loading: "Caricamento delle schede giocatori...",
+    empty: "Non ci sono ancora giocatori disponibili.",
+    emptyTeam: "Squadra vuota",
+    emptyTitles: "Nessun titolo ancora ottenuto",
+    team: "Squadra attuale",
+    titles: "Titoli Allenatore",
+    badges: "Medaglie: {count}/8",
+    moveValues: "potenza: {power}, stats: {stats}"
   }),
   home: Object.freeze({
     defaultTrainer: "Allenatore",

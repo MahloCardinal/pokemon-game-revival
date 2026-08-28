@@ -310,7 +310,13 @@ registerAction("open-gym-city", function(element) {
     var cityKey = String(element.dataset.city || "");
     var leagueStatus = kantoEliteFourChallengeStatus(state.trainerInfo[2]);
     if ((cityKey === "elite_four" || cityKey === "kanto_champion") && leagueStatus.state === "locked") {
-      openClosedSectionRequirementPanel(element, leagueStatus.message);
+      var requiredBadge = leagueStatus.requiredBadgeKey
+        ? t("ui.gyms.badges." + leagueStatus.requiredBadgeKey)
+        : "";
+      openClosedSectionRequirementPanel(
+        element,
+        t("ui.gyms.requirements." + leagueStatus.reason, { badge: requiredBadge })
+      );
       return;
     }
     setScene({ name: "gym-city", cityKey: cityKey });

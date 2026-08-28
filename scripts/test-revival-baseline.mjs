@@ -86,6 +86,16 @@ assert.doesNotMatch(config, /ompjckjbvauemoxwggdi|viliofosdnmfnfboqnwu|web-gdr-s
 assert.match(supabaseConfig, /site_url = "https:\/\/pokemon-game-revival\.vercel\.app"/);
 assert.match(supabaseConfig, /additional_redirect_urls = \[[^\]]*"https:\/\/pokemon-game-revival\.vercel\.app\/auth\/recovery"/);
 assert.match(engine, /BATTLE_ENGINE_VERSION = "pokemon-game-revival"/);
+assert.doesNotMatch(
+  navigationHandler,
+  /openClosedSectionRequirementPanel\(element, leagueStatus\.message\)/,
+  "Locked League cards must resolve their requirement descriptor instead of reading a missing message"
+);
+assert.match(
+  navigationHandler,
+  /t\("ui\.gyms\.requirements\." \+ leagueStatus\.reason, \{ badge: requiredBadge \}\)/,
+  "Locked League cards must show the localized badge requirement"
+);
 assert.doesNotMatch(moveCatalogSource, /\bdescription\b/, "Move presentation text must live only in i18n");
 assert.doesNotMatch(moveCatalogSource, /\bname\b/, "Move names must live only in i18n");
 assert.doesNotMatch(moveEngineSource, /\bdescription\b/, "Move instances must not retain obsolete presentation text");

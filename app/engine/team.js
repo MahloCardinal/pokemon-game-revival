@@ -23,6 +23,8 @@ export function Team(name, pokemonList, activeIndex) {
   this.teamKOTracker = false;
   this.wishHealAmount = 0;
   this.wishSourceSpeciesKey = "";
+  this.wishDueAmount = 0;
+  this.wishDueSourceSpeciesKey = "";
   this.sleepImmunityCounter = 0;
   this.teamStatusProtectCounter = 0;
   this.teamBoostSuppressCounter = 0;
@@ -96,13 +98,6 @@ Team.prototype.switchTo = function (index) {
     entering.slpSource = stats.slpSource || null;
     entering.confCounter = stats.confCounter || 0;
     entering.pendingDelayedStatus = stats.pendingDelayedStatus ? Object.assign({}, stats.pendingDelayedStatus) : null;
-    if (entering.status === "cnf_block" || entering.status === "cnf_free") {
-      entering.status = null;
-      entering.confCounter = 0;
-    }
-    if (entering.pendingDelayedStatus && (entering.pendingDelayedStatus.status === "cnf_block" || entering.pendingDelayedStatus.status === "cnf_free")) {
-      entering.pendingDelayedStatus = null;
-    }
     events.push(battleEvent("switch.batonPass", { pokemon: battleSpeciesRef(entering) }));
     this.batonPassStats = null;
   }

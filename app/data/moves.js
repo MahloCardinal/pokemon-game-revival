@@ -109,6 +109,7 @@ function clearStatusEffect(target, statusKey) {
   target.confCounter = 0;
   target.slpSource = null;
   target.pendingDelayedStatus = null;
+  target.nightmareActive = false;
   return true;}
 function setTeamPercentageNegative(team) {
   if (team) {
@@ -179,16 +180,22 @@ function buffLossMove(name, description) {
       if (hit) {
         if (attacker.atkBuff > 0) {
           this.moveMult = 2;
-          attacker.atkBuff = 0;
+          this.removesAttackBuff = true;
           this.logKey = "dmg_double";
         } else {
+          this.removesAttackBuff = false;
           this.logKey = "dmg";
         }
       } else {
+        this.removesAttackBuff = false;
         this.logKey = "fail";
       }
     },
-    after: function () {
+    after: function (attacker) {
+      if (this.removesAttackBuff) {
+        attacker.atkBuff = 0;
+      }
+      this.removesAttackBuff = false;
       this.moveMult = 1;
     }
   };}
@@ -793,6 +800,7 @@ function teamStatusCureMove(name, description) {
           c.sleepDuration = 3;
           c.confCounter = 0;
           c.pendingDelayedStatus = null;
+          c.nightmareActive = false;
           count++;
         }
       });
@@ -1172,14 +1180,15 @@ export const growth = Object.assign(simpleSelfAttackDefenseBuff("Growth"), { ind
 export const feather_dance = Object.assign(simpleEnemyAttackNerf("Feather Dance"), { index: 72 });
 export const swords_dance = Object.assign(simpleSelfAttackBigBuff("Swords Dance"), { index: 73 });
 export const lovely_kiss = Object.assign(simpleSleepMove("Lovely Kiss"), { index: 74 });
-export const wish = { index: 75, name: "Wish", damagingMove: false, description: "At the end of the next turn, the active Pokémon restores half the maximum HP of the Wish user", after: function(attacker) { this.restored = Math.floor(attacker.pokemon.maxHp / 2); attacker.team.wishHealAmount += this.restored; attacker.team.wishSourceSpeciesKey = attacker.pokemon.speciesKey; this.logKey = "wish"; } };
+export const wish = { index: 75, name: "Wish", damagingMove: false, description: "At the end of the user's next action, the active Pokémon restores half the maximum HP of the Wish user", after: function(attacker) { this.restored = Math.floor(attacker.pokemon.maxHp / 2); attacker.team.wishHealAmount += this.restored; attacker.team.wishSourceSpeciesKey = attacker.pokemon.speciesKey; this.logKey = "wish"; } };
 export const destiny_bond = {
         index: 76,
         name: "Destiny Bond",
         damagingMove: false,
-        description: "If the user is knocked out by the opponent's next move, the opponent is knocked out too",
+        description: "If the user is knocked out by a direct attack during the opponent's next action, the opponent is knocked out too",
         after: function (attacker) {
           attacker.destinyBondActive = true;
+          attacker.destinyBondTurns = 1;
           this.logKey = "destiny_bond";
         }
       };
@@ -1193,7 +1202,6 @@ export const water_sport = {
         description: "+{stats} Defense and prevents burns",
         after: function (attacker) {
           attacker.buffSelfDef(this.stats);
-          clearStatusEffect(attacker, "brn");
           attacker.burnImmune = true;
           this.logKey = "buff_self_def_burn";
         }
@@ -1399,11 +1407,11 @@ export const nightmare = {
         index: 145,
         name: "Nightmare",
         damagingMove: false,
-        description: "If the opponent is asleep, it loses 1/3 of maximum HP at the end of the turn",
+        description: "While the opponent remains asleep and active, it loses 1/3 of maximum HP at the end of each user's action",
         after: function (_attacker, defender, hit) {
           if (hit && defender.status === "slp") {
-            defender.hp = Math.max(0, defender.hp - Math.floor(defender.pokemon.maxHp / 3));
-            this.logKey = "nightmare_dmg";
+            defender.nightmareActive = true;
+            this.logKey = "nightmare";
           } else if (hit) {
             this.logKey = "status_not_done";
           } else {
@@ -1469,10 +1477,11 @@ export const magic_coat = {
         index: 165,
         name: "Magic Coat",
         damagingMove: false,
-        description: "Reflects incoming status conditions onto the attacker while the user remains active",
+        description: "Reflects incoming status conditions onto the attacker during the next 2 opposing actions",
         after: function (attacker, _defender, hit) {
           if (hit) {
             attacker.magicCoatActive = true;
+            attacker.magicCoatTurns = 2;
             this.logKey = "magic_coat";
           } else {
             this.logKey = "fail";
@@ -1952,7 +1961,7 @@ export const endeavor = {
           }
         }
       };
-export const refresh = { index: 251, name: "Refresh", damagingMove: false, description: "Cures every status condition affecting the user", after: function(attacker) { if (attacker.status || attacker.sleepCounter || attacker.confCounter || attacker.pendingDelayedStatus) { attacker.status = null; attacker.sleepCounter = 0; attacker.sleepDuration = 3; attacker.confCounter = 0; attacker.pendingDelayedStatus = null; this.logKey = "cure_status"; } else { this.logKey = "fail"; } } };
+export const refresh = { index: 251, name: "Refresh", damagingMove: false, description: "Cures every status condition affecting the user", after: function(attacker) { if (attacker.status || attacker.sleepCounter || attacker.confCounter || attacker.pendingDelayedStatus) { attacker.status = null; attacker.sleepCounter = 0; attacker.sleepDuration = 3; attacker.confCounter = 0; attacker.pendingDelayedStatus = null; attacker.nightmareActive = false; this.logKey = "cure_status"; } else { this.logKey = "fail"; } } };
 export const heal_bell = Object.assign(teamStatusCureMove("Heal Bell", "Cures every status condition affecting the team"), { index: 252 });
 export const encore = {
         index: 253,
@@ -2301,7 +2310,7 @@ export const baton_pass = {
         name: "Baton Pass",
         damagingMove: false,
         requestsBattleSwitch: true,
-        description: "Switches out the user and passes its stat changes to the new Pokémon",
+        description: "Switches out the user and passes its stat changes and confusion to the new Pokémon",
         after: function (attacker, _defender, hit) {
           if (hit) {
             var team = attacker.team;
@@ -2315,14 +2324,12 @@ export const baton_pass = {
               defBuff: attacker.defBuff,
               atkNerf: attacker.atkNerf,
               defNerf: attacker.defNerf,
-              status: attacker.status === "cnf_block" || attacker.status === "cnf_free" ? null : attacker.status,
+              status: attacker.status,
               sleepCounter: attacker.sleepCounter,
               sleepDuration: attacker.sleepDuration,
               slpSource: attacker.slpSource,
-              confCounter: 0,
-              pendingDelayedStatus: attacker.pendingDelayedStatus && attacker.pendingDelayedStatus.status !== "cnf_block" && attacker.pendingDelayedStatus.status !== "cnf_free"
-                ? Object.assign({}, attacker.pendingDelayedStatus)
-                : null
+              confCounter: attacker.confCounter,
+              pendingDelayedStatus: attacker.pendingDelayedStatus ? Object.assign({}, attacker.pendingDelayedStatus) : null
             };
             this.logKey = "baton_pass";
           } else {
@@ -2339,13 +2346,17 @@ export const supersonic = Object.assign(simpleConfusionMove("Supersonic"), { ind
 export const super_fang = {
         index: 309,
         name: "Super Fang",
+        damagingMove: false,
         description: "Halves the opponent's HP, dealing at least 1 damage",
-        before: function (_attacker, defender, hit) {
-          if (hit) {
-            defender.hp = Math.floor(defender.hp / 2);
-          }
+        before: function () {
+          this.directDamage = 0;
         },
-        after: function (_attacker, _defender, hit) {
+        after: function (_attacker, defender, hit) {
+          if (hit) {
+            var initialHp = defender.hp;
+            defender.hp = Math.max(0, defender.hp - Math.max(1, Math.ceil(defender.hp / 2)));
+            this.directDamage = initialHp - defender.hp;
+          }
           this.logKey = hit ? "dmg" : "fail";
         }
       };
@@ -2506,18 +2517,17 @@ export const perish_song = {
         index: 332,
         name: "Perish Song",
         damagingMove: false,
-        description: "Every active Pokémon is knocked out after 3 turns unless switched out",
+        description: "Every active Pokémon is knocked out at the end of its 3rd subsequent action unless switched out",
         after: function (attacker, _defender, hit) {
           if (hit) {
             var bm = attacker.team.battleManager;
-            [attacker.team, bm.playerTeam === attacker.team ? bm.enemyTeam : bm.playerTeam].forEach(function (team) {
-              team.combatantList.forEach(function (c) {
-                if (!c.isFainted()) {
-                  c.perishSongTurns = 3;
-                }
-              });
-            });
-            attacker.perishSongTurns = 2;
+            var defender = bm.playerTeam === attacker.team ? bm.enemyTeam.getActive() : bm.playerTeam.getActive();
+            attacker.perishSongTurns = 3;
+            attacker.perishSongSkipNextAction = true;
+            if (defender && !defender.isFainted()) {
+              defender.perishSongTurns = 3;
+              defender.perishSongSkipNextAction = false;
+            }
             this.logKey = "perish_song";
           } else {
             this.logKey = "fail";

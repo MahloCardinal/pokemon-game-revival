@@ -713,4 +713,246 @@ function pursuitTestManager() {
   assert.deepEqual(attacker.type, ["ghost", "poison"], "Conversion must persist after the Pokemon is withdrawn");
 }
 
+function moveMechanicsManager(playerMoves, enemyMoves, options = {}) {
+  const playerPokemon = pursuitTestPokemon(options.playerName || "PlayerMoveTest", playerMoves);
+  const enemyPokemon = pursuitTestPokemon(options.enemyName || "EnemyMoveTest", enemyMoves);
+  const playerList = [playerPokemon].concat(options.playerBench || []);
+  const enemyList = [enemyPokemon].concat(options.enemyBench || []);
+  return new BattleManager(new Team("Giocatore", playerList, 0), new Team("Avversario", enemyList, 0));
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.magic_coat, { power: 20, stats: 0 }), createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    { enemyBench: [pursuitTestPokemon("EnemyBench", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })])] }
+  );
+  const player = manager.playerTeam.getActive();
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.magicCoatTurns, 2, "Magic Coat must cover two subsequent opposing actions");
+  manager.resolveNpcSwitchAction(1);
+  assert.equal(player.magicCoatTurns, 1, "An opposing switch must consume one Magic Coat action");
+  manager.resolveMoveAction("player", player.pokemon.moves[1]);
+  manager.resolveMoveAction("npc", manager.enemyTeam.getActive().pokemon.moves[0]);
+  assert.equal(player.magicCoatTurns, 0);
+  assert.equal(player.magicCoatActive, false, "Magic Coat must expire after the second opposing action");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.destiny_bond, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  manager.resolveMoveAction("npc", manager.enemyTeam.getActive().pokemon.moves[0]);
+  assert.equal(player.destinyBondActive, false, "Any opposing action must consume Destiny Bond even without dealing damage");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.destiny_bond, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.tackle, { power: 500, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  manager.resolveMoveAction("npc", enemy.pokemon.moves[0]);
+  assert.equal(player.hp, 0);
+  assert.equal(enemy.hp, 0, "A direct KO during the next opposing action must trigger Destiny Bond");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.destiny_bond, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  player.status = "slp";
+  player.sleepDuration = 10;
+  player.nightmareActive = true;
+  player.hp = 1;
+  manager.resolveMoveAction("npc", enemy.pokemon.moves[0]);
+  assert.equal(player.hp, 0);
+  assert.equal(enemy.hp, 200, "Destiny Bond must not trigger from indirect end-of-action damage");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.nightmare, { power: 20, stats: 0 }), createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const enemy = manager.enemyTeam.getActive();
+  enemy.pokemon.maxHp = 90;
+  enemy.hp = 90;
+  enemy.status = "slp";
+  enemy.sleepDuration = 10;
+  manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[0]);
+  assert.equal(enemy.hp, 60, "Nightmare must deal damage at the end of the action in which it is used");
+  manager.resolveMoveAction("npc", enemy.pokemon.moves[0]);
+  assert.equal(enemy.hp, 60, "Nightmare must not tick at the end of the affected Pokemon's own action");
+  manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[1]);
+  assert.equal(enemy.hp, 30, "Nightmare must persist across the user's actions while the target sleeps");
+  enemy.status = null;
+  manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[1]);
+  assert.equal(enemy.hp, 30);
+  assert.equal(enemy.nightmareActive, false, "Nightmare must end when the target wakes up");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.sleep_talk, { power: 20, stats: 0 }), createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  player.status = "slp";
+  player.sleepDuration = 10;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(enemy.hp, 180, "Sleep Talk must execute a known move while the user is asleep");
+}
+
+for (const thawingMove of [MoveDefinitions.sacred_fire, MoveDefinitions.flame_wheel]) {
+  const manager = moveMechanicsManager(
+    [createMove(thawingMove, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.fly, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  player.status = "frz";
+  enemy.semiInvulnerable = "fly";
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.status, null, `${thawingMove.name} must thaw the user before checking whether the target can be hit`);
+  assert.equal(enemy.hp, 200, `${thawingMove.name} must still obey ordinary semi-invulnerability rules`);
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const attacker = manager.playerTeam.getActive();
+  const defender = manager.enemyTeam.getActive();
+  const boostedMove = attacker.pokemon.moves[0];
+  attacker.atkBuff = 10;
+  attacker.activeChargeDamageMultiplier = 2;
+  boostedMove.moveMult = 2;
+  defender.team.teamMoveBoostProtectCounter = 1;
+  assert.equal(manager.calculateMoveDamage(attacker, defender, boostedMove), 30,
+    "Protect and Detect must cancel move and charge multipliers without canceling the user's Attack boost");
+  defender.team.teamMoveBoostProtectCounter = 0;
+  defender.team.teamBoostSuppressCounter = 1;
+  assert.equal(manager.calculateMoveDamage(attacker, defender, boostedMove), 30,
+    "Hidden Power must cancel move and charge multipliers without canceling the user's Attack boost");
+}
+
+for (const buffLossDefinition of [MoveDefinitions.superpower, MoveDefinitions.overheat]) {
+  const manager = moveMechanicsManager(
+    [createMove(buffLossDefinition, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  player.atkBuff = 10;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(enemy.hp, 140, `${buffLossDefinition.name} must include the existing Attack boost in its doubled damage`);
+  assert.equal(player.atkBuff, 0, `${buffLossDefinition.name} must remove the Attack boost only after damage is calculated`);
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.super_fang, { power: 200, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const enemy = manager.enemyTeam.getActive();
+  enemy.hp = 101;
+  manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[0]);
+  assert.equal(enemy.hp, 50, "Super Fang must only halve current HP and must not add ordinary move damage");
+}
+
+{
+  const incoming = pursuitTestPokemon("BatonIncoming", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]);
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.baton_pass, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    { playerBench: [incoming] }
+  );
+  const outgoing = manager.playerTeam.getActive();
+  outgoing.status = "cnf_free";
+  outgoing.confCounter = 3;
+  manager.resolveMoveAction("player", outgoing.pokemon.moves[0]);
+  manager.resolvePostMovePlayerSwitch(1);
+  assert.equal(manager.playerTeam.getActive().status, "cnf_block");
+  assert.equal(manager.playerTeam.getActive().confCounter, 4, "Baton Pass must transfer confusion and its counter");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.water_sport, { power: 20, stats: 10 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  player.status = "brn";
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.status, "brn", "Water Sport must not cure an existing burn");
+  assert.equal(player.burnImmune, true);
+}
+
+{
+  const incoming = pursuitTestPokemon("WishIncoming", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]);
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.wish, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    { playerBench: [incoming] }
+  );
+  const wishUser = manager.playerTeam.getActive();
+  const incomingCombatant = manager.playerTeam.combatantList[1];
+  incomingCombatant.hp = 20;
+  manager.resolveMoveAction("player", wishUser.pokemon.moves[0]);
+  manager.resolveMoveAction("npc", manager.enemyTeam.getActive().pokemon.moves[0]);
+  manager.resolvePlayerSwitchAction(1);
+  assert.equal(incomingCombatant.hp, 120, "Wish must heal the Pokemon active at the end of the user's next action, including after a switch");
+  assert.equal(manager.playerTeam.wishHealAmount, 0);
+  assert.equal(manager.playerTeam.wishDueAmount, 0);
+}
+
+{
+  const enemyBench = pursuitTestPokemon("PerishBench", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]);
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.perish_song, { power: 20, stats: 0 }), createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    { enemyBench: [enemyBench] }
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.perishSongTurns, 3, "The Perish Song use action must not count for its user");
+  assert.equal(enemy.perishSongTurns, 3);
+  manager.resolveMoveAction("npc", enemy.pokemon.moves[0]);
+  manager.resolveMoveAction("player", player.pokemon.moves[1]);
+  manager.resolveMoveAction("npc", enemy.pokemon.moves[0]);
+  manager.resolveMoveAction("player", player.pokemon.moves[1]);
+  assert.equal(player.perishSongTurns, 1);
+  assert.equal(enemy.perishSongTurns, 1);
+  manager.resolveMoveAction("npc", enemy.pokemon.moves[0]);
+  assert.equal(enemy.hp, 0, "Perish Song must knock out an affected Pokemon at the end of its third subsequent action");
+  assert.equal(player.hp > 0, true);
+}
+
+{
+  const incoming = pursuitTestPokemon("PerishSwitch", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]);
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    { playerBench: [incoming] }
+  );
+  const outgoing = manager.playerTeam.getActive();
+  outgoing.perishSongTurns = 2;
+  manager.resolvePlayerSwitchAction(1);
+  assert.equal(outgoing.perishSongTurns, 0, "Switching out must clear Perish Song from the withdrawn Pokemon");
+  assert.equal(manager.playerTeam.getActive().perishSongTurns, 0);
+}
+
 console.log("Revival baseline contract checks passed.");

@@ -21,8 +21,10 @@ function combatantSummary(combatant, isActive) {
     pendingMoveForced: Boolean(combatant.pendingMove && combatant.pendingMove.isForcedMove),
     pendingMoveTurns: Number(combatant.pendingMoveTurns) || 0,
     defRaiseBlocked: Boolean(combatant.defRaiseBlocked), endure: Boolean(combatant.endure),
-    destinyBond: Boolean(combatant.destinyBondActive), grudge: Boolean(combatant.grudgeActive),
-    magicCoat: Boolean(combatant.magicCoatActive), rooted: Boolean(combatant.rooted),
+    destinyBond: Boolean(combatant.destinyBondActive), destinyBondTurns: Number(combatant.destinyBondTurns) || 0,
+    grudge: Boolean(combatant.grudgeActive),
+    magicCoat: Boolean(combatant.magicCoatActive), magicCoatTurns: Number(combatant.magicCoatTurns) || 0,
+    nightmare: Boolean(combatant.nightmareActive), rooted: Boolean(combatant.rooted),
     itemLocked: Boolean(combatant.itemLocked), exclusive: Boolean(combatant.exclusiveActive),
     disabledMoveKeys: combatant.exclusiveActive ? [] : (combatant.disabledMoves || []).slice(),
     trappedTurns: Number(combatant.trappedTurns) || (combatant.trappedMoveIndex ? 99 : 0),
@@ -43,7 +45,7 @@ function teamEffects(team) {
     statusProtectionTurns: Number(team.teamStatusProtectCounter) || 0,
     boostSuppressionTurns: Number(team.teamBoostSuppressCounter) || 0,
     sleepImmunityTurns: Number(team.sleepImmunityCounter) || 0,
-    spikes: Boolean(team.spikesActive), wish: Number(team.wishHealAmount) > 0,
+    spikes: Boolean(team.spikesActive), wish: Number(team.wishHealAmount) > 0 || Number(team.wishDueAmount) > 0,
     futureSight: team.futureSight && team.futureSight.active ? {
       moveKey: String(team.futureSight.moveKey || ""), turns: Number(team.futureSight.timer) || 0
     } : null

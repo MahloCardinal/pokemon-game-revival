@@ -156,7 +156,14 @@ function serializeTransformation(info) {
 }
 
 function restoreCombatant(manager, combatant, snapshot) {
-  Object.assign(combatant, jsonValue(snapshot.state || {}, 0));
+  var restoredState = jsonValue(snapshot.state || {}, 0);
+  Object.assign(combatant, restoredState);
+  if (restoredState.magicCoatActive && restoredState.magicCoatTurns === undefined) {
+    combatant.magicCoatTurns = 2;
+  }
+  if (restoredState.destinyBondActive && restoredState.destinyBondTurns === undefined) {
+    combatant.destinyBondTurns = 1;
+  }
   combatant.pendingMove = Number.isInteger(snapshot.pendingMoveSlot) ? combatant.pokemon.moves[snapshot.pendingMoveSlot] || null : null;
   combatant.turnBeforeMoveUsed = Number.isInteger(snapshot.turnBeforeMoveUsedSlot) ? combatant.pokemon.moves[snapshot.turnBeforeMoveUsedSlot] || null : null;
   combatant.seedTarget = snapshot.seedTargetSide === "player" ? manager.playerTeam : snapshot.seedTargetSide === "npc" ? manager.enemyTeam : null;

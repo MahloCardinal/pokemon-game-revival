@@ -70,6 +70,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
       paralyzedCannotMove: "{pokemon} is paralyzed and cannot attack.", confusionSelfDamage: "{pokemon} hurts itself in its confusion and loses {amount} HP.",
       asleepCannotMove: "{pokemon} is asleep and cannot attack.", frozenCannotMove: "{pokemon} is frozen and cannot attack.",
       poisonDamage: "{pokemon} is poisoned and loses {amount} HP.", burnDamage: "{pokemon} is burned and loses {amount} HP.",
+      thawed: "{pokemon} thaws out.", nightmareDamage: "{pokemon} loses {amount} HP to the nightmare.",
       ingrainHeal: "{pokemon} restores {amount} HP with Ingrain.", wishHeal: "{source}'s Wish restores {amount} HP to {pokemon}.",
       perishSongKo: "Perish Song knocks out {pokemon}!", endured: "{pokemon} endured the hit!", magicCoatReflected: "{source} reflects the status condition onto {target} with Magic Coat!",
       destinyBondKo: "Destiny Bond knocks out {pokemon}!", grudgeDisabledMove: "Grudge prevents {pokemon} from using {move} again!"
@@ -128,7 +129,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
       lose_enem_perc: "{attacker} uses {move}: the opponent's percentage becomes negative.", lose_self_perc: "{attacker} uses {move} and loses the percentage.",
       magic_coat: "{attacker} uses {move} and will reflect status conditions.", mimic: "{attacker} uses {move} and copies the opponent's last move.",
       nerf_enem_atk: "{attacker} uses {move}: -{stats} Attack to {defender}.", nerf_enem_atk_def: "{attacker} uses {move}: -{stats} Attack and Defense to {defender}.",
-      nerf_enem_def: "{attacker} uses {move}: -{stats} Defense to {defender}.", nightmare_dmg: "{attacker} uses {move}: {defender} loses HP to the nightmare.",
+      nerf_enem_def: "{attacker} uses {move}: -{stats} Defense to {defender}.", nightmare: "{attacker} uses {move}: {defender} is tormented by a nightmare.", nightmare_dmg: "{attacker} uses {move}: {defender} loses HP to the nightmare.",
       no_move_boost_team: "{attacker} uses {move}: the team is protected from opposing move boosts for 5 turns.", no_stat_nerf_team: "{attacker} uses {move}: the team is protected from stat reductions for 5 turns.",
       nube: "{attacker} uses {move} and clears all stat changes.", pain_split: "{attacker} uses {move} and splits its HP evenly with {defender}.", par: "{attacker} uses {move}: {defender} is paralyzed.", brn: "{attacker} uses {move}: {defender} is burned.",
       perish_song: "{attacker} uses {move}: all active Pokémon will be knocked out in 3 turns.", present_heal: "{attacker} uses {move}: {defender} restores one quarter of its HP.", psn: "{attacker} uses {move}: {defender} is poisoned.",

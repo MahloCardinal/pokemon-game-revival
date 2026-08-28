@@ -664,6 +664,7 @@ BattleManager.prototype.applyItemEffect = function (item, target) {
       target.sleepCounter = 0;
       target.sleepDuration = 3;
       target.confCounter = 0;
+      target.nightmareActive = false;
       this.emit(battleEvent(hadStatus ? "item.fullRestore" : "item.healedHp", { item: battleItemRef(item), pokemon: battleSpeciesRef(target), amount: healStatusHealed }));
       return { ok: true };
     case ItemSubcategory.HealKo:
@@ -776,6 +777,7 @@ BattleManager.prototype.startTurn = function (attacker, defender) {
         combatant.sleepCounter = 0;
         combatant.sleepDuration = 3;
         combatant.slpSource = null;
+        combatant.nightmareActive = false;
         manager.emit(battleEvent("status.wokeUp", { pokemon: battleSpeciesRef(combatant) }));
       } else {
         combatant.sleepCounter += 1;
@@ -797,37 +799,24 @@ BattleManager.prototype.startTurn = function (attacker, defender) {
   advanceTeamEffect(attacker.team, null, "sleepImmunityCounter", 5, battleEvent("team.sleepImmunityEnded", { team: battleTeamRef(attacker.team) }));
   advanceTeamEffect(attacker.team, null, "teamBoostSuppressCounter", 1, battleEvent("team.boostSuppressionEnded", { team: battleTeamRef(attacker.team) }));
 
+  if (attacker.team.wishHealAmount > 0 && attacker.team.wishDueAmount === 0) {
+    attacker.team.wishDueAmount = attacker.team.wishHealAmount;
+    attacker.team.wishDueSourceSpeciesKey = attacker.team.wishSourceSpeciesKey;
+    attacker.team.wishHealAmount = 0;
+    attacker.team.wishSourceSpeciesKey = "";
+  }
+
   if (attacker.rooted) {
     var rootHeal = Math.floor(attacker.pokemon.maxHp / 2);
     attacker.hp = Math.min(attacker.hp + rootHeal, attacker.pokemon.maxHp);
     manager.emit(battleEvent("status.ingrainHeal", { pokemon: battleSpeciesRef(attacker), amount: rootHeal }));
   }
-  if (attacker.team.wishHealAmount > 0) {
-    var wishHeal = Math.min(attacker.team.wishHealAmount, attacker.pokemon.maxHp - attacker.hp);
-    attacker.hp = Math.min(attacker.hp + attacker.team.wishHealAmount, attacker.pokemon.maxHp);
-    manager.emit(battleEvent("status.wishHeal", {
-      source: battleSpeciesRef({ speciesKey: attacker.team.wishSourceSpeciesKey || attacker.pokemon.speciesKey }),
-      pokemon: battleSpeciesRef(attacker), amount: wishHeal
-    }));
-    attacker.team.wishHealAmount = 0;
-    attacker.team.wishSourceSpeciesKey = "";
-  }
-
   if (attacker.trappedMoveIndex && attacker.trappedTurns < 99) {
     if (attacker.trappedTurns >= 4) {
       attacker.trappedTurns = 0;
       attacker.trappedMoveIndex = 0;
     } else {
       attacker.trappedTurns += 1;
-    }
-  }
-
-  if (attacker.perishSongTurns > 0) {
-    attacker.perishSongTurns -= 1;
-    if (attacker.perishSongTurns === 0) {
-      attacker.hp = 0;
-      this.emit(battleEvent("status.perishSongKo", { pokemon: battleSpeciesRef(attacker) }));
-      this.KOCheck(attacker, defender);
     }
   }
 
@@ -998,8 +987,11 @@ BattleManager.prototype.calculateMoveDamage = function (attacker, defender, move
   var defenseAdjusted;
   var damage;
 
+  move.boostSuppressed = false;
   if (defender.team.teamBoostSuppressCounter > 0 || defender.team.teamMoveBoostProtectCounter > 0) {
-    attackBuff = 0;
+    move.boostSuppressed = moveMultiplier !== 1 || chargeDamageMultiplier !== 1;
+    moveMultiplier = 1;
+    chargeDamageMultiplier = 1;
   }
 
   attackNerf = attacker.getAtkNerfAndBrn();
@@ -1014,10 +1006,6 @@ BattleManager.prototype.calculateMoveDamage = function (attacker, defender, move
   }
 
   defenseBuff = Math.max(defender.defBuff, defender.weatherDefBuff, defender.team.teamDefBuff);
-  if (attacker.team.teamBoostSuppressCounter > 0 || attacker.team.teamMoveBoostProtectCounter > 0) {
-    defenseBuff = 0;
-  }
-
   defNerf = defender.defNerf;
   var defenderStatMods = runHeldItemTrigger(this, "statMods", HeldItemTriggerContext.statMods(defender, {
     defenseBuff: defenseBuff,
@@ -1082,7 +1070,6 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
 
   var percentageBefore = attacker.team ? attacker.team.percentage : undefined;
   var defenderHpBefore = defender.hp;
-  var defenderDestinyBondBefore = Boolean(defender.destinyBondActive);
   var attackerStatusBeforeBefore = attacker.status;
 
   move.before(attacker, defender, hit);
@@ -1134,6 +1121,11 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   defenderStatusBefore = statusSnapshot(defender);
 
   effectiveMove.after(attacker, defender, hit);
+  if (Number(effectiveMove.directDamage) > 0) {
+    damage = Number(effectiveMove.directDamage);
+    defender.turnBeforeDamageTaken = damage;
+    defender.wasHitSinceSwitch = true;
+  }
   if (attacker.pendingMove && attacker.pendingMove.isForcedMove) {
     if (attacker.pendingMoveTurns >= 3) {
       attacker.removePending();
@@ -1142,8 +1134,11 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
       attacker.pendingMoveTurns += 1;
     }
   }
-  if (damage > 0 && chargeDamageMultiplier > 1 && effectiveMove.logKey === "dmg") {
+  if (damage > 0 && chargeDamageMultiplier > 1 && !effectiveMove.boostSuppressed && effectiveMove.logKey === "dmg") {
     effectiveMove.logKey = "dmg_double";
+  }
+  if (effectiveMove.boostSuppressed && effectiveMove.logKey === "dmg_double") {
+    effectiveMove.logKey = "dmg";
   }
 
   runHeldItemTrigger(this, "selfStatusChanged", HeldItemTriggerContext.selfStatusChanged(attacker, attackerStatusBeforeBefore));
@@ -1211,9 +1206,6 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
     runHeldItemTrigger(this, "healHpBerry", HeldItemTriggerContext.healHpBerry(defender));
   }
   this.markMoveKoTrigger(attacker, defender, effectiveMove, defenderHpBefore);
-  if (defenderDestinyBondBefore && defender.hp > 0) {
-    defender.destinyBondActive = false;
-  }
 
   runHeldItemTrigger(this, "afterMoveResolved", HeldItemTriggerContext.afterMoveResolved(attacker, defender, percentageBefore));
 
@@ -1223,6 +1215,8 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   if (effectiveMove !== move) {
     effectiveMove.forcedResolvedType = null;
   }
+  effectiveMove.directDamage = 0;
+  effectiveMove.boostSuppressed = false;
   if (!defenderTeamForSwitch || defenderTeamForSwitch.activeIndex === defenderActiveIndexBefore) {
     this.clearRecentSwitchTarget(defenderTeamForSwitch);
   }
@@ -1577,7 +1571,7 @@ BattleManager.prototype.moveStatusCheck = function (attacker, move) {
   }
 
   if (attacker.status === "slp") {
-    if (move && move.key === "snore") {
+    if (move && (move.key === "snore" || move.key === "sleep_talk")) {
       return true;
     }
     resolvePendingAsFailed();
@@ -1586,6 +1580,17 @@ BattleManager.prototype.moveStatusCheck = function (attacker, move) {
   }
 
   if (attacker.status === "frz") {
+    if (move && (move.key === "sacred_fire" || move.key === "flame_wheel")) {
+      attacker.status = null;
+      attacker.sleepCounter = 0;
+      attacker.sleepDuration = 3;
+      attacker.confCounter = 0;
+      attacker.slpSource = null;
+      attacker.pendingDelayedStatus = null;
+      attacker.nightmareActive = false;
+      manager.emit(battleEvent("status.thawed", { pokemon: battleSpeciesRef(attacker) }));
+      return true;
+    }
     resolvePendingAsFailed();
     manager.emit(battleEvent("status.frozenCannotMove", { pokemon: battleSpeciesRef(attacker) }));
     return false;
@@ -2012,6 +2017,22 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
     runHeldItemTrigger(this, "endTurnStatusEffects", HeldItemTriggerContext.endTurnStatusEffects(c, c === attacker ? defender : attacker));
   }, this);
 
+  if (defender.nightmareActive) {
+    if (defender.status === "slp" && defender.hp > 0) {
+      var nightmareDamage = Math.min(defender.hp, Math.max(1, Math.floor(defender.pokemon.maxHp / 3)));
+      defender.hp = Math.max(0, defender.hp - nightmareDamage);
+      this.emit(battleEvent("status.nightmareDamage", { pokemon: battleSpeciesRef(defender), amount: nightmareDamage }));
+      this.KOCheck(attacker, defender);
+    } else {
+      defender.nightmareActive = false;
+    }
+  }
+  this.combatants().forEach(function (combatant) {
+    if (combatant.status !== "slp") {
+      combatant.nightmareActive = false;
+    }
+  });
+
   if (attacker.team.futureSight.active) {
     attacker.team.futureSight.timer -= 1;
     if (attacker.team.futureSight.timer === 0) {
@@ -2049,6 +2070,41 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
       attacker.team.futureSight.moveKey = "";
       attacker.team.futureSight.targetIndex = -1;
     }
+  }
+
+  if (attacker.perishSongTurns > 0 && attacker.hp > 0) {
+    if (attacker.perishSongSkipNextAction) {
+      attacker.perishSongSkipNextAction = false;
+    } else {
+      attacker.perishSongTurns -= 1;
+      if (attacker.perishSongTurns === 0) {
+        attacker.hp = 0;
+        this.emit(battleEvent("status.perishSongKo", { pokemon: battleSpeciesRef(attacker) }));
+        this.KOCheck(attacker, defender);
+      }
+    }
+  }
+
+  if (attacker.team.wishDueAmount > 0) {
+    if (attacker.hp > 0) {
+      var wishHeal = Math.min(attacker.team.wishDueAmount, attacker.pokemon.maxHp - attacker.hp);
+      attacker.hp = Math.min(attacker.hp + attacker.team.wishDueAmount, attacker.pokemon.maxHp);
+      this.emit(battleEvent("status.wishHeal", {
+        source: battleSpeciesRef({ speciesKey: attacker.team.wishDueSourceSpeciesKey || attacker.pokemon.speciesKey }),
+        pokemon: battleSpeciesRef(attacker), amount: wishHeal
+      }));
+    }
+    attacker.team.wishDueAmount = 0;
+    attacker.team.wishDueSourceSpeciesKey = "";
+  }
+
+  if (defender.magicCoatTurns > 0) {
+    defender.magicCoatTurns -= 1;
+    defender.magicCoatActive = defender.magicCoatTurns > 0;
+  }
+  if (defender.destinyBondTurns > 0) {
+    defender.destinyBondTurns -= 1;
+    defender.destinyBondActive = defender.destinyBondTurns > 0;
   }
 
   if (this.firstActionInTurn) {

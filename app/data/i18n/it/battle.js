@@ -71,6 +71,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
       paralyzedCannotMove: "{pokemon} è paralizzato e non può attaccare.", confusionSelfDamage: "{pokemon} è così confuso da colpirsi da solo e perde {amount} PS.",
       asleepCannotMove: "{pokemon} è addormentato e non può attaccare.", frozenCannotMove: "{pokemon} è congelato e non può attaccare.",
       poisonDamage: "{pokemon} è avvelenato e perde {amount} PS.", burnDamage: "{pokemon} è scottato e perde {amount} PS.",
+      thawed: "{pokemon} si scongela.", nightmareDamage: "{pokemon} perde {amount} PS per l’Incubo.",
       ingrainHeal: "{pokemon} recupera {amount} PS con Radicamento.", wishHeal: "Il Desiderio di {source} fa recuperare {amount} PS a {pokemon}.",
       perishSongKo: "Ultimocanto manda KO {pokemon}!", endured: "{pokemon} ha resistito!", magicCoatReflected: "{source} riflette il problema di stato su {target} con Magivelo!",
       destinyBondKo: "Destinobbligato manda KO {pokemon}!", grudgeDisabledMove: "Rancore impedisce a {pokemon} di usare ancora {move}!"
@@ -134,7 +135,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
       lose_enem_perc: "{attacker} usa {move}: la percentuale avversaria diventa negativa.", lose_self_perc: "{attacker} usa {move} e perde la percentuale.",
       magic_coat: "{attacker} usa {move} e rifletterà i problemi di stato.", mimic: "{attacker} usa {move} e copia l’ultima mossa dell’avversario.",
       nerf_enem_atk: "{attacker} usa {move}: -{stats} Attacco a {defender}.", nerf_enem_atk_def: "{attacker} usa {move}: -{stats} Attacco e Difesa a {defender}.",
-      nerf_enem_def: "{attacker} usa {move}: -{stats} Difesa a {defender}.", nightmare_dmg: "{attacker} usa {move}: {defender} perde PS per l’Incubo.",
+      nerf_enem_def: "{attacker} usa {move}: -{stats} Difesa a {defender}.", nightmare: "{attacker} usa {move}: {defender} è tormentato da un Incubo.", nightmare_dmg: "{attacker} usa {move}: {defender} perde PS per l’Incubo.",
       no_move_boost_team: "{attacker} usa {move}: la squadra è protetta dai potenziamenti delle mosse avversarie per 5 turni.",
       no_stat_nerf_team: "{attacker} usa {move}: la squadra è protetta dalle riduzioni statistiche per 5 turni.", nube: "{attacker} usa {move} e annulla tutte le modifiche statistiche.",
       pain_split: "{attacker} usa {move} e divide equamente i PS propri e di {defender}.", par: "{attacker} usa {move}: {defender} è paralizzato.", brn: "{attacker} usa {move}: {defender} è scottato.",

@@ -19,7 +19,7 @@ Parassiseme: Danni, fino al cambio o ko l'avversario alla fine del suo turno per
 Punte: I Pokémon avversari che entrano in campo ricevono danni pari al Livello dell'utilizzatore
 Rapigiro: Danni, annulla l'effetto di Parassiseme, Punte e mosse a più turni
 
-Divinazione, Obbliderio: Infligge danni subito dopo la 3° mossa, inclusa Divinazione, di chi la usa. Non usabile nuovamente finché non colpisce
+Divinazione, Desiderio Fatale: Infligge danni subito dopo la 3° mossa, inclusa Divinazione, di chi la usa. Non usabile nuovamente finché non colpisce
 Accumulo: Aumenta la Difesa di chi lo usa [ha bisogno di una proprietà in battaglia per interagire con Introenergia e Sfoghenergia]
 Introenergia: Recupera tutti i PS solo se precedentemente è stato usato Accumulo
 Sfoghenergia: 2xDanni solo se precedentemente è stato usato Accumulo
@@ -39,7 +39,7 @@ Panciamburo, Maledizione: Diminuisce la Difesa di chi la usa, ma aumenta di molt
 Calmamente, Crescita, Dragodanza, Granfisico: Aumenta l'Attacco e la Difesa di chi la usa
 Memento, Solletico: Diminuisce l'Attacco e la Difesa dell'avversario
 
-Docciascudo: Aumenta la Difesa di chi lo usa e ne previene la Scottatura
+Docciascudo: Aumenta la Difesa di chi lo usa e ne previene la Scottatura (non cura la Scottatura se già presente)
 Leggimente, Localizza, Sottocarica: Aumenta la Difesa di chi lo usa di +Liv, nel prossimo turno i danni inflitti vengono moltiplicati x2
 
 Altruismo, Focalenergia: Aumenta l'Attacco della squadra di chi lo usa x5 turni
@@ -72,7 +72,8 @@ Fuocofatuo: Scotta
 Adulazione, Bullo: Confonde, aumenta l'Attacco avversario
 Aromaterapia, Rintoccasana: Risolve tutti i problemi di stato della squadra
 Rinfrescata: Risolve tutti i problemi di stato di chi lo usa
-Incubo: Se il Pokémon avversario è Addormentato perde 1/3 sei suo PS max ad ogni fine turno, l'effetto termina se il Pokémon si sveglia
+Incubo: Se il Pokémon avversario è Addormentato perde 1/3 sei suo PS max ad ogni fine turno di chi ha usato la mossa, l'effetto termina se il Pokémon si sveglia o viene sostituito
+Russare: Usabile solo se l'utilizzatore è addormentato, danni
 Sbadiglio: Addormenta l'avversario alla fine del turno successivo
 Sonnolalia: Usabile solo se l'utilizzatore è addormentato, usa una mossa a caso tra quelle conosciute
 
@@ -98,7 +99,7 @@ Buonlatte, Covauova, Lucelunare, Pigro, Ripresa: Chi la usa recupera 1/2 dei PS 
 Desiderio: Alla fine del prossimo turno il Pokémon in campo recupera 1/2 dei PS max di chi ha usato Desiderio
 Mattindoro, Sintesi: Recupera 1/2 dei PS max; 1/4 durante una tempesta di sabbia, grandine o pioggia; tutti con il sole
 Radicamento: Chi lo usa recupera 1/2 dei propri PS max dopo ogni propria mossa, ma non può essere ritirato
-Riposo: Chi la usa si Addormenta (anche se affetto da Status) e recupera tutti i PS
+Riposo: Chi la usa si Addormenta e recupera tutti i PS
 
 Assorbimento: Danni, l'utilizzatore recupera 1/8 PS del danno inflitto
 Gigassorbimento: Danni, l'utilizzatore recupera 1/2 PS del danno inflitto
@@ -128,10 +129,10 @@ Cascata: Danni, x2 contro Pokémon Volante
 
 
 
-Giornodisole: Intensifica i raggi solari per 5 turni.
-Grandine: Genera una grandinata per 5 turni.
-Pioggiadanza: Provoca un acquazzone per 5 turni.
-Terrempesta: Genera una tempesta di sabbia per 5 turni.
+Giornodisole: Intensifica i raggi solari.
+Grandine: Genera una grandinata.
+Pioggiadanza: Provoca un acquazzone.
+Terrempesta: Genera una tempesta di sabbia.
 Palla Clima, Naturforza: Danni, x2 se è attivo un cambiamento climatico
 Forzasegreta: Danni, con effetto aggiuntivo in base al meteo (sole: scotta, pioggia: paralizza, sabbia: confonde, grandine: congela)
 
@@ -147,7 +148,7 @@ Esclusiva: Blocca le mosse avversarie che conosce anche chi usa Esclusiva (fino 
 Flash, Dispetto: La percentuale avversaria diventa negativa
 Magivelo: Per i prossimi 2 turni avversari, ogni status che il Pokémon subirebbe viene invece inflitto all'attaccante
 Malcomune: Distribuisce in parti uguali i PS di chi la usa e del bersaglio
-Mimica: La mossa diventa l'ultima usata dall'avversario fino al KO di chi la usa
+Mimica: La mossa diventa l'ultima usata dall'avversario fino al cambio o KO di chi la usa
 Raggiro: Chi lo usa scambia il proprio Oggetto con quello dell'avversario [se uno dei due non ha uno strumento, fallisce. Contro allenatori e capipalestra gli oggetti vengono restituiti a fine scontro]
 Resistenza, Sostituto: Chi lo usa resiste per il turno successivo con almeno 1 PS
 Riciclo: Chi la usa ricrea lo strumento che aveva assegnato a inizio battaglia [fallisce se ha già uno strumento assegnato]
@@ -249,7 +250,6 @@ Psicoslancio: Danni
 Pugnorapido: Danni
 Pugnospine: Danni
 Ritorno: Danni
-Russare: Danni
 Sberletese: Danni
 Schianto: Danni
 Semitraglia: Danni

@@ -97,6 +97,7 @@ export function clearCombatantStatus(target, item) {
   target.confCounter = 0;
   target.slpSource = null;
   target.pendingDelayedStatus = null;
+  target.nightmareActive = false;
   return true;
 }
 

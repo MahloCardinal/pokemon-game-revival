@@ -54,6 +54,8 @@ function Move(moveDef, overrides) {
   this._after = moveDef.effect_after || moveDef.after || null;
   this.absorbed = 0;
   this.restored = 0;
+  this.directDamage = 0;
+  this.boostSuppressed = false;
   this.moveMult = 1;
   this.defMult = 1;
 }

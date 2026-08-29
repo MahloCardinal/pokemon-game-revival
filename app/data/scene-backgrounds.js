@@ -5,6 +5,7 @@ export var BACKGROUND_ASSETS = Object.freeze({
   "battle-area": Object.freeze({ desktop: "area_lotta_desktop.webp", mobile: "area_lotta_mobile.webp" }),
   "battle-tower": Object.freeze({ desktop: "torre_lotta_desktop.webp", mobile: "torre_lotta_mobile.webp" }),
   "battle-shop": Object.freeze({ desktop: "negozio_lotta_desktop.webp", mobile: "negozio_lotta_mobile.webp" }),
+  "battle-dome": Object.freeze({ desktop: "area_lotta_desktop.webp", mobile: "area_lotta_mobile.webp" }),
   zones: Object.freeze({ desktop: "zone_cattura_desktop.webp", mobile: "zone_cattura_mobile.webp" }),
   city: Object.freeze({ desktop: "citta_desktop.webp", mobile: "citta_mobile.webp" }),
   "pokemon-center": Object.freeze({ desktop: "centro_pokemon_desktop.webp", mobile: "centro_pokemon_mobile.webp" }),
@@ -59,7 +60,7 @@ export function backgroundKeyForScene(scene) {
   if (name === "gym-city") {
     return gymBackgroundKey(scene.cityKey);
   }
-  if (name === "battle" || name === "battle-restore" || name === "admin-battle" || name === "admin-battle-restore") {
+  if (name === "battle" || name === "battle-restore" || name === "admin-battle" || name === "admin-battle-restore" || name === "battle-dome-battle") {
     if (scene && backgroundAssetForKey(scene.sourceBackgroundKey)) {
       return String(scene.sourceBackgroundKey);
     }
@@ -77,7 +78,7 @@ export function backgroundKeyForScene(scene) {
     if (scene && scene.battleTower) {
       return "battle-tower";
     }
-    return "battle";
+    return name === "battle-dome-battle" ? "battle-dome" : "battle";
   }
   if (name === "admin-home" || name === "admin-battles") {
     return "";

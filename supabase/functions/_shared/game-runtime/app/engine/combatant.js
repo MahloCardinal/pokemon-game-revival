@@ -146,6 +146,10 @@ Combatant.prototype.resetSwitchModifiers = function () {
     this.pokemon.type = this.transformationInfo.origType.slice();
     this.pokemon.moves = this.transformationInfo.origMoves.slice();
     this.type = this.transformationInfo.origType.slice();
+    delete this.pokemon.transformedSpeciesKey;
+    delete this.pokemon.transformedNdex;
+    delete this.pokemon.transformedIsShiny;
+    delete this.pokemon.transformedGender;
     this.transformationInfo = null;
   }
   this.updateMovesState();

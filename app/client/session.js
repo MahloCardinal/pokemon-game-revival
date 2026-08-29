@@ -127,7 +127,7 @@ function showPasswordReset(session) {
 function restoreSceneFromSession() {
   try {
     var name = sessionStorage.getItem("pokemon_game_revival:scene_name");
-    if (name && name !== "login" && name !== "starter" && name !== "battle" && name !== "battle-restore") {
+    if (name && name !== "login" && name !== "starter" && name !== "battle" && name !== "battle-restore" && name !== "battle-dome-battle") {
       return { name: name };
     }
   } catch (e) {}
@@ -256,6 +256,11 @@ export async function startAuthenticatedSession(session) {
     }
   });
   refreshMissionState({ renderOnComplete: true });
+  if (state.playerLoadStatus.state === "ready" && !currentUserIsAdmin()) {
+    import("./battle-dome-handler.js").then(function (module) {
+      return module.refreshBattleDomeState({ silent: true });
+    }).then(function () { render(); });
+  }
 }
 
 export async function initializeSession() {

@@ -243,17 +243,19 @@ export function renderBattleScene(scene) {
   var pendingAdminEntryChoice = Boolean(scene.pendingAdminEntryChoice && waitingForAdmin);
   var adminEntryChoiceActive = scene.adminBattle && pendingAdminEntryChoice;
   var authoritativeAdminEntryChoice = scene.adminBattle && scene.authoritativeAdminEntryChoice;
-  var playerActionLocked = playerNeedsSwitch || playerPostMoveSwitch || waitingForAdmin || scene.adminBattle
+  var playerActionLocked = playerNeedsSwitch || playerPostMoveSwitch || waitingForAdmin || scene.adminBattle || scene.battleDomeSpectator
     || Boolean(scene.battleEntryChoicePanel)
     || scene.authoritativeCommandPending || scene.authoritativeCommandUncertain;
-  var adminActionEnabled = scene.adminBattle && waitingForAdmin;
+  var adminActionEnabled = scene.adminBattle && waitingForAdmin && !scene.battleDomeSpectator;
   var ownNeedsSwitch = adminPerspective ? adminNeedsSwitch : playerNeedsSwitch;
   var opponentNeedsSwitch = adminPerspective ? playerNeedsSwitch : adminNeedsSwitch;
   var ownSwitchAction = adminPerspective ? "admin-battle-switch" : "battle-switch";
   var ownMoveAction = adminPerspective ? "admin-battle-move" : "battle-move";
   var ownActionEnabled = adminPerspective ? adminActionEnabled && !adminNeedsSwitch && !adminEntryChoiceActive
     && !authoritativeAdminEntryChoice && !scene.authoritativeCommandPending : !renderScene.manager.battleOver && !playerActionLocked;
-  var playerItemsReadonly = scene.adminBattle ? Boolean(scene.authoritativeCommandPending) : playerActionLocked;
+  var playerItemsReadonly = scene.battleDomeSpectator || (scene.adminBattle
+    ? Boolean(scene.authoritativeCommandPending) || Boolean(scene.battleDome && (!adminActionEnabled || adminNeedsSwitch || adminEntryChoiceActive || authoritativeAdminEntryChoice))
+    : playerActionLocked);
   var battleType = renderScene.battleType || scene.battleType || "";
   var canFinalizeAdminReward = scene.adminBattle
     && !scene.authoritativeAdminBattle
@@ -265,7 +267,7 @@ export function renderBattleScene(scene) {
     className: "has-fainted-overlay has-forced-switch",
     overlayContent: renderForcedSwitchOverlay(ownTeam, ownSwitchAction),
     moveAction: ownMoveAction
-  } : scene.battleEntryChoicePanel && !adminPerspective ? {
+  } : scene.battleEntryChoicePanel && (!adminPerspective || scene.battleDome) ? {
     className: "has-fainted-overlay has-entry-choice-overlay",
     overlayContent: renderEntryChoiceOverlay(scene.battleEntryChoicePanel),
     moveAction: ownMoveAction
@@ -275,7 +277,11 @@ export function renderBattleScene(scene) {
   var authoritativeUncertaintyMessage = scene.authoritativeCommandUncertain
     ? '<p class="battle-authoritative-uncertain-message">' + escapeHtml(resolveText(scene.authoritativeUncertaintyMessage, t("ui.battle.commandUncertain"))) + "</p>"
     : "";
-  var battleInfoFooter = scene.authoritativeCommandUncertain
+  var battleInfoFooter = scene.battleDomeSpectator
+    ? '<div class="battle-info-actions"><p class="battle-admin-thinking-log">' + escapeHtml(t("ui.battleDome.readOnly")) + '</p></div>'
+    : scene.battleDome && !renderScene.manager.battleOver && !scene.authoritativeCommandPending
+      ? '<div class="battle-info-actions battle-abandon-actions" data-battle-abandon-inline>' + button(t("ui.battle.abandon"), "battle-abandon-open", "", "button-danger button-slim") + "</div>"
+    : scene.authoritativeCommandUncertain
     ? '<div class="battle-info-actions">' + authoritativeUncertaintyMessage
       + button(t("ui.battle.retry"), "battle-authoritative-retry", scene.authoritativeCommandPending ? "disabled" : "", "button-accent button-slim")
       + button(t("ui.battle.cancelBattle"), "battle-authoritative-cancel", scene.authoritativeCommandPending ? "disabled" : "", "button-danger button-slim") + "</div>"
@@ -292,7 +298,7 @@ export function renderBattleScene(scene) {
         }).join("") + "</div>"
     : canFinalizeAdminReward
     ? '<div class="battle-info-actions">' + button(t("ui.battle.registerRewards"), "admin-battle-finalize-reward", "", "button-accent button-slim") + "</div>"
-    : scene.terminalExitReady
+    : scene.terminalExitReady && (!scene.battleDome || !scene.battleDomeSpectator)
       ? '<div class="battle-info-actions">' + button(t("ui.battle.exit"), "battle-terminal-exit", "", "button-primary button-slim") + "</div>"
     : scene.adminBattle && scene.rewardFinalized
       ? '<div class="battle-info-actions"><p class="battle-admin-thinking-log">' + escapeHtml(t("ui.battle.rewardsRegistered")) + '</p></div>'
@@ -335,7 +341,8 @@ export function renderBattleScene(scene) {
   if (!renderScene.manager.battleOver && !scene.battleTower && state && (scene.adminBattle || Array.isArray(scene.playerInventory) || (!scene.authoritativeBattle && state.inventory))) {
     var playerInventory = Array.isArray(scene.playerInventory) ? scene.playerInventory : state.inventory;
     var ownInventoryItems = resolveInventoryItems(scene.adminBattle ? scene.adminItems : playerInventory);
-    var opponentInventoryItems = scene.adminBattle ? resolveInventoryItems(scene.playerInventory || []) : [];
+    var opponentInventoryItems = scene.adminBattle ? resolveInventoryItems(scene.playerInventory || [])
+      : scene.battleDome ? resolveInventoryItems(scene.adminItems || []) : [];
     function getBattleInventorySectionKey(item) {
       var category = item.category || "";
       if (category === ItemCategory.Berry && isPlayerBattleInventoryItem(item)) { return "berries"; }
@@ -418,7 +425,7 @@ export function renderBattleScene(scene) {
       '</div><div class="battle-inventory-stack battle-zaino-stack battle-inventory-mobile-stack">' +
       renderMobileBattleInventoryStack(ownInventoryItems, { readonly: playerItemsReadonly }) +
       "</div></section>";
-    if (scene.adminBattle) {
+    if (scene.adminBattle || scene.battleDome) {
       battleItemsPanel += '<section class="panel battle-inventory-panel battle-opponent-inventory-panel" data-battle-panel-section="items"><h2 class="stack-title">' + escapeHtml(t("ui.battle.opponentBag")) + '</h2><div class="battle-inventory-stack battle-zaino-stack battle-inventory-desktop-stack">' +
         renderBattleInventoryStack(opponentInventoryItems, { readonly: true }) +
         '</div><div class="battle-inventory-stack battle-zaino-stack battle-inventory-mobile-stack">' +

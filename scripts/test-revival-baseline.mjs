@@ -44,6 +44,7 @@ const trainerTitlesMigration = read("supabase/migrations/20260826120000_trainer_
 const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_debug_trainer_title_controls.sql");
 const preferredTrainerTitlesMigration = read("supabase/migrations/20260828110000_preferred_trainer_titles.sql");
 const playerDirectoryAvatarMigration = read("supabase/migrations/20260828120000_player_directory_trainer_avatar.sql");
+const battleDomeMigration = read("supabase/migrations/20260829120000_battle_dome.sql");
 const shinyMigration = read("supabase/migrations/20260827120000_authoritative_shiny_pokemon.sql");
 const rarityStatsMigration = read("supabase/migrations/20260827150000_current_level_shiny_and_legendary_stats.sql");
 const statTables = read("app/data/stat-tables.js");
@@ -421,6 +422,17 @@ assert.match(discordTurnMigration, /contract_key not in \('admin_gym', 'league'\
 assert.match(discordTurnMigration, /waiting_for <> 'admin'/i);
 assert.match(discordTurnMigration, /grant execute on function public\.claim_discord_admin_battle_turn_notification\(uuid, bigint\) to service_role/i);
 assert.match(migrationSql, /alter publication supabase_realtime add table public\.authoritative_battle/i);
+assert.match(battleDomeMigration, /create table public\.battle_dome_battle/i);
+assert.doesNotMatch(battleDomeMigration, /references public\.authoritative_battle/i,
+  "Battle Dome challenges must remain independent from RPG battles");
+assert.match(battleDomeMigration, /battle_dome_active_count\(p_auth_user_id\) >= 2/i);
+assert.match(battleDomeMigration, /battle_dome_validate_team\(v_team\.catalog_release_id, v_team\.team, true\)/i);
+assert.match(battleDomeMigration, /delete from public\.battle_dome_lobby where creator_auth_user_id = p_auth_user_id/i);
+assert.match(battleDomeMigration, /revoke all on public\.battle_dome_battle from anon, authenticated/i);
+assert.doesNotMatch(battleDomeMigration, /grant select on public\.battle_dome_(battle|event) to authenticated/i,
+  "Battle Dome snapshots and events must only be exposed through the authoritative Edge projection");
+assert.doesNotMatch(battleDomeMigration, /battle_dome_battle[\s\S]{0,200}(expires_at|interval\s+'[^']+')/i,
+  "Active Battle Dome challenges must not expire automatically");
 
 const ordinaryBattleCommit = finalFunctionBody("server_authority_private", "commit_edge_battle_command_before_snapshot");
 assert.match(ordinaryBattleCommit, /contract_key in \('gym', 'admin_gym', 'capture', 'league'\)/i);
@@ -611,6 +623,46 @@ assert.deepEqual(
   assert.equal(StatDefinitions.maxHpForPokemon(legendary), 500);
   assert.equal(StatDefinitions.maxPowerForPokemon(legendary), 400);
   assert.equal(StatDefinitions.maxStatsForPokemon(legendary), 250);
+}
+
+{
+  const ditto = new Pokemon({
+    name: "Ditto", speciesKey: "132", ndex: 132, level: 100, type: ["normal"], maxHp: 400,
+    moves: [createMove(MoveDefinitions.transform, { power: 320, stats: 170 })]
+  });
+  const charizard = new Pokemon({
+    name: "Charizard", speciesKey: "6", ndex: 6, level: 100, type: ["fire", "flying"], maxHp: 400,
+    gender: "male", isShiny: true,
+    moves: [createMove(MoveDefinitions.flamethrower, { power: 320, stats: 170 })]
+  });
+  const manager = new BattleManager(new Team("Player", [ditto]), new Team("NPC", [charizard]));
+  MoveDefinitions.transform.after(manager.playerTeam.getActive(), manager.enemyTeam.getActive(), true);
+  const transformed = projectBattle(manager, { status: "active", resultKey: null }, []).participants[0];
+  assert.equal(transformed.display_name, "Ditto", "Transform must preserve Ditto's display identity");
+  assert.equal(transformed.original_species_key, "132");
+  assert.equal(transformed.species_key, "6", "Transform must project the copied species for its sprite and mechanics");
+  assert.deepEqual(transformed.type_keys, ["fire", "flying"]);
+  assert.equal(transformed.moves[0].move_index, MoveDefinitions.flamethrower.index);
+  manager.playerTeam.getActive().resetSwitchModifiers();
+  const restored = projectBattle(manager, { status: "active", resultKey: null }, []).participants[0];
+  assert.equal(restored.species_key, "132", "Switching out must restore Ditto's original species");
+}
+
+{
+  const winner = new Pokemon({
+    name: "Charmander", speciesKey: "4", ndex: 4, level: 100, type: ["fire"], maxHp: 400,
+    instanceId: "00000000-0000-4000-8000-000000000004",
+    moves: [createMove(MoveDefinitions.tackle, { power: 320, stats: 170 })]
+  });
+  const defeated = new Pokemon({
+    name: "Squirtle", speciesKey: "7", ndex: 7, level: 100, type: ["water"], maxHp: 400,
+    moves: [createMove(MoveDefinitions.tackle, { power: 320, stats: 170 })]
+  });
+  const manager = new BattleManager(new Team("Player", [winner]), new Team("NPC", [defeated]));
+  manager.battleType = "battle_dome";
+  manager.expEvents = [{ winner: manager.playerTeam.getActive(), defeated: manager.enemyTeam.getActive() }];
+  assert.deepEqual(projectBattle(manager, { status: "concluded", resultKey: "player_win_no_reward" }, []).ordinary_exp_awards, [],
+    "Battle Dome victories must never project ordinary EXP awards");
 }
 
 function captureTarget(hpFraction, status) {

@@ -151,7 +151,11 @@ function serializeTransformation(info) {
   if (!info) { return null; }
   return {
     origType: Array.isArray(info.origType) ? info.origType.slice() : [],
-    origMoves: (info.origMoves || []).map(serializeMove)
+    origMoves: (info.origMoves || []).map(serializeMove),
+    speciesKey: info.speciesKey || null,
+    ndex: Number(info.ndex) || 0,
+    isShiny: Boolean(info.isShiny),
+    gender: info.gender || null
   };
 }
 
@@ -171,8 +175,18 @@ function restoreCombatant(manager, combatant, snapshot) {
   combatant.tempMoveInfo = restoreMoveReplacement(snapshot.tempMoveInfo);
   combatant.transformationInfo = snapshot.transformationInfo ? {
     origType: snapshot.transformationInfo.origType.slice(),
-    origMoves: snapshot.transformationInfo.origMoves.map(restoreMove)
+    origMoves: snapshot.transformationInfo.origMoves.map(restoreMove),
+    speciesKey: snapshot.transformationInfo.speciesKey || null,
+    ndex: Number(snapshot.transformationInfo.ndex) || 0,
+    isShiny: Boolean(snapshot.transformationInfo.isShiny),
+    gender: snapshot.transformationInfo.gender || null
   } : null;
+  if (combatant.transformationInfo && combatant.transformationInfo.speciesKey) {
+    combatant.pokemon.transformedSpeciesKey = combatant.transformationInfo.speciesKey;
+    combatant.pokemon.transformedNdex = combatant.transformationInfo.ndex;
+    combatant.pokemon.transformedIsShiny = combatant.transformationInfo.isShiny;
+    combatant.pokemon.transformedGender = combatant.transformationInfo.gender;
+  }
   combatant.moveKoTrigger = null;
   if (snapshot.runtimeState) {
     combatant._focusBandCharges = Number.isInteger(snapshot.runtimeState.focusBandCharges) ? snapshot.runtimeState.focusBandCharges : undefined;
@@ -366,7 +380,7 @@ export function initializeBattleRuntime(input) {
   manager.trainingDifficulty = String(input.trainingDifficulty || "");
   manager.towerChallenge = Math.max(1, Number(input.towerChallenge) || 1);
   manager.firstActor = input.firstActor === "npc" ? "npc" : "player";
-  manager.adminControlled = ["admin_gym", "league", "debug_training"].indexOf(String(input.contractKey)) !== -1;
+  manager.adminControlled = ["admin_gym", "league", "debug_training", "battle_dome"].indexOf(String(input.contractKey)) !== -1;
   manager.waitingFor = manager.adminControlled && manager.firstActor === "npc" ? "admin" : "player";
   manager.npcItems = manager.adminControlled && Array.isArray(input.adminItems)
     ? input.adminItems.map(function (entry) { return [Number(entry[0]), Math.min(3, Math.max(0, Number(entry[1]) || 0))]; }).filter(function (entry) { return entry[1] > 0; })
@@ -677,7 +691,11 @@ export function executeAdminBattleCommand(snapshot, command) {
       var switchIndex = manager.enemyTeam.combatantList.findIndex(function (combatant) {
         return combatant.pokemon.authoritativeSlot === Number(command.teamSlot);
       });
-      result = manager.npcSwitch(switchIndex);
+      var npcSwitchTarget = manager.enemyTeam.combatantList[switchIndex];
+      if (npcSwitchTarget && manager.entryHeldItemChoiceKind(npcSwitchTarget) && !command.entryChoice) {
+        throw new Error("An entry held-item effect must be selected first.");
+      }
+      result = manager.npcSwitch(switchIndex, command.entryChoice || null);
     } else if (command.type === "item") {
       item = getInventoryItemByIndex(manager.npcItems, Number(command.itemIndex));
       target = Number.isInteger(command.targetSlot) ? manager.enemyTeam.combatantList.find(function (combatant) {
@@ -729,11 +747,12 @@ export function projectBattle(manager, status, playerItems) {
         slot_index: Number.isInteger(combatant.pokemon.authoritativeSlot) ? combatant.pokemon.authoritativeSlot : slot,
         pokemon_instance_id: combatant.pokemon.instanceId,
         display_name: combatant.pokemon.name,
-        species_key: combatant.pokemon.speciesKey,
-        ndex: combatant.pokemon.ndex,
+        original_species_key: combatant.pokemon.speciesKey,
+        species_key: combatant.pokemon.transformedSpeciesKey || combatant.pokemon.speciesKey,
+        ndex: combatant.pokemon.transformedNdex || combatant.pokemon.ndex,
         level: combatant.pokemon.level,
-        gender: combatant.pokemon.gender || null,
-        is_shiny: Boolean(combatant.pokemon.isShiny),
+        gender: combatant.pokemon.transformedSpeciesKey ? combatant.pokemon.transformedGender || null : combatant.pokemon.gender || null,
+        is_shiny: combatant.pokemon.transformedSpeciesKey ? Boolean(combatant.pokemon.transformedIsShiny) : Boolean(combatant.pokemon.isShiny),
         is_mega: Boolean(combatant.pokemon.isMega),
         max_hp: combatant.pokemon.maxHp,
         current_hp: combatant.hp,
@@ -774,7 +793,7 @@ export function projectBattle(manager, status, playerItems) {
     result_key: status.resultKey,
     reward_status: rewardStatus,
     ordinary_exp_awards: status.status === "concluded" && status.resultKey === "player_win_no_reward"
-    && ["training", "debug_training", "battle_tower"].indexOf(String(manager.battleType)) === -1
+    && ["training", "debug_training", "battle_tower", "battle_dome"].indexOf(String(manager.battleType)) === -1
       ? ordinaryExpAwards(manager) : [],
     training_difficulty: manager.trainingDifficulty || null,
     tower_challenge: manager.battleType === "battle_tower" ? manager.towerChallenge : null,

@@ -96,6 +96,7 @@ function authoritativePokemon(entry) {
     expCurrent: Number(entry.exp_current) || 0, expCap: Number(entry.exp_cap) || 0,
     instanceId: entry.pokemon_instance_id || null, heldItemIndex: Number(entry.held_item_index) || 0
   });
+  pokemon.displaySpeciesKey = String(entry.original_species_key || entry.species_key || "");
   pokemon.authoritativeSlot = Number(entry.slot_index);
   return pokemon;
 }
@@ -1233,6 +1234,14 @@ function performBattleMove(element) {
   var battleScene = state.scene;
   var capturedBattleMoveEvents;
   var eventData;
+  if (battleScene && battleScene.battleDome) {
+    battleScene.authoritativeCommandPending = true;
+    render({ preserveScroll: true });
+    import("./battle-dome-handler.js").then(function (module) {
+      module.runBattleDomeCommand(battleScene, "move", { moveSlot: Number(element.dataset.index) });
+    });
+    return;
+  }
   if (battleScene && battleScene.authoritativeBattle) {
     authoritativeBattleCommand(battleScene, function (input) {
       return submitAuthoritativeBattleMove(Object.assign(input, { moveSlot: Number(element.dataset.index) }));
@@ -1329,6 +1338,10 @@ registerAction("battle-abandon-cancel", function () {
 });
 
 registerAction("battle-abandon-confirm", function () {
+  if (state.scene && state.scene.battleDome) {
+    import("./battle-dome-handler.js").then(function (module) { module.abandonCurrentBattleDome(state.scene); });
+    return;
+  }
   runBattleRuntimeAction(function () {
     abandonBattleAndExit(state.scene);
   });
@@ -1353,7 +1366,7 @@ function showBattleReplacementRequiredMessage() {
 }
 
 function performBattleItemUse(element) {
-  if (!state || !state.scene || state.scene.name !== "battle") {
+  if (!state || !state.scene || ["battle", "battle-dome-battle"].indexOf(state.scene.name) === -1) {
     openMessage([battleText("itemBattleOnly")], { title: battleTitle("bag") });
     return;
   }
@@ -1410,6 +1423,14 @@ function performBattleItemUse(element) {
   if (state.scene.authoritativeBattle) {
     closeBattleTargetPanel();
     window.scrollTo(0, 0);
+    if (state.scene.battleDome) {
+      state.scene.authoritativeCommandPending = true;
+      render({ preserveScroll: true });
+      import("./battle-dome-handler.js").then(function (module) {
+        module.runBattleDomeCommand(state.scene, "item", { itemIndex: battleItem.index, targetSlot: null });
+      });
+      return;
+    }
     authoritativeBattleCommand(state.scene, function (input) {
       return useAuthoritativeBattleItem(Object.assign(input, { itemIndex: battleItem.index, targetSlot: null }));
     });
@@ -1453,7 +1474,7 @@ registerAction("battle-item-target", function (element) {
 });
 
 function performBattleItemTarget(element) {
-  if (!state || !state.scene || state.scene.name !== "battle" || !state.battleTargetPanel.visible) {
+  if (!state || !state.scene || ["battle", "battle-dome-battle"].indexOf(state.scene.name) === -1 || !state.battleTargetPanel.visible) {
     return;
   }
   if (playerMustChooseBattleReplacement(state.scene)) {
@@ -1478,6 +1499,17 @@ function performBattleItemTarget(element) {
   if (state.scene.authoritativeBattle) {
     closeBattleTargetPanel();
     window.scrollTo(0, 0);
+    if (state.scene.battleDome) {
+      state.scene.authoritativeCommandPending = true;
+      render({ preserveScroll: true });
+      import("./battle-dome-handler.js").then(function (module) {
+        module.runBattleDomeCommand(state.scene, "item", {
+          itemIndex: selectedItem.index,
+          targetSlot: targetCombatant.pokemon.authoritativeSlot
+        });
+      });
+      return;
+    }
     authoritativeBattleCommand(state.scene, function (input) {
       return useAuthoritativeBattleItem(Object.assign(input, {
         itemIndex: selectedItem.index,
@@ -1617,7 +1649,7 @@ function showBattleRuntimeLostMessage() {
 }
 
 function runBattleRuntimeAction(action) {
-  if (!state.scene || state.scene.name !== "battle") {
+  if (!state.scene || ["battle", "battle-dome-battle"].indexOf(state.scene.name) === -1) {
     return false;
   }
   if (state._battleAnimationLock) {
@@ -3481,6 +3513,10 @@ registerAction("battle-authoritative-refresh", function () {
 
 registerAction("battle-terminal-exit", function () {
   var scene = state.scene;
+  if (scene && scene.battleDome && scene.terminalExitReady) {
+    import("./battle-dome-handler.js").then(function (module) { module.exitCurrentBattleDome(scene); });
+    return;
+  }
   if (!scene || scene.name !== "battle" || !scene.terminalExitReady) { return; }
   setScene(battleReturnScene(scene), { history: "replace" });
 });
@@ -3623,7 +3659,7 @@ function openBattleEntryChoiceOverlay(scene, combatant, choice, onPick, options)
   return true;
 }
 
-function openBattleEntryChoicePanel(scene, combatant, _anchorElement, onPick, options) {
+export function openBattleEntryChoicePanel(scene, combatant, _anchorElement, onPick, options) {
   var kind = scene && scene.manager ? scene.manager.entryHeldItemChoiceKind(combatant) : "";
   var entries = kind ? scene.manager.entryHeldItemChoiceEntries(combatant) : [];
   if (!kind || !entries.length) {
@@ -3681,6 +3717,15 @@ export function openPendingBattleEntryChoice(scene) {
       return false;
     }
     return openBattleEntryChoiceOverlay(scene, combatant, authoritativeChoice, function (choiceIndex) {
+      if (scene.battleDome) {
+        scene.authoritativeCommandPending = true;
+        import("./battle-dome-handler.js").then(function (module) {
+          module.runBattleDomeCommand(scene, "entry_choice", {
+            entryChoice: { index: Number(choiceIndex), kind: String(authoritativeChoice.kind || "") }
+          });
+        });
+        return;
+      }
       authoritativeBattleCommand(scene, function (input) {
         return resolveAuthoritativeBattleEntryChoice(Object.assign(input, {
           entryChoice: { index: Number(choiceIndex), kind: String(authoritativeChoice.kind || "") }
@@ -3722,7 +3767,7 @@ function performBattleSwitch(index, entryChoice, anchorElement) {
   var capturedSwitchEvents;
   var switchEventData;
   var switched;
-  if (scene.name !== "battle") {
+  if (["battle", "battle-dome-battle"].indexOf(scene.name) === -1) {
     return;
   }
   if (scene.authoritativeBattle) {
@@ -3735,6 +3780,17 @@ function performBattleSwitch(index, entryChoice, anchorElement) {
       return;
     }
     window.scrollTo(0, 0);
+    if (scene.battleDome) {
+      scene.authoritativeCommandPending = true;
+      render({ preserveScroll: true });
+      import("./battle-dome-handler.js").then(function (module) {
+        module.runBattleDomeCommand(scene, "switch", {
+          teamSlot: authoritativeTarget.pokemon.authoritativeSlot,
+          entryChoice: entryChoice || null
+        });
+      });
+      return;
+    }
     authoritativeBattleCommand(scene, function (input) {
       return switchAuthoritativeBattlePokemon(Object.assign(input, {
         teamSlot: authoritativeTarget.pokemon.authoritativeSlot,
@@ -4167,7 +4223,7 @@ function confirmBattleAbandon(scene) {
 
 function abandonBattleAndExit(scene) {
   var moneyPenalty;
-  if (!scene || scene.name !== "battle") {
+  if (!scene || ["battle", "battle-dome-battle"].indexOf(scene.name) === -1) {
     return;
   }
   if (scene.authoritativeBattle) {

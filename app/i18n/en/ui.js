@@ -6,7 +6,8 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     battleArea: "Battle Frontier",
     battleTower: "Battle Tower",
     trainingZone: "Training Zone",
-    battleShop: "Battle Shop"
+    battleShop: "Battle Shop",
+    battleDome: "Battle Dome"
   }),
   zoneCards: Object.freeze({
     rules: Object.freeze({ title: "Rules", description: "Enter here for all information and updates about the RPG" }),
@@ -21,6 +22,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     battle_tower: Object.freeze({ title: "Battle Tower", description: "Climb the tower and prove your worth" }),
     training_zone: Object.freeze({ title: "Training Zone", description: "Get ready to give it your all alongside your team!" }),
     battle_shop: Object.freeze({ title: "Battle Shop", description: "Rare and unusual rewards in exchange for Battle Points" }),
+    battle_dome: Object.freeze({ title: "Battle Dome", description: "Build a free team and challenge other players" }),
     pokemon_center: Object.freeze({ title: "Pokémon Center", description: "We help you prepare your team for whatever comes next" }),
     shopping_center: Object.freeze({ title: "Department Store", description: "The perfect place to stock up on items" }),
     garden: Object.freeze({ title: "Garden", description: "Do you have a green thumb?\nOr will those poor Berries have no chance?" }),
@@ -567,6 +569,26 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
       pokemon_100: "Pokémon of your choice at the maximum trainable level (no Fossil or Legendary Pokémon)",
       pokemon_500: "Pokémon of your choice at the maximum trainable level (no Legendary Pokémon)"
     })
+  }),
+  battleDome: Object.freeze({
+    teamTab: "Team", lobbyTab: "Lobby", loading: "Loading the Battle Dome...",
+    builderTitle: "Create a Pokémon", pokemon: "Pokémon", heldItem: "Held item", noItem: "No item",
+    move: "Move {number}", addPokemon: "Add Pokémon", removePokemon: "Remove",
+    fixedStats: "Level {level}, {hp} HP, {power} Power and {stats} Stats for every move.",
+    savedTeam: "Saved team ({count}/{max})", emptyTeam: "The team is still empty.", teamRow: "{moves} · {item}",
+    yourLobby: "Your lobby", createChallenge: "Create challenge", cancelLobby: "Cancel lobby", copy: "Copy",
+    expired: "Your lobby link expired at the midnight reset.",
+    teamRequirement: "You need exactly 6 Pokémon to create or accept a challenge and may not have more than 2 PvP challenges.",
+    joinByUrl: "Join by URL", urlPlaceholder: "Paste the lobby URL here", join: "Join",
+    waitingPlayers: "Waiting players", noLobbies: "No player is waiting.", challenge: "Challenge",
+    ongoing: "Ongoing challenges", noBattles: "There are no ongoing challenges.", versus: "{creator} vs {challenger}", watch: "Watch",
+    saved: "Team saved.", lobbyCreated: "Lobby created.", lobbyCancelled: "Lobby cancelled.", copied: "URL copied.",
+    invalidUrl: "The lobby URL is invalid.", commandFailed: "The operation failed.",
+    invalidPokemon: "Select a Pokémon and one to four valid moves.",
+    speciesLimit: "You may add at most two Pokémon of the same species.",
+    itemLimit: "You may use at most two copies of the same item.",
+    portLimit: "You may use at most two different port items.",
+    battleUnavailable: "The challenge is no longer available.", battleCancelled: "The challenge was cancelled.", readOnly: "You are watching this challenge in read-only mode.", exit: "Leave challenge"
   }),
   trainingZone: Object.freeze({
     fullDailyReward: "Full daily reward",

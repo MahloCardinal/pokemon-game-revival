@@ -86,6 +86,10 @@ registerAction("open-battle-shop", function(element) {
 
 });
 
+registerAction("open-battle-dome", function() {
+    setScene({ name: "battle-dome" });
+});
+
 registerAction("open-city-pokemon-center", function(element) {
     setScene({
       name: "pokemon-center",

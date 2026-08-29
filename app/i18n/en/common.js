@@ -54,7 +54,8 @@ export var EN_COMMON_TRANSLATIONS = Object.freeze({
     experience: "Experience",
     withdrawal: "Withdraw",
     reward: "Reward",
-    battle: "Battle"
+    battle: "Battle",
+    pvp: "PvP"
   }),
   legalLinks: Object.freeze({
     terms: "Terms of Use",

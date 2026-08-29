@@ -2231,13 +2231,21 @@ export const transform = {
 
           attacker.transformationInfo = {
             origMoves: origMoves,
-            origType: attacker.type.slice()
+            origType: attacker.type.slice(),
+            speciesKey: defender.pokemon.transformedSpeciesKey || defender.pokemon.speciesKey,
+            ndex: defender.pokemon.transformedNdex || defender.pokemon.ndex,
+            isShiny: defender.pokemon.transformedSpeciesKey ? Boolean(defender.pokemon.transformedIsShiny) : Boolean(defender.pokemon.isShiny),
+            gender: defender.pokemon.transformedSpeciesKey ? defender.pokemon.transformedGender || null : defender.pokemon.gender || null
           };
 
           attacker.mimicInfo = null;
           attacker.tempMoveInfo = null;
           attacker.pokemon.type = defender.pokemon.type.slice();
           attacker.pokemon.moves = transformedMoves;
+          attacker.pokemon.transformedSpeciesKey = attacker.transformationInfo.speciesKey;
+          attacker.pokemon.transformedNdex = attacker.transformationInfo.ndex;
+          attacker.pokemon.transformedIsShiny = attacker.transformationInfo.isShiny;
+          attacker.pokemon.transformedGender = attacker.transformationInfo.gender;
           attacker.type = defender.type.slice();
           attacker.updateMovesState();
           this.logKey = "transform";

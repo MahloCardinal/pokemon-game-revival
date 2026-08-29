@@ -164,6 +164,9 @@ export function renderGlobalNavigation(scene) {
         items.push({ label: t("navigation.battle"), action: "open-active-battle", className: "button-accent" });
       }
     }
+    if (state.battleDome && state.battleDome.battles.some(function (battle) { return battle.own_role !== "spectator"; })) {
+      items.push({ label: t("navigation.pvp"), action: "open-battle-dome", href: "/battle-area/battle-dome", className: "button-accent" });
+    }
   }
 
   if (!items.length) {

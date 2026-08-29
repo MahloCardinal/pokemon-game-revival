@@ -6,7 +6,8 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     battleArea: "Area Lotta",
     battleTower: "Torre Lotta",
     trainingZone: "Zona allenamento",
-    battleShop: "Negozio Lotta"
+    battleShop: "Negozio Lotta",
+    battleDome: "Cupola Lotta"
   }),
   zoneCards: Object.freeze({
     rules: Object.freeze({ title: "Regolamento", description: "Entrate qui per avere tutte le info e gli aggiornamenti sul GdR" }),
@@ -21,6 +22,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     battle_tower: Object.freeze({ title: "Torre Lotta", description: "Cimentatevi nella scalata e dimostrate il vostro valore" }),
     training_zone: Object.freeze({ title: "Zona allenamento", description: "Pronti a dare il massimo assieme alla vostra squadra!" }),
     battle_shop: Object.freeze({ title: "Negozio Lotta", description: "Premi rari e particolari in cambio di Punti Lotta" }),
+    battle_dome: Object.freeze({ title: "Cupola Lotta", description: "Crea una squadra libera e sfida gli altri giocatori" }),
     pokemon_center: Object.freeze({ title: "Centro Pokémon", description: "Qua ti permettiamo di preparare al meglio la tua squadra" }),
     shopping_center: Object.freeze({ title: "Centro commerciale", description: "Il posto perfetto per fare rifornimento di strumenti" }),
     garden: Object.freeze({ title: "Giardino", description: "Avrai il pollice verde?\nO quelle povere Bacche non hanno scampo?" }),
@@ -567,6 +569,26 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
       pokemon_100: "Pokémon a scelta al massimo livello allenabile (no Fossile, no Leggendario)",
       pokemon_500: "Pokémon a scelta al massimo livello allenabile (no Leggendario)"
     })
+  }),
+  battleDome: Object.freeze({
+    teamTab: "Squadra", lobbyTab: "Lobby", loading: "Caricamento della Cupola Lotta...",
+    builderTitle: "Crea un Pokémon", pokemon: "Pokémon", heldItem: "Strumento tenuto", noItem: "Nessuno strumento",
+    move: "Mossa {number}", addPokemon: "Aggiungi Pokémon", removePokemon: "Togli",
+    fixedStats: "Livello {level}, {hp} PS, {power} Power e {stats} Stats per ogni mossa.",
+    savedTeam: "Squadra salvata ({count}/{max})", emptyTeam: "La squadra è ancora vuota.", teamRow: "{moves} · {item}",
+    yourLobby: "La tua lobby", createChallenge: "Crea sfida", cancelLobby: "Annulla lobby", copy: "Copia",
+    expired: "Il link della tua lobby è scaduto al reset di mezzanotte.",
+    teamRequirement: "Per creare o accettare una sfida servono esattamente 6 Pokémon e non puoi avere più di 2 sfide PvP.",
+    joinByUrl: "Entra tramite URL", urlPlaceholder: "Incolla qui l’URL della lobby", join: "Entra",
+    waitingPlayers: "Giocatori in attesa", noLobbies: "Nessun giocatore è in attesa.", challenge: "Sfida",
+    ongoing: "Sfide in corso", noBattles: "Non ci sono sfide in corso.", versus: "{creator} contro {challenger}", watch: "Guarda",
+    saved: "Squadra salvata.", lobbyCreated: "Lobby creata.", lobbyCancelled: "Lobby annullata.", copied: "URL copiato.",
+    invalidUrl: "L’URL della lobby non è valido.", commandFailed: "L’operazione non è riuscita.",
+    invalidPokemon: "Seleziona un Pokémon e da una a quattro mosse valide.",
+    speciesLimit: "Puoi inserire al massimo due Pokémon della stessa specie.",
+    itemLimit: "Puoi usare al massimo due copie dello stesso strumento.",
+    portLimit: "Puoi usare al massimo due strumenti del porto, diversi tra loro.",
+    battleUnavailable: "La sfida non è più disponibile.", battleCancelled: "La sfida è stata annullata.", readOnly: "Stai osservando questa sfida in sola lettura.", exit: "Esci dalla sfida"
   }),
   trainingZone: Object.freeze({
     fullDailyReward: "Premio pieno giornaliero",

@@ -317,7 +317,7 @@ BattleManager.prototype.canNpcSwitchTo = function (index) {
   return { ok: true };
 };
 
-BattleManager.prototype.resolveNpcSwitchAction = function (index) {
+BattleManager.prototype.resolveNpcSwitchAction = function (index, entryChoice) {
   var result;
   if (this.npcNeedsSwitch || this.enemyTeam.getActive().isFainted()) {
     result = this.enemyTeam.switchTo(index);
@@ -327,6 +327,9 @@ BattleManager.prototype.resolveNpcSwitchAction = function (index) {
     }
     this.emitEvents(result.events);
     this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
+    if (entryChoice) {
+      this.applyEntryHeldItemChoice(this.enemyTeam.getActive(), entryChoice);
+    }
     if (this.adminControlled) {
       if (this.enemyTeam.getActive().isFainted()) {
         if (this.enemyTeam.isAllFainted()) {
@@ -359,12 +362,15 @@ BattleManager.prototype.resolveNpcSwitchAction = function (index) {
   }
   this.emitEvents(result.events);
   this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
+  if (entryChoice) {
+    this.applyEntryHeldItemChoice(this.enemyTeam.getActive(), entryChoice);
+  }
   this.endTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
   this.clearRecentSwitchTarget(this.playerTeam);
   return true;
 };
 
-BattleManager.prototype.npcSwitch = function (index) {
+BattleManager.prototype.npcSwitch = function (index, entryChoice) {
   var manager = this;
   var validation = this.canNpcSwitchTo(index);
   if (!validation.ok) {
@@ -372,7 +378,7 @@ BattleManager.prototype.npcSwitch = function (index) {
     return false;
   }
   return this.resolveNpcRound(function () {
-    return manager.resolveNpcSwitchAction(index);
+    return manager.resolveNpcSwitchAction(index, entryChoice);
   }, false);
 };
 

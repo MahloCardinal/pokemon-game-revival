@@ -36,7 +36,9 @@ const allowedActions = new Set([
   "admin_list", "admin_read", "admin_entry_choice", "start", "prepare_training", "discard_training", "activate_training", "start_training", "start_debug_training", "start_capture", "flee_capture", "start_gym",
   "start_admin_gym", "start_league", "start_tower", "read", "restore", "read_training", "read_ordinary_progression",
   "resolve_ordinary_progression", "allocate_training", "resolve_training", "move", "switch", "entry_choice", "item", "ball",
-  "abandon", "admin_move", "admin_switch", "admin_item"
+  "abandon", "admin_move", "admin_switch", "admin_item",
+  "dome_state", "dome_save_team", "dome_create_lobby", "dome_cancel_lobby", "dome_join", "dome_read",
+  "dome_move", "dome_switch", "dome_entry_choice", "dome_item", "dome_abandon", "dome_exit"
 ]);
 
 function seedFromHash(hash: string) {
@@ -253,6 +255,140 @@ async function initializeAndNotifyAdminBattle(
   return initialized;
 }
 
+function domeProjectionFromPrepared(prepared: Record<string, unknown>) {
+  const battle = prepared.battle as Record<string, unknown> | null;
+  if (!battle || !battle.engine_snapshot) return null;
+  if (battle.engine_version !== BATTLE_ENGINE_VERSION || battle.engine_checksum !== manifest.bundleChecksum) {
+    throw new BattleEdgeError("incompatible_active_battle", "La sfida PvP usa un runtime non disponibile.", 409);
+  }
+  const restored = restoreBattleManager(battle.engine_snapshot as Record<string, unknown>);
+  return {
+    ...projectBattle(restored.manager, {
+      status: String(battle.status),
+      resultKey: battle.result_key ? String(battle.result_key) : null
+    }, restored.playerItems),
+    battle_id: battle.battle_id,
+    battle_version: battle.battle_version,
+    contract_key: "battle_dome",
+    engine_version: battle.engine_version,
+    engine_checksum: battle.engine_checksum,
+    engine_snapshot_hash: battle.engine_snapshot_hash,
+    creator_auth_user_id: battle.creator_auth_user_id,
+    challenger_auth_user_id: battle.challenger_auth_user_id,
+    creator_username: battle.creator_username,
+    challenger_username: battle.challenger_username,
+    creator_exited: Boolean(battle.creator_exited),
+    challenger_exited: Boolean(battle.challenger_exited),
+    viewer_role: String(prepared.viewer_role || "spectator")
+  };
+}
+
+async function prepareDome(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  userId: string,
+  battleId: string
+) {
+  const result = await serviceClient.rpc("prepare_edge_battle_dome", {
+    p_auth_user_id: userId,
+    p_battle_id: battleId
+  });
+  if (result.error) throw databaseError(result.error);
+  return result.data as Record<string, unknown>;
+}
+
+async function readDomeEvents(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  battleId: string,
+  afterSeq: number,
+  limit: number
+) {
+  const result = await serviceClient.rpc("read_edge_battle_dome_events", {
+    p_battle_id: battleId,
+    p_after_seq: afterSeq,
+    p_limit: limit
+  });
+  if (result.error) throw databaseError(result.error);
+  return Array.isArray(result.data) ? result.data : [];
+}
+
+async function commitDome(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  userId: string,
+  body: Record<string, unknown>,
+  prepared: Record<string, unknown>,
+  commandType: string,
+  transition: { snapshot: unknown; events: unknown; projection: unknown }
+) {
+  const battle = prepared.battle as Record<string, unknown>;
+  const projection = {
+    ...(transition.projection as Record<string, unknown>),
+    contract_key: "battle_dome",
+    creator_auth_user_id: battle.creator_auth_user_id,
+    challenger_auth_user_id: battle.challenger_auth_user_id,
+    creator_username: battle.creator_username,
+    challenger_username: battle.challenger_username,
+    viewer_role: prepared.viewer_role
+  };
+  const commandHash = await sha256({ commandType, envelope: body });
+  const committed = await serviceClient.rpc("commit_edge_battle_dome_command", {
+    p_auth_user_id: userId,
+    p_command_id: uuid(body.commandId, "commandId"),
+    p_command_type: commandType,
+    p_command_hash: commandHash,
+    p_battle_id: battle.battle_id,
+    p_expected_battle_version: Number(body.expectedBattleVersion),
+    p_engine_version: BATTLE_ENGINE_VERSION,
+    p_engine_checksum: manifest.bundleChecksum,
+    p_input_snapshot_hash: prepared.input_snapshot_hash,
+    p_next_snapshot: transition.snapshot,
+    p_events: transition.events,
+    p_projection: projectionForDatabase(projection, "none")
+  });
+  if (committed.error) throw databaseError(committed.error);
+  const data = committed.data as Record<string, unknown>;
+  return { ...data, battle: { ...((data.battle || {}) as Record<string, unknown>), ...projection } };
+}
+
+async function initializeDomeIfNeeded(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  userId: string,
+  prepared: Record<string, unknown>
+) {
+  const battle = prepared.battle as Record<string, unknown> | null;
+  if (!battle) throw new BattleEdgeError("battle_not_found", "La sfida PvP non è stata trovata.", 404);
+  if (battle.engine_snapshot) return { ok: true, battle: domeProjectionFromPrepared(prepared), events: [] };
+  if (String(prepared.viewer_role) === "spectator") {
+    throw new BattleEdgeError("battle_initializing", "La sfida PvP è ancora in preparazione.", 409);
+  }
+  if (battle.bound_engine_version !== BATTLE_ENGINE_VERSION || battle.bound_engine_checksum !== manifest.bundleChecksum) {
+    throw new BattleEdgeError("incompatible_active_battle", "La sfida PvP richiede un runtime non disponibile.", 409);
+  }
+  const snapshot = initializeBattleRuntime({
+    seed: seedFromHash(String(prepared.input_snapshot_hash)),
+    catalogReleaseId: battle.catalog_release_id,
+    contractKey: "battle_dome",
+    firstActor: "player",
+    playerActiveSlot: battle.player_active_slot,
+    npcActiveSlot: battle.npc_active_slot,
+    participants: battle.participants,
+    presentation: { name: battle.challenger_username },
+    playerItems: battle.player_items,
+    adminItems: battle.admin_items
+  });
+  const restored = restoreBattleManager(snapshot);
+  const projection = projectBattle(restored.manager, { status: "active", resultKey: null }, restored.playerItems);
+  return await commitDome(serviceClient, userId, {
+    commandId: crypto.randomUUID(),
+    expectedBattleVersion: Number(battle.battle_version),
+    battleId: battle.battle_id,
+    action: "dome_initialize"
+  }, prepared, "initialize", {
+    snapshot,
+    events: [{ sequence: 0, type: "engine_initialized", data: { reward_status: "none" } }],
+    projection
+  });
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (request.method !== "POST") return jsonResponse({ ok: false, error: { code: "method_not_allowed", message: "Only POST is supported." } }, 405);
@@ -372,6 +508,166 @@ Deno.serve(async (request) => {
       });
       if (completed.error) throw databaseError(completed.error);
       return jsonResponse(completed.data as Record<string, unknown>);
+    }
+
+    if (action === "dome_state") {
+      requireExactKeys(body, ["action"], []);
+      const result = await clients.serviceClient.rpc("read_edge_battle_dome_state", {
+        p_auth_user_id: clients.userId
+      });
+      if (result.error) throw databaseError(result.error);
+      return jsonResponse(result.data as Record<string, unknown>);
+    }
+
+    if (action === "dome_save_team") {
+      requireExactKeys(body, ["action", "team"], ["team"]);
+      if (!Array.isArray(body.team) || body.team.length > 6) {
+        throw new BattleEdgeError("invalid_request", "La squadra Cupola non è valida.");
+      }
+      const result = await clients.serviceClient.rpc("save_edge_battle_dome_team", {
+        p_auth_user_id: clients.userId,
+        p_team: body.team
+      });
+      if (result.error) throw databaseError(result.error);
+      return jsonResponse(result.data as Record<string, unknown>);
+    }
+
+    if (action === "dome_create_lobby") {
+      requireExactKeys(body, ["action", "inviteToken"], ["inviteToken"]);
+      const inviteToken = String(body.inviteToken || "");
+      if (!/^[A-Za-z0-9_-]{32,160}$/.test(inviteToken)) {
+        throw new BattleEdgeError("invalid_request", "Il link della Lobby non è valido.");
+      }
+      const result = await clients.serviceClient.rpc("create_edge_battle_dome_lobby", {
+        p_auth_user_id: clients.userId,
+        p_invite_token: inviteToken,
+        p_invite_token_hash: await sha256(inviteToken)
+      });
+      if (result.error) throw databaseError(result.error);
+      return jsonResponse(result.data as Record<string, unknown>);
+    }
+
+    if (action === "dome_cancel_lobby") {
+      requireExactKeys(body, ["action"], []);
+      const result = await clients.serviceClient.rpc("cancel_edge_battle_dome_lobby", {
+        p_auth_user_id: clients.userId
+      });
+      if (result.error) throw databaseError(result.error);
+      return jsonResponse(result.data as Record<string, unknown>);
+    }
+
+    if (action === "dome_join") {
+      requireExactKeys(body, ["action", "creatorUserId", "inviteToken"], []);
+      const creatorUserId = body.creatorUserId ? uuid(body.creatorUserId, "creatorUserId") : null;
+      const inviteToken = body.inviteToken ? String(body.inviteToken) : "";
+      if (!creatorUserId && !/^[A-Za-z0-9_-]{32,160}$/.test(inviteToken)) {
+        throw new BattleEdgeError("invalid_request", "Il link della Lobby non è valido.");
+      }
+      const joined = await clients.serviceClient.rpc("join_edge_battle_dome_lobby", {
+        p_auth_user_id: clients.userId,
+        p_creator_auth_user_id: creatorUserId,
+        p_invite_token_hash: inviteToken ? await sha256(inviteToken) : null,
+        p_engine_version: BATTLE_ENGINE_VERSION,
+        p_engine_checksum: manifest.bundleChecksum
+      });
+      if (joined.error) throw databaseError(joined.error);
+      const battleId = String(joined.data?.battle?.battle_id || "");
+      const prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
+      const initialized = await initializeDomeIfNeeded(clients.serviceClient, clients.userId, prepared) as Record<string, unknown>;
+      return jsonResponse(initialized);
+    }
+
+    if (action === "dome_read") {
+      requireExactKeys(body, ["action", "battleId", "afterSeq", "limit"], ["battleId"]);
+      const battleId = uuid(body.battleId, "battleId");
+      const afterSeq = body.afterSeq === undefined ? 0 : integer(body.afterSeq, "afterSeq", 0, Number.MAX_SAFE_INTEGER);
+      const limit = body.limit === undefined ? 100 : integer(body.limit, "limit", 1, 100);
+      let prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
+      if (prepared.battle && !(prepared.battle as Record<string, unknown>).engine_snapshot
+        && String(prepared.viewer_role) !== "spectator") {
+        await initializeDomeIfNeeded(clients.serviceClient, clients.userId, prepared);
+        prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
+      }
+      const projection = domeProjectionFromPrepared(prepared);
+      const events = projection ? await readDomeEvents(clients.serviceClient, battleId, afterSeq, limit) : [];
+      return jsonResponse({ ok: true, viewer_role: prepared.viewer_role, battle: projection, events });
+    }
+
+    if (action === "dome_abandon") {
+      requireExactKeys(body, ["action", "battleId"], ["battleId"]);
+      const result = await clients.serviceClient.rpc("abandon_edge_battle_dome", {
+        p_auth_user_id: clients.userId,
+        p_battle_id: uuid(body.battleId, "battleId")
+      });
+      if (result.error) throw databaseError(result.error);
+      return jsonResponse(result.data as Record<string, unknown>);
+    }
+
+    if (action === "dome_exit") {
+      requireExactKeys(body, ["action", "battleId"], ["battleId"]);
+      const result = await clients.serviceClient.rpc("exit_edge_battle_dome", {
+        p_auth_user_id: clients.userId,
+        p_battle_id: uuid(body.battleId, "battleId")
+      });
+      if (result.error) throw databaseError(result.error);
+      return jsonResponse(result.data as Record<string, unknown>);
+    }
+
+    if (["dome_move", "dome_switch", "dome_entry_choice", "dome_item"].includes(action)) {
+      const semanticAction = action.slice("dome_".length);
+      const domeActionKeys: Record<string, string[]> = {
+        move: ["moveSlot"], switch: ["teamSlot", "entryChoice"], entry_choice: ["entryChoice"], item: ["itemIndex", "targetSlot"]
+      };
+      requireExactKeys(body, ["action", "battleId", "commandId", "expectedBattleVersion"].concat(domeActionKeys[semanticAction]),
+        ["battleId", "commandId", "expectedBattleVersion"]);
+      const battleId = uuid(body.battleId, "battleId");
+      uuid(body.commandId, "commandId");
+      integer(body.expectedBattleVersion, "expectedBattleVersion", 1, Number.MAX_SAFE_INTEGER);
+      const semantic: Record<string, unknown> = { type: semanticAction };
+      if (semanticAction === "move") semantic.moveSlot = integer(body.moveSlot, "moveSlot", 0, 3);
+      if (semanticAction === "switch") semantic.teamSlot = integer(body.teamSlot, "teamSlot", 0, 5);
+      if (["switch", "entry_choice"].includes(semanticAction)) {
+        if (body.entryChoice === null && semanticAction === "switch") {
+          semantic.entryChoice = null;
+        } else {
+          const entryChoice = body.entryChoice as Record<string, unknown>;
+          if (!entryChoice || typeof entryChoice !== "object" || Array.isArray(entryChoice)) {
+            throw new BattleEdgeError("invalid_request", "La scelta dello strumento tenuto non è valida.");
+          }
+          requireExactKeys(entryChoice, ["index", "kind"], ["index", "kind"]);
+          const kind = String(entryChoice.kind || "");
+          if (!["move", "type"].includes(kind)) throw new BattleEdgeError("invalid_request", "La scelta non è valida.");
+          semantic.entryChoice = { index: integer(entryChoice.index, "entryChoice.index", 0, 255), kind };
+        }
+      }
+      if (semanticAction === "item") {
+        semantic.itemIndex = integer(body.itemIndex, "itemIndex", 1, 100000);
+        semantic.targetSlot = body.targetSlot === null ? null : integer(body.targetSlot, "targetSlot", 0, 5);
+      }
+      const commandHash = await sha256({ commandType: semanticAction, envelope: body });
+      const replay = await clients.serviceClient.rpc("replay_edge_battle_dome_command", {
+        p_auth_user_id: clients.userId,
+        p_command_id: String(body.commandId),
+        p_command_type: semanticAction,
+        p_command_hash: commandHash
+      });
+      if (replay.error) throw databaseError(replay.error);
+      if (replay.data) {
+        const replayPrepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
+        return jsonResponse({ ok: true, viewer_role: replayPrepared.viewer_role,
+          battle: domeProjectionFromPrepared(replayPrepared), events: [] });
+      }
+      const prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
+      const battle = prepared.battle as Record<string, unknown> | null;
+      const role = String(prepared.viewer_role || "spectator");
+      if (!battle || !battle.engine_snapshot) throw new BattleEdgeError("engine_not_initialized", "La sfida PvP non è pronta.", 409);
+      if (role === "spectator") throw new BattleEdgeError("participant_required", "Gli spettatori non possono agire.", 403);
+      if (String(battle.waiting_for) !== role) throw new BattleEdgeError("waiting_for_opponent", "La sfida attende l'altro giocatore.", 409);
+      const transition = role === "creator"
+        ? executeBattleCommand(battle.engine_snapshot, semantic)
+        : executeAdminBattleCommand(battle.engine_snapshot, semantic);
+      const committed = await commitDome(clients.serviceClient, clients.userId, body, prepared, semanticAction, transition);
+      return jsonResponse(committed as Record<string, unknown>);
     }
 
     if (action === "admin_list") {

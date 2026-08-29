@@ -22,6 +22,7 @@ var routeMap = {
   "battle-area": "/battle-area",
   "battle-tower": "/battle-area/battle-tower",
   "battle-shop": "/battle-area/battle-shop",
+  "battle-dome": "/battle-area/battle-dome",
   "pokemon-center": "/city/pokemon-center",
   "shopping-center": "/city/shopping-center",
   "training-zone": "/battle-area/training-zone",
@@ -226,6 +227,12 @@ function routeForScene(scene) {
     return "/admin/battle/" + encodeURIComponent(scene.playerAuthUserId || "")
       + (scene.battleId ? "/" + encodeURIComponent(scene.battleId) : "");
   }
+  if (scene.name === "battle-dome-battle") {
+    return "/battle-area/battle-dome/battle/" + encodeURIComponent(scene.battleDomeBattleId || "");
+  }
+  if (scene.name === "battle-dome" && scene.inviteToken) {
+    return "/battle-area/battle-dome?invite=" + encodeURIComponent(scene.inviteToken);
+  }
   if (scene.name === "login" && scene.authMode === "reset-password") {
     return "/auth/recovery";
   }
@@ -338,6 +345,10 @@ export function sceneFromRoute(route) {
     if (parts.length === 1) {
       return { name: "battle-area" };
     }
+    if (parts[1] === "battle-dome" && parts.length === 4 && parts[2] === "battle") {
+      routeValue = decodeRoutePart(parts[3]);
+      return isRouteIdentifier(routeValue) ? { name: "battle-dome-battle", battleDomeBattleId: routeValue } : invalidRouteScene();
+    }
     if (parts.length !== 2) {
       return invalidRouteScene();
     }
@@ -349,6 +360,9 @@ export function sceneFromRoute(route) {
     }
     if (parts[1] === "battle-shop") {
       return { name: "battle-shop" };
+    }
+    if (parts[1] === "battle-dome") {
+      return { name: "battle-dome" };
     }
     return invalidRouteScene();
   }
@@ -438,11 +452,20 @@ function backSceneForRoute(route) {
 
 export function sceneFromCurrentLocation() {
   var route;
+  var scene;
   if (!canUseHistory()) {
     return { name: "home" };
   }
   route = currentRoute();
-  return sceneFromRoute(route);
+  scene = sceneFromRoute(route);
+  if (scene.name === "battle-dome") {
+    var invite = new URLSearchParams(window.location.search).get("invite");
+    if (invite) {
+      scene.inviteToken = invite;
+      scene.inviteUrl = window.location.href;
+    }
+  }
+  return scene;
 }
 
 export function writeSceneHistory(scene, mode) {

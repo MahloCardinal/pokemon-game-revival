@@ -2,7 +2,7 @@ import { registerAction } from "./action-registry.js";
 import { state, root } from "./game-state.js";
 import { render, setScene } from "./renderer.js";
 import { openMessage } from "./dialog-handler.js";
-import { appendAuthoritativeEventLines, applyAuthoritativeProjection, closeBattleTargetPanel, openBattleTargetPanel, hpSnapshot, animateHpSequence } from "./battle-handler.js";
+import { appendAuthoritativeEventLines, applyAuthoritativeProjection, closeBattleTargetPanel, openBattleEntryChoicePanel, openBattleTargetPanel, hpSnapshot, animateHpSequence } from "./battle-handler.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
 import { listAdminControlledBattles, loadAdminControlledBattle, resolveAuthoritativeAdminEntryChoice, submitAuthoritativeAdminMove, switchAuthoritativeAdminPokemon, useAuthoritativeAdminItem } from "../api/battle.js";
 import { appendAdminGlobalActivityMessage } from "../api/activity-feed.js";
@@ -301,7 +301,8 @@ export function openAdminBattle(playerAuthUserId, battleId) {
 }
 
 function adminScene() {
-  return state.scene && state.scene.name === "admin-battle" ? state.scene : null;
+  return state.scene && (state.scene.name === "admin-battle"
+    || state.scene.name === "battle-dome-battle" && state.scene.battleDomeRole === "challenger") ? state.scene : null;
 }
 
 registerAction("admin-battles-refresh", function () {
@@ -318,6 +319,13 @@ registerAction("admin-battle-open", function (element) {
 
 function runAuthoritativeAdminAction(scene, commandType, payload, operation) {
   if (!scene || scene.authoritativeCommandPending) { return Promise.resolve({ ok: false }); }
+  if (scene.battleDome) {
+    scene.authoritativeCommandPending = true;
+    render({ preserveScroll: true });
+    return import("./battle-dome-handler.js").then(function (module) {
+      return module.runBattleDomeCommand(scene, commandType, payload);
+    });
+  }
   var canonicalPayload = JSON.stringify({ commandType: commandType, payload: payload });
   var pending = scene.authoritativeAdminRetryCommand;
   if (pending && pending.canonicalPayload !== canonicalPayload) {
@@ -396,6 +404,11 @@ registerAction("admin-battle-switch", function (element) {
   var targetIndex = Number(element.dataset.index);
   var target = scene && scene.enemyTeam.combatantList[targetIndex];
   if (!scene || activeAdminBattleRefresh || !target || scene.manager.waitingFor !== "admin") {
+    return;
+  }
+  if (scene.battleDome && openBattleEntryChoicePanel(scene, target, element, function (entryChoice) {
+    runAuthoritativeAdminAction(scene, "switch", { teamSlot: target.pokemon.authoritativeSlot, entryChoice: entryChoice }, switchAuthoritativeAdminPokemon);
+  }, { canClose: true })) {
     return;
   }
   runAuthoritativeAdminAction(scene, "switch", { teamSlot: target.pokemon.authoritativeSlot }, switchAuthoritativeAdminPokemon);

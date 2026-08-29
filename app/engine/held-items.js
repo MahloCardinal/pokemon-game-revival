@@ -9,6 +9,7 @@ function heldItemCacheKey(combatant) {
     pokemon ? Number(pokemon.heldItemIndex) || 0 : 0,
     combatant && combatant.itemLocked ? 1 : 0,
     pokemon && pokemon.speciesKey !== undefined && pokemon.speciesKey !== null ? String(pokemon.speciesKey) : "",
+    pokemon && pokemon.transformedSpeciesKey !== undefined && pokemon.transformedSpeciesKey !== null ? String(pokemon.transformedSpeciesKey) : "",
     pokemon && pokemon.name !== undefined && pokemon.name !== null ? String(pokemon.name) : "",
     types
   ].join("|");

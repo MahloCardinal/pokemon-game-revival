@@ -81,6 +81,24 @@ function createDefaultActivityFeedState() {
   return { loading: false, loaded: false, rows: [], error: "" };
 }
 
+export function createDefaultBattleDomeState() {
+  return {
+    loading: false,
+    loaded: false,
+    saving: false,
+    team: [],
+    teamRevision: 0,
+    lobby: null,
+    lobbies: [],
+    battles: [],
+    error: "",
+    notice: "",
+    tab: "team",
+    inviteDraft: "",
+    draft: { speciesKey: "", heldItemIndex: 0, moveIndexes: [0, 0, 0, 0] }
+  };
+}
+
 function createDefaultAdminDashboardMessageState() {
   return { text: "", sending: false, error: "", notice: "" };
 }
@@ -146,6 +164,7 @@ export var state = {
   adminBattles: { loading: false, rows: [], error: "" },
   adminDashboardMessage: createDefaultAdminDashboardMessageState(),
   activityFeed: createDefaultActivityFeedState(),
+  battleDome: createDefaultBattleDomeState(),
   pendingGlobalActivities: []
 };
 
@@ -217,6 +236,7 @@ export function resetPlayerState() {
   state.shopPurchases = {};
   state.daycare = [null, null];
   state.pendingResolutions = [];
+  state.battleDome = createDefaultBattleDomeState();
   state.trainingProgression = null;
   state.ordinaryProgression = null;
   state.inBattle = false;

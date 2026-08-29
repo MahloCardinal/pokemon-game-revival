@@ -195,14 +195,14 @@ export function speciesNameDescriptor(species) {
 }
 
 export function pokemonNameDescriptor(pokemon) {
-  var directKey = pokemon && typeof pokemon === "object" ? pokemon.speciesKey : "";
+  var directKey = pokemon && typeof pokemon === "object" ? pokemon.displaySpeciesKey || pokemon.speciesKey : "";
   var canonicalName = pokemon && typeof pokemon === "object" ? pokemon.name : pokemon;
   var key = directKey || SPECIES_KEY_BY_CANONICAL_NAME[String(canonicalName || "").toLocaleLowerCase("en-US")];
   return key ? speciesNameDescriptor(key) : textDescriptor("entityDescriptions.species.fallbackName");
 }
 
 export function pokemonDisplayName(pokemon) {
-  var directKey = pokemon && typeof pokemon === "object" ? pokemon.speciesKey : "";
+  var directKey = pokemon && typeof pokemon === "object" ? pokemon.displaySpeciesKey || pokemon.speciesKey : "";
   var canonicalName = pokemon && typeof pokemon === "object" ? pokemon.name : pokemon;
   var key = directKey || SPECIES_KEY_BY_CANONICAL_NAME[String(canonicalName || "").toLocaleLowerCase("en-US")];
   return key ? speciesDisplayName(key) : String(canonicalName || "");

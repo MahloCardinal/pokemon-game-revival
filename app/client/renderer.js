@@ -20,6 +20,7 @@ import { renderStylesScene } from "../view/styles.js";
 import { renderTeamScene } from "../view/team.js";
 import { renderPlayerDirectoryScene } from "../view/player-directory.js";
 import { renderTrainingZoneScene } from "../view/training-zone.js";
+import { renderBattleDomeScene } from "../view/battle-dome.js";
 import { renderZonesScene } from "../view/zones.js";
 import { renderGardenScene } from "../view/garden.js";
 import { renderGlobalNavigation } from "./render-utils.js";
@@ -34,7 +35,7 @@ import { syncHomeActivityFeedPolling } from "./activity-feed-runtime.js";
 import { applySceneBackground, prepareSceneBackground, preloadSceneMarkup } from "./scene-background.js";
 
 var RENDERABLE_SCENES = [
-  "login", "starter", "home", "city", "battle-area", "battle-tower", "battle-shop", "pokemon-center", "shopping-center", "training-zone", "city-daycare", "city-garden",
+  "login", "starter", "home", "city", "battle-area", "battle-tower", "battle-shop", "battle-dome", "battle-dome-battle", "pokemon-center", "shopping-center", "training-zone", "city-daycare", "city-garden",
   "rules", "privacy-policy", "terms", "styles", "gyms", "gym-city", "city-fanclub", "zones", "team", "box", "player-directory", "capture", "battle", "battle-restore", "admin-home", "admin-battles", "admin-battle", "admin-battle-restore"
 ];
 var renderRequestId = 0;
@@ -115,6 +116,12 @@ function currentSceneMarkup() {
   if (state.scene.name === "battle-shop") {
     return renderBattleShopScene();
   }
+  if (state.scene.name === "battle-dome") {
+    return renderBattleDomeScene();
+  }
+  if (state.scene.name === "battle-dome-battle") {
+    return renderBattleScene(state.scene);
+  }
   if (state.scene.name === "pokemon-center") {
     return renderPokemonCenterScene();
   }
@@ -166,7 +173,7 @@ function currentSceneMarkup() {
   if (state.scene.name === "capture") {
     return renderCaptureScene(state.scene);
   }
-  if (state.scene.name === "battle") {
+  if (["battle", "battle-dome-battle"].indexOf(state.scene.name) !== -1) {
     return renderBattleScene(state.scene);
   }
   if (state.scene.name === "admin-home") {
@@ -508,7 +515,7 @@ export function setScene(scene, options) {
   render({
     preserveScroll: false,
     sceneTransition: options.sceneTransition !== false && Boolean(previousSceneName && previousSceneName !== scene.name && root.children.length),
-    scrollBattleLogToBottom: scene.name === "battle" || scene.name === "admin-battle"
+    scrollBattleLogToBottom: scene.name === "battle" || scene.name === "admin-battle" || scene.name === "battle-dome-battle"
   });
   if (scene.name === "training-zone") {
     import("./training-zone-handler.js").then(function (module) {
@@ -519,6 +526,12 @@ export function setScene(scene, options) {
     import("./battle-shop-handler.js").then(function (module) {
       module.refreshBattleShopOffers();
     });
+  }
+  if (scene.name === "battle-dome") {
+    import("./battle-dome-handler.js").then(function (module) { module.refreshBattleDomeState(); });
+  }
+  if (scene.name === "battle-dome-battle" && scene.battleDomeBattleId && !scene.playerTeam) {
+    import("./battle-dome-handler.js").then(function (module) { module.openBattleDomeBattle(scene.battleDomeBattleId, "replace"); });
   }
   if (scene.name === "player-directory") {
     import("./player-directory-handler.js").then(function (module) {

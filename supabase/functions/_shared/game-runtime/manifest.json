@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "fc81470b63838667f6594c46183d0649a0fac417d347e42385ca46f46d4ee7d2",
+  "bundleChecksum": "3b37dcf76a4f627e78c2d46c588f33c618c06eec3716bb43efdcded182ff6566",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -34,13 +34,13 @@
     },
     {
       "source": "app/data/items.js",
-      "sha256": "f7b5ebf5e340145050aa4d1f94e3bb14a1f0fed6081460a22e01dc1de42b4d2b",
-      "bytes": 40781
+      "sha256": "e494e884ae1b849720832ab26279ec64740bd10aefd30071c77fcec525546943",
+      "bytes": 40967
     },
     {
       "source": "app/data/moves.js",
-      "sha256": "c2ff6bd9ffdb59661311ce24f71ab1a02f205a43f69e1dea2a615130752f5763",
-      "bytes": 97855
+      "sha256": "0ffd36d2f67fdfc55bffe61be4aa0eb3e6609bd111f9e1b26cb0c65eb5eedc46",
+      "bytes": 98648
     },
     {
       "source": "app/data/progression.js",
@@ -94,13 +94,13 @@
     },
     {
       "source": "app/engine/battle-manager.js",
-      "sha256": "f4a82b4962b3ff0d861299627e5cdfec815b74b7b2343d4f94fb6af269541d32",
-      "bytes": 82292
+      "sha256": "e3c3e491e6bdf4b22d88a715644942ea729b96f6d6d0180c66150fb052b1393e",
+      "bytes": 82532
     },
     {
       "source": "app/engine/battle-runtime.js",
-      "sha256": "caa582857284fd5c375a9e41f8a774d5ddcddfdee2ddc5fc59edd7abb7ea8581",
-      "bytes": 40690
+      "sha256": "559e71b736db284f0b0796b0a309cc2bcbc2c223833c34733431a1a646607fb8",
+      "bytes": 42107
     },
     {
       "source": "app/engine/battle-summary.js",
@@ -114,8 +114,8 @@
     },
     {
       "source": "app/engine/combatant.js",
-      "sha256": "4a3bd830d709a842cdef11548bcce4b2455c1d495e36f423a1ec00fb6f683eed",
-      "bytes": 8072
+      "sha256": "1e6de37c54940480ea229e0b90f2868ab58be719aaa80b5b962911d45003d81d",
+      "bytes": 8244
     },
     {
       "source": "app/engine/deterministic-rng.js",
@@ -124,8 +124,8 @@
     },
     {
       "source": "app/engine/held-items.js",
-      "sha256": "13213f45d51d25a6b25d4a9400a7a70393711fdebbcc41dac70e4a772060be70",
-      "bytes": 29546
+      "sha256": "b6169ab4f2ea3ad7f96a23c562d4e4a0f124ad6b99f9c0310955d544461c1d18",
+      "bytes": 29692
     },
     {
       "source": "app/engine/index.js",

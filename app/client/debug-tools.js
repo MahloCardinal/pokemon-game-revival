@@ -9,7 +9,7 @@ import * as Engine from "../engine/index.js";
 var TEAM_MAX = Engine.TEAM_MAX;
 import { escapeHtml } from "./asset-helpers.js";
 import { button } from "./render-utils.js";
-import { SPECIES_LIBRARY } from "../data/index.js";
+import { ITEM_LIBRARY, MOVE_LIBRARY, SPECIES_LIBRARY } from "../data/index.js";
 import { TRAINER_TITLES } from "../data/titles.js";
 import * as MoveConstants from "../data/moves.js";
 import { getItemByIndex } from "../data/items.js";
@@ -19,6 +19,8 @@ import { authoritativeDebugPlayerState } from "../api/debug-contract.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { getCurrentPlayerState } from "../api/player-command.js";
 import { messageDescriptor, t, textDescriptor } from "./i18n.js";
+import { itemDisplayName, moveDisplayName, speciesDisplayName } from "./entity-text.js";
+import { renderSearchCombobox } from "./search-combobox.js";
 
 var DEBUG_USER_NAME = "aaa";
 var DEBUG_POKEMON_MIN_LEVEL = 5;
@@ -80,11 +82,20 @@ export function renderDebugPokemonCreatorPanel(options) {
   if (!isDebugUser() || count >= max) {
     return "";
   }
+  var speciesOptions = Object.keys(SPECIES_LIBRARY).map(function (key) {
+    return { key: key, label: speciesDisplayName(key) };
+  }).sort(function (left, right) { return left.label.localeCompare(right.label); });
+  var moveOptions = MOVE_LIBRARY.map(function (move) {
+    return { key: move.key, label: moveDisplayName(move) };
+  }).sort(function (left, right) { return left.label.localeCompare(right.label); });
+  var itemOptions = ITEM_LIBRARY.map(function (item) {
+    return { key: item.key, label: itemDisplayName(item) };
+  }).sort(function (left, right) { return left.label.localeCompare(right.label); });
   moveRows = [0, 1, 2, 3].map(function (index) {
     var slot = index + 1;
     return [
       '<div class="trainer-debug-pokemon-move-row">',
-      '  <label><span>' + escapeHtml(t("ui.debug.move", { number: slot })) + '</span><input type="text" data-debug-pokemon-field="move-name-' + index + '" placeholder="wing_attack"' + (index === 0 ? ' value="tackle"' : '') + ' autocomplete="off"></label>',
+      '  <label><span>' + escapeHtml(t("ui.debug.move", { number: slot })) + '</span>' + renderSearchCombobox({ options: moveOptions, value: index === 0 ? "tackle" : "", field: { attribute: "debug-pokemon-field", value: "move-name-" + index } }) + '</label>',
       '  <label><span>' + escapeHtml(t("ui.debug.power")) + '</span><input type="number" min="0" max="999" step="1" data-debug-pokemon-field="move-power-' + index + '"' + (index === 0 ? ' value="999"' : '') + ' inputmode="numeric"></label>',
       '  <label><span>' + escapeHtml(t("ui.debug.stats")) + '</span><input type="number" min="0" max="999" step="1" data-debug-pokemon-field="move-stats-' + index + '"' + (index === 0 ? ' value="999"' : '') + ' inputmode="numeric"></label>',
       "</div>"
@@ -98,10 +109,10 @@ export function renderDebugPokemonCreatorPanel(options) {
     '    <span>' + escapeHtml(count) + "/" + escapeHtml(max) + "</span>",
     "  </div>",
     '  <div class="trainer-debug-pokemon-grid">',
-    '    <label><span>' + escapeHtml(t("ui.debug.speciesIndex")) + '</span><input type="text" data-debug-pokemon-field="species-key" placeholder="1" value="4" autocomplete="off"></label>',
+    '    <label><span>' + escapeHtml(t("ui.debug.speciesIndex")) + '</span>' + renderSearchCombobox({ options: speciesOptions, value: "4", field: { attribute: "debug-pokemon-field", value: "species-key" } }) + '</label>',
     '    <label><span>' + escapeHtml(t("ui.debug.level")) + '</span><input type="number" min="5" max="100" step="1" data-debug-pokemon-field="level" value="100" inputmode="numeric"></label>',
     '    <label><span>' + escapeHtml(t("ui.debug.hp")) + '</span><input type="number" min="1" max="999" step="1" data-debug-pokemon-field="max-hp" value="999" inputmode="numeric"></label>',
-    '    <label><span>' + escapeHtml(t("ui.debug.heldItem")) + '</span><input type="text" data-debug-pokemon-field="held-item" placeholder="poke_ball" autocomplete="off"></label>',
+    '    <label><span>' + escapeHtml(t("ui.debug.heldItem")) + '</span>' + renderSearchCombobox({ options: itemOptions, value: "", field: { attribute: "debug-pokemon-field", value: "held-item" } }) + '</label>',
     '    <label class="trainer-debug-pokemon-checkbox"><span>' + escapeHtml(t("ui.debug.shiny")) + '</span><input type="checkbox" data-debug-pokemon-field="is-shiny"></label>',
     "  </div>",
     '  <div class="trainer-debug-pokemon-moves">',

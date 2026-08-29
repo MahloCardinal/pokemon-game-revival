@@ -942,7 +942,9 @@ export function itemCanTriggerEvolution(item) {
 }
 
 export function pokemonCanHoldItem(pokemon, item) {
-  var key = pokemon && pokemon.speciesKey !== undefined && pokemon.speciesKey !== null ? String(pokemon.speciesKey) : "";
+  var effectiveSpeciesKey = pokemon && pokemon.transformedSpeciesKey !== undefined && pokemon.transformedSpeciesKey !== null
+    ? pokemon.transformedSpeciesKey : pokemon && pokemon.speciesKey;
+  var key = effectiveSpeciesKey !== undefined && effectiveSpeciesKey !== null ? String(effectiveSpeciesKey) : "";
   var types = pokemon && Array.isArray(pokemon.type) ? pokemon.type : [];
   if (!pokemon || !item || (item.category !== ItemCategory.HeldItem && item.category !== ItemCategory.Berry)) {
     return false;

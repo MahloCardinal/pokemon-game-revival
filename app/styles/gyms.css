@@ -1,7 +1,6 @@
 ﻿.gym-reward-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 14px;
 }
 .gym-city-card {

@@ -64,7 +64,7 @@ function renderBuilder() {
   var canAdd = dome.team.length < BATTLE_DOME_TEAM_SIZE && draft.speciesKey && selectedMoves.some(Boolean) && !dome.saving;
   return [
     '<section class="team-description-panel trainer-debug-pokemon-panel battle-dome-builder-panel">',
-    '<div class="trainer-debug-pokemon-heading"><h2>' + escapeHtml(t("ui.battleDome.builderTitle")) + '</h2><span>' + escapeHtml(dome.team.length) + '/' + escapeHtml(BATTLE_DOME_TEAM_SIZE) + '</span></div>',
+    '<div class="trainer-debug-pokemon-heading"><h2>' + escapeHtml(t("ui.battleDome.builderTitle")) + '</h2></div>',
     '<p class="battle-dome-note">' + escapeHtml(t("ui.battleDome.fixedStats", { level: BATTLE_DOME_LEVEL, hp: BATTLE_DOME_HP, power: BATTLE_DOME_MOVE_POWER, stats: BATTLE_DOME_MOVE_STATS })) + '</p>',
     '<div class="trainer-debug-pokemon-grid battle-dome-builder-primary">',
     '<label><span>' + escapeHtml(t("ui.battleDome.pokemon")) + '</span>' + renderSearchCombobox({ options: speciesOptions, value: draft.speciesKey, field: { attribute: "battle-dome-field", value: "species" } }) + '</label>',
@@ -84,7 +84,7 @@ function renderTeam() {
     + '</section>';
   return [
     '<div class="battle-dome-panel" data-render-region="battle-dome-content">',
-    '<section class="battle-dome-team-block"><h2>' + escapeHtml(t("ui.battleDome.savedTeam", { count: dome.team.length, max: BATTLE_DOME_TEAM_SIZE })) + '</h2>' + teamGrid + '</section>',
+    '<section class="battle-dome-team-block">' + teamGrid + '</section>',
     renderBuilder(),
     dome.notice ? '<p>' + escapeHtml(dome.notice) + '</p>' : "",
     dome.error ? '<p class="battle-dome-error">' + escapeHtml(dome.error) + '</p>' : "",
@@ -92,16 +92,12 @@ function renderTeam() {
   ].join("");
 }
 
-function inviteUrl(token) {
-  if (!token || typeof window === "undefined") return "";
-  return new URL("/battle-area/battle-dome?invite=" + encodeURIComponent(token), window.location.origin).href;
-}
-
 function renderLobby() {
   var dome = state.battleDome;
   var ownLobby = dome.lobby;
   var activeCount = dome.battles.filter(function (battle) { return battle.own_role !== "spectator"; }).length;
-  var canCreate = dome.team.length === BATTLE_DOME_TEAM_SIZE && activeCount < 2 && !dome.saving;
+  var canCreate = dome.team.length >= 1 && activeCount < 2 && !dome.saving;
+  var inviteCode = ownLobby && !ownLobby.expired ? String(ownLobby.invite_code || "") : "";
   var lobbyRows = dome.lobbies.map(function (lobby) {
     return '<div class="battle-dome-lobby-row"><strong>' + escapeHtml(lobby.username) + '</strong>'
       + (lobby.own ? '' : button(t("ui.battleDome.challenge"), "battle-dome-challenge", 'data-creator-user-id="' + escapeHtml(lobby.creator_auth_user_id) + '"' + (canCreate ? "" : " disabled"), "button-primary button-slim")) + '</div>';
@@ -115,12 +111,14 @@ function renderLobby() {
     '<section class="panel"><div class="panel-inner battle-dome-split-panel">',
     '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.yourLobby")) + '</h2>',
     ownLobby && ownLobby.expired ? '<p class="battle-dome-error">' + escapeHtml(t("ui.battleDome.expired")) + '</p>' : "",
-    ownLobby && ownLobby.invite_token ? '<div class="battle-dome-link-row"><input readonly value="' + escapeHtml(inviteUrl(ownLobby.invite_token)) + '" data-battle-dome-invite-url><button type="button" class="button button-primary" data-action="battle-dome-copy-link">' + escapeHtml(t("ui.battleDome.copy")) + '</button></div>' : "",
-    ownLobby && ownLobby.invite_token ? button(t("ui.battleDome.cancelLobby"), "battle-dome-cancel-lobby", "", "button-danger") : button(t("ui.battleDome.createChallenge"), "battle-dome-create-lobby", canCreate ? "" : "disabled", "button-primary"),
+    '<div class="battle-dome-link-row"><input readonly value="' + escapeHtml(inviteCode) + '" data-battle-dome-invite-code aria-label="' + escapeHtml(t("ui.battleDome.yourCode")) + '"><span class="battle-dome-copy-wrapper">'
+      + button(t("ui.battleDome.copy"), "battle-dome-copy-code", inviteCode ? "" : "disabled", "button-primary")
+      + '<span class="battle-dome-copy-tooltip">' + escapeHtml(t("ui.battleDome.copied")) + '</span></span></div>',
+    inviteCode ? button(t("ui.battleDome.cancelLobby"), "battle-dome-cancel-lobby", "", "button-danger") : button(t("ui.battleDome.createChallenge"), "battle-dome-create-lobby", canCreate ? "" : "disabled", "button-primary"),
     '<p class="battle-dome-note">' + escapeHtml(t("ui.battleDome.teamRequirement")) + '</p>',
     '</section>',
-    '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.joinByUrl")) + '</h2>',
-    '<div class="battle-dome-link-row"><input type="url" value="' + escapeHtml(dome.inviteDraft || "") + '" data-battle-dome-join-url placeholder="' + escapeHtml(t("ui.battleDome.urlPlaceholder")) + '">' + button(t("ui.battleDome.join"), "battle-dome-join-url", canCreate ? "" : "disabled", "button-primary") + '</div>',
+    '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.joinByCode")) + '</h2>',
+    '<div class="battle-dome-link-row"><input type="text" value="' + escapeHtml(dome.codeDraft || "") + '" data-battle-dome-join-code placeholder="' + escapeHtml(t("ui.battleDome.codePlaceholder")) + '" inputmode="numeric" maxlength="6" pattern="[0-9]{6}">' + button(t("ui.battleDome.join"), "battle-dome-join-code", canCreate ? "" : "disabled", "button-primary") + '</div>',
     '</section></div></section>',
     '<section class="panel"><div class="panel-inner battle-dome-split-panel battle-dome-list-panel">',
     '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.waitingPlayers")) + '</h2><div class="battle-dome-scroll">' + (lobbyRows || '<p>' + escapeHtml(t("ui.battleDome.noLobbies")) + '</p>') + '</div></section>',

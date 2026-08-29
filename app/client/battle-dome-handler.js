@@ -4,8 +4,8 @@ import { render, renderRegions, setScene } from "./renderer.js";
 import { applyAuthoritativeProjection, openPendingBattleEntryChoice } from "./battle-handler.js";
 import { openMessage } from "./dialog-handler.js";
 import { t } from "./i18n.js";
-import { BATTLE_DOME_TEAM_SIZE, validateBattleDomeTeam } from "../data/battle-dome.js";
-import { abandonBattleDomeBattle, cancelBattleDomeLobby, createBattleDomeInviteToken, createBattleDomeLobby, exitBattleDomeBattle, joinBattleDomeLobby, readBattleDomeBattle, readBattleDomeState, resolveBattleDomeEntryChoice, saveBattleDomeTeam, submitBattleDomeMove, switchBattleDomePokemon, useBattleDomeItem } from "../api/battle-dome.js";
+import { validateBattleDomeTeam } from "../data/battle-dome.js";
+import { abandonBattleDomeBattle, cancelBattleDomeLobby, chooseBattleDomeLead, createBattleDomeLobby, exitBattleDomeBattle, joinBattleDomeLobby, readBattleDomeBattle, readBattleDomeState, resolveBattleDomeEntryChoice, saveBattleDomeTeam, submitBattleDomeMove, switchBattleDomePokemon, useBattleDomeItem } from "../api/battle-dome.js";
 
 var refreshPending = false;
 var pollStarted = false;
@@ -35,14 +35,10 @@ function applyDomeState(data) {
 export async function refreshBattleDomeState(options) {
   options = options || {};
   var ownedBattleBefore = hasOwnedDomeBattle();
+  var ownedBattleIdsBefore = state.battleDome.battles.filter(function (battle) {
+    return battle.own_role !== "spectator";
+  }).map(function (battle) { return String(battle.battle_id || ""); });
   if (!state.auth.user || refreshPending) return false;
-  if (typeof window !== "undefined" && state.scene && state.scene.name === "battle-dome") {
-    var invite = state.scene.inviteToken || new URLSearchParams(window.location.search).get("invite");
-    if (invite) {
-      state.battleDome.tab = "lobby";
-      state.battleDome.inviteDraft = state.scene.inviteUrl || window.location.href;
-    }
-  }
   refreshPending = true;
   if (!state.battleDome.loaded) state.battleDome.loading = true;
   if (!options.silent && state.scene && state.scene.name === "battle-dome") render();
@@ -55,6 +51,13 @@ export async function refreshBattleDomeState(options) {
     return false;
   }
   applyDomeState(payload(result));
+  var newOwnedBattle = state.battleDome.battles.find(function (battle) {
+    return battle.own_role !== "spectator" && ownedBattleIdsBefore.indexOf(String(battle.battle_id || "")) === -1;
+  });
+  if (options.openNewBattle && newOwnedBattle && state.scene && state.scene.name === "battle-dome") {
+    openBattleDomeBattle(String(newOwnedBattle.battle_id || ""));
+    return true;
+  }
   var ownedBattleChanged = ownedBattleBefore !== hasOwnedDomeBattle();
   if (state.scene && state.scene.name === "battle-dome"
     && (!options.silent || options.renderAfter || ownedBattleChanged)) {
@@ -87,7 +90,6 @@ async function saveTeam(team) {
   state.battleDome.teamRevision = Number(data.team_revision) || state.battleDome.teamRevision;
   state.battleDome.saving = false;
   state.battleDome.notice = t("ui.battleDome.saved");
-  if (data.lobby_cancelled) state.battleDome.lobby = null;
   await refreshBattleDomeState({ silent: true });
   render({ preserveScroll: true });
 }
@@ -113,8 +115,12 @@ document.addEventListener("search-combobox-change", function (event) {
 });
 
 document.addEventListener("input", function (event) {
-  if (!event.target.matches || !event.target.matches("[data-battle-dome-join-url]")) return;
-  state.battleDome.inviteDraft = String(event.target.value || "");
+  var input = event.target;
+  var value;
+  if (!input.matches || !input.matches("[data-battle-dome-join-code]")) return;
+  value = String(input.value || "").replace(/\D/g, "").slice(0, 6);
+  input.value = value;
+  state.battleDome.codeDraft = value;
 });
 
 registerAction("battle-dome-tab", function (element) {
@@ -148,10 +154,14 @@ registerAction("battle-dome-remove-pokemon", function (element) {
 });
 
 registerAction("battle-dome-create-lobby", async function () {
-  if (validateBattleDomeTeam(state.battleDome.team, true)) return;
+  if (validateBattleDomeTeam(state.battleDome.team, true)) {
+    state.battleDome.error = t("ui.battleDome.teamRequirement");
+    render({ preserveScroll: true });
+    return;
+  }
   state.battleDome.saving = true;
   renderRegions(["battle-dome-content"]);
-  var result = await createBattleDomeLobby(createBattleDomeInviteToken());
+  var result = await createBattleDomeLobby();
   state.battleDome.saving = false;
   if (!result.ok) return domeError(result);
   state.battleDome.notice = t("ui.battleDome.lobbyCreated");
@@ -167,24 +177,22 @@ registerAction("battle-dome-cancel-lobby", async function () {
   render({ preserveScroll: true });
 });
 
-registerAction("battle-dome-copy-link", async function () {
-  var input = root.querySelector("[data-battle-dome-invite-url]");
-  if (!input) return;
+registerAction("battle-dome-copy-code", async function (element) {
+  var input = root.querySelector("[data-battle-dome-invite-code]");
+  var wrapper = element.closest(".battle-dome-copy-wrapper");
+  if (!input || !input.value) return;
   try {
     await navigator.clipboard.writeText(input.value);
-    state.battleDome.notice = t("ui.battleDome.copied");
   } catch (error) {
     input.select();
+    document.execCommand("copy");
+    input.setSelectionRange(0, 0);
+    input.blur();
   }
-  render({ preserveScroll: true });
+  if (!wrapper) return;
+  wrapper.classList.add("is-copy-confirmed");
+  window.setTimeout(function () { wrapper.classList.remove("is-copy-confirmed"); }, 4000);
 });
-
-function tokenFromUrl(value) {
-  try {
-    var parsed = new URL(String(value || "").trim(), window.location.origin);
-    return String(parsed.searchParams.get("invite") || "");
-  } catch (error) { return ""; }
-}
 
 async function join(input) {
   if (validateBattleDomeTeam(state.battleDome.team, true)) {
@@ -198,15 +206,15 @@ async function join(input) {
   if (result.battle) openBattleDomeProjection(result.battle, result.events || []);
 }
 
-registerAction("battle-dome-join-url", function () {
-  var input = root.querySelector("[data-battle-dome-join-url]");
-  var token = tokenFromUrl(input && input.value);
-  if (!token) {
-    state.battleDome.error = t("ui.battleDome.invalidUrl");
+registerAction("battle-dome-join-code", function () {
+  var input = root.querySelector("[data-battle-dome-join-code]");
+  var code = String(input && input.value || "").trim();
+  if (!/^[0-9]{6}$/.test(code)) {
+    state.battleDome.error = t("ui.battleDome.invalidCode");
     render({ preserveScroll: true });
     return;
   }
-  join({ inviteToken: token });
+  join({ inviteCode: code });
 });
 
 registerAction("battle-dome-challenge", function (element) {
@@ -226,6 +234,11 @@ export function openBattleDomeProjection(projection, events, history) {
     authoritativeLastEventSeq: 0,
     manager: { log: [] }
   };
+  if (projection.engine_runtime_state === "pending") {
+    applyLeadSelectionProjection(scene, projection);
+    setScene(scene, { history: history || undefined });
+    return scene;
+  }
   applyAuthoritativeProjection(scene, projection, events);
   scene.playerTeam.name = String(projection.creator_username || scene.playerTeam.name);
   scene.enemyTeam.name = String(projection.challenger_username || scene.enemyTeam.name);
@@ -237,6 +250,48 @@ export function openBattleDomeProjection(projection, events, history) {
   if (role === "creator" && scene.authoritativeEntryChoice) openPendingBattleEntryChoice(scene);
   return scene;
 }
+
+function applyLeadSelectionProjection(scene, projection) {
+  scene.battleDomeLeadSelection = true;
+  scene.battleDomeRole = String(projection.viewer_role || scene.battleDomeRole || "spectator");
+  scene.battleDomeSpectator = scene.battleDomeRole === "spectator";
+  scene.battleDomeCreatorUsername = String(projection.creator_username || "");
+  scene.battleDomeChallengerUsername = String(projection.challenger_username || "");
+  scene.battleDomeParticipants = Array.isArray(projection.participants) ? projection.participants : [];
+  scene.battleDomeWaitingFor = String(projection.waiting_for || "creator");
+  scene.battleDomeCreatorLeadSlot = projection.creator_lead_slot === null || projection.creator_lead_slot === undefined
+    ? null : Number(projection.creator_lead_slot);
+  scene.battleDomeChallengerLeadSlot = projection.challenger_lead_slot === null || projection.challenger_lead_slot === undefined
+    ? null : Number(projection.challenger_lead_slot);
+  scene.authoritativeBattleVersion = Number(projection.battle_version) || 0;
+  scene.authoritativeCommandPending = false;
+  return scene;
+}
+
+registerAction("battle-dome-lead-choice", async function (element) {
+  var scene = state.scene;
+  var teamSlot = Number(element.dataset.teamSlot);
+  var ownsTurn = scene && scene.name === "battle-dome-battle" && scene.battleDomeLeadSelection
+    && scene.battleDomeRole === scene.battleDomeWaitingFor;
+  if (!ownsTurn || scene.authoritativeCommandPending || !Number.isInteger(teamSlot)) return;
+  scene.authoritativeCommandPending = true;
+  render({ preserveScroll: true });
+  var result = await chooseBattleDomeLead({
+    battleId: scene.battleDomeBattleId,
+    expectedBattleVersion: scene.authoritativeBattleVersion,
+    teamSlot: teamSlot
+  });
+  if (!result.ok) {
+    scene.authoritativeCommandPending = false;
+    return domeError(result);
+  }
+  if (result.battle && result.battle.engine_runtime_state === "pending") {
+    applyLeadSelectionProjection(scene, result.battle);
+    render({ preserveScroll: true });
+    return;
+  }
+  if (result.battle) openBattleDomeProjection(result.battle, result.events || [], "replace");
+});
 
 export async function openBattleDomeBattle(battleId, history) {
   var result = await readBattleDomeBattle(battleId);
@@ -300,6 +355,15 @@ function startPoll() {
         setScene({ name: "battle-dome" }, { history: "replace" });
         return;
       }
+      if (result.battle.engine_runtime_state === "pending") {
+        applyLeadSelectionProjection(scene, result.battle);
+        render({ preserveScroll: true });
+        return;
+      }
+      if (scene.battleDomeLeadSelection) {
+        openBattleDomeProjection(result.battle, result.events || [], "replace");
+        return;
+      }
       applyAuthoritativeProjection(scene, result.battle, result.events || []);
       scene.playerTeam.name = scene.battleDomeCreatorUsername;
       scene.enemyTeam.name = scene.battleDomeChallengerUsername;
@@ -307,6 +371,7 @@ function startPoll() {
       render({ preserveScroll: true, scrollBattleLogToBottom: true });
     } else if (state.battleDome.loaded || state.scene && state.scene.name === "battle-dome") {
       refreshBattleDomeState({ silent: true,
+        openNewBattle: true,
         renderAfter: Boolean(state.scene && state.scene.name === "battle-dome" && state.battleDome.tab === "lobby") });
     }
   }, 5000);

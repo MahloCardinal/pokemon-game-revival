@@ -38,7 +38,7 @@ const allowedActions = new Set([
   "resolve_ordinary_progression", "allocate_training", "resolve_training", "move", "switch", "entry_choice", "item", "ball",
   "abandon", "admin_move", "admin_switch", "admin_item",
   "dome_state", "dome_save_team", "dome_create_lobby", "dome_cancel_lobby", "dome_join", "dome_read",
-  "dome_move", "dome_switch", "dome_entry_choice", "dome_item", "dome_abandon", "dome_exit"
+  "dome_lead_choice", "dome_move", "dome_switch", "dome_entry_choice", "dome_item", "dome_abandon", "dome_exit"
 ]);
 
 function seedFromHash(hash: string) {
@@ -257,7 +257,26 @@ async function initializeAndNotifyAdminBattle(
 
 function domeProjectionFromPrepared(prepared: Record<string, unknown>) {
   const battle = prepared.battle as Record<string, unknown> | null;
-  if (!battle || !battle.engine_snapshot) return null;
+  if (!battle) return null;
+  if (!battle.engine_snapshot) {
+    return {
+      battle_id: battle.battle_id,
+      battle_version: battle.battle_version,
+      catalog_release_id: battle.catalog_release_id,
+      contract_key: "battle_dome",
+      status: battle.status,
+      engine_runtime_state: "pending",
+      participants: battle.participants,
+      waiting_for: battle.waiting_for,
+      creator_lead_slot: battle.creator_lead_slot,
+      challenger_lead_slot: battle.challenger_lead_slot,
+      creator_auth_user_id: battle.creator_auth_user_id,
+      challenger_auth_user_id: battle.challenger_auth_user_id,
+      creator_username: battle.creator_username,
+      challenger_username: battle.challenger_username,
+      viewer_role: String(prepared.viewer_role || "spectator")
+    };
+  }
   if (battle.engine_version !== BATTLE_ENGINE_VERSION || battle.engine_checksum !== manifest.bundleChecksum) {
     throw new BattleEdgeError("incompatible_active_battle", "La sfida PvP usa un runtime non disponibile.", 409);
   }
@@ -357,6 +376,10 @@ async function initializeDomeIfNeeded(
   const battle = prepared.battle as Record<string, unknown> | null;
   if (!battle) throw new BattleEdgeError("battle_not_found", "La sfida PvP non è stata trovata.", 404);
   if (battle.engine_snapshot) return { ok: true, battle: domeProjectionFromPrepared(prepared), events: [] };
+  if (battle.creator_lead_slot === null || battle.creator_lead_slot === undefined
+    || battle.challenger_lead_slot === null || battle.challenger_lead_slot === undefined) {
+    return { ok: true, battle: domeProjectionFromPrepared(prepared), events: [] };
+  }
   if (String(prepared.viewer_role) === "spectator") {
     throw new BattleEdgeError("battle_initializing", "La sfida PvP è ancora in preparazione.", 409);
   }
@@ -368,8 +391,8 @@ async function initializeDomeIfNeeded(
     catalogReleaseId: battle.catalog_release_id,
     contractKey: "battle_dome",
     firstActor: "player",
-    playerActiveSlot: battle.player_active_slot,
-    npcActiveSlot: battle.npc_active_slot,
+    playerActiveSlot: battle.creator_lead_slot,
+    npcActiveSlot: battle.challenger_lead_slot,
     participants: battle.participants,
     presentation: { name: battle.challenger_username },
     playerItems: battle.player_items,
@@ -533,15 +556,9 @@ Deno.serve(async (request) => {
     }
 
     if (action === "dome_create_lobby") {
-      requireExactKeys(body, ["action", "inviteToken"], ["inviteToken"]);
-      const inviteToken = String(body.inviteToken || "");
-      if (!/^[A-Za-z0-9_-]{32,160}$/.test(inviteToken)) {
-        throw new BattleEdgeError("invalid_request", "Il link della Lobby non è valido.");
-      }
+      requireExactKeys(body, ["action"], []);
       const result = await clients.serviceClient.rpc("create_edge_battle_dome_lobby", {
-        p_auth_user_id: clients.userId,
-        p_invite_token: inviteToken,
-        p_invite_token_hash: await sha256(inviteToken)
+        p_auth_user_id: clients.userId
       });
       if (result.error) throw databaseError(result.error);
       return jsonResponse(result.data as Record<string, unknown>);
@@ -557,16 +574,16 @@ Deno.serve(async (request) => {
     }
 
     if (action === "dome_join") {
-      requireExactKeys(body, ["action", "creatorUserId", "inviteToken"], []);
+      requireExactKeys(body, ["action", "creatorUserId", "inviteCode"], []);
       const creatorUserId = body.creatorUserId ? uuid(body.creatorUserId, "creatorUserId") : null;
-      const inviteToken = body.inviteToken ? String(body.inviteToken) : "";
-      if (!creatorUserId && !/^[A-Za-z0-9_-]{32,160}$/.test(inviteToken)) {
-        throw new BattleEdgeError("invalid_request", "Il link della Lobby non è valido.");
+      const inviteCode = body.inviteCode ? String(body.inviteCode) : "";
+      if (!creatorUserId && !/^[0-9]{6}$/.test(inviteCode)) {
+        throw new BattleEdgeError("invalid_request", "Il codice della Lobby non è valido.");
       }
-      const joined = await clients.serviceClient.rpc("join_edge_battle_dome_lobby", {
+      const joined = await clients.serviceClient.rpc("join_edge_battle_dome_lobby_by_code", {
         p_auth_user_id: clients.userId,
         p_creator_auth_user_id: creatorUserId,
-        p_invite_token_hash: inviteToken ? await sha256(inviteToken) : null,
+        p_invite_code: inviteCode || null,
         p_engine_version: BATTLE_ENGINE_VERSION,
         p_engine_checksum: manifest.bundleChecksum
       });
@@ -583,13 +600,49 @@ Deno.serve(async (request) => {
       const afterSeq = body.afterSeq === undefined ? 0 : integer(body.afterSeq, "afterSeq", 0, Number.MAX_SAFE_INTEGER);
       const limit = body.limit === undefined ? 100 : integer(body.limit, "limit", 1, 100);
       let prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
-      if (prepared.battle && !(prepared.battle as Record<string, unknown>).engine_snapshot
-        && String(prepared.viewer_role) !== "spectator") {
+      const pendingBattle = prepared.battle as Record<string, unknown> | null;
+      if (pendingBattle && !pendingBattle.engine_snapshot) {
+        if (String(prepared.viewer_role) === "spectator") {
+          throw new BattleEdgeError("battle_not_started", "La sfida PvP non è ancora iniziata.", 404);
+        }
+        if (pendingBattle.creator_lead_slot !== null && pendingBattle.creator_lead_slot !== undefined
+          && pendingBattle.challenger_lead_slot !== null && pendingBattle.challenger_lead_slot !== undefined) {
+          await initializeDomeIfNeeded(clients.serviceClient, clients.userId, prepared);
+          prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
+        }
+      }
+      const projection = domeProjectionFromPrepared(prepared);
+      const events = projection ? await readDomeEvents(clients.serviceClient, battleId, afterSeq, limit) : [];
+      return jsonResponse({ ok: true, viewer_role: prepared.viewer_role, battle: projection, events });
+    }
+
+    if (action === "dome_lead_choice") {
+      requireExactKeys(body, ["action", "battleId", "commandId", "expectedBattleVersion", "teamSlot"],
+        ["battleId", "commandId", "expectedBattleVersion", "teamSlot"]);
+      const battleId = uuid(body.battleId, "battleId");
+      const commandId = uuid(body.commandId, "commandId");
+      const expectedBattleVersion = integer(body.expectedBattleVersion, "expectedBattleVersion", 1, Number.MAX_SAFE_INTEGER);
+      const teamSlot = integer(body.teamSlot, "teamSlot", 0, 5);
+      const commandHash = await sha256({ commandType: "lead_choice", battleId, expectedBattleVersion, teamSlot });
+      const chosen = await clients.serviceClient.rpc("choose_edge_battle_dome_lead", {
+        p_auth_user_id: clients.userId,
+        p_command_id: commandId,
+        p_command_hash: commandHash,
+        p_battle_id: battleId,
+        p_expected_battle_version: expectedBattleVersion,
+        p_team_slot: teamSlot
+      });
+      if (chosen.error) throw databaseError(chosen.error);
+      let prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
+      const selectedBattle = prepared.battle as Record<string, unknown> | null;
+      if (selectedBattle && selectedBattle.creator_lead_slot !== null && selectedBattle.creator_lead_slot !== undefined
+        && selectedBattle.challenger_lead_slot !== null && selectedBattle.challenger_lead_slot !== undefined) {
         await initializeDomeIfNeeded(clients.serviceClient, clients.userId, prepared);
         prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
       }
       const projection = domeProjectionFromPrepared(prepared);
-      const events = projection ? await readDomeEvents(clients.serviceClient, battleId, afterSeq, limit) : [];
+      const events = projection && (prepared.battle as Record<string, unknown>)?.engine_snapshot
+        ? await readDomeEvents(clients.serviceClient, battleId, 0, 100) : [];
       return jsonResponse({ ok: true, viewer_role: prepared.viewer_role, battle: projection, events });
     }
 

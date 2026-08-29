@@ -52,7 +52,7 @@ export function validateBattleDomeTeam(team, complete) {
   var speciesCounts = {};
   var itemCounts = {};
   var portItems = [];
-  if (entries.length > BATTLE_DOME_TEAM_SIZE || (complete && entries.length !== BATTLE_DOME_TEAM_SIZE)) return "team_size";
+  if (entries.length > BATTLE_DOME_TEAM_SIZE || (complete && entries.length < 1)) return "team_size";
   for (var index = 0; index < entries.length; index += 1) {
     var entry = entries[index] || {};
     var speciesKey = String(entry.species_key || "");

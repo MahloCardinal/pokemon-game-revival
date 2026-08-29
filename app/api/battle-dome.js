@@ -4,11 +4,6 @@ function commandId() {
   return globalThis.crypto.randomUUID();
 }
 
-export function createBattleDomeInviteToken() {
-  return globalThis.crypto.randomUUID().replace(/-/g, "")
-    + globalThis.crypto.randomUUID().replace(/-/g, "");
-}
-
 export function readBattleDomeState() {
   return invokeAuthoritativeBattleCommand({ action: "dome_state" });
 }
@@ -17,8 +12,8 @@ export function saveBattleDomeTeam(team) {
   return invokeAuthoritativeBattleCommand({ action: "dome_save_team", team: team });
 }
 
-export function createBattleDomeLobby(inviteToken) {
-  return invokeAuthoritativeBattleCommand({ action: "dome_create_lobby", inviteToken: inviteToken });
+export function createBattleDomeLobby() {
+  return invokeAuthoritativeBattleCommand({ action: "dome_create_lobby" });
 }
 
 export function cancelBattleDomeLobby() {
@@ -29,7 +24,7 @@ export function joinBattleDomeLobby(input) {
   return invokeAuthoritativeBattleCommand({
     action: "dome_join",
     creatorUserId: input && input.creatorUserId || undefined,
-    inviteToken: input && input.inviteToken || undefined
+    inviteCode: input && input.inviteCode || undefined
   });
 }
 
@@ -41,6 +36,10 @@ export function readBattleDomeBattle(battleId, options) {
     afterSeq: options.afterSeq === undefined ? 0 : Number(options.afterSeq),
     limit: options.limit === undefined ? 100 : Number(options.limit)
   });
+}
+
+export function chooseBattleDomeLead(input) {
+  return battleCommand("lead_choice", input, { teamSlot: Math.floor(Number(input.teamSlot)) });
 }
 
 function battleCommand(action, input, semantic) {

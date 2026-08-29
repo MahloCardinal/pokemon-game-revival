@@ -45,6 +45,9 @@ const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_deb
 const preferredTrainerTitlesMigration = read("supabase/migrations/20260828110000_preferred_trainer_titles.sql");
 const playerDirectoryAvatarMigration = read("supabase/migrations/20260828120000_player_directory_trainer_avatar.sql");
 const battleDomeMigration = read("supabase/migrations/20260829120000_battle_dome.sql");
+const battleDomeCodesAndLeadsMigration = read("supabase/migrations/20260830120000_battle_dome_codes_and_leads.sql");
+const battleDomeInviteCleanupMigration = read("supabase/migrations/20260830123000_remove_legacy_battle_dome_invites.sql");
+const battleDomeLobbyCreationFixMigration = read("supabase/migrations/20260830124000_fix_battle_dome_code_lobby_creation.sql");
 const shinyMigration = read("supabase/migrations/20260827120000_authoritative_shiny_pokemon.sql");
 const rarityStatsMigration = read("supabase/migrations/20260827150000_current_level_shiny_and_legendary_stats.sql");
 const statTables = read("app/data/stat-tables.js");
@@ -426,13 +429,30 @@ assert.match(battleDomeMigration, /create table public\.battle_dome_battle/i);
 assert.doesNotMatch(battleDomeMigration, /references public\.authoritative_battle/i,
   "Battle Dome challenges must remain independent from RPG battles");
 assert.match(battleDomeMigration, /battle_dome_active_count\(p_auth_user_id\) >= 2/i);
-assert.match(battleDomeMigration, /battle_dome_validate_team\(v_team\.catalog_release_id, v_team\.team, true\)/i);
-assert.match(battleDomeMigration, /delete from public\.battle_dome_lobby where creator_auth_user_id = p_auth_user_id/i);
+assert.match(battleDomeCodesAndLeadsMigration, /jsonb_array_length\(v_team\.team\) < 1/i);
+assert.match(battleDomeCodesAndLeadsMigration, /team_snapshot = excluded\.team_snapshot/i,
+  "Opening a lobby must freeze its own team snapshot");
+assert.match(battleDomeCodesAndLeadsMigration, /battle_dome_validate_team\(v_team\.catalog_release_id, v_team\.team, false\)/i);
+assert.match(battleDomeCodesAndLeadsMigration, /status, waiting_for[\s\S]*'selecting_leads', 'creator'/i);
+assert.match(battleDomeCodesAndLeadsMigration, /creator_lead_slot = p_team_slot[\s\S]*waiting_for = 'challenger'/i);
+assert.match(battleDomeCodesAndLeadsMigration, /challenger_lead_slot = p_team_slot[\s\S]*waiting_for = 'creator'/i);
+assert.match(battleDomeCodesAndLeadsMigration, /v_code := \(100000 \+ floor\(random\(\) \* 900000\)\)/i);
+assert.match(battleDomeCodesAndLeadsMigration, /battle_dome_lobby_date_code_idx/i);
+assert.match(battleDomeInviteCleanupMigration, /drop column invite_token[\s\S]*drop column invite_token_hash/i);
+assert.match(battleDomeInviteCleanupMigration, /drop function public\.create_edge_battle_dome_lobby\(uuid, text, text\)/i);
+assert.match(battleDomeInviteCleanupMigration, /alter column team_snapshot set not null/i);
+assert.doesNotMatch(battleDomeInviteCleanupMigration, /'invite_token'/i);
+assert.doesNotMatch(battleDomeLobbyCreationFixMigration, /invite_token/i);
+assert.match(battleDomeLobbyCreationFixMigration, /creator_auth_user_id, invite_code, lobby_date, catalog_release_id, team_snapshot/i);
+assert.match(edge, /action === "dome_lead_choice"/i);
+assert.doesNotMatch(edge, /inviteToken|invite_token/i, "Battle Dome invitations must use the six-digit code only");
 assert.match(battleDomeMigration, /revoke all on public\.battle_dome_battle from anon, authenticated/i);
 assert.doesNotMatch(battleDomeMigration, /grant select on public\.battle_dome_(battle|event) to authenticated/i,
   "Battle Dome snapshots and events must only be exposed through the authoritative Edge projection");
 assert.doesNotMatch(battleDomeMigration, /battle_dome_battle[\s\S]{0,200}(expires_at|interval\s+'[^']+')/i,
   "Active Battle Dome challenges must not expire automatically");
+assert.match(battleView, /ItemCategory\.Ball && String\(renderScene\.battleType \|\| ""\)\.indexOf\("capture_"\) === 0/,
+  "Poké Balls must only be visible in capture-zone battles");
 
 const ordinaryBattleCommit = finalFunctionBody("server_authority_private", "commit_edge_battle_command_before_snapshot");
 assert.match(ordinaryBattleCommit, /contract_key in \('gym', 'admin_gym', 'capture', 'league'\)/i);

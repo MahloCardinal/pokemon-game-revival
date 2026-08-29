@@ -94,7 +94,7 @@ export function createDefaultBattleDomeState() {
     error: "",
     notice: "",
     tab: "team",
-    inviteDraft: "",
+    codeDraft: "",
     draft: { speciesKey: "", heldItemIndex: 0, moveIndexes: [0, 0, 0, 0] }
   };
 }

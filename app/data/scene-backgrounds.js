@@ -5,7 +5,7 @@ export var BACKGROUND_ASSETS = Object.freeze({
   "battle-area": Object.freeze({ desktop: "area_lotta_desktop.webp", mobile: "area_lotta_mobile.webp" }),
   "battle-tower": Object.freeze({ desktop: "torre_lotta_desktop.webp", mobile: "torre_lotta_mobile.webp" }),
   "battle-shop": Object.freeze({ desktop: "negozio_lotta_desktop.webp", mobile: "negozio_lotta_mobile.webp" }),
-  "battle-dome": Object.freeze({ desktop: "area_lotta_desktop.webp", mobile: "area_lotta_mobile.webp" }),
+  "battle-dome": Object.freeze({ desktop: "cupola_lotta_desktop.webp", mobile: "cupola_lotta_mobile.webp" }),
   zones: Object.freeze({ desktop: "zone_cattura_desktop.webp", mobile: "zone_cattura_mobile.webp" }),
   city: Object.freeze({ desktop: "citta_desktop.webp", mobile: "citta_mobile.webp" }),
   "pokemon-center": Object.freeze({ desktop: "centro_pokemon_desktop.webp", mobile: "centro_pokemon_mobile.webp" }),

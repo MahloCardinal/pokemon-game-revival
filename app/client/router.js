@@ -230,9 +230,6 @@ function routeForScene(scene) {
   if (scene.name === "battle-dome-battle") {
     return "/battle-area/battle-dome/battle/" + encodeURIComponent(scene.battleDomeBattleId || "");
   }
-  if (scene.name === "battle-dome" && scene.inviteToken) {
-    return "/battle-area/battle-dome?invite=" + encodeURIComponent(scene.inviteToken);
-  }
   if (scene.name === "login" && scene.authMode === "reset-password") {
     return "/auth/recovery";
   }
@@ -452,20 +449,11 @@ function backSceneForRoute(route) {
 
 export function sceneFromCurrentLocation() {
   var route;
-  var scene;
   if (!canUseHistory()) {
     return { name: "home" };
   }
   route = currentRoute();
-  scene = sceneFromRoute(route);
-  if (scene.name === "battle-dome") {
-    var invite = new URLSearchParams(window.location.search).get("invite");
-    if (invite) {
-      scene.inviteToken = invite;
-      scene.inviteUrl = window.location.href;
-    }
-  }
-  return scene;
+  return sceneFromRoute(route);
 }
 
 export function writeSceneHistory(scene, mode) {

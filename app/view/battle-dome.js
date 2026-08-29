@@ -1,31 +1,50 @@
 import { state } from "../client/game-state.js";
 import { escapeHtml } from "../client/asset-helpers.js";
+import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { button, sceneShell } from "../client/render-utils.js";
 import { itemDisplayName, moveDisplayName, speciesDisplayName } from "../client/entity-text.js";
 import { t } from "../client/i18n.js";
 import { renderSearchCombobox } from "../client/search-combobox.js";
-import { getItemByIndex } from "../data/items.js";
+import { SPECIES_LIBRARY } from "../data/index.js";
 import { MOVE_LIBRARY } from "../data/moves.js";
 import { BATTLE_DOME_HP, BATTLE_DOME_LEVEL, BATTLE_DOME_MOVE_POWER, BATTLE_DOME_MOVE_STATS, BATTLE_DOME_TEAM_SIZE, battleDomeHeldItems, battleDomeMovePool, battleDomeSpecies } from "../data/battle-dome.js";
+import * as Engine from "../engine/index.js";
 
 function sortedOptions(entries, keyFor, labelFor) {
   return entries.map(function (entry) { return { key: String(keyFor(entry)), label: labelFor(entry) }; })
     .sort(function (left, right) { return left.label.localeCompare(right.label); });
 }
 
-function teamRow(entry, index) {
-  var item = getItemByIndex(Number(entry.held_item_index));
+function battleDomePokemon(entry) {
+  var speciesKey = String(entry.species_key || "");
+  var species = SPECIES_LIBRARY[speciesKey] || {};
   var moves = (entry.moves || []).map(function (moveIndex) {
     var move = MOVE_LIBRARY.find(function (entryMove) { return Number(entryMove.index) === Number(moveIndex); });
-    return moveDisplayName(move || { index: moveIndex });
-  }).join(", ");
-  return [
-    '<div class="battle-dome-team-row">',
-    '<div class="battle-dome-team-copy"><strong>' + escapeHtml(speciesDisplayName(entry.species_key)) + '</strong>',
-    '<small>' + escapeHtml(t("ui.battleDome.teamRow", { moves: moves, item: item ? itemDisplayName(item) : t("ui.battleDome.noItem") })) + '</small></div>',
-    button(t("ui.battleDome.removePokemon"), "battle-dome-remove-pokemon", 'data-team-index="' + index + '"' + (state.battleDome.saving ? " disabled" : ""), "button-danger button-slim"),
-    "</div>"
-  ].join("");
+    return move ? Engine.createMove(move, { power: BATTLE_DOME_MOVE_POWER, stats: BATTLE_DOME_MOVE_STATS }) : null;
+  }).filter(Boolean);
+  return {
+    name: species.name || speciesKey,
+    speciesKey: speciesKey,
+    ndex: species.dexNumber,
+    level: BATTLE_DOME_LEVEL,
+    type: Array.isArray(species.type) ? species.type.slice() : [],
+    maxHp: BATTLE_DOME_HP,
+    gender: null,
+    expCurrent: 0,
+    expCap: Number(species.exp) || 0,
+    moves: moves,
+    heldItemIndex: Number(entry.held_item_index) || 0
+  };
+}
+
+function teamCard(entry, index) {
+  var actions = button(
+    t("ui.battleDome.removePokemon"),
+    "battle-dome-remove-pokemon",
+    'data-team-index="' + index + '"' + (state.battleDome.saving ? " disabled" : ""),
+    "button-danger button-slim"
+  );
+  return renderPokemonCardFrame(renderPokemonCard(battleDomePokemon(entry)), { actions: actions });
 }
 
 function renderBuilder() {
@@ -44,30 +63,32 @@ function renderBuilder() {
   }).join("");
   var canAdd = dome.team.length < BATTLE_DOME_TEAM_SIZE && draft.speciesKey && selectedMoves.some(Boolean) && !dome.saving;
   return [
-    '<section class="panel"><div class="panel-inner battle-dome-panel">',
-    '<h2>' + escapeHtml(t("ui.battleDome.builderTitle")) + '</h2>',
+    '<section class="team-description-panel trainer-debug-pokemon-panel battle-dome-builder-panel">',
+    '<div class="trainer-debug-pokemon-heading"><h2>' + escapeHtml(t("ui.battleDome.builderTitle")) + '</h2><span>' + escapeHtml(dome.team.length) + '/' + escapeHtml(BATTLE_DOME_TEAM_SIZE) + '</span></div>',
     '<p class="battle-dome-note">' + escapeHtml(t("ui.battleDome.fixedStats", { level: BATTLE_DOME_LEVEL, hp: BATTLE_DOME_HP, power: BATTLE_DOME_MOVE_POWER, stats: BATTLE_DOME_MOVE_STATS })) + '</p>',
-    '<div class="battle-dome-builder-grid">',
+    '<div class="trainer-debug-pokemon-grid battle-dome-builder-primary">',
     '<label><span>' + escapeHtml(t("ui.battleDome.pokemon")) + '</span>' + renderSearchCombobox({ options: speciesOptions, value: draft.speciesKey, field: { attribute: "battle-dome-field", value: "species" } }) + '</label>',
     '<label><span>' + escapeHtml(t("ui.battleDome.heldItem")) + '</span>' + renderSearchCombobox({ options: itemOptions, value: draft.heldItemIndex || "", field: { attribute: "battle-dome-field", value: "item" }, placeholder: t("ui.battleDome.noItem") }) + '</label>',
-    moveFields,
     '</div>',
-    '<div>' + button(t("ui.battleDome.addPokemon"), "battle-dome-add-pokemon", canAdd ? "" : "disabled", "button-primary") + '</div>',
-    '</div></section>'
+    '<div class="trainer-debug-pokemon-moves"><div class="trainer-debug-pokemon-move-row">' + moveFields + '</div></div>',
+    '<div class="trainer-debug-pokemon-actions">' + button(t("ui.battleDome.addPokemon"), "battle-dome-add-pokemon", canAdd ? "" : "disabled", "button-primary") + '</div>',
+    '</section>'
   ].join("");
 }
 
 function renderTeam() {
   var dome = state.battleDome;
+  var teamCount = Math.min(3, dome.team.length || 1);
+  var teamGrid = '<section class="pokemon-grid team-pokemon-grid battle-dome-team-grid team-pokemon-count-' + escapeHtml(teamCount) + '">'
+    + (dome.team.length ? dome.team.map(teamCard).join("") : '<div class="empty-state">' + escapeHtml(t("ui.battleDome.emptyTeam")) + '</div>')
+    + '</section>';
   return [
     '<div class="battle-dome-panel" data-render-region="battle-dome-content">',
+    '<section class="battle-dome-team-block"><h2>' + escapeHtml(t("ui.battleDome.savedTeam", { count: dome.team.length, max: BATTLE_DOME_TEAM_SIZE })) + '</h2>' + teamGrid + '</section>',
     renderBuilder(),
-    '<section class="panel"><div class="panel-inner battle-dome-panel">',
-    '<h2>' + escapeHtml(t("ui.battleDome.savedTeam", { count: dome.team.length, max: BATTLE_DOME_TEAM_SIZE })) + '</h2>',
-    '<div class="battle-dome-team">' + (dome.team.length ? dome.team.map(teamRow).join("") : '<p>' + escapeHtml(t("ui.battleDome.emptyTeam")) + '</p>') + '</div>',
     dome.notice ? '<p>' + escapeHtml(dome.notice) + '</p>' : "",
     dome.error ? '<p class="battle-dome-error">' + escapeHtml(dome.error) + '</p>' : "",
-    '</div></section></div>'
+    '</div>'
   ].join("");
 }
 
@@ -91,19 +112,20 @@ function renderLobby() {
   }).join("");
   return [
     '<div class="battle-dome-panel" data-render-region="battle-dome-content">',
-    '<section class="panel"><div class="panel-inner battle-dome-panel">',
-    '<h2>' + escapeHtml(t("ui.battleDome.yourLobby")) + '</h2>',
+    '<section class="panel"><div class="panel-inner battle-dome-split-panel">',
+    '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.yourLobby")) + '</h2>',
     ownLobby && ownLobby.expired ? '<p class="battle-dome-error">' + escapeHtml(t("ui.battleDome.expired")) + '</p>' : "",
     ownLobby && ownLobby.invite_token ? '<div class="battle-dome-link-row"><input readonly value="' + escapeHtml(inviteUrl(ownLobby.invite_token)) + '" data-battle-dome-invite-url><button type="button" class="button button-primary" data-action="battle-dome-copy-link">' + escapeHtml(t("ui.battleDome.copy")) + '</button></div>' : "",
     ownLobby && ownLobby.invite_token ? button(t("ui.battleDome.cancelLobby"), "battle-dome-cancel-lobby", "", "button-danger") : button(t("ui.battleDome.createChallenge"), "battle-dome-create-lobby", canCreate ? "" : "disabled", "button-primary"),
     '<p class="battle-dome-note">' + escapeHtml(t("ui.battleDome.teamRequirement")) + '</p>',
-    '</div></section>',
-    '<section class="panel"><div class="panel-inner battle-dome-panel">',
-    '<h2>' + escapeHtml(t("ui.battleDome.joinByUrl")) + '</h2>',
+    '</section>',
+    '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.joinByUrl")) + '</h2>',
     '<div class="battle-dome-link-row"><input type="url" value="' + escapeHtml(dome.inviteDraft || "") + '" data-battle-dome-join-url placeholder="' + escapeHtml(t("ui.battleDome.urlPlaceholder")) + '">' + button(t("ui.battleDome.join"), "battle-dome-join-url", canCreate ? "" : "disabled", "button-primary") + '</div>',
+    '</section></div></section>',
+    '<section class="panel"><div class="panel-inner battle-dome-split-panel battle-dome-list-panel">',
+    '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.waitingPlayers")) + '</h2><div class="battle-dome-scroll">' + (lobbyRows || '<p>' + escapeHtml(t("ui.battleDome.noLobbies")) + '</p>') + '</div></section>',
+    '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.ongoing")) + '</h2><div class="battle-dome-scroll">' + (battleRows || '<p>' + escapeHtml(t("ui.battleDome.noBattles")) + '</p>') + '</div></section>',
     '</div></section>',
-    '<section class="panel"><div class="panel-inner battle-dome-panel"><h2>' + escapeHtml(t("ui.battleDome.waitingPlayers")) + '</h2><div class="battle-dome-scroll">' + (lobbyRows || '<p>' + escapeHtml(t("ui.battleDome.noLobbies")) + '</p>') + '</div></div></section>',
-    '<section class="panel"><div class="panel-inner battle-dome-panel"><h2>' + escapeHtml(t("ui.battleDome.ongoing")) + '</h2><div class="battle-dome-scroll">' + (battleRows || '<p>' + escapeHtml(t("ui.battleDome.noBattles")) + '</p>') + '</div></div></section>',
     dome.notice ? '<p>' + escapeHtml(dome.notice) + '</p>' : "",
     dome.error ? '<p class="battle-dome-error">' + escapeHtml(dome.error) + '</p>' : "",
     '</div>'
@@ -112,9 +134,10 @@ function renderLobby() {
 
 export function renderBattleDomeScene() {
   var dome = state.battleDome;
-  var tabs = '<div class="battle-dome-tabs">'
-    + button(t("ui.battleDome.teamTab"), "battle-dome-tab", 'data-tab="team"', dome.tab === "team" ? "button-primary" : "button-dark")
-    + button(t("ui.battleDome.lobbyTab"), "battle-dome-tab", 'data-tab="lobby"', dome.tab === "lobby" ? "button-primary" : "button-dark") + '</div>';
+  var tabs = '<section class="panel pokefan-sections-panel battle-dome-sections-panel"><div class="panel-inner"><nav class="pokemon-center-action-row rules-section-row" aria-label="' + escapeHtml(t("ui.sceneTitles.battleDome")) + '">'
+    + button(t("ui.battleDome.teamTab"), "battle-dome-tab", 'data-tab="team" aria-pressed="' + (dome.tab === "team" ? "true" : "false") + '"', "button-slim" + (dome.tab === "team" ? " button-primary" : " button-ghost"))
+    + button(t("ui.battleDome.lobbyTab"), "battle-dome-tab", 'data-tab="lobby" aria-pressed="' + (dome.tab === "lobby" ? "true" : "false") + '"', "button-slim" + (dome.tab === "lobby" ? " button-primary" : " button-ghost"))
+    + '</nav></div></section>';
   var body = dome.loading && !dome.loaded ? '<p>' + escapeHtml(t("ui.battleDome.loading")) + '</p>' : tabs + (dome.tab === "lobby" ? renderLobby() : renderTeam());
   return sceneShell(t("ui.sceneTitles.battleDome"), "", body, "", "scene-content-battle-dome", "parent-back");
 }

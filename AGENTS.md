@@ -285,6 +285,8 @@ Le proiezioni complete restano nella risposta Edge, ma gli RPC di commit ricevon
 
 Le funzionalità di `aaa` sono intenzionali e devono essere preservate. Ogni privilegio deve essere validato anche dal backend e non soltanto nascosto o mostrato nel browser.
 I controlli debug `+1`/`-1` dei Titoli usano il comando Edge autoritativo `debug_titles`: aggiungono il primo Titolo non posseduto o rimuovono il primo Titolo posseduto secondo `sortOrder`. Non sostituirli con scritture browser su `player_title`.
+Il completamento debug delle missioni basate su Pokédex o Titoli registra `debug_completed` nei `tracked_keys` della singola missione. La sincronizzazione deve rispettarlo soltanto per il ruolo server `debug`, senza creare registrazioni Pokédex o assegnare Titoli fittizi. Non rendere monotoni i contatori di tutti i giocatori per aggirare questo controllo; i reset giornalieri continuano a svuotare i `tracked_keys`.
+Per verificarlo sul database collegato: `supabase db query --linked --file scripts/test-debug-mission-completion.sql`. Il test esegue le funzioni correnti su copie temporanee isolate delle tabelle e termina con rollback, senza creare account né modificare dati reali.
 
 ## Versione frontend e cache
 

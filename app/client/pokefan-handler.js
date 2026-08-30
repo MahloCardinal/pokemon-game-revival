@@ -4,7 +4,7 @@ import { levelLimitForBadges, tmUnlockBadges } from "../data/progression.js";
 import { shoppingCenterItemIsSinglePurchase } from "../data/shopping-center.js";
 import { requireNotInBattle } from "./battle-scene-lock.js";
 import { registerAction } from "./action-registry.js";
-import { openMessage } from "./dialog-handler.js";
+import { openMessage, openRewardClaimMessage } from "./dialog-handler.js";
 import { claimMission, missionByIndex, missionCatalogByIndex, missionCategories, missionIsActive, setMissionError } from "./mission-runtime.js";
 import { renderRegions, setScene } from "./renderer.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
@@ -156,6 +156,13 @@ function commitMissionClaim(mission, selectedReward) {
       broadcastTeamBoxRuntimeState();
     }
     renderRegions(["pokefan-content"]);
+    if (result.projection) {
+      openRewardClaimMessage(
+        result.projection.reward,
+        messageDescriptor("pokefan.title"),
+        result.projection.pokemon_instance_id
+      );
+    }
   });
 }
 

@@ -1,10 +1,14 @@
 export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
   generic: Object.freeze({ failed: "Operazione non riuscita. Riprova.", errorTitle: "Errore" }),
+  rewards: Object.freeze({
+    claimed: "Hai ritirato {reward}.",
+    quantity: "{quantity} × {reward}",
+    money: "{quantity} Pokédollari"
+  }),
   battleShop: Object.freeze({
     insufficientPoints: "Non hai abbastanza PL per ritirare questo premio.",
     chooseReward: "Scegli il premio",
     claimFailed: "Ritiro del premio non riuscito.",
-    claimed: "Hai ritirato {reward}.",
     unavailable: "Questo premio non può essere ritirato.",
     loadFailed: "Impossibile caricare i premi del Negozio Lotta."
   }),

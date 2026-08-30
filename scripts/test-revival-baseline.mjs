@@ -1344,4 +1344,5 @@ for (const buffLossDefinition of [MoveDefinitions.superpower, MoveDefinitions.ov
   assert.equal(manager.playerTeam.getActive().perishSongTurns, 0);
 }
 
+await import("./test-reward-claims.mjs");
 console.log("Revival baseline contract checks passed.");

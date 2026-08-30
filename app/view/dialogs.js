@@ -1,6 +1,7 @@
 import { trainerSpriteByIndex } from "../data/trainers.js";
-import { assetPath, escapeHtml, getGenderImage, getPokemonImage, getTrainerImage, renderImage, withPokemonSpriteAttrs, withPokemonSpriteClass, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
-import { button } from "../client/render-utils.js";
+import { getItemByIndex } from "../data/items.js";
+import { assetPath, escapeHtml, getGenderImage, getItemDisplayImage, getPokemonImage, getTrainerImage, renderImage, withPokemonSpriteAttrs, withPokemonSpriteClass, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
+import { button, formatInteger, moneyMarkup } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { itemDisplayName, moveDisplayDescription, moveDisplayName, pokemonDisplayName, speciesDisplayName } from "../client/entity-text.js";
 import { resolveText, t } from "../client/i18n.js";
@@ -65,6 +66,7 @@ export function renderMessageDialog(dialog) {
     '    <div class="dialog-copy">' + dialog.lines.map(function (line) {
       return "<p>" + escapeHtml(resolveText(line)) + "</p>";
     }).join("") + "</div>",
+    dialog.rewardImage || "",
     dialog.pokemon ? '    <div class="progression-card-slot battle-shop-reward-card">' + renderPokemonCard(dialog.pokemon, { className: "mini-card" }) + "</div>" : "",
     '    <div class="dialog-actions">' + button(resolveText(dialog.closeLabel, t("ui.dialogs.close")), "dialog-close", "", dialog.closeClass || "button-primary") + "</div>",
     "  </section>",
@@ -401,12 +403,44 @@ function renderKantoLeagueEntryDialog(dialog) {
   ].join("");
 }
 
+function renderRewardClaimDialog(dialog) {
+  var reward = dialog.reward || {};
+  var item = reward.kind === "item" ? getItemByIndex(reward.itemIndex) : null;
+  var name = t("ui.pokefan.fallbackReward");
+  var image = "";
+  if (dialog.pokemon) {
+    name = pokemonDisplayName(dialog.pokemon);
+    image = renderImage(getPokemonImage(dialog.pokemon), name,
+      withPokemonSpriteClass("claimed-reward-pokemon", dialog.pokemon),
+      withPokemonSpriteAttrs(dialog.pokemon));
+  } else if (item) {
+    name = itemDisplayName(item);
+    image = renderImage(getItemDisplayImage(item), name, "claimed-reward-item");
+    if (Number(reward.quantity) > 1) {
+      name = t("messages.rewards.quantity", { quantity: formatInteger(reward.quantity), reward: name });
+    }
+  } else if (reward.kind === "money") {
+    name = t("messages.rewards.money", { quantity: formatInteger(reward.quantity) });
+    image = moneyMarkup(reward.quantity);
+  }
+  return renderMessageDialog({
+    title: dialog.title,
+    lines: [t("messages.rewards.claimed", { reward: name })],
+    rewardImage: image ? '<div class="claimed-reward-image">' + image + "</div>" : "",
+    closeLabel: t("ui.dialogs.ok"),
+    closeClass: "button-accent"
+  });
+}
+
 export function renderDialog(dialog) {
   if (!dialog) {
     return "";
   }
   if (dialog.type === "message") {
     return renderMessageDialog(dialog);
+  }
+  if (dialog.type === "reward-claimed") {
+    return renderRewardClaimDialog(dialog);
   }
   if (dialog.type === "confirm") {
     return renderConfirmDialog(dialog);

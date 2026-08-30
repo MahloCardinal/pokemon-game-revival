@@ -1,10 +1,14 @@
 export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
   generic: Object.freeze({ failed: "The operation failed. Try again.", errorTitle: "Error" }),
+  rewards: Object.freeze({
+    claimed: "You claimed {reward}.",
+    quantity: "{quantity} × {reward}",
+    money: "{quantity} Pokédollars"
+  }),
   battleShop: Object.freeze({
     insufficientPoints: "You do not have enough BP to claim this reward.",
     chooseReward: "Choose a reward",
     claimFailed: "The reward could not be claimed.",
-    claimed: "You claimed {reward}.",
     unavailable: "This reward cannot be claimed.",
     loadFailed: "The Battle Shop rewards could not be loaded."
   }),

@@ -3,11 +3,11 @@ import { getBattleShopOffers } from "../api/player-command.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { registerAction } from "./action-registry.js";
 import { requireNotInBattle } from "./battle-scene-lock.js";
-import { openMessage } from "./dialog-handler.js";
+import { openMessage, openRewardClaimMessage } from "./dialog-handler.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
 import { renderRegions } from "./renderer.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
-import { battleShopChoiceName, battleShopOfferName, hydrateBattleShopOffers } from "./battle-shop-presentation.js";
+import { battleShopChoiceName, hydrateBattleShopOffers } from "./battle-shop-presentation.js";
 import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 import { bindAnchoredPanel } from "./anchored-panel.js";
 
@@ -108,18 +108,13 @@ async function buyBattleShopOffer(offerKey, element) {
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
     broadcastTeamBoxRuntimeState();
-    await refreshBattleShopOffers();
     var pokemonInstanceId = String(result.projection && result.projection.pokemon_instance_id || "");
-    var pokemon = pokemonInstanceId ? (state.box || []).find(function(entry) {
-      return String(entry && entry.instanceId || "") === pokemonInstanceId;
-    }) : null;
-    var rewardName = selection.choice ? battleShopChoiceName(selection.choice) : battleShopOfferName(selection.offer);
-    openMessage([messageDescriptor("battleShop.claimed", { reward: rewardName })], {
-      title: textDescriptor("ui.sceneTitles.battleShop"),
-      closeLabel: textDescriptor("ui.dialogs.ok"),
-      closeClass: "button-accent",
-      pokemon: pokemon
-    });
+    openRewardClaimMessage({
+      kind: pokemonInstanceId ? "pokemon" : "item",
+      itemIndex: (selection.choice || selection.offer).item_index,
+      quantity: 1
+    }, textDescriptor("ui.sceneTitles.battleShop"), pokemonInstanceId);
+    await refreshBattleShopOffers();
   } finally {
     state.battleShopPurchasePending = false;
     if (state.scene && state.scene.name === "battle-shop") {

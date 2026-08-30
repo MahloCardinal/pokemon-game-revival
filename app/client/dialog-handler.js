@@ -20,6 +20,19 @@ export function openMessage(lines, options) {
   renderDialogLayer({ scrollBattleLogToBottom: !!options.scrollBattleLogToBottom });
 }
 
+export function openRewardClaimMessage(reward, title, pokemonInstanceId) {
+  var pokemon = pokemonInstanceId ? (state.team || []).concat(state.box || []).find(function (entry) {
+    return entry && String(entry.instanceId || "") === String(pokemonInstanceId);
+  }) : null;
+  state.dialog = {
+    type: "reward-claimed",
+    title: title,
+    reward: reward,
+    pokemon: pokemon || null
+  };
+  renderDialogLayer();
+}
+
 export function openConfirm(title, lines, onConfirm, options) {
   options = options || {};
   state.dialog = {

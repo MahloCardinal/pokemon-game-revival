@@ -7,6 +7,10 @@ import {
 
 var LOCALE_STORAGE_KEY = "pokemon-game-revival:locale";
 var LOCALE_CHANGE_EVENT = "pokemon-game-revival:locale-change";
+var POKEDOLLAR_NUMBER_FORMATTER = new Intl.NumberFormat("de-DE", {
+  useGrouping: true,
+  maximumFractionDigits: 0
+});
 var currentLocale = readStoredLocale();
 
 applyDocumentLocale();
@@ -118,6 +122,10 @@ export function tp(key, count, variables) {
 
 export function formatLocaleNumber(value, options) {
   return new Intl.NumberFormat(currentLocale, options || {}).format(Number(value) || 0);
+}
+
+export function formatPokedollarNumber(value) {
+  return POKEDOLLAR_NUMBER_FORMATTER.format(Math.floor(Number(value) || 0));
 }
 
 export function formatLocaleDate(value, options) {

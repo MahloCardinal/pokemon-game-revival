@@ -4,7 +4,7 @@ import { assetPath, escapeHtml, getGenderImage, getItemDisplayImage, getPokemonI
 import { button, formatInteger, moneyMarkup } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { itemDisplayName, moveDisplayDescription, moveDisplayName, pokemonDisplayName, speciesDisplayName } from "../client/entity-text.js";
-import { resolveText, t } from "../client/i18n.js";
+import { formatPokedollarNumber, resolveText, t } from "../client/i18n.js";
 import { TRAINER_TITLES } from "../data/titles.js";
 
 function renderTrainerTitlesInfoDialog() {
@@ -420,7 +420,7 @@ function renderRewardClaimDialog(dialog) {
       name = t("messages.rewards.quantity", { quantity: formatInteger(reward.quantity), reward: name });
     }
   } else if (reward.kind === "money") {
-    name = t("messages.rewards.money", { quantity: formatInteger(reward.quantity) });
+    name = t("messages.rewards.money", { quantity: formatPokedollarNumber(reward.quantity) });
     image = moneyMarkup(reward.quantity);
   }
   return renderMessageDialog({

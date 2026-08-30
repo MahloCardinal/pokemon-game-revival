@@ -5,7 +5,7 @@ import {
   renderImage
 } from "./asset-helpers.js";
 import { scenePresentationAssetPath } from "../data/asset-paths.js";
-import { formatLocaleNumber, t, tList } from "./i18n.js";
+import { formatLocaleNumber, formatPokedollarNumber, t, tList } from "./i18n.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
 import { getRuntimeEnvironment } from "../api/supabase.js";
 
@@ -17,11 +17,11 @@ export function formatInteger(value) {
 }
 
 export function moneyMarkup(value) {
-  return '<span class="money-symbol">' + POKEDOLLAR_SYMBOL + '</span><span>' + escapeHtml(formatInteger(value)) + '</span>';
+  return '<span class="money-symbol">' + POKEDOLLAR_SYMBOL + '</span><span>' + escapeHtml(formatPokedollarNumber(value)) + '</span>';
 }
 
 export function moneyText(value) {
-  return formatInteger(value) + " " + POKEDOLLAR_SYMBOL;
+  return formatPokedollarNumber(value) + " " + POKEDOLLAR_SYMBOL;
 }
 
 export function battlePointsMarkup(value) {

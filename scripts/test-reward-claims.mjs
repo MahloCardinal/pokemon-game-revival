@@ -33,13 +33,15 @@ async function load(path) {
 }
 
 const { renderDialog } = await load("app/view/dialogs.js");
-const { setLocale, t } = await load("app/client/i18n.js");
+const { formatPokedollarNumber, setLocale, t } = await load("app/client/i18n.js");
 const { getItemDisplayImage, getPokemonImage } = await load("app/client/asset-helpers.js");
 const { itemDisplayName } = await load("app/client/entity-text.js");
 const { potion, ultra_ball, tm01 } = await load("app/data/items.js");
 const femaleShiny = { instanceId: "received-pokemon", speciesKey: "25", name: "Pikachu", gender: "female", isShiny: true };
 for (const locale of ["it", "en"]) {
   setLocale(locale);
+  assert.equal(formatPokedollarNumber(1000), "1.000");
+  assert.equal(formatPokedollarNumber(10000), "10.000");
   for (const [item, quantity] of [[potion, 1], [ultra_ball, 7], [tm01, 1]]) {
     const html = renderDialog({ type: "reward-claimed", reward: { kind: "item", itemIndex: item.index, quantity } });
     const name = quantity > 1 ? t("messages.rewards.quantity", { quantity, reward: itemDisplayName(item) }) : itemDisplayName(item);

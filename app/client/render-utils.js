@@ -165,7 +165,7 @@ export function renderGlobalNavigation(scene) {
       }
     }
     if (state.battleDome && state.battleDome.battles.some(function (battle) { return battle.own_role !== "spectator"; })) {
-      items.push({ label: t("navigation.pvp"), action: "open-battle-dome", href: "/battle-area/battle-dome", className: "button-accent" });
+      items.push({ label: t("navigation.pvp"), action: "open-battle-dome-lobby", href: "/battle-area/battle-dome/lobby", className: "button-accent" });
     }
   }
 

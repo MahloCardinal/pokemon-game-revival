@@ -121,9 +121,12 @@ function currentSceneMarkup() {
     return renderBattleDomeScene();
   }
   if (state.scene.name === "battle-dome-battle") {
-    return state.scene.battleDomeLeadSelection
-      ? renderBattleDomeLeadSelectionScene(state.scene)
-      : renderBattleScene(state.scene);
+    if (state.scene.battleDomeLeadSelection) {
+      return renderBattleDomeLeadSelectionScene(state.scene);
+    }
+    return state.scene.playerTeam && state.scene.enemyTeam && state.scene.manager
+      ? renderBattleScene(state.scene)
+      : renderBattleRestoreScene();
   }
   if (state.scene.name === "pokemon-center") {
     return renderPokemonCenterScene();
@@ -176,7 +179,7 @@ function currentSceneMarkup() {
   if (state.scene.name === "capture") {
     return renderCaptureScene(state.scene);
   }
-  if (["battle", "battle-dome-battle"].indexOf(state.scene.name) !== -1) {
+  if (state.scene.name === "battle") {
     return renderBattleScene(state.scene);
   }
   if (state.scene.name === "admin-home") {
@@ -495,6 +498,10 @@ export function setScene(scene, options) {
   options = options || {};
   var previousSceneName = state.scene && state.scene.name;
   scene = normalizeRenderableScene(scene);
+  if (scene.name === "battle-dome") {
+    scene.battleDomeTab = scene.battleDomeTab || state.battleDome.tab;
+    state.battleDome.tab = scene.battleDomeTab === "lobby" ? "lobby" : "team";
+  }
   var historyMode = options.history === "replace" ? "replace" : "push";
   if (state.scene && state.scene.name === "city-garden" && scene.name !== "city-garden" && state.garden && state.garden.harvestNotices) {
     state.garden.harvestNotices = [null, null, null];
@@ -534,7 +541,9 @@ export function setScene(scene, options) {
     import("./battle-dome-handler.js").then(function (module) { module.refreshBattleDomeState(); });
   }
   if (scene.name === "battle-dome-battle" && scene.battleDomeBattleId && !scene.playerTeam && !scene.battleDomeLeadSelection) {
-    import("./battle-dome-handler.js").then(function (module) { module.openBattleDomeBattle(scene.battleDomeBattleId, "replace"); });
+    import("./battle-dome-handler.js").then(function (module) {
+      if (state.scene === scene) return module.openBattleDomeBattle(scene.battleDomeBattleId, "replace");
+    });
   }
   if (scene.name === "player-directory") {
     import("./player-directory-handler.js").then(function (module) {

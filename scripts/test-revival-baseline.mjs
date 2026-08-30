@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import "./audit-css-ownership.mjs";
+import "./test-battle-dome-navigation.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

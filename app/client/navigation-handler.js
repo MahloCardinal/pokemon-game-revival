@@ -90,6 +90,10 @@ registerAction("open-battle-dome", function() {
     setScene({ name: "battle-dome" });
 });
 
+registerAction("open-battle-dome-lobby", function() {
+    setScene({ name: "battle-dome", battleDomeTab: "lobby" });
+});
+
 registerAction("open-city-pokemon-center", function(element) {
     setScene({
       name: "pokemon-center",

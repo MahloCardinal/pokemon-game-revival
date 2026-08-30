@@ -1,6 +1,7 @@
 import { registerAction } from "./action-registry.js";
 import { root, state } from "./game-state.js";
 import { render, renderRegions, setScene } from "./renderer.js";
+import { writeSceneHistory } from "./router.js";
 import { applyAuthoritativeProjection, openPendingBattleEntryChoice } from "./battle-handler.js";
 import { openMessage } from "./dialog-handler.js";
 import { t } from "./i18n.js";
@@ -125,6 +126,8 @@ document.addEventListener("input", function (event) {
 
 registerAction("battle-dome-tab", function (element) {
   state.battleDome.tab = element.dataset.tab === "lobby" ? "lobby" : "team";
+  state.scene.battleDomeTab = state.battleDome.tab;
+  writeSceneHistory(state.scene, "replace");
   state.battleDome.error = "";
   render({ preserveScroll: true });
   refreshBattleDomeState({ silent: state.battleDome.tab !== "lobby" });
@@ -294,10 +297,12 @@ registerAction("battle-dome-lead-choice", async function (element) {
 });
 
 export async function openBattleDomeBattle(battleId, history) {
+  var previousScene = state.scene;
   var result = await readBattleDomeBattle(battleId);
+  if (state.scene !== previousScene) return null;
   if (!result.ok || !result.battle) {
     state.battleDome.notice = t("ui.battleDome.battleUnavailable");
-    setScene({ name: "battle-dome" }, { history: "replace" });
+    setScene({ name: "battle-dome", battleDomeTab: "lobby" }, { history: "replace" });
     return null;
   }
   return openBattleDomeProjection(result.battle, result.events || [], history);
@@ -348,7 +353,7 @@ function startPoll() {
     if (!state.auth.user) return;
     if (state.scene && state.scene.name === "battle-dome-battle" && state.scene.battleDomeBattleId) {
       var scene = state.scene;
-      if (scene.authoritativeCommandPending) return;
+      if (scene.authoritativeCommandPending || !scene.playerTeam && !scene.battleDomeLeadSelection) return;
       var result = await readBattleDomeBattle(scene.battleDomeBattleId, { afterSeq: scene.authoritativeLastEventSeq || 0 });
       if (state.scene !== scene || scene.authoritativeCommandPending) return;
       if (!result.ok || !result.battle) {

@@ -236,11 +236,7 @@
 }
 
 .style-proposals-shiny-marker {
-  color: #e4a92f;
-  font-family: Arial, sans-serif;
   font-size: 24px;
-  line-height: 1;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.86), 0 2px 4px rgba(125, 83, 14, 0.22);
 }
 
 .style-proposals-grid {

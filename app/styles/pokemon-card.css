@@ -75,6 +75,9 @@ button.move-button:focus-visible:not(:disabled)::before {
   font-weight: 700;
   line-height: 1.2;
 }
+.pokemon-card-shiny-marker {
+  margin-left: 2px;
+}
 .pokemon-card-summary {
   display: flex;
   gap: 7.7px;

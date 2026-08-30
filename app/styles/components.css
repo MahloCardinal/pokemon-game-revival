@@ -741,6 +741,17 @@ button:disabled {
   white-space: pre-line;
 }
 
+.shiny-marker {
+  display: inline-block;
+  flex: 0 0 auto;
+  color: #e4a92f;
+  font-family: Arial, sans-serif;
+  font-size: 1.1em;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.86), 0 2px 4px rgba(125, 83, 14, 0.22);
+  vertical-align: 0.04em;
+}
+
 @media (max-width: 1150px) {
   .image-card {
     padding: clamp(12px, 1.4vw, 16px) clamp(13px, 1.56vw, 18px) clamp(11px, 1.22vw, 14px);

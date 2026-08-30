@@ -78,7 +78,7 @@ function renderShinyMarkerShowcase() {
     '  </div>',
     '  <div class="style-proposals-shiny-preview" aria-label="' + escapeHtml(t("ui.styles.shinyMarkerAccessibleLabel")) + '">',
     '    <span class="style-proposals-shiny-name">' + escapeHtml(t("ui.styles.shinyMarkerSample")) + '</span>',
-    '    <span class="style-proposals-shiny-marker" aria-hidden="true">★</span>',
+    '    <span class="shiny-marker style-proposals-shiny-marker" aria-hidden="true">★</span>',
     '  </div>',
     '</section>'
   ].join("");

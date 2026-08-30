@@ -8,7 +8,8 @@ export var EN_COMMON_TRANSLATIONS = Object.freeze({
     backToPreviousSection: "Go back to the previous section",
     openSectionMenu: "Open section menu",
     sectionMenu: "Section menu",
-    musicVolume: "Music volume"
+    musicVolume: "Music volume",
+    shinyPokemon: "Shiny Pokémon"
   }),
   common: Object.freeze({
     actions: Object.freeze({

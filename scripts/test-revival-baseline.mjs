@@ -655,6 +655,10 @@ for (const [moveKey, typeKey] of Object.entries(doubleDamageMoveTypes)) {
     assert.equal(move.moveMult, targetTypes.includes(typeKey) ? 2 : 1, `${moveKey}: multiplier must depend on the target type`);
   }
 }
+const shinyCard = renderExperienceCard({ level: 100, maxHp: 400, expCurrent: 0, expCap: 1000, moves: [], type: ["psychic"], isShiny: true }, {});
+const normalCard = renderExperienceCard({ level: 100, maxHp: 400, expCurrent: 0, expCap: 1000, moves: [], type: ["psychic"], isShiny: false }, {});
+assert.match(shinyCard, /pokemon-card-shiny-marker/);
+assert.doesNotMatch(normalCard, /pokemon-card-shiny-marker/);
 const scenePolicyModule = await loadEsModule(fileURLToPath(new URL("../app/client/battle-scene-policy.js", import.meta.url)));
 await scenePolicyModule.evaluate();
 const { sceneAllowsBallUse, pendingOwnedBattleEntryChoice } = scenePolicyModule.namespace;

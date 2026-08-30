@@ -103,6 +103,9 @@ export function renderPokemonCard(pokemon, options) {
       "      </p>"
     ].join("");
   var cardClassName = "pokemon-card " + (options.className || "");
+  var shinyMarker = pokemon && pokemon.isShiny
+    ? ' <span class="shiny-marker pokemon-card-shiny-marker" role="img" aria-label="' + escapeHtml(t("accessibility.shinyPokemon")) + '">★</span>'
+    : "";
 
   return [
     '<article class="' + cardClassName + '"' + pokemonCardTypeStyle(pokemon && pokemon.type) + (attrs ? " " + attrs : "") + ">",
@@ -112,7 +115,7 @@ export function renderPokemonCard(pokemon, options) {
     "    </div>",
     '    <div class="pokemon-card-main">',
     '      <div class="pokemon-card-name-row">',
-    '        <h3 class="pokemon-card-name">' + escapeHtml(speciesDisplayName(pokemon)) + "</h3>",
+        '        <h3 class="pokemon-card-name">' + escapeHtml(speciesDisplayName(pokemon)) + shinyMarker + "</h3>",
     pokemon.gender ? renderImage(getGenderImage(pokemon.gender), pokemon.gender, "gender-icon", imageAttrs) : "",
     "      </div>",
     '      <div class="pokemon-card-type-row">',

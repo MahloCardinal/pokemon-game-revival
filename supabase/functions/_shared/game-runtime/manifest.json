@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "1d861c15df18fd425f0ea02e5a788ce644038c34cbf6e8543b82d2e40fd9e49d",
+  "bundleChecksum": "95ee6ce2cfeec3c79858b19b5c96e18196e337ba966671a7bad38519820e8f15",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -94,13 +94,13 @@
     },
     {
       "source": "app/engine/battle-manager.js",
-      "sha256": "e3c3e491e6bdf4b22d88a715644942ea729b96f6d6d0180c66150fb052b1393e",
-      "bytes": 82532
+      "sha256": "2b3ff38ffd1098479b1f1c9dd26f5cc307b5729cef8d610784032e2da27c02ef",
+      "bytes": 82629
     },
     {
       "source": "app/engine/battle-runtime.js",
-      "sha256": "559e71b736db284f0b0796b0a309cc2bcbc2c223833c34733431a1a646607fb8",
-      "bytes": 42107
+      "sha256": "d9c873e277b7de10ba967e689ca40e427d39fa4386b82ecfd628c5aee76c72dc",
+      "bytes": 44431
     },
     {
       "source": "app/engine/battle-summary.js",

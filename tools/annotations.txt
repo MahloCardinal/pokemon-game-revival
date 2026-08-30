@@ -2,7 +2,7 @@
 # TODO
 #--------------------------------------------------------------------
 - reinserire regolamento completo
-- inserire possibilità di andare allo stato della sfida cliccando sul turno nel log (deve valire per qualsiasi sfida del GdR)
+- correggere testi e traduzioni i18n
 
 
 

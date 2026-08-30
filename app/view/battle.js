@@ -164,7 +164,10 @@ function renderBattleLog(logEntries, scene) {
 
     return [
       '<div class="log-line log-turn-group">',
-      group.title ? '<p class="log-turn-title">' + escapeHtml(group.title) + "</p>" : "",
+      group.title ? '<button type="button" class="log-turn-title battle-turn-button" data-action="battle-history-open" data-turn="' + escapeHtml(group.turn) + '"'
+        + (scene.battleHistoryTurns && scene.battleHistoryTurns[group.turn] && !scene.authoritativeCommandPending
+          && !scene.authoritativeCommandUncertain && !scene.battleHistoryLoading ? '' : ' disabled')
+        + '>' + escapeHtml(group.title) + '</button>' : "",
       group.lines.map(function (line) {
         var className = line.team ? "log-turn-entry log-turn-team" : "log-turn-entry";
         var content = escapeHtml(line.text);
@@ -176,6 +179,18 @@ function renderBattleLog(logEntries, scene) {
 }
 
 export function renderBattleScene(scene) {
+  var liveScene = scene;
+  var history = scene.battleHistoryView;
+  var historyLoading = Boolean(scene.battleHistoryLoading);
+  if (history) {
+    scene = Object.assign({}, history, {
+      battleInfoPanel: liveScene.battleInfoPanel,
+      battleBottomPanel: liveScene.battleBottomPanel,
+      battleHistoryTurns: liveScene.battleHistoryTurns,
+      battleHistoryLoading: liveScene.battleHistoryLoading
+    });
+  }
+  var readonlyHistory = Boolean(history || historyLoading);
   var renderScene = scene.finalBattleDisplayScene || scene;
   var showExperience = !scene.battleDome;
   ensureBattleBindings(renderScene);
@@ -247,17 +262,17 @@ export function renderBattleScene(scene) {
   var pendingAdminEntryChoice = Boolean(scene.pendingAdminEntryChoice && waitingForAdmin);
   var adminEntryChoiceActive = scene.adminBattle && pendingAdminEntryChoice;
   var authoritativeAdminEntryChoice = scene.adminBattle && scene.authoritativeAdminEntryChoice;
-  var playerActionLocked = playerNeedsSwitch || playerPostMoveSwitch || waitingForAdmin || scene.adminBattle || scene.battleDomeSpectator
+  var playerActionLocked = readonlyHistory || playerNeedsSwitch || playerPostMoveSwitch || waitingForAdmin || scene.adminBattle || scene.battleDomeSpectator
     || Boolean(scene.battleEntryChoicePanel)
     || scene.authoritativeCommandPending || scene.authoritativeCommandUncertain;
-  var adminActionEnabled = scene.adminBattle && waitingForAdmin && !scene.battleDomeSpectator;
+  var adminActionEnabled = !readonlyHistory && scene.adminBattle && waitingForAdmin && !scene.battleDomeSpectator;
   var ownNeedsSwitch = adminPerspective ? adminNeedsSwitch : playerNeedsSwitch;
   var opponentNeedsSwitch = adminPerspective ? playerNeedsSwitch : adminNeedsSwitch;
   var ownSwitchAction = adminPerspective ? "admin-battle-switch" : "battle-switch";
   var ownMoveAction = adminPerspective ? "admin-battle-move" : "battle-move";
   var ownActionEnabled = adminPerspective ? adminActionEnabled && !adminNeedsSwitch && !adminEntryChoiceActive
     && !authoritativeAdminEntryChoice && !scene.authoritativeCommandPending : !renderScene.manager.battleOver && !playerActionLocked;
-  var playerItemsReadonly = scene.battleDomeSpectator || (scene.adminBattle
+  var playerItemsReadonly = readonlyHistory || scene.battleDomeSpectator || (scene.adminBattle
     ? Boolean(scene.authoritativeCommandPending) || Boolean(scene.battleDome && (!adminActionEnabled || adminNeedsSwitch || adminEntryChoiceActive || authoritativeAdminEntryChoice))
     : playerActionLocked);
   var battleType = renderScene.battleType || scene.battleType || "";
@@ -267,11 +282,11 @@ export function renderBattleScene(scene) {
     && renderScene.enemyTeam.isAllFainted()
     && isAdminRewardBattleType(battleType)
     && !scene.rewardFinalized;
-  var ownSlotOptions = ownNeedsSwitch ? {
+  var ownSlotOptions = !readonlyHistory && ownNeedsSwitch ? {
     className: "has-fainted-overlay has-forced-switch",
     overlayContent: renderForcedSwitchOverlay(ownTeam, ownSwitchAction),
     moveAction: ownMoveAction
-  } : scene.battleEntryChoicePanel && (!adminPerspective || scene.battleDome) ? {
+  } : !readonlyHistory && scene.battleEntryChoicePanel && (!adminPerspective || scene.battleDome) ? {
     className: "has-fainted-overlay has-entry-choice-overlay",
     overlayContent: renderEntryChoiceOverlay(scene.battleEntryChoicePanel),
     moveAction: ownMoveAction
@@ -281,7 +296,10 @@ export function renderBattleScene(scene) {
   var authoritativeUncertaintyMessage = scene.authoritativeCommandUncertain
     ? '<p class="battle-authoritative-uncertain-message">' + escapeHtml(resolveText(scene.authoritativeUncertaintyMessage, t("ui.battle.commandUncertain"))) + "</p>"
     : "";
-  var battleInfoFooter = scene.battleDomeSpectator
+  var battleInfoFooter = readonlyHistory
+    ? '<div class="battle-info-actions"><p class="battle-history-notice">' + escapeHtml(t(historyLoading ? "ui.battle.historyLoading" : "ui.battle.historyTurn", { number: history && history.battleHistoryTurn })) + '</p>'
+      + button(t("ui.battle.historyLive"), "battle-history-live", "", "button-primary button-slim") + '</div>'
+    : scene.battleDomeSpectator
     ? '<div class="battle-info-actions"><p class="battle-admin-thinking-log">' + escapeHtml(t("ui.battleDome.readOnly")) + '</p></div>'
     : scene.battleDome && !renderScene.manager.battleOver && !scene.authoritativeCommandPending
       ? '<div class="battle-info-actions battle-abandon-actions" data-battle-abandon-inline>' + button(t("ui.battle.abandon"), "battle-abandon-open", "", "button-danger button-slim") + "</div>"
@@ -310,11 +328,11 @@ export function renderBattleScene(scene) {
         ? ""
         : '<div class="battle-info-actions" data-battle-abandon-inline>' + button(t("ui.battle.abandon"), "battle-abandon-open", "", "button-danger button-slim") + "</div>";
   var waitingLogLine = "";
-  if (waitingForAdmin && !scene.adminBattle) {
+  if (!readonlyHistory && waitingForAdmin && !scene.adminBattle) {
     waitingLogLine = '<div class="log-line battle-admin-thinking-log">' + escapeHtml(t(scene.pendingAdminEntryChoice ? "ui.battle.choosingFieldPokemon" : "ui.battle.thinking", { name: renderScene.enemyTeam.name || t("ui.battle.opponent") })) + "</div>";
-  } else if (adminEntryChoiceActive) {
+  } else if (!readonlyHistory && adminEntryChoiceActive) {
     waitingLogLine = '<div class="log-line battle-admin-thinking-log">' + escapeHtml(t("ui.battle.choosePokemon")) + '</div>';
-  } else if (scene.adminBattle && renderScene.manager.waitingFor === "player" && !renderScene.manager.battleOver) {
+  } else if (!readonlyHistory && scene.adminBattle && renderScene.manager.waitingFor === "player" && !renderScene.manager.battleOver) {
     waitingLogLine = '<div class="log-line battle-admin-thinking-log">' + escapeHtml(t("ui.battle.thinking", { name: scene.playerUsername || t("ui.battle.playerArticle") })) + "</div>";
   }
   var infoCard = [
@@ -342,7 +360,7 @@ export function renderBattleScene(scene) {
       + '</div><p>' + escapeHtml(t("ui.battle.towerChallenge", { number: scene.authoritativeTowerChallenge || 1 })) + '</p><h2>'
       + escapeHtml(renderScene.authoritativePresentation.name || t("ui.battle.challenger")) + "</h2></section>"
     : "";
-  if (!renderScene.manager.battleOver && !scene.battleTower && state && (scene.adminBattle || Array.isArray(scene.playerInventory) || (!scene.authoritativeBattle && state.inventory))) {
+  if ((!renderScene.manager.battleOver || history) && !scene.battleTower && state && (scene.adminBattle || Array.isArray(scene.playerInventory) || (!scene.authoritativeBattle && state.inventory))) {
     var playerInventory = Array.isArray(scene.playerInventory) ? scene.playerInventory : state.inventory;
     var ownInventoryItems = resolveInventoryItems(scene.adminBattle ? scene.adminItems : playerInventory);
     var opponentInventoryItems = scene.adminBattle ? resolveInventoryItems(scene.playerInventory || [])
@@ -471,7 +489,7 @@ export function renderBattleScene(scene) {
       '      <div class="mini-roster" data-scroll-key="battle-player-roster">' + ownTeam.combatantList.map(function (combatant, index) {
         return renderMiniCombatant(combatant, !adminEntryChoiceActive && index === ownTeam.activeIndex, {
           showExperience: showExperience,
-          canSwitch: adminEntryChoiceActive || (adminPerspective ? adminActionEnabled : !renderScene.manager.battleOver && !playerActionLocked),
+          canSwitch: !readonlyHistory && (adminEntryChoiceActive || (adminPerspective ? adminActionEnabled : !renderScene.manager.battleOver && !playerActionLocked)),
           switchAction: adminEntryChoiceActive ? "admin-battle-entry" : ownSwitchAction,
           switchLabel: t(adminEntryChoiceActive ? "ui.battle.choose" : "ui.battle.switch"),
           allowActiveSwitch: adminEntryChoiceActive,

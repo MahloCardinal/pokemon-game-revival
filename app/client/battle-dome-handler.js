@@ -313,6 +313,7 @@ registerAction("battle-dome-open-battle", function (element) {
 });
 
 export async function runBattleDomeCommand(scene, kind, input) {
+  if (scene.battleHistoryView || scene.battleHistoryLoading) return { ok: false };
   var envelope = Object.assign({ battleId: scene.battleDomeBattleId, expectedBattleVersion: scene.authoritativeBattleVersion }, input || {});
   var result = kind === "move" ? await submitBattleDomeMove(envelope)
     : kind === "switch" ? await switchBattleDomePokemon(envelope)
@@ -356,10 +357,11 @@ function startPoll() {
       if (scene.authoritativeCommandPending || !scene.playerTeam && !scene.battleDomeLeadSelection) return;
       var result = await readBattleDomeBattle(scene.battleDomeBattleId, { afterSeq: scene.authoritativeLastEventSeq || 0 });
       if (state.scene !== scene || scene.authoritativeCommandPending) return;
-      if (!result.ok || !result.battle) {
+      if (!result.ok) return;
+      if (!result.battle) {
         state.battleDome.notice = t("ui.battleDome.battleCancelled");
         await refreshBattleDomeState({ silent: true });
-        setScene({ name: "battle-dome" }, { history: "replace" });
+        setScene({ name: "battle-dome", battleDomeTab: "lobby" }, { history: "replace" });
         return;
       }
       if (result.battle.engine_runtime_state === "pending") {

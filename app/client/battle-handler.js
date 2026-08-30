@@ -144,11 +144,21 @@ export function appendAuthoritativeEventLines(scene, events) {
     if (Number.isFinite(seq) && seq <= scene.authoritativeLastEventSeq) { return; }
     if (Number.isFinite(seq)) { scene.authoritativeLastEventSeq = Math.max(scene.authoritativeLastEventSeq, seq); }
     if (type === "display_log" && data.entry && typeof data.entry.key === "string") { scene.manager.log.push(data.entry); }
+    if (type === "turn_checkpoint" && Number(data.turn_number) > 0) {
+      scene.battleHistoryTurns = scene.battleHistoryTurns || {};
+      scene.battleHistoryTurns[Number(data.turn_number)] = { seq: seq, logLength: scene.manager.log.length };
+    }
     if (type === "ordinary_exp_awarded") { storeAuthoritativeExpAwards(scene, data.awards); }
   });
 }
 
-export function applyAuthoritativeProjection(scene, projection, events) {
+export function applyAuthoritativeProjection(scene, projection, events, options) {
+  options = options || {};
+  if (!options.history && ["concluded", "abandoned"].indexOf(projection.status) !== -1
+    && !(scene.manager && scene.manager.battleOver)) {
+    scene.battleHistoryView = null;
+    scene.battleHistoryLoading = null;
+  }
   var isTraining = ["training", "debug_training"].indexOf(String(projection && projection.contract_key || "")) !== -1;
   var isGym = ["gym", "admin_gym"].indexOf(String(projection && projection.contract_key || "")) !== -1;
   var isLeague = String(projection && projection.contract_key || "") === "league";
@@ -245,7 +255,7 @@ export function applyAuthoritativeProjection(scene, projection, events) {
   scene.authoritativeTowerRunId = isBattleTower ? String(projection.tower_run_id || scene.authoritativeTowerRunId || "") : "";
   scene.authoritativeTowerChallenge = isBattleTower ? Math.max(1, Number(projection.tower_challenge) || 1) : null;
   scene.authoritativeTowerWins = isBattleTower ? Math.max(0, Number(projection.tower_wins) || 0) : 0;
-  if (isBattleTower && ["concluded", "abandoned"].indexOf(String(projection.status || "")) === -1) {
+  if (!options.history && isBattleTower && ["concluded", "abandoned"].indexOf(String(projection.status || "")) === -1) {
     state.battleTower = {
       runId: scene.authoritativeTowerRunId || null,
       wins: scene.authoritativeTowerWins,
@@ -254,7 +264,7 @@ export function applyAuthoritativeProjection(scene, projection, events) {
       attemptedToday: Boolean(state.battleTower && state.battleTower.attemptedToday)
     };
   }
-  scene.captureScene = isCapture ? Object.assign(createCaptureScene(captureZoneName, scene.captureScene), {
+  scene.captureScene = isCapture && !options.history ? Object.assign(createCaptureScene(captureZoneName, scene.captureScene), {
     encounterId: String(projection.encounter_id || captureContext.encounter_id || "")
   }) : scene.captureScene;
   scene.kantoLeague = isLeague;
@@ -283,7 +293,7 @@ export function applyAuthoritativeProjection(scene, projection, events) {
   scene.authoritativeAdminEntryChoice = projection.admin_entry_choice && typeof projection.admin_entry_choice === "object" ? projection.admin_entry_choice : null;
   scene.authoritativeInitialEntry = projection.initial_entry && typeof projection.initial_entry === "object" ? projection.initial_entry : null;
   scene.playerInventory = copyInventoryEntries(projection.player_items);
-  storeAuthoritativeExpAwards(scene, projection.ordinary_exp_awards);
+  if (!options.history) storeAuthoritativeExpAwards(scene, projection.ordinary_exp_awards);
   appendAuthoritativeEventLines(scene, events);
   ensureBattleBindings(scene);
   return scene;
@@ -1656,6 +1666,7 @@ function runBattleRuntimeAction(action) {
   if (state._battleAnimationLock) {
     return true;
   }
+  if (state.scene.battleHistoryView || state.scene.battleHistoryLoading) return false;
   action();
   return true;
 }
@@ -1867,7 +1878,12 @@ function refreshAuthoritativeSceneFromNotification(scene, battleId, generation, 
       var currentVersion;
       if (generation !== activeAuthoritativeRealtimeGeneration || state.scene !== scene
         || String(scene.authoritativeBattleId || "") !== battleId) { return result; }
-      if (!result.ok || !result.battle) {
+      if (result.ok && !result.battle) {
+        setActiveBattleMeta(null);
+        setScene(battleReturnScene(scene), { history: "replace" });
+        return result;
+      }
+      if (!result.ok) {
         state.saveStatus = { state: "error", message: battleFailure("updateFailed") };
         return result;
       }
@@ -1937,7 +1953,14 @@ function syncActiveBattleRealtime(scene) {
     }
     activeBattleRealtimeChannel = client.channel("authoritative-battle-" + battleId).on("postgres_changes", {
       event: "UPDATE", schema: "public", table: "authoritative_battle", filter: "id=eq." + battleId
-    }, refreshFromAuthoritativeNotification).subscribe(function (status) {
+    }, refreshFromAuthoritativeNotification).on("postgres_changes", {
+      event: "DELETE", schema: "public", table: "authoritative_battle"
+    }, function (payload) {
+      if (state.scene === scene && String(payload && payload.old && payload.old.id || "") === battleId) {
+        setActiveBattleMeta(null);
+        setScene(battleReturnScene(scene), { history: "replace" });
+      }
+    }).subscribe(function (status) {
       if (status === "SUBSCRIBED") {
         refreshFromAuthoritativeNotification();
       }
@@ -3703,6 +3726,7 @@ function waitForAdminEntryChoice(scene) {
 }
 
 export function openPendingBattleEntryChoice(scene) {
+  if (scene && (scene.battleHistoryView || scene.battleHistoryLoading)) return false;
   var pending = scene && scene.authoritativeBattle ? pendingOwnedBattleEntryChoice(scene) : null;
   var combatant = pending ? pending.combatant : scene && scene.playerTeam ? scene.playerTeam.getActive() : null;
   var panelOpened;

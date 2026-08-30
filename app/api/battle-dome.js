@@ -28,14 +28,20 @@ export function joinBattleDomeLobby(input) {
   });
 }
 
-export function readBattleDomeBattle(battleId, options) {
+export async function readBattleDomeBattle(battleId, options) {
   options = options || {};
-  return invokeAuthoritativeBattleCommand({
-    action: "dome_read",
-    battleId: String(battleId || ""),
-    afterSeq: options.afterSeq === undefined ? 0 : Number(options.afterSeq),
-    limit: options.limit === undefined ? 100 : Number(options.limit)
-  });
+  var afterSeq = options.afterSeq === undefined ? 0 : Number(options.afterSeq);
+  var limit = options.limit === undefined ? 100 : Number(options.limit);
+  var events = [];
+  while (true) {
+    var result = await invokeAuthoritativeBattleCommand({ action: "dome_read", battleId: String(battleId || ""), afterSeq: afterSeq, limit: limit });
+    if (!result.ok || !result.battle) return result;
+    var page = result.events || [];
+    events = events.concat(page);
+    var nextSeq = page.reduce(function (highest, event) { return Math.max(highest, Number(event.seq) || 0); }, afterSeq);
+    if (page.length < limit || nextSeq <= afterSeq) return Object.assign({}, result, { events: events });
+    afterSeq = nextSeq;
+  }
 }
 
 export function chooseBattleDomeLead(input) {

@@ -2130,6 +2130,9 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
         active.wasHitSinceSwitch = false;
       }
     });
+    if (typeof this.onTurnCompleted === "function") {
+      this.onTurnCompleted(this.turn - 1);
+    }
   }
 };
 

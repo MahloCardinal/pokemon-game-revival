@@ -492,6 +492,29 @@
 .log-turn-entry {
   color: var(--text-soft);
 }
+.battle-turn-button {
+  justify-self: center;
+  padding: 5px 14px;
+  border: 1px solid var(--text-soft);
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.battle-turn-button:hover:not(:disabled),
+.battle-turn-button:focus-visible {
+  background: rgba(255, 255, 255, 0.15);
+}
+.battle-turn-button:disabled {
+  border-color: transparent;
+  cursor: default;
+}
+.battle-history-notice {
+  margin: 0;
+  text-align: center;
+  color: var(--text-soft);
+}
 .log-turn-team {
   color: var(--text);
   font-weight: 700;

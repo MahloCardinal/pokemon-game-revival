@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import "./audit-css-ownership.mjs";
 import "./test-battle-dome-navigation.mjs";
+import { testBattleHistory, testBattleHistoryClient } from "./test-battle-history.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -613,6 +614,8 @@ const MoveDefinitions = moveDefinitionsModule.namespace;
 const itemDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/items.js", import.meta.url)));
 if (itemDefinitionsModule.status !== "evaluated") await itemDefinitionsModule.evaluate();
 const ItemDefinitions = itemDefinitionsModule.namespace;
+testBattleHistory(engineExports, MoveDefinitions, ItemDefinitions);
+await testBattleHistoryClient();
 const titleDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/titles.js", import.meta.url)));
 if (titleDefinitionsModule.status !== "evaluated") await titleDefinitionsModule.evaluate();
 const TitleDefinitions = titleDefinitionsModule.namespace;

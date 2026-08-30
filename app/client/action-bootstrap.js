@@ -6,6 +6,7 @@ import "./starter-handler.js";
 import "./pokemon-center-handler.js";
 import "./capture-handler.js";
 import "./battle-handler.js";
+import "./battle-history-handler.js";
 import "./training-zone-handler.js";
 import "./battle-tower-handler.js";
 import "./battle-shop-handler.js";

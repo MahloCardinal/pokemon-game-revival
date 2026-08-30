@@ -32,7 +32,7 @@ import { notifyDiscordAdminBattleStarted, notifyDiscordAdminBattleTurnReady } fr
 const unchangedTerminalEffects = { reward: "none", inventory: "unchanged", team: "unchanged" };
 const commonKeys = ["action", "battleId", "commandId", "expectedPlayerRevision", "expectedBattleVersion", "runtimeOwnerId"];
 const allowedActions = new Set([
-  "roles", "debug_money", "debug_badges", "debug_titles", "debug_battle_points", "debug_create_pokemon", "inventory_adjust", "debug_complete_mission",
+  "roles", "turn_history", "debug_money", "debug_badges", "debug_titles", "debug_battle_points", "debug_create_pokemon", "inventory_adjust", "debug_complete_mission",
   "admin_list", "admin_read", "admin_entry_choice", "start", "prepare_training", "discard_training", "activate_training", "start_training", "start_debug_training", "start_capture", "flee_capture", "start_gym",
   "start_admin_gym", "start_league", "start_tower", "read", "restore", "read_training", "read_ordinary_progression",
   "resolve_ordinary_progression", "allocate_training", "resolve_training", "move", "switch", "entry_choice", "item", "ball",
@@ -426,6 +426,19 @@ Deno.serve(async (request) => {
     if (action === "roles") {
       requireExactKeys(body, ["action"], []);
       return jsonResponse({ ok: true, roles: await rolesForUser(clients.serviceClient, clients.userId) });
+    }
+
+    if (action === "turn_history") {
+      requireExactKeys(body, ["action", "battleId", "dome", "turnNumber"], ["battleId", "dome", "turnNumber"]);
+      if (typeof body.dome !== "boolean") throw new BattleEdgeError("invalid_request", "Invalid battle history context.");
+      const result = await clients.serviceClient.rpc("read_edge_battle_turn_history", {
+        p_auth_user_id: clients.userId,
+        p_battle_id: uuid(body.battleId, "battleId"),
+        p_dome: body.dome,
+        p_turn_number: integer(body.turnNumber, "turnNumber", 1, Number.MAX_SAFE_INTEGER)
+      });
+      if (result.error) throw databaseError(result.error);
+      return jsonResponse(result.data as Record<string, unknown>);
     }
 
     if (action === "debug_titles") {

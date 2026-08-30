@@ -272,6 +272,12 @@ function syncAdminBattleRealtime(playerAuthUserId, battleId) {
   activeAdminBattleRealtimeChannel = client.channel("admin-authoritative-battle-" + normalizedBattleId)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "authoritative_battle",
       filter: "id=eq." + normalizedBattleId }, refreshBattle)
+    .on("postgres_changes", { event: "DELETE", schema: "public", table: "authoritative_battle" }, function (payload) {
+      if (state.scene && String(state.scene.authoritativeBattleId || "") === normalizedBattleId
+        && String(payload && payload.old && payload.old.id || "") === normalizedBattleId) {
+        handleAdminBattleDeleted(normalizedPlayerId);
+      }
+    })
     .subscribe(function (status) {
       if (status === "SUBSCRIBED") {
         refreshBattle();
@@ -318,7 +324,7 @@ registerAction("admin-battle-open", function (element) {
 });
 
 function runAuthoritativeAdminAction(scene, commandType, payload, operation) {
-  if (!scene || scene.authoritativeCommandPending) { return Promise.resolve({ ok: false }); }
+  if (!scene || scene.authoritativeCommandPending || scene.battleHistoryView || scene.battleHistoryLoading) { return Promise.resolve({ ok: false }); }
   if (scene.battleDome) {
     scene.authoritativeCommandPending = true;
     render({ preserveScroll: true });

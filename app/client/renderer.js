@@ -354,6 +354,9 @@ export function syncRulesHeadingButtonWidths(scope) {
 
 export function render(options) {
   options = options || {};
+  if (state.scene && (state.scene.battleHistoryView || state.scene.battleHistoryLoading)) {
+    options = Object.assign({}, options, { preserveScroll: true, scrollBattleLogToBottom: false });
+  }
   var preserveScroll = options.preserveScroll !== false;
   var scrollX = window.scrollX || window.pageXOffset || 0;
   var scrollY = window.scrollY || window.pageYOffset || 0;

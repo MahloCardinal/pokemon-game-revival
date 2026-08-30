@@ -404,7 +404,7 @@ export function executeInitialNpcOpening(snapshot) {
   delete manager.onPresentationFrame;
   return {
     snapshot: serializeBattleManager(manager, execution.rngState, { playerItems: restored.playerItems, presentation: manager.presentation }),
-    events: commandEvents(manager, logStart, { sequence: 0, type: "initial_npc_opening", data: { command_type: "initial_npc_opening" } }, presentationFrames),
+    events: commandEvents(manager, logStart, { sequence: 0, type: "initial_npc_opening", data: { command_type: "initial_npc_opening" } }, presentationFrames, [], restored.playerItems),
     status: status.status, resultKey: status.resultKey, projection: projectBattle(manager, status, restored.playerItems),
     rngStart: rngStart, rngEnd: restoreRngState(execution.rngState), rngDraws: execution.rngState.draws - rngStart.draws
   };
@@ -463,13 +463,52 @@ function capturePresentationFrames(manager) {
   return frames;
 }
 
-function commandEvents(manager, logStart, commandEvent, presentationFrames) {
+function captureTurnHistory(manager, playerItems, command) {
+  var frames = [];
+  var initialItems = jsonValue(playerItems || [], 0);
+  var initialUsed = Object.assign({}, manager.usedItems);
+  manager.onTurnCompleted = function (turn) {
+    var items = initialItems.map(function (entry) {
+      var item = getInventoryItemByIndex(initialItems, Number(entry[0]));
+      var consumed = item ? Math.max(0, (manager.usedItems[item.key] || 0) - (initialUsed[item.key] || 0)) : 0;
+      if (command && command.type === "ball" && Number(entry[0]) === Number(command.itemIndex)
+        && manager.log.some(function (event) { return event.key === "capture.ballFailed" || event.key === "capture.caught"; })) consumed = 1;
+      return [entry[0], Math.max(0, Number(entry[1]) - consumed)];
+    });
+    frames.push({ turn: turn, logOffset: manager.log.length, projection: projectBattle(manager, battleStatus(manager), items) });
+  };
+  return frames;
+}
+
+function commandEvents(manager, logStart, commandEvent, presentationFrames, turnHistory, playerItems) {
   var frames = (presentationFrames || []).map(function (frame, index) {
     return { sequence: index + 1, type: "presentation_frame", data: frame };
   });
-  return [commandEvent].concat(frames, manager.log.slice(logStart).map(function (entry, index) {
-    return { sequence: frames.length + index + 1, type: "display_log", data: { entry: entry } };
-  }));
+  var history = turnHistory || [];
+  if (manager.firstActionInTurn && history.length) {
+    var completed = history[history.length - 1];
+    if (completed.turn === manager.turn - 1) {
+      completed.projection = projectBattle(manager, battleStatus(manager), playerItems);
+      completed.logOffset = manager.log.length;
+    }
+  }
+  if (manager.battleOver) {
+    var started = manager.log.slice(logStart).filter(function (entry) { return entry.key === "turn.started"; }).pop();
+    if (started) {
+      var turn = Number(started.turn || started.params.number);
+      history = history.filter(function (frame) { return frame.turn !== turn; });
+      history.push({ turn: turn, logOffset: manager.log.length, projection: projectBattle(manager, battleStatus(manager), playerItems) });
+    }
+  }
+  delete manager.onTurnCompleted;
+  var events = [commandEvent].concat(frames);
+  manager.log.slice(logStart).forEach(function (entry, index) {
+    events.push({ type: "display_log", data: { entry: entry } });
+    history.filter(function (frame) { return frame.logOffset === logStart + index + 1; }).forEach(function (frame) {
+      events.push({ type: "turn_checkpoint", data: { turn_number: frame.turn, projection: frame.projection } });
+    });
+  });
+  return events.map(function (event, index) { return Object.assign({}, event, { sequence: index }); });
 }
 
 export function executeBattleCommand(snapshot, command) {
@@ -480,6 +519,7 @@ export function executeBattleCommand(snapshot, command) {
   var itemConsumption = null;
   var itemActionSkipped = false;
   var presentationFrames = capturePresentationFrames(manager);
+  var turnHistory = captureTurnHistory(manager, restored.playerItems, command);
   if (manager.initialEntry && manager.initialEntry.phase !== "ready" && command.type !== "entry_choice" && command.type !== "abandon") {
     throw new Error("A held-item effect must be selected first.");
   }
@@ -565,7 +605,7 @@ export function executeBattleCommand(snapshot, command) {
     ? { command_type: command.type, item_index: Number(command.itemIndex), item_consumed: Boolean(itemConsumption), action_skipped: itemActionSkipped }
     : command.type === "entry_choice"
       ? { command_type: command.type, entry_choice: jsonValue(command.entryChoice || null, 0) }
-      : { command_type: command.type } }, presentationFrames);
+      : { command_type: command.type } }, presentationFrames, turnHistory, restored.playerItems);
   return {
     snapshot: serializeBattleManager(manager, execution.rngState, { playerItems: restored.playerItems, presentation: manager.presentation }),
     events: events,
@@ -597,6 +637,7 @@ export function executeCaptureBattleCommand(snapshot, command) {
   var actionSkipped = false;
   var catchRate;
   var presentationFrames = capturePresentationFrames(manager);
+  var turnHistory = captureTurnHistory(manager, restored.playerItems, command);
   if (manager.initialEntry && manager.initialEntry.phase !== "ready") {
     throw new Error("A held-item effect must be selected first.");
   }
@@ -638,7 +679,7 @@ export function executeCaptureBattleCommand(snapshot, command) {
     command_type: "ball", item_index: itemIndex, target_slot: Number(command.targetSlot),
     item_consumed: itemConsumed, action_skipped: actionSkipped,
     capture_success: captured, catch_rate: catchRate
-  } }, presentationFrames);
+  } }, presentationFrames, turnHistory, restored.playerItems);
   var projection = projectBattle(manager, status, restored.playerItems);
   projection.capture_success = captured;
   projection.catch_rate = catchRate;
@@ -663,6 +704,7 @@ export function executeAdminBattleCommand(snapshot, command) {
   var manager = restored.manager;
   var rngStart = restoreRngState(restored.rngState);
   var logStart = manager.log.length;
+  var turnHistory = captureTurnHistory(manager, restored.playerItems, command);
   var execution;
   var result;
   if (!manager.adminControlled || manager.waitingFor !== "admin" || manager.battleOver) {
@@ -712,10 +754,7 @@ export function executeAdminBattleCommand(snapshot, command) {
     return result;
   });
   var status = battleStatus(manager);
-  var events = manager.log.slice(logStart).map(function (entry, index) {
-    return { sequence: index + 1, type: "display_log", data: { entry: entry } };
-  });
-  events.unshift({ sequence: 0, type: "admin_command_resolved", data: { command_type: command.type } });
+  var events = commandEvents(manager, logStart, { type: "admin_command_resolved", data: { command_type: command.type } }, [], turnHistory, restored.playerItems);
   return {
     snapshot: serializeBattleManager(manager, execution.rngState, { playerItems: restored.playerItems, presentation: manager.presentation }),
     events: events,

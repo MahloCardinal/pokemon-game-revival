@@ -526,6 +526,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     fontSample: "Zona cattura - Conferma azione", button: "Bottone", popup: "Popup", confirmAction: "Conferma azione",
     proceed: "Procedere con questa operazione?", yes: "Sì", no: "No",
     bagEyebrow: "Zaino scheda allenatore", bag: "Zaino", bagDescription: "Anteprima dello zaino nella scheda allenatore. Strumenti e impaginazione rispecchiano la schermata della squadra.",
+    shinyMarkerEyebrow: "Indicatore Shiny", shinyMarkerTitle: "Stellina Shiny", shinyMarkerDescription: "Proposta per mostrare i Pokémon Shiny accanto al loro nome nelle card Pokémon.", shinyMarkerSample: "Pikachu", shinyMarkerAccessibleLabel: "Anteprima del nome di un Pokémon Shiny",
     eyebrow: "Proposte UI", intro: "Direzioni visive alternative per bottoni, card zona, panel e popup dell'applicazione.",
     proposals: Object.freeze({
       cartridge: Object.freeze({ title: "Cartuccia", text: "Angoli netti, bordo outset e ombra corta per un look da interfaccia fisica.", primary: "Conferma", secondary: "Dettagli", zone: "Bosco Smeraldo", panelTitle: "Scheda compatta", panelText: "Cornice doppia e superficie chiara per contenuti ricorrenti." }),

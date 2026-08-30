@@ -526,6 +526,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     fontSample: "Capture Zone - Confirm action", button: "Button", popup: "Popup", confirmAction: "Confirm action",
     proceed: "Proceed with this operation?", yes: "Yes", no: "No",
     bagEyebrow: "Trainer Card Bag", bag: "Bag", bagDescription: "Preview of the Bag on the Trainer Card. Items and layout match the team screen.",
+    shinyMarkerEyebrow: "Shiny marker", shinyMarkerTitle: "Shiny star", shinyMarkerDescription: "Proposal for showing Shiny Pokémon beside their names in Pokémon cards.", shinyMarkerSample: "Pikachu", shinyMarkerAccessibleLabel: "Preview of a Shiny Pokémon name",
     eyebrow: "UI proposals", intro: "Alternative visual directions for the application's buttons, zone cards, panels, and popups.",
     proposals: Object.freeze({
       cartridge: Object.freeze({ title: "Cartridge", text: "Sharp corners, an outset border, and a short shadow create a physical-interface look.", primary: "Confirm", secondary: "Details", zone: "Viridian Forest", panelTitle: "Compact card", panelText: "Double frame and light surface for recurring content." }),

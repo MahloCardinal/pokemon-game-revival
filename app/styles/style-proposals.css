@@ -179,6 +179,70 @@
   font-family: Consolas, "Courier New", monospace;
 }
 
+.style-proposals-shiny-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(33, 46, 52, 0.16);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24), 0 10px 22px rgba(31, 37, 40, 0.08);
+}
+
+.style-proposals-shiny-heading {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  text-align: center;
+}
+
+.style-proposals-shiny-heading h3,
+.style-proposals-shiny-heading p {
+  margin: 0;
+}
+
+.style-proposals-shiny-heading h3 {
+  color: #26383d;
+  font-size: 22px;
+  line-height: 1.12;
+}
+
+.style-proposals-shiny-heading p {
+  max-width: 720px;
+  color: #3f4d52;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.style-proposals-shiny-preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  gap: 8px;
+  min-width: 190px;
+  padding: 14px 20px;
+  border: 1px solid rgba(139, 176, 210, 0.32);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #28514b;
+  font-family: var(--game-font);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.style-proposals-shiny-name {
+  line-height: 1.05;
+}
+
+.style-proposals-shiny-marker {
+  color: #e4a92f;
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.86), 0 2px 4px rgba(125, 83, 14, 0.22);
+}
+
 .style-proposals-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

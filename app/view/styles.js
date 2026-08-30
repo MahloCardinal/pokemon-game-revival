@@ -68,6 +68,22 @@ function renderFontShowcase() {
   ].join("");
 }
 
+function renderShinyMarkerShowcase() {
+  return [
+    '<section class="style-proposals-shiny-panel" aria-labelledby="style-proposals-shiny-title">',
+    '  <div class="style-proposals-shiny-heading">',
+    '    <span class="style-proposals-eyebrow">' + escapeHtml(t("ui.styles.shinyMarkerEyebrow")) + '</span>',
+    '    <h3 id="style-proposals-shiny-title">' + escapeHtml(t("ui.styles.shinyMarkerTitle")) + '</h3>',
+    '    <p>' + escapeHtml(t("ui.styles.shinyMarkerDescription")) + '</p>',
+    '  </div>',
+    '  <div class="style-proposals-shiny-preview" aria-label="' + escapeHtml(t("ui.styles.shinyMarkerAccessibleLabel")) + '">',
+    '    <span class="style-proposals-shiny-name">' + escapeHtml(t("ui.styles.shinyMarkerSample")) + '</span>',
+    '    <span class="style-proposals-shiny-marker" aria-hidden="true">★</span>',
+    '  </div>',
+    '</section>'
+  ].join("");
+}
+
 function stylePopup(className) {
   return [
     '<div class="style-proposals-popup-scene ' + escapeHtml(className) + '">',
@@ -214,6 +230,7 @@ export function renderStylesScene() {
     '    <p>' + escapeHtml(t("ui.styles.intro")) + '</p>',
     '  </div>',
     renderFontShowcase(),
+    renderShinyMarkerShowcase(),
     '  <div class="style-proposals-grid">',
     STYLE_PROPOSALS.map(renderStyleProposal).join(""),
     '  </div>',

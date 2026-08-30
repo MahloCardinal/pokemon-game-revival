@@ -16,8 +16,8 @@ type NotificationClaim = {
 };
 
 const gymLabels: Record<string, string> = {
-  "isola-cannella": "Isola Cannella · Blaine",
-  smeraldopoli: "Smeraldopoli · Giovanni"
+  cinnabar_island: "Isola Cannella · Blaine",
+  viridian_city: "Smeraldopoli · Giovanni"
 };
 
 const leagueLabels = ["Lorelei", "Bruno", "Agatha", "Lance", "Campione Blu"];

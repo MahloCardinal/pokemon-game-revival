@@ -1,12 +1,12 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- implementare sfida asincrona PvP tra giocatori (ricordarsi tabelle battaglia parallele e ID battaglie nell'URL)
--- inserire modalità di scelta del primo pokemon in campo anche per chi inizia la sfida, dopo aver visualizzato le due squadra
--- inserire possibilità di andare allo stato della sfida cliccando sul turno nel log (deve valire per qualsiasi sfida del GdR)
--- i CSS devono rimanere entità separate se usati in sezioni diverse
--- le modifiche effettuate da me posso stare nello stesso commit, non c'è bisogno di farne due diversi
--- inserire immagini Cupola Lotta
+- implementare sfida asincrona PvP tra giocatori
+- l'utente di debug è bloccato nella sfida contro un capopalestra (ma non le altre)
+- reinserire regolamento completo
+- inserire possibilità di andare allo stato della sfida cliccando sul turno nel log (deve valire per qualsiasi sfida del GdR)
+- i CSS devono rimanere entità separate se usati in sezioni diverse
+- le modifiche effettuate da me posso stare nello stesso commit, non c'è bisogno di farne due diversi
 - bilanciamento team palestre
 - verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
 

@@ -950,7 +950,7 @@ Deno.serve(async (request) => {
       requireExactKeys(body, ["action", "commandId", "expectedPlayerRevision", "runtimeOwnerId", "gymKey", "activeSlot"],
         ["commandId", "expectedPlayerRevision", "runtimeOwnerId", "gymKey", "activeSlot"]);
       const gymKey = String(body.gymKey || "");
-      if (!/^[a-z0-9-]{1,40}$/.test(gymKey)) throw new BattleEdgeError("invalid_request", "Gym key is invalid.");
+      if (!/^[a-z0-9_]{1,40}$/.test(gymKey)) throw new BattleEdgeError("invalid_request", "Gym key is invalid.");
       const startResult = await clients.serviceClient.rpc("start_edge_gym_battle", {
         p_auth_user_id: clients.userId,
         p_command_id: uuid(body.commandId, "commandId"),
@@ -971,7 +971,7 @@ Deno.serve(async (request) => {
       requireExactKeys(body, ["action", "commandId", "expectedPlayerRevision", "runtimeOwnerId", "gymKey", "activeSlot"],
         ["commandId", "expectedPlayerRevision", "runtimeOwnerId", "gymKey", "activeSlot"]);
       const gymKey = String(body.gymKey || "");
-      if (!["isola-cannella", "smeraldopoli"].includes(gymKey)) throw new BattleEdgeError("invalid_request", "Admin gym key is invalid.");
+      if (!["cinnabar_island", "viridian_city"].includes(gymKey)) throw new BattleEdgeError("invalid_request", "Admin gym key is invalid.");
       const startResult = await clients.serviceClient.rpc("start_edge_admin_gym_battle", {
         p_auth_user_id: clients.userId,
         p_command_id: uuid(body.commandId, "commandId"),

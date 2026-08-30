@@ -532,6 +532,32 @@ if (battleTextModule.status !== "evaluated") await battleTextModule.evaluate();
 const { localizeBattleSummary } = battleTextModule.namespace;
 const { BattleManager, buildBattleSummary, createMove, Pokemon, projectBattle, Team } = engineExports;
 
+const gymDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/gyms.js", import.meta.url)));
+if (gymDefinitionsModule.status !== "evaluated") await gymDefinitionsModule.evaluate();
+const adminBattleDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/admin-battles.js", import.meta.url)));
+if (adminBattleDefinitionsModule.status !== "evaluated") await adminBattleDefinitionsModule.evaluate();
+const gymKeys = gymDefinitionsModule.namespace.KANTO_GYM_CITIES.map((city) => city.key);
+const adminGymKeys = gymKeys.filter((key) => adminBattleDefinitionsModule.namespace.isAdminControlledBattleType("gym_" + key));
+const ordinaryGymAction = edge.slice(edge.indexOf('if (action === "start_gym")'), edge.indexOf('if (action === "start_admin_gym")'));
+function gymKeyValidator(actionSource) {
+  const validation = actionSource.match(/const gymKey = String\(body\.gymKey \|\| ""\);[\s\S]*?(?=const startResult)/);
+  assert.ok(validation, "Gym start must validate its key before calling the database");
+  return vm.compileFunction(validation[0] + "return gymKey;", ["body", "BattleEdgeError"]);
+}
+const validateOrdinaryGymKey = gymKeyValidator(ordinaryGymAction);
+const validateAdminGymKey = gymKeyValidator(adminGymAction);
+gymKeys.forEach((key) => assert.equal(validateOrdinaryGymKey({ gymKey: key }, Error), key,
+  `The Edge gym validator must accept the canonical key ${key}`));
+adminGymKeys.forEach((key) => assert.equal(validateAdminGymKey({ gymKey: key }, Error), key,
+  `The Edge admin-gym validator must accept the canonical key ${key}`));
+gymKeys.filter((key) => !adminGymKeys.includes(key)).concat(["isola-cannella", "smeraldopoli", "", "unknown_gym"])
+  .forEach((key) => assert.throws(() => validateAdminGymKey({ gymKey: key }, Error)));
+["pewter-city", "Pewter_city", "pewter city", "../pewter_city", "", "a".repeat(41)]
+  .forEach((key) => assert.throws(() => validateOrdinaryGymKey({ gymKey: key }, Error)));
+const discordGymLabels = vm.runInNewContext("(" + discordBattleEdge.match(/const gymLabels:[^=]+?= (\{[\s\S]*?\});/)[1] + ")");
+assert.deepEqual(Object.keys(discordGymLabels).sort(), adminGymKeys.slice().sort(),
+  "Discord gym labels must use the same canonical keys as admin-controlled gyms");
+
 function assertStableCatalogKeys(entries, expectedCount, label) {
   const keys = entries.map((entry) => entry.key);
   assert.equal(entries.length, expectedCount, `${label} catalog count changed unexpectedly`);

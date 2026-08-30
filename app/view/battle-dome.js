@@ -92,19 +92,26 @@ function renderTeam() {
   ].join("");
 }
 
+function isOwnBattle(battle) {
+  return battle.own_role === "creator" || battle.own_role === "challenger";
+}
+
 function renderLobby() {
   var dome = state.battleDome;
   var ownLobby = dome.lobby;
-  var activeCount = dome.battles.filter(function (battle) { return battle.own_role !== "spectator"; }).length;
+  var activeCount = dome.battles.filter(isOwnBattle).length;
   var canCreate = dome.team.length >= 1 && activeCount < 2 && !dome.saving;
   var inviteCode = ownLobby && !ownLobby.expired ? String(ownLobby.invite_code || "") : "";
   var lobbyRows = dome.lobbies.map(function (lobby) {
     return '<div class="battle-dome-lobby-row"><strong>' + escapeHtml(lobby.username) + '</strong>'
       + (lobby.own ? '' : button(t("ui.battleDome.challenge"), "battle-dome-challenge", 'data-creator-user-id="' + escapeHtml(lobby.creator_auth_user_id) + '"' + (canCreate ? "" : " disabled"), "button-primary button-slim")) + '</div>';
   }).join("");
-  var battleRows = dome.battles.map(function (battle) {
-    return '<div class="battle-dome-battle-row"><span>' + escapeHtml(t("ui.battleDome.versus", { creator: battle.creator_username, challenger: battle.challenger_username })) + '</span>'
-      + button(t("ui.battleDome.watch"), "battle-dome-open-battle", 'data-battle-id="' + escapeHtml(battle.battle_id) + '"', "button-primary button-slim") + '</div>';
+  var battleRows = dome.battles.slice().sort(function (left, right) {
+    return Number(isOwnBattle(right)) - Number(isOwnBattle(left));
+  }).map(function (battle) {
+    var own = isOwnBattle(battle);
+    return '<div class="battle-dome-battle-row' + (own ? ' is-own' : '') + '"><span>' + escapeHtml(t("ui.battleDome.versus", { creator: battle.creator_username, challenger: battle.challenger_username })) + '</span>'
+      + button(t(own ? "ui.battleDome.rejoin" : "ui.battleDome.watch"), "battle-dome-open-battle", 'data-battle-id="' + escapeHtml(battle.battle_id) + '"', "button-primary button-slim") + '</div>';
   }).join("");
   return [
     '<div class="battle-dome-panel" data-render-region="battle-dome-content">',

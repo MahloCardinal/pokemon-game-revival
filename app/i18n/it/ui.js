@@ -581,7 +581,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     teamRequirement: "Per creare o accettare una sfida serve almeno 1 Pokémon e non puoi avere più di 2 sfide PvP.",
     joinByCode: "Entra tramite codice", codePlaceholder: "Inserisci il codice a 6 cifre", join: "Entra",
     waitingPlayers: "Giocatori in attesa", noLobbies: "Nessun giocatore è in attesa.", challenge: "Sfida",
-    ongoing: "Sfide in corso", noBattles: "Non ci sono sfide in corso.", versus: "{creator} contro {challenger}", watch: "Guarda",
+    ongoing: "Sfide in corso", noBattles: "Non ci sono sfide in corso.", versus: "{creator} contro {challenger}", watch: "Guarda", rejoin: "Rientra",
     saved: "Squadra salvata.", lobbyCreated: "Lobby creata.", lobbyCancelled: "Lobby annullata.", copied: "Codice copiato",
     invalidCode: "Il codice della lobby non è valido.", commandFailed: "L’operazione non è riuscita.",
     invalidPokemon: "Seleziona un Pokémon e da una a quattro mosse valide.",

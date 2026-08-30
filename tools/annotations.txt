@@ -1,7 +1,6 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- implementare sfida asincrona PvP tra giocatori
 - reinserire regolamento completo
 - inserire possibilità di andare allo stato della sfida cliccando sul turno nel log (deve valire per qualsiasi sfida del GdR)
 - bilanciamento team palestre

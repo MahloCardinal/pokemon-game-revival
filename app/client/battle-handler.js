@@ -3387,7 +3387,7 @@ function persistAndCloseFinishedBattle(scene) {
 
 function setBattleInfoPanel(mode) {
   var nextMode = mode === "log" ? "log" : "summary";
-  if (!state.scene || (state.scene.name !== "battle" && state.scene.name !== "admin-battle")) {
+  if (!state.scene || ["battle", "admin-battle", "battle-dome-battle"].indexOf(state.scene.name) === -1) {
     return;
   }
 

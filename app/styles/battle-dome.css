@@ -318,6 +318,11 @@
   white-space: nowrap;
 }
 
+.battle-dome-battle-row.is-own {
+  border: 1px solid #d47b25;
+  background: linear-gradient(135deg, rgba(255, 230, 191, 0.96), rgba(250, 175, 87, 0.82));
+}
+
 .battle-dome-link-row {
   display: flex;
   gap: 8px;

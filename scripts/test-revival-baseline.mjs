@@ -205,6 +205,59 @@ for (const tab of ["team", "lobby"]) {
   });
   assert.equal(destination, "battle-area", `Battle Dome ${tab} must return to the Battle Area`);
 }
+for (const role of ["creator", "challenger", "spectator"]) {
+  for (const leadSelection of [false, true]) {
+    const localState = { scene: { name: "battle-dome-battle", battleDomeRole: role, battleDomeLeadSelection: leadSelection }, battleDome: { tab: "team" } };
+    let destination;
+    vm.runInNewContext(parentBackAction, {
+      state: localState,
+      registerAction: (_name, callback) => callback({}),
+      setScene: scene => { destination = scene.name; }
+    });
+    assert.equal(destination, "battle-dome");
+    assert.equal(localState.battleDome.tab, "lobby", "Returning from a PvP battle must select Lobby");
+  }
+}
+const infoPanelSetter = battleHandler.slice(battleHandler.indexOf("function setBattleInfoPanel("), battleHandler.indexOf("function refreshAuthoritativeBattle("));
+for (const name of ["battle", "admin-battle", "battle-dome-battle"]) {
+  for (const role of ["creator", "challenger", "spectator"]) {
+    const nodes = ["log", "summary"].map(mode => ({
+      dataset: { panel: mode, battleInfoPane: mode }, attributes: {}, classes: new Set(),
+      setAttribute(key, value) { this.attributes[key] = value; },
+      get classList() { return { toggle: (key, enabled) => enabled ? this.classes.add(key) : this.classes.delete(key) }; }
+    }));
+    const localState = { scene: { name, battleDomeRole: role, battleInfoPanel: "log" } };
+    const context = vm.createContext({ state: localState, root: { querySelectorAll: () => nodes }, syncBattleLayoutMeasurements() {} });
+    vm.runInContext(infoPanelSetter, context);
+    for (const mode of ["summary", "log"]) {
+      vm.runInContext('setBattleInfoPanel("' + mode + '")', context);
+      assert.equal(localState.scene.battleInfoPanel, mode, name + " must allow switching information panels");
+      for (const node of nodes) {
+        assert.equal(node.attributes["aria-selected"], String(node.dataset.panel === mode));
+        assert.equal(node.attributes["aria-hidden"], String(node.dataset.panel !== mode));
+        assert.equal(node.classes.has("is-active"), node.dataset.panel === mode);
+      }
+    }
+  }
+}
+const domeView = read("app/view/battle-dome.js");
+const lobbyRenderer = domeView.slice(domeView.indexOf("function isOwnBattle("), domeView.indexOf("export function renderBattleDomeScene("));
+for (const roles of [["spectator", "challenger", "spectator", "creator"], ["spectator", "creator"], ["spectator"], []]) {
+  const battles = roles.map((own_role, index) => ({ battle_id: "battle-" + index, own_role, creator_username: "Creator", challenger_username: "Challenger" }));
+  const before = JSON.stringify(battles);
+  const html = vm.runInNewContext(lobbyRenderer + "\nrenderLobby();", {
+    state: { battleDome: { battles, lobbies: [], team: [{}] } },
+    escapeHtml: String, t: key => key,
+    button: (label, action, attrs, classes) => '<button class="' + classes + '" data-action="' + action + '" ' + attrs + '>' + label + '</button>'
+  });
+  const own = battles.filter(battle => battle.own_role !== "spectator");
+  const others = battles.filter(battle => battle.own_role === "spectator");
+  assert.deepEqual([...html.matchAll(/data-battle-id="([^"]+)"/g)].map(match => match[1]), own.concat(others).map(battle => battle.battle_id));
+  assert.equal((html.match(/battle-dome-battle-row is-own/g) || []).length, own.length);
+  assert.equal((html.match(/ui\.battleDome\.rejoin/g) || []).length, own.length);
+  assert.equal((html.match(/ui\.battleDome\.watch/g) || []).length, others.length);
+  assert.equal(JSON.stringify(battles), before, "Lobby rendering must not reorder canonical state");
+}
 assert.deepEqual(
   Array.from(read("app/view/battle-area.js").matchAll(/renderBattleAreaCard\("([a-z_]+)"/g), (match) => match[1]),
   ["battle_tower", "training_zone", "battle_shop", "battle_dome"]

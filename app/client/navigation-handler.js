@@ -159,6 +159,11 @@ registerAction("back-home", function(element) {
 });
 
 registerAction("parent-back", function(element) {
+    if (state.scene.name === "battle-dome-battle") {
+      state.battleDome.tab = "lobby";
+      setScene({ name: "battle-dome" });
+      return;
+    }
     if (state.scene.name === "privacy-policy" || state.scene.name === "terms") {
       setScene({ name: "home" });
       return;

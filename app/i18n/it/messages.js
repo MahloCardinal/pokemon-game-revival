@@ -2,6 +2,7 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
   generic: Object.freeze({ failed: "Operazione non riuscita. Riprova.", errorTitle: "Errore" }),
   rewards: Object.freeze({
     claimed: "Hai ritirato {reward}.",
+    sentToBox: "Il Pokémon è stato inviato al Box",
     quantity: "{quantity} × {reward}",
     money: "{quantity} Pokédollari"
   }),

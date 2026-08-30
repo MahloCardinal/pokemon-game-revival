@@ -48,16 +48,22 @@ for (const locale of ["it", "en"]) {
     assert.ok(html.indexOf("dialog-copy") < html.indexOf("claimed-reward-image"), "The image must be below the message");
     assert.match(html, /data-action="dialog-close"/);
     assert.doesNotMatch(html, /\[object Object\]|undefined/);
+    assert.ok(!html.includes(t("messages.rewards.sentToBox")), "Item claims must not mention the Pokemon Box");
   }
   const html = renderDialog({ type: "reward-claimed", reward: { kind: "pokemon_choice" }, pokemon: femaleShiny });
   assert.ok(html.includes(t("messages.rewards.claimed", { reward: "Pikachu" })));
   assert.ok(html.includes(getPokemonImage(femaleShiny)));
   assert.match(html, /25_f_shiny\.webp/);
   assert.match(html, /claimed-reward-pokemon/);
+  const boxNotice = t("messages.rewards.sentToBox");
+  assert.ok(html.includes(boxNotice));
+  assert.ok(html.indexOf(boxNotice) > html.indexOf(getPokemonImage(femaleShiny)), "The Box notice must appear below the Pokemon image");
+  assert.ok(html.indexOf(boxNotice) < html.indexOf("dialog-actions"));
   assert.doesNotMatch(html, /pokemon-card-moves/, "The reward preview is an image, not a full Pokemon card");
   const money = renderDialog({ type: "reward-claimed", reward: { kind: "money", quantity: 3000 } });
   assert.match(money, /money-symbol/);
   assert.doesNotMatch(money, /\[object Object\]|undefined/);
+  assert.ok(!money.includes(boxNotice));
 }
 
 const dialogSource = read("app/client/dialog-handler.js");

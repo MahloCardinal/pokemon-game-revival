@@ -426,7 +426,8 @@ function renderRewardClaimDialog(dialog) {
   return renderMessageDialog({
     title: dialog.title,
     lines: [t("messages.rewards.claimed", { reward: name })],
-    rewardImage: image ? '<div class="claimed-reward-image">' + image + "</div>" : "",
+    rewardImage: (image ? '<div class="claimed-reward-image">' + image + "</div>" : "")
+      + (dialog.pokemon ? '<div class="dialog-copy"><p>' + escapeHtml(t("messages.rewards.sentToBox")) + "</p></div>" : ""),
     closeLabel: t("ui.dialogs.ok"),
     closeClass: "button-accent"
   });

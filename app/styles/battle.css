@@ -604,6 +604,7 @@
 
   .battle-stage > .battle-info-card .panel-inner {
     height: 100%;
+    padding: 15px;
   }
 
   .battle-info-inner {

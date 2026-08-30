@@ -7,65 +7,6 @@
   color: var(--danger);
   font-size: 12px;
 }
-.pokefan-section-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.pokefan-section-row .button {
-  font-size: 13px;
-}
-.pokefan-section-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  min-width: 0;
-  overflow: hidden;
-  padding: 2px 4px 6px;
-  container-type: inline-size;
-}
-
-.pokefan-section-row .button {
-  --button-border-color: var(--border-soft);
-  --button-bg: #f7fbff;
-  --button-color: #3f6f9e;
-  --button-inset-shadow: rgba(255, 255, 255, 0.58);
-  --button-lip-shadow: rgba(61, 96, 128, 0.14);
-  --button-drop-shadow: rgba(61, 96, 128, 0.08);
-  flex: 0 0 190px;
-  width: 190px;
-  min-width: 0;
-  min-height: 36px;
-  padding: 5px 10px;
-  font-size: 12px;
-}
-
-.pokefan-section-row .button-primary {
-  --button-border-color: rgba(63, 143, 153, 0.52);
-  --button-bg: #d8f3f5;
-  --button-color: #1e6872;
-  --button-inset-shadow: rgba(255, 255, 255, 0.62);
-  --button-lip-shadow: rgba(31, 103, 111, 0.22);
-  --button-drop-shadow: rgba(31, 103, 111, 0.14);
-}
-
-@media (max-width: 680px) {
-.pokefan-section-row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: 0 -4px;
-  }
-
-.pokefan-section-row .button {
-    flex-basis: auto;
-    width: 100%;
-  }
-
-}
-
 .pokefan-layout {
   display: grid;
   gap: 16px;

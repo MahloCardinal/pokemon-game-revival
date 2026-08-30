@@ -121,7 +121,7 @@ function renderSectionTabs(activeSection) {
     order[MISSION_CATEGORY_CAPTURE] = 2;
     return (order[left] ?? 99) - (order[right] ?? 99);
   });
-  return '<section class="panel pokefan-sections-panel"><div class="panel-inner"><nav class="pokefan-section-row" aria-label="' + escapeHtml(t("ui.pokefan.categoriesAria")) + '">' + categories.map(function (section) {
+  return '<section class="panel pokefan-sections-panel"><div class="panel-inner"><nav class="pokefan-section-row section-tabs" aria-label="' + escapeHtml(t("ui.pokefan.categoriesAria")) + '">' + categories.map(function (section) {
     return button(
       t("ui.pokefan.categories." + section),
       "pokefan-section",

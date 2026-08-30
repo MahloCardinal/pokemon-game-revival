@@ -150,7 +150,7 @@ function renderShoppingCenterSectionPanel(activeSectionName) {
     var selectedClass = sectionName === activeSectionName ? " button-primary" : " button-ghost";
     return button(t("ui.shoppingCenter.sections." + sectionName), "shopping-center-section", 'data-section="' + escapeHtml(sectionName) + '"', "button-slim" + selectedClass);
   }).join("");
-  return '<section class="panel shopping-center-sections-panel"><div class="panel-inner"><div class="shopping-center-tabs">' + buttons + "</div></div></section>";
+  return '<section class="panel shopping-center-sections-panel"><div class="panel-inner"><div class="shopping-center-tabs section-tabs">' + buttons + "</div></div></section>";
 }
 
 export function renderShoppingCenterCartPanelContent(pokedollars, entries, total, isSale) {

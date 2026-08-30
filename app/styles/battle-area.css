@@ -12,11 +12,8 @@
 }
 
 .battle-area-card {
-  --battle-area-card-glow: rgba(25, 125, 115, 0.18);
-  --battle-area-card-accent: rgba(25, 125, 115, 0.24);
-  --battle-area-card-top: rgba(255, 255, 255, 0.58);
-  --battle-area-card-bottom: rgba(232, 244, 250, 0.48);
-  --battle-area-card-title-color: #28514b;
+  --battle-area-card-glow: rgba(139, 176, 210, 0.24);
+  --battle-area-card-title-color: var(--text);
   container-type: inline-size;
   position: relative;
   overflow: hidden;
@@ -30,9 +27,7 @@
   min-height: 188px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-soft);
-  background:
-    linear-gradient(160deg, var(--battle-area-card-top), var(--battle-area-card-bottom)),
-    linear-gradient(135deg, var(--battle-area-card-accent), transparent 72%);
+  background: #f7fbff;
   box-shadow: none;
   cursor: pointer;
   text-align: center;
@@ -138,7 +133,7 @@
   margin-top: -2px;
   border-radius: var(--radius-card);
   border: 1px solid rgba(139, 176, 210, 0.2);
-  background: rgba(255, 255, 255, 0.4);
+  background: #ffffff;
 }
 
 .battle-area-card-image {
@@ -166,7 +161,7 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  background: rgba(255, 251, 244, 0.7);
+  background: #fffdf8;
   border-radius: 0;
   padding: 5px 10px 6px;
   font-size: 13px;

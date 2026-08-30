@@ -210,19 +210,19 @@
 }
 
 .city-card-shopping-center {
-  --city-card-glow: rgba(47, 138, 69, 0.22);
-  --city-card-accent: rgba(47, 138, 69, 0.22);
-  --city-card-top: rgba(220, 234, 218, 0.94);
-  --city-card-bottom: rgba(181, 213, 176, 0.92);
-  --city-card-title-color: #2f713c;
-}
-
-.city-card-fanclub {
   --city-card-glow: rgba(93, 107, 194, 0.24);
   --city-card-accent: rgba(93, 107, 194, 0.24);
   --city-card-top: rgba(221, 222, 240, 0.94);
   --city-card-bottom: rgba(185, 190, 226, 0.92);
   --city-card-title-color: #4f5ca8;
+}
+
+.city-card-fanclub {
+  --city-card-glow: rgba(112, 86, 152, 0.24);
+  --city-card-accent: rgba(154, 120, 199, 0.22);
+  --city-card-top: rgba(241, 235, 248, 0.94);
+  --city-card-bottom: rgba(214, 199, 229, 0.92);
+  --city-card-title-color: #6c4494;
 }
 
 .city-card-garden {

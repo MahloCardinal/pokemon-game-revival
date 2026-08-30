@@ -16,7 +16,7 @@ Il progetto è esclusivamente Revival. Non reintrodurre codice legacy, modalità
 
 - Controllare `git status` prima e dopo ogni intervento.
 - Preservare modifiche locali dell'utente non pertinenti al compito.
-- Prima di ogni push, verificare e committare anche le modifiche locali già presenti dell'utente; se non appartengono all'intervento corrente, salvarle in un commit separato precedente. Restano esclusi segreti, dump e gli altri file che queste regole vietano di committare.
+- Prima di ogni push, verificare e committare anche le modifiche locali già presenti dell'utente. Possono essere incluse nello stesso commit dell'intervento corrente, anche se non pertinenti al compito; non è richiesto un commit separato. Restano esclusi segreti, dump e gli altri file che queste regole vietano di committare.
 - `tools/` fa parte del repository e le sue modifiche devono essere incluse nei commit. Non modificarne autonomamente il contenuto se il compito non lo richiede.
 - Non creare o committare dump SQL generati, segreti, token, password, service-role key o webhook.
 - Non usare comandi `npm`: il repository non contiene `package.json`, lockfile o pipeline npm.

@@ -95,6 +95,12 @@ export var IT_SCENE_TRANSLATIONS = Object.freeze({
         "Prepara bene i tuoi Pokémon prima di cominciare la scalata: dovrai sconfiggere un allenatore dopo l'altro, la cui forza dipenderà da quella della tua squadra, ma andrà crescendo man mano che avanzerai. Più sfide consecutive vincerai e maggiore sarà il premio, quindi fai sempre del tuo meglio poiché hai a disposizione un solo tentativo al giorno."
       ]
     }),
+    battle_dome: Object.freeze({
+      title: "Cupola Lotta",
+      presentation: [
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+      ]
+    }),
     training_zone: Object.freeze({
       title: "Zona allenamento",
       presentation: [

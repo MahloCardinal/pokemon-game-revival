@@ -95,6 +95,12 @@ export var EN_SCENE_TRANSLATIONS = Object.freeze({
         "Prepare your Pokémon carefully before beginning your climb. You'll have to defeat one Trainer after another; their strength will depend on your team and grow as you advance. The longer your winning streak, the greater your reward, so always give it your best—you only have one attempt each day."
       ]
     }),
+    battle_dome: Object.freeze({
+      title: "Battle Dome",
+      presentation: [
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+      ]
+    }),
     training_zone: Object.freeze({
       title: "Training Zone",
       presentation: [

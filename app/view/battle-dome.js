@@ -1,7 +1,7 @@
 import { state } from "../client/game-state.js";
 import { escapeHtml } from "../client/asset-helpers.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
-import { button, sceneShell } from "../client/render-utils.js";
+import { button, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { itemDisplayName, moveDisplayName, speciesDisplayName } from "../client/entity-text.js";
 import { t } from "../client/i18n.js";
 import { renderSearchCombobox } from "../client/search-combobox.js";
@@ -137,5 +137,6 @@ export function renderBattleDomeScene() {
     + button(t("ui.battleDome.lobbyTab"), "battle-dome-tab", 'data-tab="lobby" aria-pressed="' + (dome.tab === "lobby" ? "true" : "false") + '"', "button-slim" + (dome.tab === "lobby" ? " button-primary" : " button-ghost"))
     + '</nav></div></section>';
   var body = dome.loading && !dome.loaded ? '<p>' + escapeHtml(t("ui.battleDome.loading")) + '</p>' : tabs + (dome.tab === "lobby" ? renderLobby() : renderTeam());
+  body = renderScenePresentationPanel("battle_dome", "battle-dome-info-panel") + body;
   return sceneShell(t("ui.sceneTitles.battleDome"), "", body, "", "scene-content-battle-dome", "parent-back");
 }

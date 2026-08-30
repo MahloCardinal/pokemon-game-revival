@@ -2,11 +2,9 @@
 # TODO
 #--------------------------------------------------------------------
 - implementare sfida asincrona PvP tra giocatori
-- l'utente di debug è bloccato nella sfida contro un capopalestra (ma non le altre)
 - reinserire regolamento completo
 - inserire possibilità di andare allo stato della sfida cliccando sul turno nel log (deve valire per qualsiasi sfida del GdR)
 - i CSS devono rimanere entità separate se usati in sezioni diverse
-- le modifiche effettuate da me posso stare nello stesso commit, non c'è bisogno di farne due diversi
 - bilanciamento team palestre
 - verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
 

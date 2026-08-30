@@ -175,7 +175,7 @@ registerAction("parent-back", function(element) {
       setScene({ name: "battle-area" });
       return;
     }
-    if (state.scene.name === "battle-tower" || state.scene.name === "battle-shop") {
+    if (state.scene.name === "battle-tower" || state.scene.name === "battle-shop" || state.scene.name === "battle-dome") {
       setScene({ name: "battle-area" });
       return;
     }

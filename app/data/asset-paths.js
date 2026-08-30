@@ -89,6 +89,7 @@ export var SCENE_PRESENTATION_ASSET_PATHS = Object.freeze({
   garden: "/app/assets/img_zone/giardino_presentazione.webp",
   pokefan_club: "/app/assets/img_zone/club_pokefan_presentazione.webp",
   battle_tower: "/app/assets/img_zone/torre_lotta_presentazione.webp",
+  battle_dome: "/app/assets/img_zone/torre_lotta_presentazione.webp",
   training_zone: "/app/assets/img_zone/zona_allenamento_presentazione.webp",
   battle_shop: "/app/assets/img_zone/negozio_lotta_presentazione.webp",
   elite_four: "/app/assets/img_zone/start_presentazione.webp"

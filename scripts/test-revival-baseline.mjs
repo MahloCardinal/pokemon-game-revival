@@ -195,6 +195,20 @@ const parentBackAction = navigationHandler.slice(
 );
 assert.match(parentBackAction, /state\.scene\.name === "battle"[\s\S]*setScene\(battleReturnScene\(state\.scene\)\)/);
 assert.doesNotMatch(parentBackAction, /terminalExitReady|finishBattleBeforeExit|openMessage/);
+for (const tab of ["team", "lobby"]) {
+  let destination;
+  vm.runInNewContext(parentBackAction, {
+    state: { scene: { name: "battle-dome" }, battleDome: { tab } },
+    registerAction: (_name, callback) => callback({}),
+    setScene: (scene) => { destination = scene.name; }
+  });
+  assert.equal(destination, "battle-area", `Battle Dome ${tab} must return to the Battle Area`);
+}
+assert.deepEqual(
+  Array.from(read("app/view/battle-area.js").matchAll(/renderBattleAreaCard\("([a-z_]+)"/g), (match) => match[1]),
+  ["battle_tower", "training_zone", "battle_shop", "battle_dome"]
+);
+assert.match(read("app/view/battle-dome.js"), /renderScenePresentationPanel\("battle_dome", "battle-dome-info-panel"\)/);
 assert.doesNotMatch(i18nItalian + i18nEnglish, /finishBattleBeforeExit/);
 assert.match(battleHandler, /\["item", "switch"\]\.indexOf\(data\.command_type\)/);
 assert.match(battleHandler, /battleText\(scene\.authoritativeCapture \? "lostMoneyConfusion" : "lostMoney"/);
@@ -527,6 +541,42 @@ const CaptureCalc = captureCalcModule.namespace;
 const assetHelpersModule = await loadEsModule(fileURLToPath(new URL("../app/client/asset-helpers.js", import.meta.url)));
 if (assetHelpersModule.status !== "evaluated") await assetHelpersModule.evaluate();
 const AssetHelpers = assetHelpersModule.namespace;
+const entityTextModule = await loadEsModule(fileURLToPath(new URL("../app/client/entity-text.js", import.meta.url)));
+if (entityTextModule.status !== "evaluated") await entityTextModule.evaluate();
+const EntityText = entityTextModule.namespace;
+const localeModule = await loadEsModule(fileURLToPath(new URL("../app/client/i18n.js", import.meta.url)));
+if (localeModule.status !== "evaluated") await localeModule.evaluate();
+const Locale = localeModule.namespace;
+const presentationAssetsModule = await loadEsModule(fileURLToPath(new URL("../app/data/asset-paths.js", import.meta.url)));
+if (presentationAssetsModule.status !== "evaluated") await presentationAssetsModule.evaluate();
+assert.equal(
+  presentationAssetsModule.namespace.scenePresentationAssetPath("battle_dome"),
+  presentationAssetsModule.namespace.scenePresentationAssetPath("battle_tower")
+);
+const doubleDamageMoveTypes = {
+  aerial_ace: "fighting", waterfall: "flying", low_kick: "normal", karate_chop: "dark",
+  sludge_bomb: "fairy", mud_slap: "electric", feint_attack: "ghost", rock_slide: "bug",
+  fire_punch: "steel", ice_punch: "dragon", megahorn: "psychic", psybeam: "poison",
+  rock_throw: "ice", rock_smash: "rock", surf: "ground", cut: "grass",
+  earthquake: "fire", thunder_punch: "water"
+};
+const previousLocale = Locale.getLocale();
+try {
+  for (const locale of ["it", "en"]) {
+    Locale.setLocale(locale);
+    assert.ok(Locale.tList("scenes.battle_dome.presentation").length > 0);
+    for (const [moveKey, typeKey] of Object.entries(doubleDamageMoveTypes)) {
+      const move = Object.assign({}, MoveDefinitions[moveKey], { power: 123 });
+      const typeName = EntityText.typeDisplayName(typeKey);
+      assert.equal(typeName[0], typeName[0].toUpperCase());
+      const expectedTarget = locale === "it" ? `Pokémon ${typeName}` : `${typeName}-type Pokémon`;
+      assert.equal(EntityText.moveDisplayDescription(move), `-123, x2 ${locale === "it" ? "contro" : "against"} ${expectedTarget}`);
+      assert.ok(EntityText.moveCatalogDescription(move).includes(expectedTarget), `${locale}: catalog description for ${moveKey} must localize its target type`);
+    }
+  }
+} finally {
+  Locale.setLocale(previousLocale);
+}
 const battleTextModule = await loadEsModule(fileURLToPath(new URL("../app/client/battle-text.js", import.meta.url)));
 if (battleTextModule.status !== "evaluated") await battleTextModule.evaluate();
 const { localizeBattleSummary } = battleTextModule.namespace;

@@ -288,10 +288,10 @@
   gap: 14px;
 }
 .gym-city-card {
-  --gym-theme-top: rgba(255, 255, 255, 0.34);
-  --gym-theme-bottom: rgba(235, 227, 212, 0.74);
-  --gym-theme-accent-a: rgba(147, 118, 71, 0.2);
-  --gym-theme-accent-b: rgba(207, 188, 145, 0.18);
+  --gym-theme-top: rgba(255, 255, 255, 0.84);
+  --gym-theme-bottom: rgba(235, 227, 212, 0.92);
+  --gym-theme-accent-a: rgba(147, 118, 71, 0.34);
+  --gym-theme-accent-b: rgba(207, 188, 145, 0.3);
   --gym-zone-card-glow: var(--gym-theme-accent-a);
   --gym-zone-card-accent: var(--gym-theme-accent-b);
   --gym-zone-card-top: var(--gym-theme-top);
@@ -512,6 +512,76 @@
   background:
     linear-gradient(135deg, var(--gym-theme-top), var(--gym-theme-bottom)),
     linear-gradient(145deg, var(--gym-theme-accent-a), var(--gym-theme-accent-b));
+}
+.gym-city-card.gym-theme-panel-roccia {
+  --gym-theme-bottom: rgba(242, 232, 211, 0.92);
+  --gym-theme-accent-a: rgba(143, 117, 83, 0.36);
+  --gym-theme-accent-b: rgba(199, 174, 132, 0.3);
+}
+.gym-city-card.gym-theme-panel-acqua {
+  --gym-theme-bottom: rgba(230, 248, 251, 0.92);
+  --gym-theme-accent-a: rgba(42, 139, 178, 0.34);
+  --gym-theme-accent-b: rgba(104, 199, 204, 0.28);
+}
+.gym-city-card.gym-theme-panel-elettro {
+  --gym-theme-bottom: rgba(255, 248, 213, 0.92);
+  --gym-theme-accent-a: rgba(232, 184, 32, 0.34);
+  --gym-theme-accent-b: rgba(247, 219, 86, 0.28);
+}
+.gym-city-card.gym-theme-panel-erba {
+  --gym-theme-bottom: rgba(239, 248, 231, 0.91);
+  --gym-theme-accent-a: rgba(77, 145, 79, 0.34);
+  --gym-theme-accent-b: rgba(189, 221, 134, 0.28);
+}
+.gym-city-card.gym-theme-panel-psico {
+  --gym-theme-bottom: rgba(249, 232, 246, 0.92);
+  --gym-theme-accent-a: rgba(184, 88, 160, 0.34);
+  --gym-theme-accent-b: rgba(224, 151, 204, 0.28);
+}
+.gym-city-card.gym-theme-panel-veleno {
+  --gym-theme-bottom: rgba(241, 235, 248, 0.91);
+  --gym-theme-accent-a: rgba(103, 80, 143, 0.34);
+  --gym-theme-accent-b: rgba(179, 145, 199, 0.27);
+}
+.gym-city-card.gym-theme-panel-fuoco {
+  --gym-theme-bottom: rgba(252, 235, 223, 0.92);
+  --gym-theme-accent-a: rgba(217, 101, 59, 0.34);
+  --gym-theme-accent-b: rgba(238, 162, 86, 0.28);
+}
+.gym-city-card.gym-theme-panel-terra {
+  --gym-theme-bottom: rgba(250, 243, 224, 0.92);
+  --gym-theme-accent-a: rgba(195, 151, 76, 0.34);
+  --gym-theme-accent-b: rgba(227, 197, 121, 0.27);
+}
+.gym-city-card.gym-theme-panel-ghiaccio {
+  --gym-theme-bottom: rgba(232, 248, 250, 0.92);
+  --gym-theme-accent-a: rgba(111, 184, 202, 0.34);
+  --gym-theme-accent-b: rgba(179, 224, 231, 0.28);
+}
+.gym-city-card.gym-theme-panel-lotta {
+  --gym-theme-bottom: rgba(249, 232, 224, 0.92);
+  --gym-theme-accent-a: rgba(174, 82, 61, 0.36);
+  --gym-theme-accent-b: rgba(221, 142, 105, 0.28);
+}
+.gym-city-card.gym-theme-panel-spettro {
+  --gym-theme-bottom: rgba(235, 232, 247, 0.92);
+  --gym-theme-accent-a: rgba(82, 73, 132, 0.36);
+  --gym-theme-accent-b: rgba(145, 121, 183, 0.28);
+}
+.gym-city-card.gym-theme-panel-drago {
+  --gym-theme-bottom: rgba(233, 236, 252, 0.92);
+  --gym-theme-accent-a: rgba(78, 93, 185, 0.36);
+  --gym-theme-accent-b: rgba(114, 168, 207, 0.28);
+}
+.gym-city-card.gym-theme-panel-superquattro {
+  --gym-theme-bottom: rgba(232, 239, 252, 0.92);
+  --gym-theme-accent-a: rgba(58, 88, 172, 0.38);
+  --gym-theme-accent-b: rgba(130, 107, 188, 0.32);
+}
+.gym-city-card.gym-theme-panel-campione {
+  --gym-theme-bottom: rgba(226, 241, 252, 0.94);
+  --gym-theme-accent-a: rgba(37, 105, 183, 0.42);
+  --gym-theme-accent-b: rgba(96, 176, 222, 0.34);
 }
 .gym-theme-panel .button-primary {
   --button-border-color: var(--gym-button-border);

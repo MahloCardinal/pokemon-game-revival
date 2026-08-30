@@ -1,3 +1,76 @@
+
+.capture-starter-slot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 140ms ease;
+  pointer-events: none;
+}
+
+.capture-starter-slot:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.capture-starter-slot:focus-visible:not(:disabled)::before {
+  opacity: 1;
+}
+
+.capture-starter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 250px));
+  justify-content: center;
+  gap: 10px;
+}
+
+.capture-starter-slot {
+  position: relative;
+  overflow: hidden;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--text);
+  box-shadow: none;
+  transition: var(--interactive-transition);
+}
+
+.capture-starter-slot:disabled {
+  cursor: not-allowed;
+  border-color: rgba(99, 109, 117, 0.34);
+  background: #e0e4e7;
+  color: #6f7880;
+}
+
+.capture-starter-slot::before {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.1) 48%, transparent 72%);
+}
+
+.capture-starter-slot.is-empty {
+  background: rgba(255, 255, 255, 0.36);
+  border-style: dashed;
+  cursor: default;
+}
+
+.capture-starter-slot:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(31, 37, 40, 0.14);
+  filter: var(--interactive-hover-filter);
+}
+
+.capture-starter-slot:focus-visible:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(31, 37, 40, 0.14);
+  filter: var(--interactive-hover-filter);
+}
+
+@media (max-width: 680px) {
+.capture-starter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .team-choice-grid {
   display: grid;
   gap: var(--zone-card-gap);

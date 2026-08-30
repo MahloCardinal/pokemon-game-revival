@@ -1,4 +1,126 @@
-﻿.market-item-card {
+
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(3, var(--pokemon-card-width));
+  justify-content: center;
+  gap: var(--zone-card-gap);
+}
+
+.shopping-center-section-row .button[data-section="Market"] {
+  --button-border-color: #98ddd3;
+  --button-bg: linear-gradient(180deg, #ecfbf8, #cbeee8);
+  --button-color: #164f4b;
+  --button-inset-shadow: rgba(25, 125, 115, 0.13);
+  --button-lip-shadow: rgba(25, 125, 115, 0.25);
+  --button-drop-shadow: rgba(31, 37, 40, 0.1);
+}
+
+.shopping-center-section-row .button-primary[data-section="Market"] {
+  --button-border-color: #30a79b;
+  --button-bg: linear-gradient(180deg, #28a99d, var(--accent));
+  --button-color: #fff;
+  --button-inset-shadow: rgba(255, 255, 255, 0.18);
+  --button-lip-shadow: rgba(17, 86, 79, 0.46);
+  --button-drop-shadow: rgba(31, 37, 40, 0.18);
+}
+
+.shopping-center-section-row .button[data-section="Mercato del Porto"] {
+  --button-border-color: #a9c8ef;
+  --button-bg: linear-gradient(180deg, #f1f7ff, #d8e8fb);
+  --button-color: #244b73;
+  --button-inset-shadow: rgba(45, 98, 158, 0.13);
+  --button-lip-shadow: rgba(45, 98, 158, 0.25);
+  --button-drop-shadow: rgba(31, 37, 40, 0.1);
+}
+
+.shopping-center-section-row .button-primary[data-section="Mercato del Porto"] {
+  --button-border-color: #6da6e5;
+  --button-bg: linear-gradient(180deg, #5f9fe2, #316aa9);
+  --button-color: #fff;
+  --button-inset-shadow: rgba(255, 255, 255, 0.18);
+  --button-lip-shadow: rgba(33, 76, 126, 0.46);
+  --button-drop-shadow: rgba(31, 37, 40, 0.18);
+}
+
+.shopping-center-section-row .button[data-section="Negozio MT"] {
+  --button-border-color: #c9b7ea;
+  --button-bg: linear-gradient(180deg, #f8f3ff, #e5daf8);
+  --button-color: #46306f;
+  --button-inset-shadow: rgba(93, 70, 150, 0.13);
+  --button-lip-shadow: rgba(93, 70, 150, 0.25);
+  --button-drop-shadow: rgba(31, 37, 40, 0.1);
+}
+
+.shopping-center-section-row .button-primary[data-section="Negozio MT"] {
+  --button-border-color: #9d7bda;
+  --button-bg: linear-gradient(180deg, #9071d1, #5a3d9a);
+  --button-color: #fff;
+  --button-inset-shadow: rgba(255, 255, 255, 0.18);
+  --button-lip-shadow: rgba(55, 38, 104, 0.46);
+  --button-drop-shadow: rgba(31, 37, 40, 0.18);
+}
+
+/* Styles owned by the shopping-center section. */
+.shopping-center-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.shopping-center-tabs .button {
+  font-size: 13px;
+}
+.shopping-center-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  padding: 2px 4px 6px;
+  container-type: inline-size;
+}
+
+.shopping-center-tabs .button {
+  --button-border-color: var(--border-soft);
+  --button-bg: #f7fbff;
+  --button-color: #3f6f9e;
+  --button-inset-shadow: rgba(255, 255, 255, 0.58);
+  --button-lip-shadow: rgba(61, 96, 128, 0.14);
+  --button-drop-shadow: rgba(61, 96, 128, 0.08);
+  flex: 0 0 190px;
+  width: 190px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.shopping-center-tabs .button-primary {
+  --button-border-color: rgba(63, 143, 153, 0.52);
+  --button-bg: #d8f3f5;
+  --button-color: #1e6872;
+  --button-inset-shadow: rgba(255, 255, 255, 0.62);
+  --button-lip-shadow: rgba(31, 103, 111, 0.22);
+  --button-drop-shadow: rgba(31, 103, 111, 0.14);
+}
+
+@media (max-width: 680px) {
+.shopping-center-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0 -4px;
+  }
+
+.shopping-center-tabs .button {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+}
+
+.market-item-card {
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 74px minmax(0, 1fr);

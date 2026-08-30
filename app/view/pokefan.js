@@ -121,7 +121,7 @@ function renderSectionTabs(activeSection) {
     order[MISSION_CATEGORY_CAPTURE] = 2;
     return (order[left] ?? 99) - (order[right] ?? 99);
   });
-  return '<section class="panel pokefan-sections-panel"><div class="panel-inner"><nav class="pokemon-center-action-row rules-section-row" aria-label="' + escapeHtml(t("ui.pokefan.categoriesAria")) + '">' + categories.map(function (section) {
+  return '<section class="panel pokefan-sections-panel"><div class="panel-inner"><nav class="pokefan-section-row" aria-label="' + escapeHtml(t("ui.pokefan.categoriesAria")) + '">' + categories.map(function (section) {
     return button(
       t("ui.pokefan.categories." + section),
       "pokefan-section",
@@ -146,7 +146,7 @@ export function renderPokefanScene() {
     return (mission.claimStatus === MISSION_STATUS_CLAIMED || mission.claimStatus === MISSION_STATUS_SKIPPED)
       && Number(missionState.claimedNoticeMissionIndex) !== Number(mission.missionIndex);
   });
-  var error = missionState.error ? '<p class="auth-error pokefan-error">' + escapeHtml(resolveText(missionState.error)) + "</p>" : "";
+  var error = missionState.error ? '<p class="pokefan-error">' + escapeHtml(resolveText(missionState.error)) + "</p>" : "";
   var body = [
     '<section class="pokefan-layout">',
     renderScenePresentationPanel("pokefan_club", "pokefan-info-panel"),

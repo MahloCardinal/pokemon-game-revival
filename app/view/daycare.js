@@ -52,7 +52,7 @@ function renderDaycareDepositMinimenu() {
       anyEnabled = true;
       allAtLevelCap = false;
     }
-    buttons.push('<button type="button" class="capture-starter-slot battle-switch-choice' + (disabled ? ' is-ko' : '') + '" data-action="daycare-deposit-pokemon" data-team-index="' + index + '"' + (disabled ? ' disabled title="' + escapeHtml(t("ui.daycare.reasons." + reason)) + '"' : '') + '>' + escapeHtml(speciesDisplayName(pokemon)) + '</button>');
+    buttons.push('<button type="button" class="daycare-choice-option' + (disabled ? ' is-ko' : '') + '" data-action="daycare-deposit-pokemon" data-team-index="' + index + '"' + (disabled ? ' disabled title="' + escapeHtml(t("ui.daycare.reasons." + reason)) + '"' : '') + '>' + escapeHtml(speciesDisplayName(pokemon)) + '</button>');
   });
 
   if (!buttons.length) {
@@ -68,14 +68,14 @@ function renderDaycareDepositMinimenu() {
     } else {
       msg = t("ui.daycare.noneAvailable");
     }
-    return '<div class="daycare-placeholder-card" style="position:relative"><div class="battle-ko-switch-overlay"><section class="battle-ko-switch-panel"><h3>' + escapeHtml(msg) + '</h3></section></div></div>';
+    return '<div class="daycare-placeholder-card" style="position:relative"><div class="daycare-choice-overlay"><section class="daycare-choice-panel"><h3>' + escapeHtml(msg) + '</h3></section></div></div>';
   }
 
   return '<div class="daycare-placeholder-card" style="position:relative;overflow:hidden">' +
-    '<div class="battle-ko-switch-overlay">' +
-    '  <section class="battle-ko-switch-panel">' +
+    '<div class="daycare-choice-overlay">' +
+    '  <section class="daycare-choice-panel">' +
     '    <h3>' + escapeHtml(t("ui.daycare.choosePokemon")) + '</h3>' +
-    '    <div class="capture-starter-grid battle-switch-grid">' +
+    '    <div class="daycare-choice-grid">' +
     buttons.join("") +
     '    </div>' +
     '  </section>' +
@@ -136,7 +136,7 @@ function renderTeamPanel() {
 
 export function renderDaycareScene() {
   var content = [
-    '<section class="team-scene-stack daycare-layout">',
+    '<section class="daycare-layout">',
     renderScenePresentationPanel("daycare", "daycare-info-panel"),
     renderDaycareSlotsPanel(),
     renderTeamPanel(),

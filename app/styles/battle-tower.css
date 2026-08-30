@@ -1,3 +1,9 @@
+/* Styles owned by the battle-tower section. */
+.battle-tower-layout {
+  display: grid;
+  gap: 34px;
+}
+
 .battle-tower-layout {
   --battle-tower-card-width: 220px;
   width: min(var(--section-width), 100%);
@@ -75,41 +81,6 @@
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0;
-}
-.battle-tower-opponent-panel {
-  display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
-  column-gap: 12px;
-  align-items: center;
-  width: min(360px, 100%);
-  margin: 0 auto 12px;
-  padding: 8px 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-control);
-  background: var(--surface-raised);
-}
-.battle-tower-opponent-media {
-  grid-row: 1 / span 2;
-  display: grid;
-  place-items: center;
-  height: 72px;
-}
-.battle-tower-opponent-sprite {
-  width: 82px;
-  height: 72px;
-  object-fit: contain;
-  object-position: center bottom;
-}
-.battle-tower-opponent-panel p,
-.battle-tower-opponent-panel h2 {
-  margin: 0;
-}
-.battle-tower-opponent-panel p {
-  color: var(--text-soft);
-  font-size: 12px;
-}
-.battle-tower-opponent-panel h2 {
-  font-size: 18px;
 }
 @media (max-width: 880px) {
   .battle-tower-team-grid {

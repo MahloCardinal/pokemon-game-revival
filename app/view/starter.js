@@ -85,7 +85,7 @@ export function renderStarterScene() {
   }).join("");
 
   var content = [
-    setup.error ? '<p class="auth-error starter-setup-error">' + escapeHtml(resolveText(setup.error)) + "</p>" : "",
+    setup.error ? '<p class="starter-error starter-setup-error">' + escapeHtml(resolveText(setup.error)) + "</p>" : "",
     '<div class="starter-choice-stack">',
     renderScenePresentationPanel("start", "starter-info-panel"),
     '<section class="panel starter-choice-panel"><div class="panel-inner">',

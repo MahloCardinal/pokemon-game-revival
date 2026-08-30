@@ -14,15 +14,15 @@ export function renderCityScene() {
     var title = t("ui.zoneCards." + zone.key + ".title");
     var desc = t("ui.zoneCards." + zone.key + ".description");
     return [
-      '<a class="zone-card city-zone-card ' + escapeHtml(zone.className) + '" href="' + escapeHtml(zone.href) + '" data-action="' + escapeHtml(zone.action) + '">',
-      '  <h3 class="zone-card-title">' + escapeHtml(title) + "</h3>",
-      '  <div class="zone-card-media">',
-      renderImage(assetPath("img_zone", zone.image), title, "zone-card-image"),
+      '<a class="city-card ' + escapeHtml(zone.className) + '" href="' + escapeHtml(zone.href) + '" data-action="' + escapeHtml(zone.action) + '">',
+      '  <h3 class="city-card-title">' + escapeHtml(title) + "</h3>",
+      '  <div class="city-card-media">',
+      renderImage(assetPath("img_zone", zone.image), title, "city-card-image"),
       "  </div>",
-      desc ? '  <div class="zone-card-description">' + escapeHtml(desc) + "</div>" : "",
+      desc ? '  <div class="city-card-description">' + escapeHtml(desc) + "</div>" : "",
       "</a>"
     ].join("");
   });
 
-  return sceneShell(t("ui.sceneTitles.city"), "", '<section class="city-grid">' + cards.join("") + "</section>", "", "scene-content-city", "parent-back");
+  return sceneShell(t("ui.sceneTitles.city"), "", '<section class="city-section-grid">' + cards.join("") + "</section>", "", "scene-content-city", "parent-back");
 }

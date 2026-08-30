@@ -7,12 +7,12 @@ function renderBattleAreaCard(key, action, image, href) {
   var title = t("ui.zoneCards." + key + ".title");
   var description = t("ui.zoneCards." + key + ".description");
   return [
-    '<a class="zone-card city-zone-card battle-area-card" href="' + escapeHtml(href) + '" data-action="' + escapeHtml(action) + '">',
-    '  <h3 class="zone-card-title">' + escapeHtml(title) + "</h3>",
-    '  <div class="zone-card-media">',
-    renderImage(assetPath("img_zone", image), title, "zone-card-image"),
+    '<a class="battle-area-card" href="' + escapeHtml(href) + '" data-action="' + escapeHtml(action) + '">',
+    '  <h3 class="battle-area-card-title">' + escapeHtml(title) + "</h3>",
+    '  <div class="battle-area-card-media">',
+    renderImage(assetPath("img_zone", image), title, "battle-area-card-image"),
     "  </div>",
-    description ? '  <div class="zone-card-description">' + escapeHtml(description) + "</div>" : "",
+    description ? '  <div class="battle-area-card-description">' + escapeHtml(description) + "</div>" : "",
     "</a>"
   ].join("");
 }
@@ -24,7 +24,7 @@ export function renderBattleAreaScene() {
     renderBattleAreaCard("battle_shop", "open-battle-shop", "negozio_lotta_bottone.webp", "/battle-area/battle-shop"),
     renderBattleAreaCard("battle_dome", "open-battle-dome", "cupola_lotta_bottone.webp", "/battle-area/battle-dome")
   ];
-  return sceneShell(t("ui.sceneTitles.battleArea"), "", '<section class="city-grid battle-area-grid">' + cards.join("") + "</section>", "", "scene-content-battle-area", "parent-back");
+  return sceneShell(t("ui.sceneTitles.battleArea"), "", '<section class="battle-area-grid">' + cards.join("") + "</section>", "", "scene-content-battle-area", "parent-back");
 }
 
 export function renderBattleTowerScene() {

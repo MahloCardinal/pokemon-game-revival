@@ -28,7 +28,7 @@ export function renderBattleTowerScene() {
   var rules = tList("ui.battleTower.rules").map(function (rule) { return "<li>" + escapeHtml(rule) + "</li>"; }).join("");
   var disabled = canStart ? "" : "disabled";
   var content = [
-    '<section class="team-scene-stack battle-tower-layout">',
+    '<section class="battle-tower-layout">',
     renderScenePresentationPanel("battle_tower", "battle-tower-info-panel"),
     '  <section class="panel battle-tower-panel"><div class="panel-inner stack">',
     '    <h2 class="stack-title">' + escapeHtml(t("ui.battleTower.yourTeam")) + "</h2>",

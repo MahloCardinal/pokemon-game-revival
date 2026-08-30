@@ -849,7 +849,7 @@ export const stockpile = { index: 3, damagingMove: false, logKey: "buff_self_def
 export const acid = Object.assign(createToggleDamageMove(function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 4 });
 export const flatter = Object.assign(confuseBuffEnemyMove(), { index: 5 });
 export const air_cutter = Object.assign(simpleDamage(), { index: 6 });
-export const aerial_ace = Object.assign(targetTypeDoubleDamageMove(), { index: 7 });
+export const aerial_ace = Object.assign(targetTypeDoubleDamageMove("fighting"), { index: 7 });
 export const sky_attack = Object.assign(simpleDamage(), { index: 8 });
 export const aeroblast = {
         index: 9,
@@ -1005,16 +1005,16 @@ export const camouflage = {
       };
 export const sing = Object.assign(simpleSleepMove(), { index: 48 });
 export const skull_bash = Object.assign(twoTurnDefenseDamageMove(), { index: 49 });
-export const waterfall = Object.assign(targetTypeDoubleDamageMove(), { index: 50 });
+export const waterfall = Object.assign(targetTypeDoubleDamageMove("flying"), { index: 50 });
 export const focus_punch = Object.assign(conditionX2Move(function(a) { return a.prevTurnActive && !a.prevTurnDamaged; }), { index: 51 });
 export const kinesis = Object.assign(simpleEnemyAttackNerf(), { index: 52 });
 export const iron_tail = Object.assign(createToggleDamageMove(function(_attacker, defender) { if (defender.team.teamMistCounter === 0) { defender.nerfSelfDef(this.stats); this.logKey = "nerf_enem_def"; } }), { index: 53 });
 export const tail_glow = Object.assign(simpleSelfAttackBigBuff(), { index: 54 });
 export const thrash = Object.assign(forcedTripleHitConfusionMove(), { index: 55 });
-export const low_kick = Object.assign(targetTypeDoubleDamageMove(), { index: 56 });
+export const low_kick = Object.assign(targetTypeDoubleDamageMove("normal"), { index: 56 });
 export const tail_whip = Object.assign(simpleEnemyDefenseNerf(), { index: 57 });
 export const mud_shot = Object.assign(simpleDamage(), { index: 58 });
-export const karate_chop = Object.assign(targetTypeDoubleDamageMove(), { index: 59 });
+export const karate_chop = Object.assign(targetTypeDoubleDamageMove("dark"), { index: 59 });
 export const comet_punch = Object.assign(simpleDamage(), { index: 60 });
 export const swift = Object.assign(simpleDamage(), { index: 61 });
 export const confusion = Object.assign(simpleDamage(), { index: 62 });
@@ -1188,14 +1188,14 @@ export const false_swipe = {
 export const mud_sport = Object.assign(simpleEnemyAttackNerf(), { index: 98 });
 export const muddy_water = Object.assign(simpleDamage(), { index: 99 });
 export const sludge = Object.assign(toggleSecondaryStatus("psn", "dmg_psn"), { index: 100 });
-export const sludge_bomb = Object.assign(targetTypeDoubleDamageMove(), { index: 101 });
-export const mud_slap = Object.assign(targetTypeDoubleDamageMove(), { index: 102 });
+export const sludge_bomb = Object.assign(targetTypeDoubleDamageMove("fairy"), { index: 101 });
+export const mud_slap = Object.assign(targetTypeDoubleDamageMove("electric"), { index: 102 });
 export const charm = Object.assign(simpleEnemyAttackNerf(), { index: 103 });
 export const leaf_blade = Object.assign(simpleDamage(), { index: 104 });
 export const metal_claw = Object.assign(createToggleDamageMove(function(attacker) { attacker.buffSelfAtk(this.stats); this.logKey = "buff_self_atk"; }), { index: 105 });
 export const iron_defense = Object.assign(simpleSelfDefenseBuff(), { index: 106 });
 export const metal_sound = Object.assign(simpleEnemyDefenseNerf(), { index: 107 });
-export const feint_attack = Object.assign(targetTypeDoubleDamageMove(), { index: 108 });
+export const feint_attack = Object.assign(targetTypeDoubleDamageMove("ghost"), { index: 108 });
 export const flail = Object.assign(missingHpDamageMove(), { index: 109 });
 export const flash = Object.assign(simpleNegatePercentageMove(), { index: 110 });
 export const focus_energy = Object.assign(simpleTeamAttackBuff(), { index: 111 });
@@ -1231,21 +1231,21 @@ export const secret_power = {
       };
 export const mist_ball = Object.assign(createToggleDamageMove(function(attacker) { attacker.buffSelfDef(this.stats); this.logKey = "buff_self_def"; }), { index: 117 });
 export const dig = Object.assign(semiInvulnerableDamageMove(), { index: 118 });
-export const rock_slide = Object.assign(targetTypeDoubleDamageMove(), { index: 119 });
+export const rock_slide = Object.assign(targetTypeDoubleDamageMove("bug"), { index: 119 });
 export const vine_whip = Object.assign(simpleDamage(), { index: 120 });
 export const frustration = Object.assign(simpleDamage(), { index: 121 });
 export const thunderbolt = Object.assign(toggleSecondaryStatus("par_block", "dmg_par"), { index: 122 });
 export const leer = Object.assign(simpleEnemyDefenseNerf(), { index: 123 });
 export const fire_blast = Object.assign(toggleSecondaryStatus("brn", "dmg_brn"), { index: 124 });
 export const will_o_wisp = Object.assign(simpleBurnMove(), { index: 125 });
-export const fire_punch = Object.assign(targetTypeDoubleDamageMove(), { index: 126 });
+export const fire_punch = Object.assign(targetTypeDoubleDamageMove("steel"), { index: 126 });
 export const fury_attack = Object.assign(repeatLastTurnDamageMove(), { index: 127 });
 export const thief = Object.assign(createToggleDamageMove(function(attacker, defender) {
     var manager = attacker.team && attacker.team.battleManager;
     this.logKey = manager && manager.stealHeldItem(attacker, defender) ? "steal_item" : "dmg_los_perc";
   }), { index: 128 });
 export const icicle_spear = Object.assign(simpleDamage(), { index: 129 });
-export const ice_punch = Object.assign(targetTypeDoubleDamageMove(), { index: 130 });
+export const ice_punch = Object.assign(targetTypeDoubleDamageMove("dragon"), { index: 130 });
 export const ice_beam = Object.assign(toggleSecondaryStatus("frz", "dmg_frz"), { index: 131 });
 export const guillotine = Object.assign(ohkoMove(), { index: 132 });
 export const giga_drain = Object.assign(damageRecoveryMove(1/2), { index: 133 });
@@ -1417,7 +1417,7 @@ export const crabhammer = Object.assign(simpleDamage(), { index: 172 });
 export const morning_sun = Object.assign(weatherRecoveryMove(), { index: 173 });
 export const meditate = Object.assign(simpleSelfAttackBuff(), { index: 174 });
 export const mega_kick = Object.assign(simpleDamage(), { index: 175 });
-export const megahorn = Object.assign(targetTypeDoubleDamageMove(), { index: 176 });
+export const megahorn = Object.assign(targetTypeDoubleDamageMove("psychic"), { index: 176 });
 export const mega_punch = Object.assign(simpleDamage(), { index: 177 });
 export const mega_drain = Object.assign(damageRecoveryMove(1/4), { index: 178 });
 export const grass_whistle = Object.assign(simpleSleepMove(), { index: 179 });
@@ -1649,7 +1649,7 @@ export const psywave = {
           this.logKey = hit ? "dmg" : "fail";
         }
       };
-export const psybeam = Object.assign(targetTypeDoubleDamageMove(), { index: 228 });
+export const psybeam = Object.assign(targetTypeDoubleDamageMove("poison"), { index: 228 });
 export const psycho_boost = Object.assign(simpleDamage(), { index: 229 });
 export const shadow_punch = Object.assign(simpleDamage(), { index: 230 });
 export const mach_punch = Object.assign(simpleDamage(), { index: 231 });
@@ -1856,7 +1856,7 @@ export const safeguard = {
         }
       };
 export const leech_life = Object.assign(damageRecoveryMove(1/4), { index: 265 });
-export const rock_throw = Object.assign(targetTypeDoubleDamageMove(), { index: 266 });
+export const rock_throw = Object.assign(targetTypeDoubleDamageMove("ice"), { index: 266 });
 export const yawn = {
         index: 267,
         damagingMove: false,
@@ -2058,7 +2058,7 @@ export const substitute = {
 export const charge = Object.assign(chargeBuffMove(), { index: 293 });
 export const dive = Object.assign(semiInvulnerableDamageMove(), { index: 294 });
 export const submission = Object.assign(recoilDamageMove(), { index: 295 });
-export const rock_smash = Object.assign(targetTypeDoubleDamageMove(), { index: 296 });
+export const rock_smash = Object.assign(targetTypeDoubleDamageMove("rock"), { index: 296 });
 export const spike_cannon = Object.assign(repeatLastTurnDamageMove(), { index: 297 });
 export const mirror_coat = Object.assign(counterMove(), { index: 298 });
 export const mirror_move = {
@@ -2157,8 +2157,8 @@ export const covet = Object.assign(createToggleDamageMove(function(attacker, def
     var manager = attacker.team && attacker.team.battleManager;
     this.logKey = manager && manager.stealHeldItem(attacker, defender) ? "steal_item" : "dmg_los_perc";
   }), { index: 310 });
-export const surf = Object.assign(targetTypeDoubleDamageMove(), { index: 311 });
-export const cut = Object.assign(targetTypeDoubleDamageMove(), { index: 312 });
+export const surf = Object.assign(targetTypeDoubleDamageMove("ground"), { index: 311 });
+export const cut = Object.assign(targetTypeDoubleDamageMove("grass"), { index: 312 });
 export const fury_cutter = Object.assign(repeatLastTurnDamageMove(), { index: 313 });
 export const teleport = {
         index: 314,
@@ -2169,7 +2169,7 @@ export const teleport = {
         }
       };
 export const clamp = Object.assign(bindDamageMove(4), { index: 315 });
-export const earthquake = Object.assign(targetTypeDoubleDamageMove(), { index: 316 });
+export const earthquake = Object.assign(targetTypeDoubleDamageMove("fire"), { index: 316 });
 export const sandstorm = {
         index: 317,
         damagingMove: false,
@@ -2284,7 +2284,7 @@ export const thunder = {
         }
       };
 export const thunder_wave = Object.assign(simpleParalysisMove(), { index: 326 });
-export const thunder_punch = Object.assign(targetTypeDoubleDamageMove(), { index: 327 });
+export const thunder_punch = Object.assign(targetTypeDoubleDamageMove("water"), { index: 327 });
 export const thunder_shock = Object.assign(simpleDamage(), { index: 328 });
 export const whirlwind = {
         index: 329,

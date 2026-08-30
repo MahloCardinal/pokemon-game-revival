@@ -4,7 +4,6 @@
 - implementare sfida asincrona PvP tra giocatori
 - reinserire regolamento completo
 - inserire possibilità di andare allo stato della sfida cliccando sul turno nel log (deve valire per qualsiasi sfida del GdR)
-- i CSS devono rimanere entità separate se usati in sezioni diverse
 - bilanciamento team palestre
 - verificare effetti mosse, effetti strumenti assegnati/usati, e scritte log/riassunto
 

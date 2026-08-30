@@ -1,4 +1,36 @@
-﻿.pokemon-visual {
+
+.move-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 140ms ease;
+  pointer-events: none;
+}
+
+button.move-button:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+button.move-button:focus-visible:not(:disabled)::before {
+  opacity: 1;
+}
+
+.pokemon-card.mini-card.is-selected {
+  outline: var(--selected-outline);
+  outline-offset: 2px;
+  background: var(--selected-bg);
+}
+
+.pokemon-sprite {
+  width: auto;
+  height: auto;
+  max-width: 94%;
+  max-height: 94%;
+  image-rendering: auto;
+}
+
+.pokemon-visual {
   display: grid;
   place-items: center;
   flex: 0 0 auto;

@@ -1,4 +1,5 @@
 import { registerAction } from "./action-registry.js";
+import { pendingOwnedBattleEntryChoice, sceneAllowsBallUse } from "./battle-scene-policy.js";
 import { createCaptureScene } from "./router.js";
 import { backgroundKeyForScene } from "../data/scene-backgrounds.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
@@ -1715,10 +1716,6 @@ function waitingForFirstActor(firstActor) {
 function initialAdminBattleWaitingFor(battle, initialState) {
   var firstActor = battle && battle.first_actor || initialState && initialState.firstActor || "player";
   return waitingForFirstActor(firstActor);
-}
-
-function sceneAllowsBallUse(scene) {
-  return Boolean(scene && (scene.authoritativeCapture || String(scene.battleType || "").indexOf("capture_") === 0) && scene.captureScene);
 }
 
 function sceneUsesNpcItems(scene) {
@@ -3706,13 +3703,15 @@ function waitForAdminEntryChoice(scene) {
 }
 
 export function openPendingBattleEntryChoice(scene) {
-  var combatant = scene && scene.playerTeam ? scene.playerTeam.getActive() : null;
+  var pending = scene && scene.authoritativeBattle ? pendingOwnedBattleEntryChoice(scene) : null;
+  var combatant = pending ? pending.combatant : scene && scene.playerTeam ? scene.playerTeam.getActive() : null;
   var panelOpened;
   if (!scene || !scene.manager || !combatant || scene.manager.battleOver) {
     return false;
   }
   if (scene.authoritativeBattle) {
-    var authoritativeChoice = scene.authoritativeEntryChoice;
+    if (!pending || scene.battleEntryChoicePanel) return false;
+    var authoritativeChoice = pending.choice;
     if (!authoritativeChoice || !Array.isArray(authoritativeChoice.entries) || !authoritativeChoice.entries.length) {
       return false;
     }

@@ -1,3 +1,129 @@
+/* Styles owned by the daycare section. */
+.daycare-choice-option::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 140ms ease;
+  pointer-events: none;
+}
+
+.daycare-choice-option:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.daycare-choice-option:focus-visible:not(:disabled)::before {
+  opacity: 1;
+}
+.daycare-layout {
+  display: grid;
+  gap: 34px;
+}
+.daycare-choice-option {
+  position: relative;
+  overflow: hidden;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--text);
+  box-shadow: none;
+  transition: var(--interactive-transition);
+}
+
+.daycare-choice-option:disabled {
+  cursor: not-allowed;
+  border-color: rgba(99, 109, 117, 0.34);
+  background: #e0e4e7;
+  color: #6f7880;
+}
+
+.daycare-choice-option::before {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.1) 48%, transparent 72%);
+}
+
+.daycare-choice-option.is-empty {
+  background: rgba(255, 255, 255, 0.36);
+  border-style: dashed;
+  cursor: default;
+}
+
+.daycare-choice-option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(31, 37, 40, 0.14);
+  filter: var(--interactive-hover-filter);
+}
+
+.daycare-choice-option:focus-visible:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(31, 37, 40, 0.14);
+  filter: var(--interactive-hover-filter);
+}
+
+@media (max-width: 680px) {
+.daycare-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+.daycare-choice-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+}
+
+.daycare-choice-panel {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 340px);
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: var(--radius-panel);
+  background: var(--surface-raised);
+  box-shadow:
+    inset 0 0 0 1px rgba(214, 150, 104, 0.16),
+    0 14px 30px rgba(31, 37, 40, 0.2);
+  backdrop-filter: blur(3px);
+}
+
+.daycare-choice-panel h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 12px;
+  text-align: center;
+}
+
+.daycare-choice-panel .daycare-choice-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.daycare-choice-panel .daycare-choice-grid-count-1 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.daycare-choice-panel .daycare-choice-grid-count-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.daycare-choice-option.is-ko {
+  opacity: 0.45;
+  color: #888;
+}
+.daycare-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 250px));
+  justify-content: center;
+  gap: 10px;
+}
+
 .daycare-layout {
   --daycare-slot-width: var(--pokemon-card-width);
   --daycare-slot-aspect-ratio: 5 / 6;
@@ -80,7 +206,7 @@
   pointer-events: none;
   filter: grayscale(0.55) saturate(0.75);
 }
-.battle-switch-choice[data-daycare-deposit-pending="true"] {
+.daycare-choice-option[data-daycare-deposit-pending="true"] {
   pointer-events: none;
   filter: grayscale(0.55) saturate(0.75);
 }

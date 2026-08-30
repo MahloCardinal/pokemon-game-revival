@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import "./audit-css-ownership.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -465,7 +466,7 @@ assert.doesNotMatch(battleDomeMigration, /grant select on public\.battle_dome_(b
   "Battle Dome snapshots and events must only be exposed through the authoritative Edge projection");
 assert.doesNotMatch(battleDomeMigration, /battle_dome_battle[\s\S]{0,200}(expires_at|interval\s+'[^']+')/i,
   "Active Battle Dome challenges must not expire automatically");
-assert.match(battleView, /ItemCategory\.Ball && String\(renderScene\.battleType \|\| ""\)\.indexOf\("capture_"\) === 0/,
+assert.match(battleView, /ItemCategory\.Ball && sceneAllowsBallUse\(renderScene\)/,
   "Poké Balls must only be visible in capture-zone battles");
 
 const ordinaryBattleCommit = finalFunctionBody("server_authority_private", "commit_edge_battle_command_before_snapshot");
@@ -561,6 +562,46 @@ const doubleDamageMoveTypes = {
   earthquake: "fire", thunder_punch: "water"
 };
 const previousLocale = Locale.getLocale();
+for (const [moveKey, typeKey] of Object.entries(doubleDamageMoveTypes)) {
+  for (const targetTypes of [[typeKey], ["unrelated", typeKey], ["unrelated"]]) {
+    const move = engineExports.createMove(MoveDefinitions[moveKey], { power: 123, stats: 10 });
+    move.before({}, { type: targetTypes }, true);
+    assert.equal(move.moveMult, targetTypes.includes(typeKey) ? 2 : 1, `${moveKey}: multiplier must depend on the target type`);
+  }
+}
+const scenePolicyModule = await loadEsModule(fileURLToPath(new URL("../app/client/battle-scene-policy.js", import.meta.url)));
+await scenePolicyModule.evaluate();
+const { sceneAllowsBallUse, pendingOwnedBattleEntryChoice } = scenePolicyModule.namespace;
+for (const battleType of ["battle_dome", "battle_tower", "gym_pewter_city", "training_easy", "league", "debug_training", "future_mode", ""]) {
+  assert.equal(sceneAllowsBallUse({ battleType }), false);
+  assert.equal(sceneAllowsBallUse({ battleType, captureScene: { name: "capture" } }), false);
+}
+assert.equal(sceneAllowsBallUse(null), false);
+assert.equal(sceneAllowsBallUse({ battleType: "capture_forest", authoritativeCapture: true }), true);
+assert.equal(sceneAllowsBallUse({ battleType: "capture_forest", captureScene: { name: "capture" } }), true);
+assert.match(battleView, /if \(sceneAllowsBallUse\(renderScene\)\) \{\s*battleInventorySections\.push\(\{ key: "balls"/);
+assert.match(battleView, /category === ItemCategory\.Ball && sceneAllowsBallUse\(renderScene\)/);
+{
+  const creator = { pokemon: { speciesKey: "63" } };
+  const challenger = { pokemon: { speciesKey: "190" } };
+  const moveChoice = { kind: "move", entries: [{ index: 0 }] };
+  const typeChoice = { kind: "type", entries: [{ index: 0 }] };
+  const scene = { battleDome: true, battleDomeRole: "creator", manager: { waitingFor: "player" },
+    playerTeam: { getActive: () => creator }, enemyTeam: { getActive: () => challenger },
+    authoritativeEntryChoice: moveChoice, authoritativeAdminEntryChoice: null };
+  assert.equal(pendingOwnedBattleEntryChoice(scene).combatant, creator);
+  scene.battleDomeRole = "challenger";
+  assert.equal(pendingOwnedBattleEntryChoice(scene), null);
+  scene.manager.waitingFor = "admin";
+  scene.authoritativeEntryChoice = null;
+  scene.authoritativeAdminEntryChoice = typeChoice;
+  assert.equal(pendingOwnedBattleEntryChoice(scene).combatant, challenger);
+  assert.equal(pendingOwnedBattleEntryChoice(scene).choice, typeChoice);
+  scene.battleDomeRole = "creator";
+  assert.equal(pendingOwnedBattleEntryChoice(scene), null);
+  scene.battleDomeRole = "spectator";
+  assert.equal(pendingOwnedBattleEntryChoice(scene), null);
+}
 try {
   for (const locale of ["it", "en"]) {
     Locale.setLocale(locale);
@@ -581,6 +622,34 @@ const battleTextModule = await loadEsModule(fileURLToPath(new URL("../app/client
 if (battleTextModule.status !== "evaluated") await battleTextModule.evaluate();
 const { localizeBattleSummary } = battleTextModule.namespace;
 const { BattleManager, buildBattleSummary, createMove, Pokemon, projectBattle, Team } = engineExports;
+
+{
+  const makePokemon = (key, name, type, item) => new Pokemon({ name, speciesKey: key, ndex: Number(key),
+    level: 100, type: [type], maxHp: 400, heldItemIndex: item.index,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  const creator = makePokemon("63", "Abra", "psychic", ItemDefinitions.odd_incense);
+  const challenger = makePokemon("190", "Aipom", "normal", ItemDefinitions.full_incense);
+  creator.authoritativeSlot = 0;
+  challenger.authoritativeSlot = 0;
+  const manager = new BattleManager(new Team("Creator", [creator]), new Team("Challenger", [challenger]));
+  manager.battleType = "battle_dome";
+  manager.adminControlled = true;
+  manager.firstActor = "player";
+  manager.startInitialEntry();
+  assert.equal(manager.initialEntry.phase, "awaiting_player_entry_choice");
+  const snapshot = engineExports.serializeBattleManager(manager, engineExports.createRngState(123), { playerItems: [] });
+  const firstChoice = projectBattle(manager, { status: "active" }, []).entry_choice;
+  const first = engineExports.executeBattleCommand(snapshot, { type: "entry_choice", entryChoice: { kind: firstChoice.kind, index: firstChoice.entries[0].index } });
+  assert.equal(first.snapshot.manager.initialEntry.phase, "awaiting_admin_entry_choice");
+  assert.equal(first.projection.waiting_for, "admin");
+  const secondChoice = first.projection.admin_entry_choice;
+  assert.equal(secondChoice.kind, "type");
+  const chosenType = secondChoice.entries[0];
+  const second = engineExports.executeAdminBattleCommand(first.snapshot, { type: "entry_choice", entryChoice: { kind: "type", index: chosenType.index } });
+  assert.equal(second.snapshot.manager.initialEntry.phase, "ready");
+  assert.equal(second.projection.waiting_for, "player", "Creator must retain the first attack after both incense choices");
+  assert.ok(second.projection.participants.find(entry => entry.side === "npc").type_keys.includes(chosenType.key || chosenType.typeName));
+}
 
 const gymDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/gyms.js", import.meta.url)));
 if (gymDefinitionsModule.status !== "evaluated") await gymDefinitionsModule.evaluate();

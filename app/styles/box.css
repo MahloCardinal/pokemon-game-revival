@@ -1,4 +1,12 @@
-﻿.box-pokemon-grid > .pokemon-card-frame {
+
+.box-pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, var(--pokemon-card-width));
+  justify-content: center;
+  gap: var(--zone-card-gap);
+}
+
+.box-pokemon-grid > .pokemon-card-frame {
   height: 100%;
 }
 .box-storage-panel .box-pokemon-grid {

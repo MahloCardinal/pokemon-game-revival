@@ -1,6 +1,49 @@
-﻿.scene-content-starter {
+
+.starter-card:disabled {
+  cursor: not-allowed;
+  border-color: rgba(99, 109, 117, 0.34);
+  background: #e0e4e7;
+  color: #6f7880;
+  filter: grayscale(0.75);
+}
+
+.starter-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(31, 37, 40, 0.14);
+  filter: var(--interactive-hover-filter);
+}
+
+.starter-card:focus-visible:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(31, 37, 40, 0.14);
+  filter: var(--interactive-hover-filter);
+}
+
+.trainer-card-sprite {
+  display: block;
+  object-fit: contain;
+}
+
+.trainer-card-sprite {
+  width: var(--trainer-sprite-width);
+  height: var(--trainer-sprite-height);
+  object-position: center bottom;
+}
+
+/* Styles owned by the starter section. */
+.starter-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(197, 80, 68, 0.12);
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.scene-content-starter {
   width: min(var(--section-width), 100%);
 }
+
 .starter-card-visual .starter-card-sprite {
   display: block;
   width: 100%;
@@ -12,18 +55,22 @@
   object-fit: contain;
   object-position: center bottom;
 }
+
 .starter-gender-icon,
 .starter-confirm-trainer,
 .starter-confirm-pokemon {
   display: block;
   object-fit: contain;
 }
+
 .starter-card-visual .sprite-y-center {
   object-position: center center;
 }
+
 .starter-card-visual .sprite-scale.sprite-y-center {
   transform-origin: center center;
 }
+
 .starter-card-visual .sprite-scale,
 .starter-confirm-trainer-card .sprite-scale {
   width: 100%;
@@ -31,63 +78,75 @@
   max-width: 100%;
   max-height: 100%;
 }
+
 .starter-card-visual,
 .starter-gender-option {
   display: grid;
   place-items: center;
 }
+
 .starter-choice-stack {
   display: grid;
   gap: 22px;
   width: min(var(--section-width), 100%);
   margin: 0 auto;
 }
+
 .starter-choice-panel .panel-inner {
   padding: 24px;
 }
+
 .starter-setup-error,
 .starter-setup-note {
   width: min(var(--section-width), 100%);
   margin-inline: auto;
 }
+
 .starter-choice-section {
   display: grid;
   gap: 16px;
 }
+
 .starter-section-title {
   margin: 0;
   font-size: 18px;
   text-align: center;
 }
+
 .trainer-picker {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 22px;
   max-height: 430px;
   padding: 8px 14px 14px;
 }
+
 .starter-picker {
   grid-template-columns: repeat(auto-fill, minmax(min(196px, 100%), 1fr));
   gap: 14px;
   max-height: 560px;
   padding: 8px 8px 8px;
 }
+
 .starter-generation-filters {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
 }
+
 .starter-generation-button.active {
   border-color: rgba(25, 125, 115, 0.54);
   background: rgba(232, 246, 242, 0.96);
   box-shadow: inset 0 0 0 1px rgba(25, 125, 115, 0.22);
 }
+
 .trainer-picker,
 .starter-picker {
   display: grid;
   overflow-y: scroll;
   overflow-x: hidden;
 }
+
 .starter-card {
   position: relative;
   overflow: hidden;
@@ -104,6 +163,7 @@
   box-shadow: none;
   transition: var(--interactive-transition);
 }
+
 .starter-card.is-selected {
   border-color: rgba(25, 125, 115, 0.38);
   outline: 1px solid rgba(25, 125, 115, 0.24);
@@ -111,16 +171,19 @@
   background: var(--surface-raised);
   box-shadow: inset 0 0 0 1px rgba(25, 125, 115, 0.14);
 }
+
 .trainer-card.is-selected {
   border-color: rgba(25, 125, 115, 0.5);
   outline-color: rgba(25, 125, 115, 0.28);
   background: var(--surface-raised);
   box-shadow: inset 0 0 0 1px rgba(25, 125, 115, 0.08);
 }
+
 .starter-picker .starter-card > * {
   position: relative;
   z-index: 1;
 }
+
 .starter-picker .starter-card.is-selected::before {
   content: "";
   position: absolute;
@@ -129,26 +192,31 @@
   background: rgba(25, 125, 115, 0.12);
   pointer-events: none;
 }
+
 .starter-picker .starter-card {
   min-height: 236px;
 }
+
 .starter-card-visual {
   width: 168px;
   height: 168px;
   max-width: 100%;
   overflow: hidden;
 }
+
 .trainer-card {
   align-content: end;
   min-height: 354px;
   padding-block: 22px;
 }
+
 .starter-gender-picker {
   display: flex;
   justify-content: center;
   gap: 8px;
   min-height: 28px;
 }
+
 .starter-picker .starter-card.is-selected .starter-gender-picker {
   position: absolute;
   top: 50%;
@@ -160,6 +228,7 @@
   background: var(--surface-raised);
   transform: translate(-50%, -50%);
 }
+
 .starter-gender-option {
   width: 28px;
   height: 28px;
@@ -172,20 +241,24 @@
     box-shadow 120ms ease,
     background 120ms ease;
 }
+
 .starter-gender-option:hover,
 .starter-gender-option:focus-visible {
   transform: translateY(-1px);
   box-shadow: 0 4px 9px rgba(31, 37, 40, 0.14);
 }
+
 .starter-gender-option.is-selected {
   border-color: rgba(25, 125, 115, 0.65);
   background: rgba(232, 246, 242, 0.96);
   box-shadow: 0 0 0 2px rgba(25, 125, 115, 0.16);
 }
+
 .starter-gender-icon {
   width: 16px;
   height: 16px;
 }
+
 .starter-confirm-preview {
   display: grid;
   grid-template-columns: repeat(2, var(--starter-confirm-box-width));
@@ -196,6 +269,7 @@
   margin-inline: auto;
   gap: var(--starter-confirm-gap);
 }
+
 .starter-confirm-card {
   flex: 0 0 auto;
   display: grid;
@@ -207,6 +281,7 @@
   border: 0;
   background: transparent;
 }
+
 .starter-confirm-trainer-card,
 .starter-confirm-pokemon-card {
   box-sizing: border-box;
@@ -214,15 +289,19 @@
   height: calc(var(--starter-confirm-box-width) * 1.5);
   overflow: hidden;
 }
+
 .starter-confirm-trainer-card {
   place-items: end center;
 }
+
 .starter-confirm-pokemon-card {
   grid-template-rows: minmax(0, 1fr) auto;
 }
+
 .starter-confirm-pokemon-card strong {
   font-size: clamp(10px, 3.4vw, 15px);
 }
+
 .starter-confirm-pokemon-name {
   display: inline-flex;
   align-items: center;
@@ -230,16 +309,19 @@
   gap: 5px;
   min-width: 0;
 }
+
 .starter-confirm-gender-icon {
   flex: 0 0 auto;
   width: 14px;
   height: 14px;
 }
+
 .starter-confirm-trainer {
   width: var(--starter-confirm-box-width);
   height: calc(var(--starter-confirm-box-width) * 1.5);
   object-position: center bottom;
 }
+
 .starter-confirm-pokemon {
   width: var(--starter-confirm-box-width);
   height: calc((var(--starter-confirm-box-width) * 1.5) - 13.5px - clamp(4px, 2vw, 10px));
@@ -248,6 +330,7 @@
   align-self: end;
   object-position: center bottom;
 }
+
 .starter-confirm-actions {
   display: grid;
   grid-template-columns: repeat(2, min(98px, var(--starter-confirm-box-width)));
@@ -256,14 +339,15 @@
   gap: clamp(4px, 2vw, 10px);
   margin-top: clamp(6px, 3vw, 12px);
 }
+
 .starter-confirm-actions .button {
   width: 100%;
   min-width: 0;
   padding: clamp(6px, 2vw, 9px) clamp(8px, 3vw, 18px);
   font-size: clamp(10px, 3.4vw, 15px);
 }
-.starter-card-sprite,
-.pokemon-sprite {
+
+.starter-card-sprite {
   width: auto;
   height: auto;
   max-width: 94%;

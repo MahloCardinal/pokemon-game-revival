@@ -20,10 +20,10 @@ var CAPTURE_ZONE_THEME_CLASS = {
 
 export function renderCaptureTeamSectionInner() {
   return state.team.length
-    ? '<div class="pokemon-grid team-pokemon-grid capture-team-grid"><h2 class="stack-title capture-team-title">' + escapeHtml(t("ui.capture.currentTeam")) + "</h2>" + state.team.map(function (pokemon) {
+    ? '<div class="pokemon-grid capture-team-grid"><h2 class="stack-title capture-team-title">' + escapeHtml(t("ui.capture.currentTeam")) + "</h2>" + state.team.map(function (pokemon) {
       return renderPokemonCard(pokemon);
     }).join("") + "</div>"
-    : '<div class="pokemon-grid team-pokemon-grid capture-team-grid"><h2 class="stack-title capture-team-title">' + escapeHtml(t("ui.capture.currentTeam")) + '</h2><div class="empty-state capture-team-empty">' + escapeHtml(t("ui.capture.emptyTeam")) + "</div></div>";
+    : '<div class="pokemon-grid capture-team-grid"><h2 class="stack-title capture-team-title">' + escapeHtml(t("ui.capture.currentTeam")) + '</h2><div class="empty-state capture-team-empty">' + escapeHtml(t("ui.capture.emptyTeam")) + "</div></div>";
 }
 
 export function captureWildCardKey(scene) {

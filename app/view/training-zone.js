@@ -31,8 +31,8 @@ export function renderTrainingZoneScene() {
         '  <span class="training-zone-prize-section">',
         '    <span class="training-zone-prize-title">' + escapeHtml(t(displayDifficulty.fullRewardAvailable ? "ui.trainingZone.fullDailyReward" : "ui.trainingZone.repeatedReward")) + '</span>',
         '    <span class="training-zone-prize-list">',
-        '      <span class="gym-badge-row training-zone-prize-row">' + escapeHtml(t("ui.trainingZone.levels", { count: rewardLevels })) + "</span>",
-        '      <span class="gym-badge-row training-zone-prize-row">' + (battlePointsMarkup(displayDifficulty.battlePoints)) + "</span>",
+        '      <span class="training-zone-prize-row">' + escapeHtml(t("ui.trainingZone.levels", { count: rewardLevels })) + "</span>",
+        '      <span class="training-zone-prize-row">' + (battlePointsMarkup(displayDifficulty.battlePoints)) + "</span>",
         "    </span>",
         "  </span>"
       ].join("");
@@ -75,8 +75,8 @@ export function renderTrainingZoneScene() {
     ? [
       '  <section class="panel training-zone-challenger-panel"><div class="panel-inner training-zone-challenger">',
       '    <div class="training-zone-trainer-cell">',
-      '      <div class="trainer-profile-media training-zone-trainer-media">',
-      renderImage(getTrainerImage(opponentProfile.sprite), opponentDisplayName, withTrainerSpriteClass("trainer-profile-image", opponentProfile.sprite), withTrainerSpriteAttrs(opponentProfile.sprite, 'loading="eager" decoding="async"')),
+      '      <div class="training-zone-trainer-media">',
+      renderImage(getTrainerImage(opponentProfile.sprite), opponentDisplayName, withTrainerSpriteClass("training-zone-trainer-image", opponentProfile.sprite), withTrainerSpriteAttrs(opponentProfile.sprite, 'loading="eager" decoding="async"')),
       "      </div>",
       '      <h2 class="stack-title">' + escapeHtml(opponentDisplayName) + "</h2>",
       "    </div>",
@@ -88,7 +88,7 @@ export function renderTrainingZoneScene() {
       ? '<section class="panel training-zone-challenger-panel"><div class="panel-inner"><p class="empty-state">' + escapeHtml(t("ui.trainingZone.authoritativeOpponent")) + "</p></div></section>"
       : "";
   var content = [
-    '<section class="team-scene-stack training-zone-layout">',
+    '<section class="training-zone-layout">',
     renderScenePresentationPanel("training_zone", "training-zone-info-panel"),
     '  <section class="panel training-zone-panel"><div class="panel-inner stack">',
     '    <div class="training-zone-control-row">',

@@ -190,21 +190,21 @@ export function renderTeamScene() {
   function renderInventoryItem(item) {
     var itemName = itemDisplayName(item);
     var imageSrc = getItemDisplayImage(item);
-    var itemImageClass = item.category === ItemCategory.TM ? "style-zaino-item-image style-zaino-item-image-mt" : "style-zaino-item-image";
+    var itemImageClass = item.category === ItemCategory.TM ? "trainer-zaino-item-image trainer-zaino-item-image-mt" : "trainer-zaino-item-image";
     var imageMarkup = imageSrc
       ? renderImage(imageSrc, itemName, itemImageClass)
-      : '<span class="style-zaino-item-image style-zaino-item-image-empty"></span>';
-    var availabilityMarkup = isSingleCopyInventoryItem(item) ? "" : '<div class="style-zaino-item-availability"><span class="style-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
+      : '<span class="trainer-zaino-item-image trainer-zaino-item-image-empty"></span>';
+    var availabilityMarkup = isSingleCopyInventoryItem(item) ? "" : '<div class="trainer-zaino-item-availability"><span class="trainer-zaino-item-quantity">x' + escapeHtml(item.quantity) + "</span></div>";
 
     return [
-      '<article class="style-zaino-item-card">',
-      '  <div class="style-zaino-item-media">',
+      '<article class="trainer-zaino-item-card">',
+      '  <div class="trainer-zaino-item-media">',
       imageMarkup,
       availabilityMarkup,
       "  </div>",
-      '  <div class="style-zaino-item-copy">',
-      '    <div class="style-zaino-item-heading"><h3 class="style-zaino-item-name">' + escapeHtml(itemName) + "</h3></div>",
-      '    <p class="style-zaino-item-description">' + escapeHtml(itemDisplayDescription(item)) + "</p>",
+      '  <div class="trainer-zaino-item-copy">',
+      '    <div class="trainer-zaino-item-heading"><h3 class="trainer-zaino-item-name">' + escapeHtml(itemName) + "</h3></div>",
+      '    <p class="trainer-zaino-item-description">' + escapeHtml(itemDisplayDescription(item)) + "</p>",
       "  </div>",
       "</article>"
     ].join("");
@@ -216,13 +216,13 @@ export function renderTeamScene() {
     });
     var sectionContent = sectionItems.length
       ? sectionItems.map(renderInventoryItem).join("")
-      : '<p class="style-zaino-empty">' + escapeHtml(t("common.emptyPocket")) + "</p>";
+      : '<p class="trainer-zaino-empty">' + escapeHtml(t("common.emptyPocket")) + "</p>";
 
     return [
-      '<section class="style-zaino-pocket">',
-      '  <h3 class="style-zaino-pocket-title">' + escapeHtml(section.title) + "</h3>",
-      '  <div class="style-zaino-pocket-scroll">',
-      '    <div class="style-zaino-item-grid">' + sectionContent + "</div>",
+      '<section class="trainer-zaino-pocket">',
+      '  <h3 class="trainer-zaino-pocket-title">' + escapeHtml(section.title) + "</h3>",
+      '  <div class="trainer-zaino-pocket-scroll">',
+      '    <div class="trainer-zaino-item-grid">' + sectionContent + "</div>",
       "  </div>",
       "</section>"
     ].join("");
@@ -234,7 +234,7 @@ export function renderTeamScene() {
   var inventoryItems = resolveInventoryItems(state.inventory);
 
   var debugPokemonCreator = renderDebugPokemonCreator();
-  var zainoContent = '<section class="trainer-inventory-panel style-zaino-panel" data-render-region="trainer-inventory"><div class="trainer-inventory-stack style-zaino-stack">' +
+  var zainoContent = '<section class="trainer-inventory-panel trainer-zaino-panel" data-render-region="trainer-inventory"><div class="trainer-inventory-stack trainer-zaino-stack">' +
     inventorySections.map(function (section) {
       return renderInventorySection(section, inventoryItems);
     }).join("") +

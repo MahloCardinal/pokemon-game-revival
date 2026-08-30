@@ -1,4 +1,12 @@
-﻿.inventory-item-image {
+
+.inventory-stack {
+  display: grid;
+  grid-template-columns: repeat(3, var(--pokemon-card-width));
+  justify-content: center;
+  gap: var(--zone-card-gap);
+}
+
+.inventory-item-image {
   display: block;
   object-fit: contain;
   justify-self: center;

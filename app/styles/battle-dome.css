@@ -1,50 +1,211 @@
-.search-combobox {
-  position: relative;
+/* Styles owned by the battle-dome section. */
+.battle-dome-builder-panel {
+  --pokemon-card-width: 341px;
+  box-sizing: border-box;
+  display: grid;
+  justify-self: center;
+  max-width: 100%;
+  padding: 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface-panel);
+}
+
+.battle-dome-team-grid {
+  --pokemon-card-width: 341px;
+  box-sizing: border-box;
+  display: grid;
+  justify-self: center;
+  max-width: 100%;
+  padding: 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface-panel);
+}
+
+.battle-dome-builder-panel {
+  width: fit-content;
+  max-width: 100%;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+.battle-dome-team-grid {
+  width: min(var(--section-width), 100%);
+  overflow: hidden;
+}
+
+.battle-dome-team-grid {
+  grid-template-columns: repeat(3, var(--pokemon-card-width));
+  justify-content: center;
+  align-items: stretch;
+}
+
+.battle-dome-builder-panel {
+  width: min(var(--section-width), 100%);
+  gap: 16px;
+}
+
+.battle-dome-builder-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.battle-dome-builder-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.battle-dome-builder-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.battle-dome-builder-move-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.battle-dome-builder-moves {
+  display: grid;
+  gap: 10px;
+}
+
+.battle-dome-builder-panel label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text-soft);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.battle-dome-builder-panel input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 8px 10px;
+  border: 1px solid rgba(31, 37, 40, 0.22);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.battle-dome-builder-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1150px) {
+.battle-dome-team-grid {
+    width: min(var(--section-width), 100%);
+    padding: 16px;
+    align-items: stretch;
+  }
+
+.battle-dome-builder-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+.battle-dome-builder-panel {
+    padding: 16px;
+  }
+
+}
+
+@media (max-width: 680px) {
+.battle-dome-team-grid {
+    padding: 12px;
+  }
+
+.battle-dome-builder-panel {
+    padding: 12px;
+  }
+
+.battle-dome-builder-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+.battle-dome-builder-move-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
+.battle-dome-section-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.battle-dome-section-row .button {
+  font-size: 13px;
+}
+.battle-dome-sections-panel .panel-inner {
+  display: grid;
+  gap: 28px;
   min-width: 0;
 }
 
-.search-combobox-input {
-  box-sizing: border-box;
-  width: 100%;
+.battle-dome-sections-panel .panel-inner {
+  padding: 10px;
+}
+.battle-dome-section-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  padding: 2px 4px 6px;
+  container-type: inline-size;
 }
 
-.search-combobox-options {
-  display: none;
-  position: absolute;
-  z-index: 30;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  max-height: 220px;
-  overflow-y: auto;
-  padding: 4px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface-raised);
-  box-shadow: var(--shadow-soft);
+.battle-dome-section-row .button {
+  --button-border-color: var(--border-soft);
+  --button-bg: #f7fbff;
+  --button-color: #3f6f9e;
+  --button-inset-shadow: rgba(255, 255, 255, 0.58);
+  --button-lip-shadow: rgba(61, 96, 128, 0.14);
+  --button-drop-shadow: rgba(61, 96, 128, 0.08);
+  flex: 0 0 190px;
+  width: 190px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 5px 10px;
+  font-size: 12px;
 }
 
-.search-combobox.is-open .search-combobox-options {
-  display: grid;
+.battle-dome-section-row .button-primary {
+  --button-border-color: rgba(63, 143, 153, 0.52);
+  --button-bg: #d8f3f5;
+  --button-color: #1e6872;
+  --button-inset-shadow: rgba(255, 255, 255, 0.62);
+  --button-lip-shadow: rgba(31, 103, 111, 0.22);
+  --button-drop-shadow: rgba(31, 103, 111, 0.14);
 }
 
-.search-combobox-option {
-  border: 0;
-  border-radius: 5px;
-  padding: 8px 10px;
-  color: var(--text);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-}
+@media (max-width: 680px) {
+.battle-dome-section-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0 -4px;
+  }
 
-.search-combobox-option:hover,
-.search-combobox-option.is-selected {
-  background: rgba(25, 125, 115, 0.14);
-}
+.battle-dome-section-row .button {
+    flex-basis: auto;
+    width: 100%;
+  }
 
-.search-combobox-option[hidden] {
-  display: none;
 }
 
 .scene-content-battle-dome {
@@ -97,12 +258,12 @@
   background: rgba(255, 255, 255, 0.96);
 }
 
-.battle-dome-builder-panel .trainer-debug-pokemon-actions {
+.battle-dome-builder-panel .battle-dome-builder-actions {
   justify-content: center;
 }
 
 .battle-dome-add-button,
-.battle-dome-builder-panel .trainer-debug-pokemon-actions .button {
+.battle-dome-builder-panel .battle-dome-builder-actions .button {
   min-width: min(280px, 100%);
   min-height: 44px;
   padding: 10px 24px;
@@ -258,11 +419,37 @@
 
 .battle-dome-lead-grid {
   grid-template-columns: repeat(2, minmax(0, var(--pokemon-card-width)));
+  grid-auto-rows: auto auto;
+  row-gap: 12px;
   justify-content: center;
 }
 
 .battle-dome-lead-entry {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2;
+  row-gap: 12px;
   min-width: 0;
+  padding-bottom: 0;
+}
+
+.battle-dome-lead-entry:has(.pokemon-card-external) {
+  padding-bottom: 0;
+}
+
+.battle-dome-lead-entry > .pokemon-card-external {
+  position: static;
+  grid-row: 2;
+  align-self: start;
+}
+
+.battle-dome-create-button {
+  justify-self: center;
+  width: fit-content;
+  min-width: 160px;
+  min-height: 42px;
+  padding: 10px 22px;
+  border-radius: var(--radius-control);
 }
 
 .battle-dome-lead-selected {

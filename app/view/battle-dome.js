@@ -63,15 +63,15 @@ function renderBuilder() {
   }).join("");
   var canAdd = dome.team.length < BATTLE_DOME_TEAM_SIZE && draft.speciesKey && selectedMoves.some(Boolean) && !dome.saving;
   return [
-    '<section class="team-description-panel trainer-debug-pokemon-panel battle-dome-builder-panel">',
-    '<div class="trainer-debug-pokemon-heading"><h2>' + escapeHtml(t("ui.battleDome.builderTitle")) + '</h2></div>',
+    '<section class="battle-dome-builder-panel">',
+    '<div class="battle-dome-builder-heading"><h2>' + escapeHtml(t("ui.battleDome.builderTitle")) + '</h2></div>',
     '<p class="battle-dome-note">' + escapeHtml(t("ui.battleDome.fixedStats", { level: BATTLE_DOME_LEVEL, hp: BATTLE_DOME_HP, power: BATTLE_DOME_MOVE_POWER, stats: BATTLE_DOME_MOVE_STATS })) + '</p>',
-    '<div class="trainer-debug-pokemon-grid battle-dome-builder-primary">',
+    '<div class="battle-dome-builder-grid battle-dome-builder-primary">',
     '<label><span>' + escapeHtml(t("ui.battleDome.pokemon")) + '</span>' + renderSearchCombobox({ options: speciesOptions, value: draft.speciesKey, field: { attribute: "battle-dome-field", value: "species" } }) + '</label>',
     '<label><span>' + escapeHtml(t("ui.battleDome.heldItem")) + '</span>' + renderSearchCombobox({ options: itemOptions, value: draft.heldItemIndex || "", field: { attribute: "battle-dome-field", value: "item" }, placeholder: t("ui.battleDome.noItem") }) + '</label>',
     '</div>',
-    '<div class="trainer-debug-pokemon-moves"><div class="trainer-debug-pokemon-move-row">' + moveFields + '</div></div>',
-    '<div class="trainer-debug-pokemon-actions">' + button(t("ui.battleDome.addPokemon"), "battle-dome-add-pokemon", canAdd ? "" : "disabled", "button-primary") + '</div>',
+    '<div class="battle-dome-builder-moves"><div class="battle-dome-builder-move-row">' + moveFields + '</div></div>',
+    '<div class="battle-dome-builder-actions">' + button(t("ui.battleDome.addPokemon"), "battle-dome-add-pokemon", canAdd ? "" : "disabled", "button-primary") + '</div>',
     '</section>'
   ].join("");
 }
@@ -79,7 +79,7 @@ function renderBuilder() {
 function renderTeam() {
   var dome = state.battleDome;
   var teamCount = Math.min(3, dome.team.length || 1);
-  var teamGrid = '<section class="pokemon-grid team-pokemon-grid battle-dome-team-grid team-pokemon-count-' + escapeHtml(teamCount) + '">'
+  var teamGrid = '<section class="pokemon-grid battle-dome-team-grid battle-dome-team-count-' + escapeHtml(teamCount) + '">'
     + (dome.team.length ? dome.team.map(teamCard).join("") : '<div class="empty-state">' + escapeHtml(t("ui.battleDome.emptyTeam")) + '</div>')
     + '</section>';
   return [
@@ -114,7 +114,7 @@ function renderLobby() {
     '<div class="battle-dome-link-row"><input readonly value="' + escapeHtml(inviteCode) + '" data-battle-dome-invite-code aria-label="' + escapeHtml(t("ui.battleDome.yourCode")) + '"><span class="battle-dome-copy-wrapper">'
       + button(t("ui.battleDome.copy"), "battle-dome-copy-code", inviteCode ? "" : "disabled", "button-primary")
       + '<span class="battle-dome-copy-tooltip">' + escapeHtml(t("ui.battleDome.copied")) + '</span></span></div>',
-    inviteCode ? button(t("ui.battleDome.cancelLobby"), "battle-dome-cancel-lobby", "", "button-danger") : button(t("ui.battleDome.createChallenge"), "battle-dome-create-lobby", canCreate ? "" : "disabled", "button-primary"),
+    inviteCode ? button(t("ui.battleDome.cancelLobby"), "battle-dome-cancel-lobby", "", "button-danger") : button(t("ui.battleDome.createChallenge"), "battle-dome-create-lobby", canCreate ? "" : "disabled", "button-primary battle-dome-create-button"),
     '<p class="battle-dome-note">' + escapeHtml(t("ui.battleDome.teamRequirement")) + '</p>',
     '</section>',
     '<section class="battle-dome-split-section"><h2>' + escapeHtml(t("ui.battleDome.joinByCode")) + '</h2>',
@@ -132,7 +132,7 @@ function renderLobby() {
 
 export function renderBattleDomeScene() {
   var dome = state.battleDome;
-  var tabs = '<section class="panel pokefan-sections-panel battle-dome-sections-panel"><div class="panel-inner"><nav class="pokemon-center-action-row rules-section-row" aria-label="' + escapeHtml(t("ui.sceneTitles.battleDome")) + '">'
+  var tabs = '<section class="panel battle-dome-sections-panel"><div class="panel-inner"><nav class="battle-dome-section-row" aria-label="' + escapeHtml(t("ui.sceneTitles.battleDome")) + '">'
     + button(t("ui.battleDome.teamTab"), "battle-dome-tab", 'data-tab="team" aria-pressed="' + (dome.tab === "team" ? "true" : "false") + '"', "button-slim" + (dome.tab === "team" ? " button-primary" : " button-ghost"))
     + button(t("ui.battleDome.lobbyTab"), "battle-dome-tab", 'data-tab="lobby" aria-pressed="' + (dome.tab === "lobby" ? "true" : "false") + '"', "button-slim" + (dome.tab === "lobby" ? " button-primary" : " button-ghost"))
     + '</nav></div></section>';

@@ -1,8 +1,49 @@
-﻿.capture-type-list {
+/* Styles owned by the capture section. */
+.capture-team-grid {
+  --pokemon-card-width: 341px;
+  box-sizing: border-box;
+  display: grid;
+  justify-self: center;
+  max-width: 100%;
+  padding: 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface-panel);
+}
+
+.capture-team-grid {
+  width: min(var(--section-width), 100%);
+  overflow: hidden;
+}
+
+.capture-team-grid {
+  grid-template-columns: repeat(3, var(--pokemon-card-width));
+  justify-content: center;
+  align-items: stretch;
+}
+
+@media (max-width: 1150px) {
+.capture-team-grid {
+    width: min(var(--section-width), 100%);
+    padding: 16px;
+    align-items: stretch;
+  }
+
+}
+
+@media (max-width: 680px) {
+.capture-team-grid {
+    padding: 12px;
+  }
+
+}
+
+.capture-type-list {
   grid-template-columns: max-content;
   width: max-content;
   min-width: max-content;
 }
+
 .capture-level-input {
   box-sizing: border-box;
   min-height: 36px;
@@ -16,26 +57,31 @@
   text-align: center;
   cursor: text;
 }
+
 .capture-tool-row {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   padding-left: 12px;
 }
+
 .capture-tool-button {
   position: relative;
   display: inline-flex;
   cursor: pointer;
   user-select: none;
 }
+
 .capture-tool-button:has(input:disabled) {
   cursor: default;
 }
+
 .capture-tool-button input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
+
 .capture-tool-button-inner {
   position: relative;
   overflow: hidden;
@@ -50,27 +96,33 @@
   box-shadow: none;
   transition: var(--interactive-transition);
 }
+
 .capture-tool-button input:not(:checked):not(:disabled) + .capture-tool-button-inner {
   filter: grayscale(0.72) opacity(0.58);
 }
+
 .capture-tool-button:hover input:not(:checked):not(:disabled) + .capture-tool-button-inner,
 .capture-tool-button:focus-within input:not(:checked):not(:disabled) + .capture-tool-button-inner {
   transform: translateY(-1px);
   box-shadow: 0 8px 18px rgba(31, 37, 40, 0.08);
 }
+
 .capture-tool-button input:checked + .capture-tool-button-inner {
   border-color: rgba(25, 125, 115, 0.42);
   background: rgba(255, 255, 255, 0.92);
   box-shadow: none;
 }
+
 .capture-tool-button:hover input:checked + .capture-tool-button-inner {
   transform: translateY(-1px);
   box-shadow: 0 12px 24px rgba(25, 125, 115, 0.15);
 }
+
 .capture-tool-button input:disabled + .capture-tool-button-inner {
   cursor: default;
   opacity: 0.62;
 }
+
 .capture-tool-image {
   position: relative;
   z-index: 1;
@@ -78,6 +130,7 @@
   height: 28px;
   object-fit: contain;
 }
+
 .capture-tool-text {
   position: relative;
   z-index: 1;
@@ -85,6 +138,7 @@
   font-size: 13px;
   color: var(--text);
 }
+
 .capture-tool-count {
   white-space: nowrap;
 }
@@ -108,24 +162,29 @@
     var(--shadow),
     0 22px 48px rgba(25, 59, 78, 0.16);
 }
+
 .capture-search-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--pokemon-card-width);
   gap: 20px;
   justify-content: stretch;
 }
+
 .capture-search-content {
   position: relative;
   z-index: 3;
   width: 100%;
   min-width: 0;
 }
+
 .capture-search-content:has(.choice-menu[open]) {
   z-index: 30;
 }
+
 .capture-search-panel {
   height: var(--capture-card-min-height);
 }
+
 .capture-search-panel .panel-inner {
   box-sizing: border-box;
   height: 100%;
@@ -133,6 +192,7 @@
   gap: 14px;
   padding-top: 34px;
 }
+
 .capture-level-hint {
   justify-self: start;
   width: fit-content;
@@ -145,11 +205,13 @@
     color 180ms ease,
     box-shadow 180ms ease;
 }
+
 .capture-level-hint.is-invalid {
   background: rgba(197, 80, 68, 0.18);
   color: #8f261f;
   box-shadow: inset 0 0 0 2px rgba(197, 80, 68, 0.28);
 }
+
 .capture-search-sentence {
   display: flex;
   flex-wrap: wrap;
@@ -159,21 +221,25 @@
   font-size: 14px;
   padding-left: 12px;
 }
+
 .capture-search-sentence .choice-menu-summary {
   height: 32px;
   padding: 2px 10px;
   background: rgba(255, 255, 255, 0.72);
 }
+
 .capture-search-sentence .capture-range-menu,
 .capture-search-sentence .capture-type-menu {
   display: inline-block;
 }
+
 .capture-range-menu,
 .capture-range-menu *,
 .capture-type-menu,
 .capture-type-menu * {
   user-select: none;
 }
+
 .capture-range-list {
   left: 50%;
   transform: translateX(-50%);
@@ -190,6 +256,7 @@
   overflow-x: hidden;
   overscroll-behavior: contain;
 }
+
 .capture-type-inline-list {
   display: inline-flex;
   flex: 0 1 auto;
@@ -200,12 +267,14 @@
   padding: 8px 0;
   line-height: 1.6;
 }
+
 .capture-range-list .choice-menu-option,
 .capture-range-list .choice-menu-option:has(input:checked),
 .capture-range-list .choice-menu-option.is-active {
   border-color: transparent;
   background: transparent;
 }
+
 .capture-range-list .choice-menu-option:hover,
 .capture-range-list .choice-menu-option:focus-within {
   border-color: transparent;
@@ -214,9 +283,11 @@
     inset 0 0 0 1px rgba(75, 137, 184, 0.26),
     0 0 14px rgba(126, 193, 232, 0.72);
 }
+
 .capture-type-inline-list .type-label-image {
   display: block;
 }
+
 .capture-type-inline-image {
   max-width: 80px;
 }
@@ -225,18 +296,23 @@
 .capture-search-panel .capture-type-menu {
   display: none;
 }
+
 .capture-search-panel:has([name="capture-use-white-flute"]:checked) .capture-range-menu {
   display: none;
 }
+
 .capture-search-panel:has([name="capture-use-white-flute"]:checked) .capture-level-input {
   display: inline-block;
 }
+
 .capture-search-panel:has([name="capture-use-black-flute"]:checked) .capture-type-inline-list {
   display: none;
 }
+
 .capture-search-panel:has([name="capture-use-black-flute"]:checked) .capture-type-menu {
   display: inline-block;
 }
+
 .capture-search-actions {
   display: grid;
   grid-template-columns: 90px 220px;
@@ -245,6 +321,7 @@
   gap: 10px;
   padding-left: 0;
 }
+
 .capture-search-actions .button {
   box-sizing: border-box;
   min-width: 90px;
@@ -252,25 +329,30 @@
   font-size: 15px;
   transition: filter 120ms ease;
 }
+
 .capture-search-actions .button:hover:not(:disabled),
 .capture-search-actions .button:focus-visible:not(:disabled) {
   transform: none;
   filter: var(--interactive-hover-filter);
 }
+
 .capture-search-actions .capture-search-button,
 .capture-search-actions .capture-flee-button {
   width: 90px;
 }
+
 .capture-search-actions .capture-search-button {
   grid-column: 1;
   grid-row: 1;
 }
+
 .capture-search-actions .capture-flee-button {
   border-color: rgba(185, 91, 101, 0.52);
   color: var(--danger);
   grid-column: 1;
   grid-row: 2;
 }
+
 .capture-search-actions .capture-fight-button {
   width: 220px;
   grid-column: 2;
@@ -296,85 +378,48 @@
   line-height: 1.45;
   text-align: justify;
 }
+
 .capture-search-wrap-bosco-smeraldo {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(239, 248, 231, 0.68)),
     linear-gradient(145deg, rgba(77, 145, 79, 0.38), rgba(189, 221, 134, 0.3));
 }
+
 .capture-search-wrap-monte-luna {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(237, 236, 250, 0.7)),
     linear-gradient(145deg, rgba(111, 116, 166, 0.38), rgba(195, 187, 218, 0.34));
 }
+
 .capture-search-wrap-mare {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(230, 248, 251, 0.7)),
     linear-gradient(145deg, rgba(42, 139, 178, 0.38), rgba(104, 199, 204, 0.3));
 }
+
 .capture-search-wrap-torre-fantasma {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(241, 235, 248, 0.68)),
     linear-gradient(145deg, rgba(103, 80, 143, 0.38), rgba(179, 145, 199, 0.3));
 }
+
 .capture-search-wrap-safari {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(242, 247, 224, 0.7)),
     linear-gradient(145deg, rgba(139, 158, 73, 0.38), rgba(223, 184, 94, 0.3));
 }
+
 .capture-search-wrap-palude {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(235, 246, 235, 0.7)),
     linear-gradient(145deg, rgba(72, 130, 99, 0.36), rgba(198, 134, 88, 0.3));
 }
+
 .capture-search-wrap-deserto {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(250, 243, 224, 0.7)),
     linear-gradient(145deg, rgba(195, 151, 76, 0.38), rgba(227, 197, 121, 0.3));
 }
-
-
-.capture-starter-slot {
-  position: relative;
-  overflow: hidden;
-  min-height: 42px;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--text);
-  box-shadow: none;
-  transition: var(--interactive-transition);
-}
-.capture-starter-slot:disabled {
-  cursor: not-allowed;
-  border-color: rgba(99, 109, 117, 0.34);
-  background: #e0e4e7;
-  color: #6f7880;
-}
-.starter-card:disabled {
-  cursor: not-allowed;
-  border-color: rgba(99, 109, 117, 0.34);
-  background: #e0e4e7;
-  color: #6f7880;
-  filter: grayscale(0.75);
-}
-.capture-starter-slot::before {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.1) 48%, transparent 72%);
-}
-.capture-starter-slot.is-empty {
-  background: rgba(255, 255, 255, 0.36);
-  border-style: dashed;
-  cursor: default;
-}
-.capture-starter-slot:hover:not(:disabled),
-.capture-starter-slot:focus-visible:not(:disabled),
-.starter-card:hover:not(:disabled),
-.starter-card:focus-visible:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 14px rgba(31, 37, 40, 0.14);
-  filter: var(--interactive-hover-filter);
-}
-
 
 .wild-card-wrap {
   display: grid;
@@ -384,123 +429,129 @@
   width: var(--pokemon-card-width);
   justify-self: center;
 }
+
 .wild-card-wrap--appearing {
   animation: wild-card-appear 520ms cubic-bezier(.2, .8, .2, 1) both;
 }
+
 .wild-card-wrap--appearing .pokemon-visual {
   animation: wild-pokemon-pop 520ms cubic-bezier(.2, .8, .2, 1) 70ms both;
 }
+
 @keyframes wild-card-appear {
   from { opacity: 0; transform: translateY(16px) scale(.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
 @keyframes wild-pokemon-pop {
   0% { transform: scale(.78) rotate(-3deg); }
   65% { transform: scale(1.04) rotate(1deg); }
   100% { transform: scale(1) rotate(0); }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .wild-card-wrap--appearing,
-  .wild-card-wrap--appearing .pokemon-visual { animation: none; }
+.wild-card-wrap--appearing,
+.wild-card-wrap--appearing .pokemon-visual { animation: none; }
+
 }
+
 @media (max-width: 1150px) {
-  .capture-search-wrap {
+.capture-search-wrap {
     --capture-search-panel-width: 100%;
   }
 
-  .capture-search-grid {
+.capture-search-grid {
     grid-template-columns: minmax(0, var(--capture-search-panel-width));
     justify-content: center;
   }
 
-  .capture-search-wrap .capture-search-grid,
-  .capture-search-wrap .pokemon-grid:not(.team-pokemon-grid) {
+.capture-search-wrap .capture-search-grid,
+.capture-search-wrap .pokemon-grid:not(.capture-team-grid) {
     width: 100%;
     min-width: 0;
   }
 
-  .capture-search-wrap .capture-search-grid {
+.capture-search-wrap .capture-search-grid {
     grid-template-columns: minmax(0, min(var(--capture-search-panel-width), 100%));
   }
 
-  .capture-search-wrap .pokemon-grid:not(.team-pokemon-grid) {
+.capture-search-wrap .pokemon-grid:not(.capture-team-grid) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-items: center;
   }
 
-  .capture-search-wrap .pokemon-card,
-  .capture-search-wrap .wild-card-wrap,
-  .capture-search-wrap .capture-wild-placeholder {
+.capture-search-wrap .pokemon-card,
+.capture-search-wrap .wild-card-wrap,
+.capture-search-wrap .capture-wild-placeholder {
     width: min(var(--pokemon-card-width), 100%);
   }
 
-  .capture-search-wrap .pokemon-card-moves {
+.capture-search-wrap .pokemon-card-moves {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .capture-search-wrap .pokemon-card .move-button {
+.capture-search-wrap .pokemon-card .move-button {
     width: 100%;
   }
 
-  .capture-search-panel,
-  .capture-search-panel .panel-inner,
-  .capture-wild-placeholder {
+.capture-search-panel,
+.capture-search-panel .panel-inner,
+.capture-wild-placeholder {
     height: auto;
   }
 
-  .capture-wild-placeholder {
+.capture-wild-placeholder {
     padding: 18px;
   }
 
-  .capture-search-actions {
+.capture-search-actions {
     justify-content: center;
     padding: 0;
   }
+
 }
+
 @media (max-width: 680px) {
-  .capture-type-inline-list {
+.capture-type-inline-list {
     flex: 0 0 100%;
     justify-content: center;
     width: 100%;
   }
 
-  .capture-search-wrap {
+.capture-search-wrap {
     --capture-search-wrap-padding: 10px;
   }
 
-  .capture-search-grid {
+.capture-search-grid {
     grid-template-columns: minmax(0, min(var(--pokemon-card-width), 100%));
     justify-content: center;
   }
 
-  .capture-search-wrap .pokemon-grid:not(.team-pokemon-grid) {
+.capture-search-wrap .pokemon-grid:not(.capture-team-grid) {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .wild-card-wrap,
-  .capture-wild-placeholder {
+.wild-card-wrap,
+.capture-wild-placeholder {
     width: min(var(--pokemon-card-width), 100%);
   }
 
-  .capture-starter-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .capture-search-wrap {
+.capture-search-wrap {
     margin-inline: auto;
   }
 
-  .capture-search-actions {
+.capture-search-actions {
     align-items: center;
     display: flex;
     flex-direction: column;
     padding: 0;
   }
 
-  .capture-search-actions .button,
-  .capture-search-actions .capture-search-button,
-  .capture-search-actions .capture-flee-button,
-  .capture-search-actions .capture-fight-button {
+.capture-search-actions .button,
+.capture-search-actions .capture-search-button,
+.capture-search-actions .capture-flee-button,
+.capture-search-actions .capture-fight-button {
     width: min(220px, 100%);
   }
+
 }

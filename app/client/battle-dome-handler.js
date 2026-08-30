@@ -247,7 +247,7 @@ export function openBattleDomeProjection(projection, events, history) {
   scene.battleDomeChallengerUsername = scene.enemyTeam.name;
   scene.terminalExitReady = scene.manager.battleOver;
   setScene(scene, { history: history || undefined });
-  if (role === "creator" && scene.authoritativeEntryChoice) openPendingBattleEntryChoice(scene);
+  openPendingBattleEntryChoice(scene);
   return scene;
 }
 
@@ -320,7 +320,7 @@ export async function runBattleDomeCommand(scene, kind, input) {
   scene.enemyTeam.name = scene.battleDomeChallengerUsername;
   scene.terminalExitReady = scene.manager.battleOver;
   render({ preserveScroll: true, scrollBattleLogToBottom: true });
-  if (scene.battleDomeRole === "creator" && scene.authoritativeEntryChoice) openPendingBattleEntryChoice(scene);
+  openPendingBattleEntryChoice(scene);
   return result;
 }
 
@@ -348,7 +348,9 @@ function startPoll() {
     if (!state.auth.user) return;
     if (state.scene && state.scene.name === "battle-dome-battle" && state.scene.battleDomeBattleId) {
       var scene = state.scene;
+      if (scene.authoritativeCommandPending) return;
       var result = await readBattleDomeBattle(scene.battleDomeBattleId, { afterSeq: scene.authoritativeLastEventSeq || 0 });
+      if (state.scene !== scene || scene.authoritativeCommandPending) return;
       if (!result.ok || !result.battle) {
         state.battleDome.notice = t("ui.battleDome.battleCancelled");
         await refreshBattleDomeState({ silent: true });
@@ -364,11 +366,13 @@ function startPoll() {
         openBattleDomeProjection(result.battle, result.events || [], "replace");
         return;
       }
+      if (Number(result.battle.battle_version) < scene.authoritativeBattleVersion) return;
       applyAuthoritativeProjection(scene, result.battle, result.events || []);
       scene.playerTeam.name = scene.battleDomeCreatorUsername;
       scene.enemyTeam.name = scene.battleDomeChallengerUsername;
       scene.terminalExitReady = scene.manager.battleOver;
       render({ preserveScroll: true, scrollBattleLogToBottom: true });
+      openPendingBattleEntryChoice(scene);
     } else if (state.battleDome.loaded || state.scene && state.scene.name === "battle-dome") {
       refreshBattleDomeState({ silent: true,
         openNewBattle: true,

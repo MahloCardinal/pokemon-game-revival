@@ -9,26 +9,26 @@ export function renderZonesScene() {
     return Engine.getZoneTypes(zoneName).length > 0;
   });
   var zoneCardThemeClass = {
-    viridian_forest: "zone-card-theme-bosco-smeraldo",
-    mt_moon: "zone-card-theme-monte-luna",
-    sea: "zone-card-theme-mare",
-    ghost_tower: "zone-card-theme-torre-fantasma",
-    safari_zone: "zone-card-theme-safari",
-    swamp: "zone-card-theme-palude",
-    desert: "zone-card-theme-deserto"
+    viridian_forest: "capture-zone-card-theme-bosco-smeraldo",
+    mt_moon: "capture-zone-card-theme-monte-luna",
+    sea: "capture-zone-card-theme-mare",
+    ghost_tower: "capture-zone-card-theme-torre-fantasma",
+    safari_zone: "capture-zone-card-theme-safari",
+    swamp: "capture-zone-card-theme-palude",
+    desert: "capture-zone-card-theme-deserto"
   };
 
   function renderZoneCard(zoneName) {
     var zoneTypes = Engine.getZoneTypes(zoneName);
     var zoneLabel = t("captureZones." + zoneName + ".name");
-    var themeClass = zoneCardThemeClass[zoneName] || "zone-card-theme-default";
+    var themeClass = zoneCardThemeClass[zoneName] || "capture-zone-card-theme-default";
     return [
-      '<a class="zone-card ' + themeClass + '" href="/capture/' + encodeURIComponent(zoneName) + '" data-action="open-zone" data-zone="' + escapeHtml(zoneName) + '">',
-      '  <h3 class="zone-card-title">' + escapeHtml(zoneLabel) + "</h3>",
-      '  <div class="zone-card-media">',
-      renderImage(getZoneImage(zoneName), zoneLabel, "zone-card-image"),
+      '<a class="capture-zone-card ' + themeClass + '" href="/capture/' + encodeURIComponent(zoneName) + '" data-action="open-zone" data-zone="' + escapeHtml(zoneName) + '">',
+      '  <h3 class="capture-zone-card-title">' + escapeHtml(zoneLabel) + "</h3>",
+      '  <div class="capture-zone-card-media">',
+      renderImage(getZoneImage(zoneName), zoneLabel, "capture-zone-card-image"),
       "  </div>",
-      '  <div class="zone-card-types">',
+      '  <div class="capture-zone-card-types">',
       renderTypeIcons(zoneTypes),
       "  </div>",
       "</a>"
@@ -36,7 +36,7 @@ export function renderZonesScene() {
   }
 
   var cards = availableZones.map(renderZoneCard);
-  var grid = '<section class="zone-grid">' + cards.join("") + "</section>";
+  var grid = '<section class="capture-zones-grid">' + cards.join("") + "</section>";
 
   return sceneShell(t("ui.sceneTitles.zones"), "", grid, "", "scene-content-zones", "parent-back");
 }

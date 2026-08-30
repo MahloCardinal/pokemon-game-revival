@@ -186,7 +186,7 @@ function renderRulesSectionPanel(activeSectionKey) {
   var actions = RULES_SECTION_KEYS.map(function (sectionKey) {
     return button(t("ui.rules.sections." + sectionKey), "rules-section", 'data-section="' + escapeHtml(sectionKey) + '"', "button-slim" + (sectionKey === activeKey ? " button-primary" : " button-ghost"));
   }).join("");
-  return '<section class="panel rules-sections-panel"><div class="panel-inner"><div class="pokemon-center-action-row rules-section-row">' + actions + "</div></div></section>";
+  return '<section class="panel rules-sections-panel"><div class="panel-inner"><div class="rules-section-row">' + actions + "</div></div></section>";
 }
 
 function renderRulesContentPanel(activeSectionKey) {

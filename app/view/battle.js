@@ -1,5 +1,6 @@
 import * as Engine from "../engine/index.js";
 import { state } from "../client/game-state.js";
+import { sceneAllowsBallUse } from "../client/battle-scene-policy.js";
 import { ensureBattleBindings } from "../client/battle-scene-lock.js";
 import { escapeHtml, getItemImage, getTrainerImage, renderImage } from "../client/asset-helpers.js";
 import { button, hpMarkup, renderSummary, sceneShell } from "../client/render-utils.js";
@@ -200,7 +201,7 @@ export function renderBattleScene(scene) {
       '<div class="battle-ko-switch-overlay">',
       '  <section class="battle-ko-switch-panel battle-context-choice-panel pokemon_choice-panel">',
       '    <h3>' + escapeHtml(t("ui.battle.chooseFieldPokemon")) + '</h3>',
-      '    <div class="capture-starter-grid battle-switch-grid battle-switch-grid-count-' + Math.min(3, Math.max(1, availableCount)) + '">' + choices + "</div>",
+      '    <div class="battle-switch-grid battle-switch-grid-count-' + Math.min(3, Math.max(1, availableCount)) + '">' + choices + "</div>",
       "  </section>",
       "</div>"
     ].join("");
@@ -333,8 +334,8 @@ export function renderBattleScene(scene) {
 
   var battleItemsPanel = "";
   var towerOpponentPanel = scene.battleTower && renderScene.authoritativePresentation
-    ? '<section class="battle-tower-opponent-panel"><div class="battle-tower-opponent-media">'
-      + renderImage(getTrainerImage(renderScene.authoritativePresentation.sprite), renderScene.authoritativePresentation.name || t("ui.battle.challenger"), "battle-tower-opponent-sprite")
+    ? '<section class="battle-opponent-panel"><div class="battle-opponent-media">'
+      + renderImage(getTrainerImage(renderScene.authoritativePresentation.sprite), renderScene.authoritativePresentation.name || t("ui.battle.challenger"), "battle-opponent-sprite")
       + '</div><p>' + escapeHtml(t("ui.battle.towerChallenge", { number: scene.authoritativeTowerChallenge || 1 })) + '</p><h2>'
       + escapeHtml(renderScene.authoritativePresentation.name || t("ui.battle.challenger")) + "</h2></section>"
     : "";
@@ -346,7 +347,7 @@ export function renderBattleScene(scene) {
     function getBattleInventorySectionKey(item) {
       var category = item.category || "";
       if (category === ItemCategory.Berry && isPlayerBattleInventoryItem(item)) { return "berries"; }
-      if (category === ItemCategory.Ball && String(renderScene.battleType || "").indexOf("capture_") === 0) { return "balls"; }
+      if (category === ItemCategory.Ball && sceneAllowsBallUse(renderScene)) { return "balls"; }
       if (category === ItemCategory.BattleItem && isPlayerBattleInventoryItem(item)) { return "battle"; }
       return "";
     }
@@ -401,7 +402,7 @@ export function renderBattleScene(scene) {
     var battleInventorySections = [
       { key: "battle", title: t("ui.battle.inventorySections.battle") }
     ];
-    if (!renderScene.trainingBattle && String(renderScene.battleType || "").indexOf("gym_") !== 0) {
+    if (sceneAllowsBallUse(renderScene)) {
       battleInventorySections.push({ key: "balls", title: t("ui.battle.inventorySections.balls") });
     }
     battleInventorySections.push({ key: "berries", title: t("ui.battle.inventorySections.berries") });

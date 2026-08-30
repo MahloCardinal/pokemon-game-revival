@@ -1,4 +1,18 @@
-﻿.active-battle-return {
+/* Styles owned by the battle section. */
+@media (max-width: 680px) {
+.battle-switch-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+.battle-switch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 250px));
+  justify-content: center;
+  gap: 10px;
+}
+
+.active-battle-return {
   display: flex;
   justify-content: center;
   width: min(var(--content-width), 100%);
@@ -1041,4 +1055,41 @@
     background: transparent;
     box-shadow: none;
   }
+}
+
+/* Opponent presentation belongs to the battle screen. */
+.battle-opponent-panel {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: center;
+  width: min(360px, 100%);
+  margin: 0 auto 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
+}
+.battle-opponent-media {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  height: 72px;
+}
+.battle-opponent-sprite {
+  width: 82px;
+  height: 72px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+.battle-opponent-panel p,
+.battle-opponent-panel h2 {
+  margin: 0;
+}
+.battle-opponent-panel p {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.battle-opponent-panel h2 {
+  font-size: 18px;
 }

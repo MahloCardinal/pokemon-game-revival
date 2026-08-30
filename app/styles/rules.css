@@ -1,4 +1,15 @@
-﻿.rules-layout {
+/* Styles owned by the rules section. */
+.rules-section-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rules-section-row .button {
+  font-size: 13px;
+}
+
+.rules-layout {
   position: relative;
   display: grid;
   gap: 10px;

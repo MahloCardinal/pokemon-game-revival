@@ -54,7 +54,7 @@ function gymThemeClassForCity(city) {
 }
 
 function renderGymThemePanel(themeClass, content) {
-  return '<section class="gym-theme-panel ' + themeClass + '"><section class="team-scene-stack">' + content + "</section></section>";
+  return '<section class="gym-theme-panel ' + themeClass + '"><section class="gym-scene-stack">' + content + "</section></section>";
 }
 
 function renderGymRewards(rewards) {
@@ -129,12 +129,12 @@ export function renderKantoLeagueScene() {
     var cityTitle = gymCityName(city.key);
     var gymDesc = t("ui.gyms.cities." + city.key + ".description");
     return [
-      '<a class="zone-card gym-city-card ' + themeClass + '" href="/gyms/' + encodeURIComponent(city.key) + '" data-action="open-gym-city" data-city="' + escapeHtml(city.key) + '">',
-      '  <h3 class="zone-card-title">' + escapeHtml(cityTitle) + "</h3>",
-      '  <div class="zone-card-media">',
-      renderImage(assetPath("img_zone", city.image), cityTitle, "zone-card-image"),
+      '<a class="gym-zone-card gym-city-card ' + themeClass + '" href="/gyms/' + encodeURIComponent(city.key) + '" data-action="open-gym-city" data-city="' + escapeHtml(city.key) + '">',
+      '  <h3 class="gym-zone-card-title">' + escapeHtml(cityTitle) + "</h3>",
+      '  <div class="gym-zone-card-media">',
+      renderImage(assetPath("img_zone", city.image), cityTitle, "gym-zone-card-image"),
       "  </div>",
-      gymDesc ? '  <div class="zone-card-description">' + escapeHtml(gymDesc) + "</div>" : "",
+      gymDesc ? '  <div class="gym-zone-card-description">' + escapeHtml(gymDesc) + "</div>" : "",
       "</a>"
     ].join("");
   });
@@ -153,20 +153,20 @@ export function renderKantoLeagueScene() {
     var entryTitle = gymCityName(entry.key);
     var e4Desc = t("ui.gyms.cities." + entry.key + ".description");
     return [
-      '<a class="zone-card gym-city-card ' + entry.themeClass + '" href="/gyms/' + encodeURIComponent(entry.key) + '" data-action="open-gym-city" data-city="' + escapeHtml(entry.key) + '">',
-      '  <h3 class="zone-card-title">' + escapeHtml(entryTitle) + "</h3>",
-      '  <div class="zone-card-media">',
-      renderImage(assetPath("img_zone", entry.image), entryTitle, "zone-card-image"),
+      '<a class="gym-zone-card gym-city-card ' + entry.themeClass + '" href="/gyms/' + encodeURIComponent(entry.key) + '" data-action="open-gym-city" data-city="' + escapeHtml(entry.key) + '">',
+      '  <h3 class="gym-zone-card-title">' + escapeHtml(entryTitle) + "</h3>",
+      '  <div class="gym-zone-card-media">',
+      renderImage(assetPath("img_zone", entry.image), entryTitle, "gym-zone-card-image"),
       "  </div>",
-      e4Desc ? '  <div class="zone-card-description">' + escapeHtml(e4Desc) + "</div>" : "",
+      e4Desc ? '  <div class="gym-zone-card-description">' + escapeHtml(e4Desc) + "</div>" : "",
       "</a>"
     ].join("");
   });
   return sceneShell(
     t("ui.gyms.sceneTitle"), "",
-    '<section class="kanto-league-section"><h2 class="kanto-league-heading kanto-league-heading--primary">' + escapeHtml(t("ui.gyms.gymsHeading")) + '</h2><div class="zone-grid gym-city-grid">' + gymCards.join("") + "</div></section>" +
+    '<section class="kanto-league-section"><h2 class="kanto-league-heading kanto-league-heading--primary">' + escapeHtml(t("ui.gyms.gymsHeading")) + '</h2><div class="gym-zone-grid gym-city-grid">' + gymCards.join("") + "</div></section>" +
     '<div class="kanto-league-spacer" aria-hidden="true"></div>' +
-    '<section class="kanto-league-section"><h2 class="kanto-league-heading kanto-league-heading--secondary">' + escapeHtml(t("ui.gyms.plateauHeading")) + '</h2><div class="zone-grid gym-city-grid">' + e4Cards.join("") + "</div></section>",
+    '<section class="kanto-league-section"><h2 class="kanto-league-heading kanto-league-heading--secondary">' + escapeHtml(t("ui.gyms.plateauHeading")) + '</h2><div class="gym-zone-grid gym-city-grid">' + e4Cards.join("") + "</div></section>",
     "", "scene-content-gyms", "parent-back"
   );
 }
@@ -174,7 +174,7 @@ export function renderKantoLeagueScene() {
 function renderKantoLeagueTrainerPanel(member, index) {
   var memberName = trainerDisplayName(member);
   var leaderCard = [
-    '<article class="team-description-panel gym-leader-card e4-trainer-container">',
+    '<article class="gym-description-panel gym-leader-card e4-trainer-container">',
     '  <div class="gym-leader-top">',
     '    <div class="gym-leader-media">',
     renderImage(getTrainerImage(member.sprite), memberName, withTrainerSpriteClass("gym-leader-image", member.sprite), withTrainerSpriteAttrs(member.sprite, 'loading="eager" decoding="async"')),
@@ -191,7 +191,7 @@ function renderKantoLeagueTrainerPanel(member, index) {
     "</article>"
   ].join("");
   var teamSection = [
-    '  <section class="pokemon-grid team-pokemon-grid">',
+    '  <section class="pokemon-grid gym-team-grid">',
     member.team.map(function (pokemon) { return renderPokemonCard(pokemon); }).join(""),
     "  </section>"
   ].join("");
@@ -225,7 +225,7 @@ function renderSuperquattroScene() {
   return sceneShell(
     t("ui.gyms.eliteFourTitle"), "",
     renderScenePresentationPanel("elite_four", "e4-presentation-panel", actionHtml) +
-    '<section class="team-scene-stack">' + panels.join("") + "</section>",
+    '<section class="gym-scene-stack">' + panels.join("") + "</section>",
     "", "scene-content-gyms", "parent-back"
   );
 }
@@ -242,7 +242,7 @@ function renderCampioneKantoScene() {
     actionHtml = "";
   }
   var leaderCard = [
-    '<article class="team-description-panel gym-leader-card">',
+    '<article class="gym-description-panel gym-leader-card">',
     '  <div class="gym-leader-top">',
     '    <div class="gym-leader-media">',
     renderImage(getTrainerImage(champion.sprite), championName, withTrainerSpriteClass("gym-leader-image", champion.sprite), withTrainerSpriteAttrs(champion.sprite, 'loading="eager" decoding="async"')),
@@ -261,7 +261,7 @@ function renderCampioneKantoScene() {
   ].join("");
   return sceneShell(
     t("ui.gyms.championTitle"), "",
-    renderGymThemePanel("gym-theme-panel-campione", leaderCard + '<section class="pokemon-grid team-pokemon-grid">' + pokemonCards + "</section>"),
+    renderGymThemePanel("gym-theme-panel-campione", leaderCard + '<section class="pokemon-grid gym-team-grid">' + pokemonCards + "</section>"),
     "", "scene-content-gyms", "parent-back"
   );
 }
@@ -282,7 +282,7 @@ export function renderGymCityScene(scene) {
   }).join("") : "";
   var leaderCard = leader
     ? [
-      '<article class="team-description-panel gym-leader-card">',
+      '<article class="gym-description-panel gym-leader-card">',
       '  <div class="gym-leader-top">',
       '    <div class="gym-leader-media">',
       renderImage(getTrainerImage(leader.sprite), leaderName, withTrainerSpriteClass("gym-leader-image", leader.sprite), withTrainerSpriteAttrs(leader.sprite, 'loading="eager" decoding="async"')),
@@ -302,7 +302,7 @@ export function renderGymCityScene(scene) {
     : "";
   var teamSection = leader
     ? [
-      '<section class="pokemon-grid team-pokemon-grid">',
+      '<section class="pokemon-grid gym-team-grid">',
       pokemonCards,
       "</section>"
     ].join("")

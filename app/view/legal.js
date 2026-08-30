@@ -4,7 +4,7 @@ import { sceneShell } from "../client/render-utils.js";
 function legalArticle(kind) {
   var variables = kind === "terms" ? { privacyLink: t("legal.terms.privacyLink") } : {};
   return [
-    '<article class="rules-article legal-article">',
+    '<article class="legal-article">',
     "<h2>" + t("legal." + kind + ".title") + "</h2>",
     tList("legal." + kind + ".sections", variables).join(""),
     "</article>"

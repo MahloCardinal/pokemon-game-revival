@@ -1,0 +1,252 @@
+/* Styles owned by the zones section. */
+.capture-zones-grid {
+  display: grid;
+  gap: var(--zone-card-gap);
+  grid-template-columns: repeat(3, var(--zone-card-width));
+  justify-content: center;
+  align-items: start;
+}
+
+.capture-zone-card {
+  --capture-zone-card-glow: rgba(25, 125, 115, 0.18);
+  --capture-zone-card-accent: rgba(25, 125, 115, 0.24);
+  --capture-zone-card-top: rgba(255, 255, 255, 0.58);
+  --capture-zone-card-bottom: rgba(232, 244, 250, 0.48);
+  --capture-zone-card-title-color: #28514b;
+  container-type: inline-size;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 15.5px 12.5px;
+  width: 100%;
+  min-height: 188px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background:
+    linear-gradient(160deg, var(--capture-zone-card-top), var(--capture-zone-card-bottom)),
+    linear-gradient(135deg, var(--capture-zone-card-accent), transparent 72%);
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  transition: var(--interactive-transition);
+}
+
+.capture-zone-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 140ms ease;
+  pointer-events: none;
+}
+
+.capture-zone-card::before {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08) 48%, transparent 72%);
+}
+
+.capture-zone-card:hover::before {
+  opacity: 1;
+}
+
+.capture-zone-card:focus-visible::before {
+  opacity: 1;
+}
+
+.capture-zone-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -30px -50px auto;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, var(--capture-zone-card-glow), transparent 70%);
+  pointer-events: none;
+}
+
+.capture-zone-card:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.64),
+    var(--shadow-soft-hover),
+    0 6.5px 12px rgba(61, 96, 128, 0.12);
+  filter: var(--interactive-hover-filter);
+}
+
+.capture-zone-card:focus-visible {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.64),
+    var(--shadow-soft-hover),
+    0 6.5px 12px rgba(61, 96, 128, 0.12);
+  filter: var(--interactive-hover-filter);
+}
+
+.capture-zone-card:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.92);
+  outline-offset: 2px;
+}
+
+.capture-zone-card-title {
+  position: relative;
+  z-index: 1;
+}
+
+.capture-zone-card-media {
+  position: relative;
+  z-index: 1;
+}
+
+.capture-zone-card-types {
+  position: relative;
+  z-index: 1;
+}
+
+.capture-zone-card-title {
+  margin: 0;
+  width: 100%;
+  color: var(--capture-zone-card-title-color);
+  font-size: 20px;
+  font-family: var(--game-font);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.05;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4),
+    1px 0 0 rgba(255, 255, 255, 0.35),
+    -1px 0 0 rgba(255, 255, 255, 0.35),
+    0 0 6px rgba(255, 255, 255, 0.16),
+    0 2px 4px rgba(31, 37, 40, 0.18);
+}
+
+.capture-zone-card-media {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 100%;
+  margin-top: -2px;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(139, 176, 210, 0.2);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.capture-zone-card-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.capture-zone-card p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.capture-zone-card-types {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: -2px;
+}
+
+.capture-zone-card-description {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  background: rgba(255, 251, 244, 0.7);
+  border-radius: 0;
+  padding: 5px 10px 6px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-soft);
+  margin-top: -2px;
+  white-space: pre-line;
+}
+
+.capture-zone-card-theme-bosco-smeraldo {
+  --capture-zone-card-glow: rgba(79, 143, 74, 0.28);
+  --capture-zone-card-accent: rgba(97, 159, 90, 0.32);
+  --capture-zone-card-top: rgba(204, 225, 198, 0.94);
+  --capture-zone-card-bottom: rgba(151, 196, 139, 0.92);
+  --capture-zone-card-title-color: #2d6f2e;
+}
+
+.capture-zone-card-theme-monte-luna {
+  --capture-zone-card-glow: rgba(119, 123, 170, 0.28);
+  --capture-zone-card-accent: rgba(169, 173, 214, 0.3);
+  --capture-zone-card-top: rgba(207, 207, 229, 0.94);
+  --capture-zone-card-bottom: rgba(163, 167, 204, 0.92);
+  --capture-zone-card-title-color: #50589f;
+}
+
+.capture-zone-card-theme-mare {
+  --capture-zone-card-glow: rgba(67, 143, 206, 0.28);
+  --capture-zone-card-accent: rgba(89, 176, 229, 0.28);
+  --capture-zone-card-top: rgba(197, 225, 240, 0.94);
+  --capture-zone-card-bottom: rgba(135, 190, 223, 0.92);
+  --capture-zone-card-title-color: #17679d;
+}
+
+.capture-zone-card-theme-torre-fantasma {
+  --capture-zone-card-glow: rgba(112, 86, 152, 0.32);
+  --capture-zone-card-accent: rgba(154, 120, 199, 0.28);
+  --capture-zone-card-top: rgba(212, 199, 229, 0.94);
+  --capture-zone-card-bottom: rgba(166, 143, 200, 0.92);
+  --capture-zone-card-title-color: #6c4494;
+}
+
+.capture-zone-card-theme-safari {
+  --capture-zone-card-glow: rgba(173, 135, 66, 0.28);
+  --capture-zone-card-accent: rgba(215, 173, 96, 0.28);
+  --capture-zone-card-top: rgba(226, 211, 181, 0.94);
+  --capture-zone-card-bottom: rgba(199, 171, 111, 0.92);
+  --capture-zone-card-title-color: #8a6024;
+}
+
+.capture-zone-card-theme-palude {
+  --capture-zone-card-glow: rgba(109, 120, 64, 0.28);
+  --capture-zone-card-accent: rgba(156, 137, 69, 0.28);
+  --capture-zone-card-top: rgba(210, 216, 190, 0.94);
+  --capture-zone-card-bottom: rgba(174, 167, 104, 0.92);
+  --capture-zone-card-title-color: #646d2f;
+}
+
+.capture-zone-card-theme-deserto {
+  --capture-zone-card-glow: rgba(196, 135, 59, 0.28);
+  --capture-zone-card-accent: rgba(221, 171, 95, 0.3);
+  --capture-zone-card-top: rgba(228, 211, 181, 0.94);
+  --capture-zone-card-bottom: rgba(207, 168, 101, 0.92);
+  --capture-zone-card-title-color: #996129;
+}
+
+@media (max-width: 1150px) {
+.capture-zones-grid {
+    grid-template-columns: repeat(2, var(--zone-card-width));
+  }
+
+.capture-zone-card {
+    padding: clamp(12px, 1.4vw, 16px) clamp(13px, 1.56vw, 18px) clamp(11px, 1.22vw, 14px);
+  }
+
+}
+
+@media (max-width: 680px) {
+.capture-zone-card {
+    aspect-ratio: auto;
+  }
+
+.capture-zones-grid {
+    grid-template-columns: minmax(0, min(var(--pokemon-card-width), 100%));
+    justify-content: center;
+  }
+
+}

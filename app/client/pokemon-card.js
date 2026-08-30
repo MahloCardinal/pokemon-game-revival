@@ -119,7 +119,7 @@ export function renderPokemonCard(pokemon, options) {
     renderTypeIcons(pokemon.type, imageAttrs),
     "      </div>",
     showVitals ? '      <p class="pokemon-card-vitals">' + escapeHtml(vitalsText) + "</p>" : "",
-    showVitals ? '      <p class="pokemon-card-exp">' + escapeHtml(expText) + "</p>" : "",
+    showVitals && options.showExperience !== false ? '      <p class="pokemon-card-exp">' + escapeHtml(expText) + "</p>" : "",
     heldItemMarkup,
     "    </div>",
     "  </div>",

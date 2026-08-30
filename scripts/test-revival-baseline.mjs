@@ -241,6 +241,35 @@ for (const name of ["battle", "admin-battle", "battle-dome-battle"]) {
   }
 }
 const domeView = read("app/view/battle-dome.js");
+const pokemonCardSource = read("app/client/pokemon-card.js");
+const pokemonCardRenderer = pokemonCardSource.slice(
+  pokemonCardSource.indexOf("export function renderPokemonCard("),
+  pokemonCardSource.indexOf("export function renderPokemonCardFrame(")
+).replace("export function", "function");
+const renderExperienceCard = vm.runInNewContext(pokemonCardRenderer + "\nrenderPokemonCard;", {
+  t: key => key, escapeHtml: String,
+  speciesDisplayName: () => "Abra", pokemonCardTypeStyle: () => "",
+  renderPokemonCardSprite: () => "", renderTypeIcons: () => "",
+  renderPokemonCardMove: () => ""
+});
+for (const expCap of [0, 1000]) {
+  const pokemon = { level: 100, maxHp: 400, expCurrent: 0, expCap, moves: [], type: ["psychic"] };
+  for (const showExperience of [undefined, true, false]) {
+    const html = renderExperienceCard(pokemon, { showExperience });
+    assert.equal(html.includes('class="pokemon-card-exp"'), showExperience !== false,
+      "Experience must remain visible by default and disappear only when explicitly disabled");
+    assert.match(html, /class="pokemon-card-vitals"[^>]*>[^<]*100[^<]*400/, "Hiding experience must preserve level and HP");
+    if (showExperience !== false) assert.ok(html.includes("0/" + expCap));
+  }
+  assert.doesNotMatch(renderExperienceCard(pokemon, { showVitals: false, showExperience: true }), /pokemon-card-exp/);
+}
+assert.match(domeView, /renderPokemonCard\(battleDomePokemon\(entry\), \{ showExperience: false \}\)/);
+assert.match(read("app/view/battle-dome-lead-selection.js"), /renderPokemonCard\(participantPokemon\(entry\), \{\s*showExperience: false/);
+assert.match(battleView, /var showExperience = !scene\.battleDome;/, "Only Cupola battles must hide experience, regardless of player perspective");
+assert.equal((battleView.match(/showExperience: options\.showExperience/g) || []).length, 2,
+  "Active and reserve card helpers must forward the experience option");
+assert.equal((battleView.match(/showExperience: showExperience/g) || []).length, 4,
+  "Both teams' active cards and reserve rosters must use the scene's experience option");
 const lobbyRenderer = domeView.slice(domeView.indexOf("function isOwnBattle("), domeView.indexOf("export function renderBattleDomeScene("));
 for (const roles of [["spectator", "challenger", "spectator", "creator"], ["spectator", "creator"], ["spectator"], []]) {
   const battles = roles.map((own_role, index) => ({ battle_id: "battle-" + index, own_role, creator_username: "Creator", challenger_username: "Challenger" }));

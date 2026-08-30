@@ -44,7 +44,7 @@ function teamCard(entry, index) {
     'data-team-index="' + index + '"' + (state.battleDome.saving ? " disabled" : ""),
     "button-danger button-slim"
   );
-  return renderPokemonCardFrame(renderPokemonCard(battleDomePokemon(entry)), { actions: actions });
+  return renderPokemonCardFrame(renderPokemonCard(battleDomePokemon(entry), { showExperience: false }), { actions: actions });
 }
 
 function renderBuilder() {

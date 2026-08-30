@@ -31,6 +31,7 @@ function renderLeadCard(entry, selectedSlot, canChoose) {
     ? button(t("ui.battleDome.chooseLead"), "battle-dome-lead-choice", 'data-team-slot="' + escapeHtml(slot) + '"', "button-primary button-slim")
     : "";
   return renderPokemonCardFrame(renderPokemonCard(participantPokemon(entry), {
+    showExperience: false,
     className: selected ? "battle-dome-lead-selected" : ""
   }), {
     className: "battle-dome-lead-entry",

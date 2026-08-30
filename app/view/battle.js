@@ -46,6 +46,7 @@ function renderMiniCombatant(combatant, isActive, options) {
 
   return renderPokemonCardFrame(renderPokemonCard(pokemonForBattleCard(combatant), {
     className: className,
+    showExperience: options.showExperience,
     currentHp: combatant.hp
   }), {
     className: frameClassName,
@@ -101,6 +102,7 @@ function renderBattleSlot(combatant, title, showMoves, options) {
 
   return renderSlot(renderPokemonCard(combatant.pokemon, {
     className: "pokemon-card-battle pokemon-card-battle-active is-active" + (showMoves ? " has-battle-actions" : " has-battle-previews") + (options.className ? " " + options.className : ""),
+    showExperience: options.showExperience,
     currentHp: combatant.hp,
     extraContent: battleHpMarkup + (moveMarkup ? '<div class="pokemon-card-moves battle-card-moves">' + moveMarkup + "</div>" : ""),
     showMoves: false,
@@ -175,6 +177,7 @@ function renderBattleLog(logEntries, scene) {
 
 export function renderBattleScene(scene) {
   var renderScene = scene.finalBattleDisplayScene || scene;
+  var showExperience = !scene.battleDome;
   ensureBattleBindings(renderScene);
 
   var summaryLines = localizeBattleSummary(Engine.buildBattleSummary(renderScene.playerTeam, renderScene.enemyTeam, renderScene.manager.usedItems, renderScene.manager.enemyUsedItems, renderScene.manager), renderScene);
@@ -443,8 +446,8 @@ export function renderBattleScene(scene) {
       towerOpponentPanel,
       '  <div class="battle-stage">',
       '    <div class="panel battle-field-panel">',
-      renderBattleSlot(!adminPerspective && pendingAdminEntryChoice ? null : opponentTeam.getActive(), t(adminPerspective ? "ui.battle.playerPokemon" : "ui.battle.opponentPokemon"), false, Object.assign({ ownTeam: ownTeam }, opponentSlotOptions, { placeholderText: t("ui.battle.choosingFieldPokemon", { name: opponentTeam.name || t("ui.battle.opponent") }) })),
-      renderBattleSlot(adminEntryChoiceActive ? null : ownTeam.getActive(), t(adminPerspective ? "ui.battle.opponentPokemon" : "ui.battle.playerPokemon"), ownActionEnabled, Object.assign({ ownTeam: ownTeam, manager: renderScene.manager, moveActor: adminPerspective ? "npc" : "player" }, ownSlotOptions, { placeholderText: t("ui.battle.choosingFieldPokemon", { name: ownTeam.name || t("ui.battle.adminFallback") }) })),
+      renderBattleSlot(!adminPerspective && pendingAdminEntryChoice ? null : opponentTeam.getActive(), t(adminPerspective ? "ui.battle.playerPokemon" : "ui.battle.opponentPokemon"), false, Object.assign({ ownTeam: ownTeam, showExperience: showExperience }, opponentSlotOptions, { placeholderText: t("ui.battle.choosingFieldPokemon", { name: opponentTeam.name || t("ui.battle.opponent") }) })),
+      renderBattleSlot(adminEntryChoiceActive ? null : ownTeam.getActive(), t(adminPerspective ? "ui.battle.opponentPokemon" : "ui.battle.playerPokemon"), ownActionEnabled, Object.assign({ ownTeam: ownTeam, showExperience: showExperience, manager: renderScene.manager, moveActor: adminPerspective ? "npc" : "player" }, ownSlotOptions, { placeholderText: t("ui.battle.choosingFieldPokemon", { name: ownTeam.name || t("ui.battle.adminFallback") }) })),
       "    </div>",
       '      <div class="battle-mobile-tabs" data-battle-mobile-tabs>',
       button(t("ui.battle.info"), "battle-bottom-tab", 'data-panel="info"', "button-slim battle-mobile-tab" + (battleBottomPanel === "info" ? " button-primary" : " button-ghost")),
@@ -458,6 +461,7 @@ export function renderBattleScene(scene) {
       '      <h2 class="stack-title">' + escapeHtml(t("ui.battle.opponentTeam")) + '</h2>',
       '      <div class="mini-roster" data-scroll-key="battle-enemy-roster">' + opponentTeam.combatantList.map(function (combatant, index) {
         return renderMiniCombatant(combatant, !pendingAdminEntryChoice && index === opponentTeam.activeIndex, {
+          showExperience: showExperience,
           reserveFooter: true
         });
       }).join("") + "</div>",
@@ -466,6 +470,7 @@ export function renderBattleScene(scene) {
       '      <h2 class="stack-title">' + escapeHtml(t("ui.battle.playerTeam")) + '</h2>',
       '      <div class="mini-roster" data-scroll-key="battle-player-roster">' + ownTeam.combatantList.map(function (combatant, index) {
         return renderMiniCombatant(combatant, !adminEntryChoiceActive && index === ownTeam.activeIndex, {
+          showExperience: showExperience,
           canSwitch: adminEntryChoiceActive || (adminPerspective ? adminActionEnabled : !renderScene.manager.battleOver && !playerActionLocked),
           switchAction: adminEntryChoiceActive ? "admin-battle-entry" : ownSwitchAction,
           switchLabel: t(adminEntryChoiceActive ? "ui.battle.choose" : "ui.battle.switch"),

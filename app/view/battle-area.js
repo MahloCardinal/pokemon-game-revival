@@ -7,12 +7,12 @@ function renderBattleAreaCard(key, action, image, href) {
   var title = t("ui.zoneCards." + key + ".title");
   var description = t("ui.zoneCards." + key + ".description");
   return [
-    '<a class="battle-area-card" href="' + escapeHtml(href) + '" data-action="' + escapeHtml(action) + '">',
-    '  <h3 class="battle-area-card-title">' + escapeHtml(title) + "</h3>",
-    '  <div class="battle-area-card-media">',
-    renderImage(assetPath("img_zone", image), title, "battle-area-card-image"),
+    '<a class="image-card battle-area-card" href="' + escapeHtml(href) + '" data-action="' + escapeHtml(action) + '">',
+    '  <h3 class="image-card-title">' + escapeHtml(title) + "</h3>",
+    '  <div class="image-card-media">',
+    renderImage(assetPath("img_zone", image), title, "image-card-image"),
     "  </div>",
-    description ? '  <div class="battle-area-card-description">' + escapeHtml(description) + "</div>" : "",
+    description ? '  <div class="image-card-description">' + escapeHtml(description) + "</div>" : "",
     "</a>"
   ].join("");
 }

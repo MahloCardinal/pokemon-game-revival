@@ -112,16 +112,16 @@ export function renderHomeScene() {
     var desc = t("ui.zoneCards." + key + ".description");
     var cardClass = imageFile ? "" : " home-zone-card-text-only";
     var mediaMarkup = imageFile ? [
-      '  <div class="zone-card-media">',
-      renderImage(assetPath("img_zone", imageFile), title, "zone-card-image"),
+      '  <div class="image-card-media">',
+      renderImage(assetPath("img_zone", imageFile), title, "image-card-image"),
       "  </div>"
     ].join("") : "";
 
     return [
-      '<a class="zone-card home-zone-card' + cardClass + '" href="' + escapeHtml(href) + '" data-action="' + escapeHtml(action) + '">',
-      '  <h3 class="zone-card-title">' + escapeHtml(title) + "</h3>",
+      '<a class="image-card home-zone-card' + cardClass + '" href="' + escapeHtml(href) + '" data-action="' + escapeHtml(action) + '">',
+      '  <h3 class="image-card-title">' + escapeHtml(title) + "</h3>",
       mediaMarkup,
-      desc ? '  <div class="zone-card-description">' + escapeHtml(desc) + "</div>" : "",
+      desc ? '  <div class="image-card-description">' + escapeHtml(desc) + "</div>" : "",
       "</a>"
     ].join("");
   }

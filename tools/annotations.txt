@@ -1,7 +1,9 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- reinserire regolamento completo
+- da mobile l'immagine dell'allenatore non è ridimensionata
+- inserire pokedex nelle schede giocatori
+- inserire regola di massimo due OHKO in squadra nel motore di gioco
 - correggere testi e traduzioni i18n
 
 

@@ -429,7 +429,7 @@
   display: grid;
   place-items: end center;
   width: var(--trainer-sprite-width);
-  min-height: var(--trainer-sprite-height);
+  height: var(--trainer-sprite-height);
   background: transparent;
 }
 
@@ -836,7 +836,9 @@
   }
 
 .scene-content-team .trainer-profile-media {
-    width: 100%;
+    width: var(--trainer-sprite-width);
+    height: var(--trainer-sprite-height);
+    max-width: 100%;
   }
 
 .trainer-profile-content {

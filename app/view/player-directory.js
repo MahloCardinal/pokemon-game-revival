@@ -56,6 +56,8 @@ function renderPlayerRow(player, playerIndex) {
   var badges = Math.max(0, Math.min(8, Math.floor(Number(player && player.badges) || 0)));
   var team = Array.isArray(player && player.team) ? player.team : [];
   var preferredTitle = preferredTitleName(player && player.preferred_title);
+  var pokedexCaught = Math.max(0, Math.floor(Number(player && player.pokedex_caught) || 0));
+  var pokedexTotal = Math.max(0, Math.floor(Number(player && player.pokedex_total) || 0));
   var playerName = player && player.username || t("ui.home.defaultTrainer");
   var trainerSprite = trainerSpriteByIndex(player && player.trainer_index);
   var playerId = "player-directory-player-" + Math.max(0, Number(playerIndex) || 0);
@@ -74,6 +76,7 @@ function renderPlayerRow(player, playerIndex) {
     '    <div class="player-directory-trainer-info">',
     '      <strong class="player-directory-player-name" id="' + escapeHtml(playerId) + '-name">' + escapeHtml(playerName) + "</strong>",
     preferredTitle ? '      <span class="player-directory-preferred-title">' + escapeHtml(preferredTitle) + "</span>" : "",
+    '      <strong class="player-directory-pokedex">' + escapeHtml(t("ui.playerDirectory.pokedex", { caught: pokedexCaught, total: pokedexTotal })) + "</strong>",
     '      <span class="player-directory-summary-badges" aria-label="' + escapeHtml(t("ui.playerDirectory.badges", { count: badges })) + '">' + playerBadgesMarkup(badges) + "</span>",
     '      <button type="button" class="button button-primary player-directory-team-toggle" data-action="player-directory-toggle-team" aria-expanded="false" aria-controls="' + escapeHtml(teamId) + '" data-open-label="' + escapeHtml(t("ui.playerDirectory.showTeam")) + '" data-close-label="' + escapeHtml(t("ui.playerDirectory.hideTeam")) + '">' + escapeHtml(t("ui.playerDirectory.showTeam")) + "</button>",
     "    </div>",
@@ -104,7 +107,7 @@ export function renderPlayerDirectoryScene() {
     '<section class="panel player-directory-panel">',
     '  <div class="panel-inner player-directory-layout">',
     '    <p class="player-directory-intro">' + escapeHtml(t("ui.playerDirectory.description")) + "</p>",
-    '    <div data-render-region="player-directory-content">' + renderDirectoryContent() + "</div>",
+    '    <div class="player-directory-scroll" data-render-region="player-directory-content">' + renderDirectoryContent() + "</div>",
     "  </div>",
     "</section>"
   ].join("");

@@ -20,6 +20,16 @@
   font-weight: 800;
 }
 
+.player-directory-scroll {
+  min-width: 0;
+  max-height: 645px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: var(--box-scrollbar-safe-space);
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
 .player-directory-list {
   display: grid;
   gap: 24px;
@@ -112,6 +122,12 @@
   overflow-wrap: anywhere;
 }
 
+.player-directory-pokedex {
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .player-directory-summary-badges {
   display: flex;
   flex-wrap: wrap;
@@ -183,6 +199,10 @@
 }
 
 @media (max-width: 700px) {
+  .player-directory-scroll {
+    max-height: 540px;
+  }
+
   .player-directory-list {
     gap: 18px;
   }

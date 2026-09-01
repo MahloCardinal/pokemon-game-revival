@@ -36,6 +36,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     loading: "Caricamento delle schede giocatori...",
     empty: "Non ci sono ancora giocatori disponibili.",
     emptyTeam: "Squadra vuota",
+    pokedex: "Pokédex: {caught}/{total}",
     badges: "Medaglie: {count}/8",
     trainerAlt: "Allenatore {name}",
     teamLabel: "Squadra di {name}",

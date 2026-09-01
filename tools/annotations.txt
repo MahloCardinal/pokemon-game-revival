@@ -1,9 +1,7 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- da mobile l'immagine dell'allenatore non è ridimensionata
 - regolamento: status in attesa non curabili, tutte le limitazioni battaglia (squadra, strumenti, OHKO)
-- inserire pokedex nelle schede giocatori
 - correggere testi e traduzioni i18n
 
 

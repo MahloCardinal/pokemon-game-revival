@@ -48,6 +48,7 @@ const trainerTitlesMigration = read("supabase/migrations/20260826120000_trainer_
 const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_debug_trainer_title_controls.sql");
 const preferredTrainerTitlesMigration = read("supabase/migrations/20260828110000_preferred_trainer_titles.sql");
 const playerDirectoryAvatarMigration = read("supabase/migrations/20260828120000_player_directory_trainer_avatar.sql");
+const playerDirectoryPokedexMigration = read("supabase/migrations/20260901150000_player_directory_national_pokedex.sql");
 const battleDomeMigration = read("supabase/migrations/20260829120000_battle_dome.sql");
 const battleDomeCodesAndLeadsMigration = read("supabase/migrations/20260830120000_battle_dome_codes_and_leads.sql");
 const battleDomeInviteCleanupMigration = read("supabase/migrations/20260830123000_remove_legacy_battle_dome_invites.sql");
@@ -370,9 +371,13 @@ assert.match(preferredTrainerTitlesMigration, /create or replace function public
 assert.match(preferredTrainerTitlesMigration, /'preferred_title', title_data\.preferred_title/i);
 assert.doesNotMatch(preferredTrainerTitlesMigration, /last_title|jsonb_agg\(owned\.title_key/);
 assert.match(playerDirectoryView, /player\.preferred_title/);
+assert.match(playerDirectoryView, /player\.pokedex_caught/);
+assert.match(playerDirectoryView, /player\.pokedex_total/);
+assert.match(playerDirectoryView, /ui\.playerDirectory\.pokedex/);
 assert.doesNotMatch(playerDirectoryView, /last_title|playerDirectory\.titles|playerDirectory\.emptyTitles/);
 assert.match(playerDirectoryView, /class="panel player-directory-panel"/);
 assert.match(playerDirectoryStyles, /\.player-directory-panel\s*\{[^}]*width:\s*100%/);
+assert.match(playerDirectoryStyles, /\.player-directory-scroll\s*\{[^}]*max-height:\s*645px[^}]*overflow-y:\s*auto/);
 assert.match(playerDirectoryView, /trainerSpriteByIndex\(player && player\.trainer_index\)/);
 assert.match(playerDirectoryView, /data-action="player-directory-toggle-team"/);
 assert.match(playerDirectoryView, /class="player-directory-team-panel"[\s\S]* hidden/);
@@ -396,6 +401,10 @@ assert.match(playerDirectoryStyles, /@media \(max-width: 700px\)[\s\S]*?\.player
 assert.match(playerDirectoryStyles, /@media \(max-width: 700px\)[\s\S]*?\.player-directory-pokemon-card \.pokemon-visual\s*\{[^}]*width:\s*78px/);
 assert.match(playerDirectoryAvatarMigration, /'trainer_index', profile\.trainer_index/);
 assert.doesNotMatch(playerDirectoryAvatarMigration, /last_title|jsonb_agg\(owned\.title_key/);
+assert.match(playerDirectoryPokedexMigration, /'pokedex_caught', least\(catalog_data\.pokedex_total, coalesce\(dex_data\.pokedex_caught, 0\)\)/i);
+assert.match(playerDirectoryPokedexMigration, /'pokedex_total', catalog_data\.pokedex_total/i);
+assert.match(playerDirectoryPokedexMigration, /from public\.player_dex_entry[\s\S]*group by auth_user_id, catalog_release_id/i);
+assert.match(playerDirectoryPokedexMigration, /from public\.catalog_species[\s\S]*group by catalog_release_id/i);
 assert.match(shinyMigration, /rule_key = 'shiny_odds_denominator'[\s\S]*v_is_shiny := floor\(random\(\) \* v_shiny_odds\)::integer = 0/i);
 assert.match(shinyMigration, /p_requires_battle_idle => true/i);
 assert.match(rarityStatsMigration, /state = state - 'shl'/i);

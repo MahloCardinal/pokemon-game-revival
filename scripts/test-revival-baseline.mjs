@@ -54,6 +54,7 @@ const battleDomeInviteCleanupMigration = read("supabase/migrations/2026083012300
 const battleDomeLobbyCreationFixMigration = read("supabase/migrations/20260830124000_fix_battle_dome_code_lobby_creation.sql");
 const globalTeamCompositionMigration = read("supabase/migrations/20260901120000_global_battle_team_composition.sql");
 const specificBattleLimitCleanupMigration = read("supabase/migrations/20260901130000_remove_legacy_specific_battle_limit_queries.sql");
+const variableBattleDomeTeamMigration = read("supabase/migrations/20260901140000_restore_variable_battle_dome_team_size.sql");
 const shinyMigration = read("supabase/migrations/20260827120000_authoritative_shiny_pokemon.sql");
 const rarityStatsMigration = read("supabase/migrations/20260827150000_current_level_shiny_and_legendary_stats.sql");
 const statTables = read("app/data/stat-tables.js");
@@ -546,6 +547,9 @@ assert.match(battleDomeInviteCleanupMigration, /alter column team_snapshot set n
 assert.doesNotMatch(battleDomeInviteCleanupMigration, /'invite_token'/i);
 assert.doesNotMatch(battleDomeLobbyCreationFixMigration, /invite_token/i);
 assert.match(battleDomeLobbyCreationFixMigration, /creator_auth_user_id, invite_code, lobby_date, catalog_release_id, team_snapshot/i);
+assert.match(variableBattleDomeTeamMigration, /v_count > 6 or \(p_require_complete and v_count < 1\)/i);
+assert.match(variableBattleDomeTeamMigration, /between one and six Pokemon/i);
+assert.doesNotMatch(variableBattleDomeTeamMigration, /exactly six Pokemon/i);
 assert.match(edge, /action === "dome_lead_choice"/i);
 assert.doesNotMatch(edge, /inviteToken|invite_token/i, "Battle Dome invitations must use the six-digit code only");
 assert.match(battleDomeMigration, /revoke all on public\.battle_dome_battle from anon, authenticated/i);
@@ -618,6 +622,25 @@ async function loadEsModule(path) {
 const engineIndexModule = await loadEsModule(fileURLToPath(new URL("../app/engine/index.js", import.meta.url)));
 await engineIndexModule.evaluate();
 const engineExports = engineIndexModule.namespace;
+const battleDomeDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/battle-dome.js", import.meta.url)));
+if (battleDomeDefinitionsModule.status !== "evaluated") await battleDomeDefinitionsModule.evaluate();
+const BattleDomeDefinitions = battleDomeDefinitionsModule.namespace;
+const usableDomeSpecies = BattleDomeDefinitions.battleDomeSpecies().filter((entry) =>
+  BattleDomeDefinitions.battleDomeMovePool(entry.speciesKey).some((move) => !move.isOhkoMove)
+);
+assert.ok(usableDomeSpecies.length >= 6, "The Battle Dome catalog must contain six usable species");
+const domePokemon = (entry) => ({
+  species_key: entry.speciesKey,
+  held_item_index: 0,
+  moves: [BattleDomeDefinitions.battleDomeMovePool(entry.speciesKey).find((move) => !move.isOhkoMove).index]
+});
+assert.equal(BattleDomeDefinitions.validateBattleDomeTeam([], true), "team_size", "A complete Dome team cannot be empty");
+assert.equal(BattleDomeDefinitions.validateBattleDomeTeam([domePokemon(usableDomeSpecies[0])], true), null,
+  "One Pokemon is enough to start a Battle Dome challenge");
+assert.equal(BattleDomeDefinitions.validateBattleDomeTeam(usableDomeSpecies.slice(0, 6).map(domePokemon), true), null,
+  "A six-Pokemon Battle Dome team remains valid");
+assert.equal(BattleDomeDefinitions.validateBattleDomeTeam(Array.from({ length: 7 }, () => domePokemon(usableDomeSpecies[0])), true), "team_size",
+  "A Battle Dome team cannot exceed six Pokemon");
 const moveDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/moves.js", import.meta.url)));
 const MoveDefinitions = moveDefinitionsModule.namespace;
 const itemDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/items.js", import.meta.url)));

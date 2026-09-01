@@ -19,7 +19,7 @@ Parassiseme: Danni, fino al cambio o ko l'avversario alla fine del suo turno per
 Punte: I Pokémon avversari che entrano in campo ricevono danni pari al Livello dell'utilizzatore
 Rapigiro: Danni, annulla l'effetto di Parassiseme, Punte e mosse a più turni
 
-Divinazione, Desiderio Fatale: Infligge danni subito dopo la 3° mossa, inclusa Divinazione, di chi la usa. Non usabile nuovamente finché non colpisce
+Divinazione, Desiderio Fatale: Infligge danni subito dopo la 3° mossa, inclusa questa, di chi la usa. Non usabile nuovamente finché non colpisce
 Accumulo: Aumenta la Difesa di chi lo usa [ha bisogno di una proprietà in battaglia per interagire con Introenergia e Sfoghenergia]
 Introenergia: Recupera tutti i PS solo se precedentemente è stato usato Accumulo
 Sfoghenergia: 2xDanni solo se precedentemente è stato usato Accumulo

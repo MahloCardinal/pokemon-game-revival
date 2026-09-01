@@ -7,11 +7,14 @@ import { isDebugUser } from "./debug-tools.js";
 import { state } from "./game-state.js";
 import { render } from "./renderer.js";
 import { messageDescriptor, textDescriptor } from "./i18n.js";
+import { teamViolationFromBattleResult, teamViolationLines } from "./entity-text.js";
+import * as Engine from "../engine/index.js";
 
 registerAction("battle-tower-start", function () {
   if (state.battleStartPending || enforceBattleRuntimeSceneLock()) { return; }
   if (!state.scene || state.scene.name !== "battle-tower") { return; }
   var teamCount = state.team.filter(Boolean).length;
+  var violation = Engine.findTeamCompositionViolation(state.team);
   var tower = state.battleTower || {};
   if (tower.attemptedToday && !tower.runId && !isDebugUser()) {
     openMessage([messageDescriptor("battleTower.attemptedToday")], { title: textDescriptor("ui.sceneTitles.battleTower") });
@@ -21,11 +24,21 @@ registerAction("battle-tower-start", function () {
     openMessage([messageDescriptor("battleTower.teamMinimum")], { title: textDescriptor("ui.sceneTitles.battleTower") });
     return;
   }
+  if (!tower.runId && violation) {
+    openMessage(teamViolationLines(violation), { title: textDescriptor("ui.sceneTitles.battleTower") });
+    return;
+  }
   state.battleStartPending = true;
   render();
   startAuthoritativeBattleTower({ expectedPlayerRevision: state.authoritativeRevision }).then(function (result) {
     state.battleStartPending = false;
     if (!result.ok || !result.battle) {
+      var serverViolation = teamViolationFromBattleResult(result);
+      if (serverViolation) {
+        openMessage(teamViolationLines(serverViolation), { title: textDescriptor("ui.sceneTitles.battleTower") });
+        render();
+        return;
+      }
        openMessage([towerStartMessage(result)], { title: textDescriptor("ui.sceneTitles.battleTower") });
       render();
       return;

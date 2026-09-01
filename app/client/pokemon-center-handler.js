@@ -10,9 +10,8 @@ import { clampToLimits, maxHpForPokemon, maxPowerForPokemon, maxStatsForPokemon 
 import { adjustInventoryItemQuantity, markTeamRuntimeStateChanged } from "./runtime-state.js";
 import { renderPokemonCenterItemPanelContent, renderPokemonCenterMoveButton } from "../view/pokemon-center.js";
 import { getLocale, messageDescriptor, t, textDescriptor } from "./i18n.js";
-import { itemNameDescriptor, moveDisplayName, moveNameDescriptor, pokemonNameDescriptor, speciesNameDescriptor, teamViolationMessage } from "./entity-text.js";
+import { itemNameDescriptor, moveDisplayName, moveNameDescriptor, pokemonNameDescriptor, speciesNameDescriptor } from "./entity-text.js";
 
-var findHeldItemAssignmentViolation = Engine.findHeldItemAssignmentViolation;
 import { queueGlobalActivityEvent } from "./activity-feed-runtime.js";
 import { createMissionEventKey, recordMissionEvent } from "./mission-runtime.js";
 import { executePokemonCenterCommandAuthoritative, executePokemonCenterMoveTutorAuthoritative } from "../api/player-command.js";
@@ -705,7 +704,6 @@ function assignHeldItemToPokemonInline(pokemon, item, pokemonIndex) {
   var previousItemIndex = Number(pokemon.heldItemIndex) || 0;
   var previousItem = previousItemIndex ? getItemByIndex(previousItemIndex) : null;
   var scene = state.scene;
-  var violation;
   if (!item || (item.category !== ItemCategory.HeldItem && item.category !== ItemCategory.Berry)) {
     return;
   }
@@ -713,12 +711,6 @@ function assignHeldItemToPokemonInline(pokemon, item, pokemonIndex) {
     clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.cannotHold", {
       pokemon: pokemonNameDescriptor(pokemon), item: itemNameDescriptor(item)
     }));
-    updatePokemonCenterModeDom();
-    return;
-  }
-  violation = findHeldItemAssignmentViolation(state.team, pokemon, item, pokemonIndex);
-  if (violation) {
-    clearPokemonCenterAfterAction(scene, teamViolationMessage(violation));
     updatePokemonCenterModeDom();
     return;
   }

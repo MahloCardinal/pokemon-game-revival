@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "95ee6ce2cfeec3c79858b19b5c96e18196e337ba966671a7bad38519820e8f15",
+  "bundleChecksum": "f03ece940d261bcbd2ab5770af06fbc3073d7341c67c698431abcb7b8aabf37f",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -24,8 +24,8 @@
     },
     {
       "source": "app/data/gyms.js",
-      "sha256": "97d085e8122c95df098cb991fcc0fab9ab475efed7f5d70b306f82ac6bea756f",
-      "bytes": 15060
+      "sha256": "088600a5ed342c58386bc5cf1d944c0079b306b4412cb248a78075d33a5926f6",
+      "bytes": 14456
     },
     {
       "source": "app/data/index.js",
@@ -71,6 +71,11 @@
       "source": "app/data/stat-tables.js",
       "sha256": "bdd0843b1536976dcc925cc44c83cfe98c8c8b65739df84379fdd59483047c0b",
       "bytes": 6817
+    },
+    {
+      "source": "app/data/team-composition.js",
+      "sha256": "d31eac6a6be9b915b7ccd7ef059eeae7888e91f37b7b8870dc517a0631380730",
+      "bytes": 3252
     },
     {
       "source": "app/data/team-rule-items.js",
@@ -159,8 +164,8 @@
     },
     {
       "source": "app/engine/team-composition-rules.js",
-      "sha256": "d148863c49ed4ce39264a3ad38368cddcf6817448004836978a1f742af730e88",
-      "bytes": 7665
+      "sha256": "947ee1c0b2ae8079545cf7a2605f97be13efeabb03b8d79c0abb7b699c10cde4",
+      "bytes": 2021
     },
     {
       "source": "app/engine/team.js",

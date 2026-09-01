@@ -24,10 +24,6 @@ function challengeRequirement(status) {
 function challengeLimitText(limit) {
   if (!limit) return "";
   if (typeof limit === "string") return limit;
-  if (limit.key === "port_items_max") {
-    if (!limit.count) return t("ui.gyms.limits.port_items_none");
-    if (limit.distinct) return t("ui.gyms.limits.port_items_distinct", { count: limit.count });
-  }
   return t("ui.gyms.limits." + limit.key, limit);
 }
 

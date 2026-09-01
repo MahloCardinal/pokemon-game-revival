@@ -1,5 +1,5 @@
 import { registerAction } from "./action-registry.js";
-import { pokemonDisplayName, teamViolationLines } from "./entity-text.js";
+import { pokemonDisplayName, teamViolationFromBattleResult, teamViolationLines } from "./entity-text.js";
 import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 import {
   battleTypeForCapture,
@@ -15,7 +15,6 @@ import { assignNextBoxIndex, queueBoxUpsert } from "./box-handler.js";
 import { enforceBattleRuntimeSceneLock, ensureBattleBindings } from "./battle-scene-lock.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
-var findPokemonJoinTeamViolation = Engine.findPokemonJoinTeamViolation;
 var findTeamCompositionViolation = Engine.findTeamCompositionViolation;
 import { FLUTE_DAILY_USE_LIMIT, SEARCH_TOOL_ITEMS, captureLevelIsUnlocked, captureLevelLimitForBadges, captureLevelRangesForBadges } from "../data/progression.js";
 import { openMessage } from "./dialog-handler.js";
@@ -500,6 +499,13 @@ async function buildBattleScene(captureScene, rosterIndex) {
       broadcastCaptureEncounterRuntimeInvalidation(state.authoritativeRevision);
       authoritativeCaptureCommandPending = false;
       openAuthoritativeBattleProjection(result.battle, result.events, { captureScene: captureScene });
+      return;
+    }
+    var serverViolation = teamViolationFromBattleResult(result);
+    if (serverViolation) {
+      await clearPendingCaptureStart(pending);
+      authoritativeCaptureCommandPending = false;
+      openMessage(teamViolationLines(serverViolation), { title: messageDescriptor("capture.title") });
       return;
     }
     if (result.uncertain || result.code === "revision_conflict" || result.code === "battle_command_rejected") {

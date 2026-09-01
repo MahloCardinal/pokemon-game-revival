@@ -2,8 +2,8 @@
 # TODO
 #--------------------------------------------------------------------
 - da mobile l'immagine dell'allenatore non è ridimensionata
+- regolamento: status in attesa non curabili, tutte le limitazioni battaglia (squadra, strumenti, OHKO)
 - inserire pokedex nelle schede giocatori
-- inserire regola di massimo due OHKO in squadra nel motore di gioco
 - correggere testi e traduzioni i18n
 
 

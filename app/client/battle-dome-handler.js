@@ -5,6 +5,7 @@ import { writeSceneHistory } from "./router.js";
 import { applyAuthoritativeProjection, openPendingBattleEntryChoice } from "./battle-handler.js";
 import { openMessage } from "./dialog-handler.js";
 import { t } from "./i18n.js";
+import { teamViolationFromBattleResult, teamViolationLines } from "./entity-text.js";
 import { validateBattleDomeTeam } from "../data/battle-dome.js";
 import { abandonBattleDomeBattle, cancelBattleDomeLobby, chooseBattleDomeLead, createBattleDomeLobby, exitBattleDomeBattle, joinBattleDomeLobby, readBattleDomeBattle, readBattleDomeState, resolveBattleDomeEntryChoice, saveBattleDomeTeam, submitBattleDomeMove, switchBattleDomePokemon, useBattleDomeItem } from "../api/battle-dome.js";
 
@@ -71,6 +72,11 @@ export async function refreshBattleDomeState(options) {
 
 function domeError(result) {
   state.battleDome.saving = false;
+  var violation = teamViolationFromBattleResult(result);
+  if (violation) {
+    openMessage(teamViolationLines(violation), { title: t("ui.sceneTitles.battleDome") });
+    return false;
+  }
   state.battleDome.error = result && result.message || t("ui.battleDome.commandFailed");
   if (state.scene && state.scene.name === "battle-dome-battle") {
     openMessage([state.battleDome.error], { title: t("ui.sceneTitles.battleDome") });
@@ -78,6 +84,18 @@ function domeError(result) {
   }
   render({ preserveScroll: true });
   return false;
+}
+
+function blockBattleDomeStartForInvalidTeam() {
+  var violation = validateBattleDomeTeam(state.battleDome.team, true);
+  if (!violation) return false;
+  if (typeof violation === "object") {
+    openMessage(teamViolationLines(violation), { title: t("ui.sceneTitles.battleDome") });
+  } else {
+    state.battleDome.error = t("ui.battleDome.teamRequirement");
+    render({ preserveScroll: true });
+  }
+  return true;
 }
 
 async function saveTeam(team) {
@@ -141,8 +159,7 @@ registerAction("battle-dome-add-pokemon", function () {
   }]);
   var violation = validateBattleDomeTeam(next, false);
   if (violation) {
-    state.battleDome.error = t("ui.battleDome." + (violation === "species_limit" ? "speciesLimit"
-      : violation === "item_limit" ? "itemLimit" : violation === "port_limit" ? "portLimit" : "invalidPokemon"));
+    state.battleDome.error = t("ui.battleDome.invalidPokemon");
     renderRegions(["battle-dome-content"]);
     return;
   }
@@ -157,11 +174,7 @@ registerAction("battle-dome-remove-pokemon", function (element) {
 });
 
 registerAction("battle-dome-create-lobby", async function () {
-  if (validateBattleDomeTeam(state.battleDome.team, true)) {
-    state.battleDome.error = t("ui.battleDome.teamRequirement");
-    render({ preserveScroll: true });
-    return;
-  }
+  if (blockBattleDomeStartForInvalidTeam()) return;
   state.battleDome.saving = true;
   renderRegions(["battle-dome-content"]);
   var result = await createBattleDomeLobby();
@@ -198,11 +211,7 @@ registerAction("battle-dome-copy-code", async function (element) {
 });
 
 async function join(input) {
-  if (validateBattleDomeTeam(state.battleDome.team, true)) {
-    state.battleDome.error = t("ui.battleDome.teamRequirement");
-    render({ preserveScroll: true });
-    return;
-  }
+  if (blockBattleDomeStartForInvalidTeam()) return;
   var result = await joinBattleDomeLobby(input);
   if (!result.ok) return domeError(result);
   await refreshBattleDomeState({ silent: true });

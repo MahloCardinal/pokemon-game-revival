@@ -12,26 +12,19 @@ import { applyPlayerSave, resetBoxFilter, root, state } from "./game-state.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { moveBoxPokemonToTeamAuthoritative, releaseBoxPokemonAuthoritative } from "../api/player-command.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
-import { pokemonDisplayName, teamViolationLines } from "./entity-text.js";
+import { pokemonDisplayName } from "./entity-text.js";
 import { messageDescriptor, textDescriptor } from "./i18n.js";
-var findPokemonJoinTeamViolation = Engine.findPokemonJoinTeamViolation;
 var authoritativeBoxCommandPending = false;
 
 registerAction("box-to-team", async function(element) {
   var boxIndex = Number(element.dataset.index);
   var pokemonToTeam;
-  var violation;
   var result;
   if (blockActionDuringBattle([messageDescriptor("box.battleBlocked")], { title: textDescriptor("ui.box.sceneTitle") })) {
     return;
   }
   if (state.team.length >= TEAM_MAX) {
     openInlineMessage([messageDescriptor("box.teamFull"), messageDescriptor("box.removeFirst")], { title: textDescriptor("ui.box.sceneTitle") });
-    return;
-  }
-  violation = findPokemonJoinTeamViolation(state.team, state.box[boxIndex]);
-  if (violation) {
-    openMessage(teamViolationLines(violation), { title: textDescriptor("ui.box.sceneTitle") });
     return;
   }
   if (authoritativeBoxCommandPending || !state.box[boxIndex] || !state.box[boxIndex].instanceId) {

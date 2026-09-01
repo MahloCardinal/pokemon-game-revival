@@ -7,7 +7,6 @@ import { clearHiddenProgression, startDirectLevelProgression } from "./level-up.
 import * as Engine from "../engine/index.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
-var findPokemonJoinTeamViolation = Engine.findPokemonJoinTeamViolation;
 import { markDirty, render, setScene } from "./renderer.js";
 import { moneyText } from "./render-utils.js";
 import { saveAfterStateChange } from "./save-runtime.js";
@@ -16,7 +15,7 @@ import { replaceTeamRuntimeState } from "./runtime-state.js";
 import { recordMissionEvent } from "./mission-runtime.js";
 import { clearPendingActivityRuntime, requireNotInBattle, setPendingActivityRuntime } from "./battle-scene-lock.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
-import { moveDisplayName, pokemonDisplayName, teamViolationLines, teamViolationMessage } from "./entity-text.js";
+import { moveDisplayName, pokemonDisplayName } from "./entity-text.js";
 import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 
 var DAYCARE_LEVEL_INTERVAL_MS = 3600000;
@@ -250,18 +249,6 @@ function rememberDaycareWithdrawSpecies(slot, pokemon) {
   slot.withdrawSpeciesName = pokemon.name || "Pokemon";
 }
 
-function daycareWithdrawCompositionPokemon(slot, pokemon) {
-  rememberDaycareWithdrawSpecies(slot, pokemon);
-  return Object.assign({}, pokemon, {
-    speciesKey: slot && slot.withdrawSpeciesKey ? slot.withdrawSpeciesKey : pokemon.speciesKey,
-    name: slot && slot.withdrawSpeciesName ? slot.withdrawSpeciesName : pokemon.name
-  });
-}
-
-function daycareWithdrawJoinViolation(slot, pokemon) {
-  return findPokemonJoinTeamViolation(state.team, daycareWithdrawCompositionPokemon(slot, pokemon));
-}
-
 function setDaycareWithdrawPending(slot) {
   if (!slot) {
     return;
@@ -274,7 +261,6 @@ function setDaycareWithdrawPending(slot) {
 
 function completePendingDaycareWithdraw(slot, pokemon) {
   var nextTeam;
-  var violation;
   if (!slot || !pokemon) {
     return;
   }
@@ -283,12 +269,7 @@ function completePendingDaycareWithdraw(slot, pokemon) {
     render();
     return;
   }
-  violation = daycareWithdrawJoinViolation(slot, pokemon);
-  if (violation) {
-    state.saveStatus = { state: "error", message: teamViolationMessage(violation) };
-    render();
-    return;
-  }
+  rememberDaycareWithdrawSpecies(slot, pokemon);
   slot.localProgressionComplete = true;
   nextTeam = state.team.concat([pokemon]);
   state.saveStatus = { state: "saving", message: "daycare-withdraw" };
@@ -418,7 +399,6 @@ registerAction("daycare-withdraw", function (element) {
   var pokemon = slot && slot.pokemon;
   var levelsGained;
   var cost;
-  var violation;
   if (!pokemon) {
     return;
   }
@@ -431,11 +411,7 @@ registerAction("daycare-withdraw", function (element) {
     openMessage([messageDescriptor("daycare.teamFullForPokemon", { pokemon: pokemonDisplayName(pokemon) })], { title: textDescriptor("ui.daycare.sceneTitle") });
     return;
   }
-  violation = daycareWithdrawJoinViolation(slot, pokemon);
-  if (violation) {
-    openMessage(teamViolationLines(violation), { title: textDescriptor("ui.daycare.sceneTitle") });
-    return;
-  }
+  rememberDaycareWithdrawSpecies(slot, pokemon);
   levelsGained = daycareLevelGain(slot);
   cost = daycareWithdrawCost(levelsGained, slot);
   if ((Number(state.trainerInfo[1]) || 0) < cost) {
@@ -450,11 +426,6 @@ registerAction("daycare-withdraw", function (element) {
   openConfirm(textDescriptor("ui.daycare.sceneTitle"), [hoursPhrase, messageDescriptor("daycare.withdrawConfirm", { pokemon: pokemonDisplayName(pokemon), cost: moneyText(cost) })], function () {
     if (state.team.length >= TEAM_MAX) {
       openMessage([messageDescriptor("daycare.teamFullToComplete")], { title: textDescriptor("ui.daycare.sceneTitle") });
-      return;
-    }
-    violation = daycareWithdrawJoinViolation(slot, pokemon);
-    if (violation) {
-      openMessage(teamViolationLines(violation), { title: textDescriptor("ui.daycare.sceneTitle") });
       return;
     }
     if ((Number(state.trainerInfo[1]) || 0) < cost) {

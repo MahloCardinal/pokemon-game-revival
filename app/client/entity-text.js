@@ -225,7 +225,7 @@ export function teamViolationLines(violation) {
       return moveDisplayName({ index: index });
     }).join(", ")
   };
-  var lineCount = violation && (violation.key === "port_held_item_limit" ? 1 : 2);
+  var lineCount = 2;
   if (!violation || !violation.key) return [messageDescriptor("generic.failed")];
   return Array.from({ length: lineCount }, function (_entry, index) {
     return messageDescriptor("teamRules." + violation.key + ".line" + (index + 1), params);
@@ -234,4 +234,9 @@ export function teamViolationLines(violation) {
 
 export function teamViolationMessage(violation) {
   return teamViolationLines(violation)[0];
+}
+
+export function teamViolationFromBattleResult(result) {
+  var violation = result && result.details && result.details.teamViolation;
+  return violation && typeof violation === "object" && violation.key ? violation : null;
 }

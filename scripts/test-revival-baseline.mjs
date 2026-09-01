@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import "./audit-css-ownership.mjs";
 import "./test-battle-dome-navigation.mjs";
+import "./test-team-composition.mjs";
 import { testBattleHistory, testBattleHistoryClient } from "./test-battle-history.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -51,6 +52,8 @@ const battleDomeMigration = read("supabase/migrations/20260829120000_battle_dome
 const battleDomeCodesAndLeadsMigration = read("supabase/migrations/20260830120000_battle_dome_codes_and_leads.sql");
 const battleDomeInviteCleanupMigration = read("supabase/migrations/20260830123000_remove_legacy_battle_dome_invites.sql");
 const battleDomeLobbyCreationFixMigration = read("supabase/migrations/20260830124000_fix_battle_dome_code_lobby_creation.sql");
+const globalTeamCompositionMigration = read("supabase/migrations/20260901120000_global_battle_team_composition.sql");
+const specificBattleLimitCleanupMigration = read("supabase/migrations/20260901130000_remove_legacy_specific_battle_limit_queries.sql");
 const shinyMigration = read("supabase/migrations/20260827120000_authoritative_shiny_pokemon.sql");
 const rarityStatsMigration = read("supabase/migrations/20260827150000_current_level_shiny_and_legendary_stats.sql");
 const statTables = read("app/data/stat-tables.js");
@@ -587,6 +590,12 @@ const competitiveIndexes = competitiveItemNames.map((itemName) => {
 const configuredCompetitiveIndexes = teamRuleItems.match(/PORT_COMPETITIVE_ITEM_INDEXES = \[([^\]]+)\]/)[1]
   .split(",").map((value) => Number(value.trim())).sort((left, right) => left - right);
 assert.deepEqual(configuredCompetitiveIndexes, competitiveIndexes);
+assert.match(globalTeamCompositionMigration, /create or replace function server_authority_private\.team_composition_violation/i);
+assert.match(globalTeamCompositionMigration, /perform server_authority_private\.assert_player_team_composition\(p_auth_user_id\)/i);
+assert.match(globalTeamCompositionMigration, /rules - array\['ohkoPokemonMax', 'portItemMax', 'portItemsDistinct'\]/i);
+assert.match(globalTeamCompositionMigration, /'f03ece940d261bcbd2ab5770af06fbc3073d7341c67c698431abcb7b8aabf37f'/);
+assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_gym_counts/i);
+assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_league_counts/i);
 
 const esModuleCache = new Map();
 function sourceEsModule(path) {

@@ -106,6 +106,9 @@ La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` son
 - `BattleManager.emit()` aggiunge soltanto eventi al log.
 - La UI di livello, mosse ed evoluzione appartiene al client, mentre l'esito canonico appartiene al backend.
 - Conservare le regole di composizione della squadra nel motore e non duplicarle nei renderer.
+- Catture, evoluzioni, apprendimento mosse, assegnazione strumenti e trasferimenti da Box o Pensione possono rendere temporaneamente la squadra non conforme. Non bloccare queste mutazioni per i limiti competitivi.
+- Ogni nuova battaglia valida la composizione tramite `findTeamCompositionViolation()` nel browser e `server_authority_private.assert_player_team_composition()` sul backend: massimo due Pokémon della stessa specie, due copie dello stesso strumento tenuto, due Strumenti del Porto tra loro diversi e due Pokémon che conoscano almeno una mossa OHKO.
+- La Lega controlla la composizione soltanto quando crea la scalata dal primo Superquattro; gli incontri successivi usano il roster congelato e non devono ricontrollare la squadra persistente. La Torre Lotta non assegna esperienza e controlla la composizione soltanto quando crea una nuova run.
 
 ### Pokémon Shiny
 

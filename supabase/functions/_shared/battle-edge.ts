@@ -53,7 +53,7 @@ export async function readJsonBody(request: Request, maxBytes = 32768) {
 }
 
 export class BattleEdgeError extends Error {
-  constructor(public code: string, message: string, public status = 400) {
+  constructor(public code: string, message: string, public status = 400, public details: Record<string, unknown> | null = null) {
     super(message);
   }
 }
@@ -139,6 +139,13 @@ export async function sha256(value: unknown) {
 export function databaseError(error: { code?: string; message?: string } | null) {
   const code = String(error?.code || "");
   const message = String(error?.message || "");
+  if (code === "22023" && message.startsWith("team_composition_violation:")) {
+    try {
+      const violation = JSON.parse(message.slice("team_composition_violation:".length));
+      return new BattleEdgeError("team_composition_invalid", "La composizione della squadra non rispetta le regole della sfida.", 400,
+        { teamViolation: violation });
+    } catch (_error) {}
+  }
   if (code === "40001") return new BattleEdgeError("revision_conflict", "Lo stato è cambiato; aggiorna i dati prima di riprovare.", 409);
   if (code === "55P03") return new BattleEdgeError("runtime_locked", "Il runtime di battaglia appartiene a un altro client.", 423);
   if (code === "P0002") return new BattleEdgeError("battle_not_found", "La risorsa richiesta non è stata trovata.", 404);

@@ -43,13 +43,11 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
     releaseFailed: "Rilascio del Pokémon non riuscito."
   }),
   teamRules: Object.freeze({
-    join_species_limit: Object.freeze({ line1: "Ci sono già due Pokémon della stessa specie in squadra.", line2: "Da regolamento non puoi avere più di 2 Pokémon della stessa specie." }),
-    join_held_item_limit: Object.freeze({ line1: "Ci sono già due Pokémon con {item} in squadra.", line2: "Da regolamento non puoi avere più di 2 Pokémon con lo stesso strumento tenuto." }),
-    team_species_limit: Object.freeze({ line1: "La squadra contiene più di 2 Pokémon della stessa specie.", line2: "{pokemon} supera il limite consentito per le sfide." }),
-    team_held_item_limit: Object.freeze({ line1: "La squadra contiene più di 2 Pokémon con {item}.", line2: "Da regolamento non puoi avere più di 2 Pokémon con lo stesso strumento tenuto." }),
-    ohko_move_pokemon_limit: Object.freeze({ line1: "La squadra contiene più di {max} Pokémon con mosse OHKO.", line2: "Per Palestre e Lega puoi portare al massimo {max} Pokémon con {moves}." }),
-    port_held_item_limit: Object.freeze({ line1: "La squadra supera il limite di Strumenti del Porto per questa sfida." }),
-    port_held_item_duplicate: Object.freeze({ line1: "Gli Strumenti del Porto della squadra devono essere diversi.", line2: "{item} non può essere tenuto in questa sfida." }),
+    team_species_limit: Object.freeze({ line1: "La squadra contiene più di {max} Pokémon della specie {pokemon}.", line2: "Per iniziare una sfida puoi portarne al massimo {max}." }),
+    team_held_item_limit: Object.freeze({ line1: "La squadra contiene più di {max} Pokémon con {item}.", line2: "Per iniziare una sfida puoi avere al massimo {max} copie dello stesso strumento tenuto." }),
+    ohko_move_pokemon_limit: Object.freeze({ line1: "La squadra contiene {count} Pokémon con mosse OHKO.", line2: "Per iniziare una sfida puoi portarne al massimo {max}: {moves}." }),
+    port_held_item_limit: Object.freeze({ line1: "La squadra contiene {count} Strumenti del Porto.", line2: "Per iniziare una sfida puoi portarne al massimo {max}." }),
+    port_held_item_duplicate: Object.freeze({ line1: "Due Pokémon della squadra tengono {item}.", line2: "Per iniziare una sfida gli Strumenti del Porto devono essere diversi." }),
     super_effective_pokemon_limit: Object.freeze({ line1: "La squadra contiene {count} Pokémon superefficaci sui Pokémon del Capopalestra.", line2: "Per questa Palestra puoi portarne al massimo {max}." })
   }),
   daycare: Object.freeze({

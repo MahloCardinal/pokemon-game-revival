@@ -33,7 +33,7 @@ const unchangedTerminalEffects = { reward: "none", inventory: "unchanged", team:
 const commonKeys = ["action", "battleId", "commandId", "expectedPlayerRevision", "expectedBattleVersion", "runtimeOwnerId"];
 const allowedActions = new Set([
   "roles", "turn_history", "debug_money", "debug_badges", "debug_titles", "debug_battle_points", "debug_create_pokemon", "inventory_adjust", "debug_complete_mission",
-  "admin_list", "admin_read", "admin_entry_choice", "start", "prepare_training", "discard_training", "activate_training", "start_training", "start_debug_training", "start_capture", "flee_capture", "start_gym",
+  "admin_list", "admin_read", "admin_entry_choice", "start", "prepare_training", "discard_training", "activate_training", "start_debug_training", "start_capture", "flee_capture", "start_gym",
   "start_admin_gym", "start_league", "start_tower", "read", "restore", "read_training", "read_ordinary_progression",
   "resolve_ordinary_progression", "allocate_training", "resolve_training", "move", "switch", "entry_choice", "item", "ball",
   "abandon", "admin_move", "admin_switch", "admin_item",
@@ -843,27 +843,6 @@ Deno.serve(async (request) => {
       return jsonResponse({ ok: true, player_revision: Number(discarded.data?.player_revision) || 0, discarded: true });
     }
 
-    if (action === "start_training") {
-      requireExactKeys(body, ["action", "commandId", "expectedPlayerRevision", "runtimeOwnerId", "difficulty", "activeSlot"],
-        ["commandId", "expectedPlayerRevision", "runtimeOwnerId", "difficulty", "activeSlot"]);
-      const difficulty = String(body.difficulty || "");
-      if (!["easy", "medium", "hard"].includes(difficulty)) throw new BattleEdgeError("invalid_request", "Training difficulty is invalid.");
-      const startResult = await clients.serviceClient.rpc("start_edge_training_battle", {
-        p_auth_user_id: clients.userId,
-        p_command_id: uuid(body.commandId, "commandId"),
-        p_expected_player_revision: integer(body.expectedPlayerRevision, "expectedPlayerRevision", 0, Number.MAX_SAFE_INTEGER),
-        p_runtime_owner_id: uuid(body.runtimeOwnerId, "runtimeOwnerId"),
-        p_difficulty: difficulty,
-        p_active_slot: integer(body.activeSlot, "activeSlot", 0, 5),
-        p_engine_version: BATTLE_ENGINE_VERSION,
-        p_engine_checksum: manifest.bundleChecksum
-      });
-      if (startResult.error) throw databaseError(startResult.error);
-      const startedBattle = startResult.data?.battle;
-      const prepared = await prepareBattle(clients.serviceClient, clients.userId, String(startedBattle?.battle_id || ""));
-      return jsonResponse(await initializeIfNeeded(clients.serviceClient, clients.userId, body, prepared) as Record<string, unknown>);
-    }
-
     if (action === "start_debug_training") {
       requireExactKeys(body, ["action", "commandId", "expectedPlayerRevision", "runtimeOwnerId", "activeSlot", "opponentTeam"],
         ["commandId", "expectedPlayerRevision", "runtimeOwnerId", "activeSlot", "opponentTeam"]);
@@ -1296,6 +1275,10 @@ Deno.serve(async (request) => {
     const normalized = error instanceof BattleEdgeError
       ? error
       : new BattleEdgeError("engine_execution_failed", error instanceof Error ? error.message : "Il motore di battaglia non ha completato il comando.", 400);
-    return jsonResponse({ ok: false, error: { code: normalized.code, message: normalized.message } }, normalized.status);
+    return jsonResponse({ ok: false, error: {
+      code: normalized.code,
+      message: normalized.message,
+      ...(normalized.details ? { details: normalized.details } : {})
+    } }, normalized.status);
   }
 });

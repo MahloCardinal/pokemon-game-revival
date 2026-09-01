@@ -7,18 +7,14 @@ import { state } from "./game-state.js";
 import { adventurePhaseForGym, kantoGymChallengeStatus, kantoGymCityByKey, kantoGymLeaderByCity } from "../data/gyms.js";
 import { levelLimitForBadges } from "../data/progression.js";
 
-var findOfficialChallengeOhkoMoveViolation = Engine.findOfficialChallengeOhkoMoveViolation;
-var findOfficialChallengePortItemViolation = Engine.findOfficialChallengePortItemViolation;
 var findOfficialChallengeSuperEffectivePokemonViolation = Engine.findOfficialChallengeSuperEffectivePokemonViolation;
 var findTeamCompositionViolation = Engine.findTeamCompositionViolation;
-var KANTO_LEAGUE_PORT_ITEM_RULE = Engine.KANTO_LEAGUE_PORT_ITEM_RULE;
-var kantoGymPortItemRuleForBadgeIndex = Engine.kantoGymPortItemRuleForBadgeIndex;
 var kantoGymSuperEffectivePokemonRuleForBadgeIndex = Engine.kantoGymSuperEffectivePokemonRuleForBadgeIndex;
 import * as Engine from "../engine/index.js";
 import { adventurePhaseIsCompleted } from "./mission-runtime.js";
 import { authoritativeBattleRuntimeOwnerId, getAuthoritativeBattle, startAuthoritativeGymBattle, startAuthoritativeLeagueBattle } from "../api/battle.js";
 import { isAdminControlledBattleType } from "../data/admin-battles.js";
-import { pokemonDisplayName, teamViolationLines } from "./entity-text.js";
+import { pokemonDisplayName, teamViolationFromBattleResult, teamViolationLines } from "./entity-text.js";
 import { messageDescriptor } from "./i18n.js";
 
 var gymBattleStartPending = false;
@@ -48,16 +44,6 @@ function blockChallengeIfTeamCompositionInvalid(team, title) {
   return true;
 }
 
-function blockGymChallengeIfPortItemsInvalid(team, cityKey, title) {
-  var city = kantoGymCityByKey(cityKey);
-  var violation = findOfficialChallengePortItemViolation(team, kantoGymPortItemRuleForBadgeIndex(city.badgeIndex));
-  if (!violation) {
-    return false;
-  }
-  openMessage(teamViolationLines(violation), { title: title });
-  return true;
-}
-
 function blockGymChallengeIfSuperEffectivePokemonInvalid(team, cityKey, leader, title) {
   var city = kantoGymCityByKey(cityKey);
   var violation = findOfficialChallengeSuperEffectivePokemonViolation(
@@ -65,24 +51,6 @@ function blockGymChallengeIfSuperEffectivePokemonInvalid(team, cityKey, leader, 
     leader && leader.team,
     kantoGymSuperEffectivePokemonRuleForBadgeIndex(city.badgeIndex)
   );
-  if (!violation) {
-    return false;
-  }
-  openMessage(teamViolationLines(violation), { title: title });
-  return true;
-}
-
-function blockKantoLeagueIfPortItemsInvalid(team, title) {
-  var violation = findOfficialChallengePortItemViolation(team, KANTO_LEAGUE_PORT_ITEM_RULE);
-  if (!violation) {
-    return false;
-  }
-  openMessage(teamViolationLines(violation), { title: title });
-  return true;
-}
-
-function blockOfficialChallengeIfOhkoMovesInvalid(team, title) {
-  var violation = findOfficialChallengeOhkoMoveViolation(team);
   if (!violation) {
     return false;
   }
@@ -126,12 +94,6 @@ registerAction("gym-leader-start", function (element) {
       return;
     }
     if (blockOfficialChallengeIfOverCap(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
-      return;
-    }
-    if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
-      return;
-    }
-    if (blockGymChallengeIfPortItemsInvalid(playerPokemon, resolvedCityKey, messageDescriptor("gyms.gymTitle"))) {
       return;
     }
     if (!adventurePhaseIsCompleted(adventurePhaseForGym(resolvedCityKey))) {
@@ -203,12 +165,6 @@ function buildGymLeaderBattleScene(gymScene, cityKey, activeIndex) {
   if (blockOfficialChallengeIfOverCap(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
     return Promise.resolve(false);
   }
-  if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, messageDescriptor("gyms.gymTitle"))) {
-    return Promise.resolve(false);
-  }
-  if (blockGymChallengeIfPortItemsInvalid(playerPokemon, resolvedCityKey, messageDescriptor("gyms.gymTitle"))) {
-    return Promise.resolve(false);
-  }
   if (!adventurePhaseIsCompleted(adventurePhaseForGym(resolvedCityKey))) {
     openMessage([messageDescriptor("gyms.adventureRequired")], { title: messageDescriptor("gyms.gymTitle") });
     return Promise.resolve(false);
@@ -237,6 +193,12 @@ function startAuthoritativeGym(cityKey, activeSlot) {
       state.authoritativeRevision = result.playerRevision;
       openAuthoritativeBattleProjection(result.battle, result.events, { history: "push" });
       return true;
+    }
+    var serverViolation = teamViolationFromBattleResult(result);
+    if (serverViolation) {
+      openMessage(teamViolationLines(serverViolation), { title: messageDescriptor("gyms.gymTitle") });
+      render();
+      return false;
     }
     if (result.uncertain || result.code === "revision_conflict" || result.code === "battle_command_rejected") {
       return getAuthoritativeBattle(null, {
@@ -287,12 +249,6 @@ registerAction("kanto-league-start", function (element) {
     if (blockChallengeIfTeamCompositionInvalid(playerPokemon, messageDescriptor("gyms.leagueTitle"))) {
       return;
     }
-    if (blockOfficialChallengeIfOhkoMovesInvalid(playerPokemon, messageDescriptor("gyms.leagueTitle"))) {
-      return;
-    }
-    if (blockKantoLeagueIfPortItemsInvalid(playerPokemon, messageDescriptor("gyms.leagueTitle"))) {
-      return;
-    }
     startKantoLeagueBattle(0, element);
   }
 });
@@ -340,6 +296,12 @@ export function startAuthoritativeLeague(activeSlot, expectedMemberIndex, elemen
       state.authoritativeLeagueState = null;
       openAuthoritativeBattleProjection(result.battle, result.events, { history: "push" });
       return true;
+    }
+    var serverViolation = teamViolationFromBattleResult(result);
+    if (serverViolation) {
+      openMessage(teamViolationLines(serverViolation), { title: messageDescriptor("gyms.leagueTitle") });
+      render();
+      return false;
     }
     if (result.uncertain || result.code === "revision_conflict" || result.code === "battle_command_rejected") {
       return getAuthoritativeBattle(null, { afterSeq: 0, limit: 100, commandId: commandId, runtimeOwnerId: ownerId }).then(function (readResult) {

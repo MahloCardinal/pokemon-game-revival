@@ -143,12 +143,6 @@ export function kantoGymChallengeStatus(cityKey, badges) {
   return { state: "available" };
 }
 
-function kantoGymPortItemChallengeLimit(badgeIndex) {
-  return badgeIndex < 6
-    ? { key: "port_items_max", count: 0, distinct: false }
-    : { key: "port_items_max", count: 1, distinct: false };
-}
-
 function kantoGymSuperEffectiveChallengeLimit(badgeIndex) {
   if (badgeIndex === 5 || badgeIndex === 6) {
     return { key: "super_effective_max", count: 3 };
@@ -158,8 +152,6 @@ function kantoGymSuperEffectiveChallengeLimit(badgeIndex) {
   }
   return "";
 }
-
-var OFFICIAL_CHALLENGE_OHKO_LIMIT = Object.freeze({ key: "ohko_max", count: 2 });
 
 export function kantoGymLeaderByCity(cityKey) {
   var city = kantoGymCityByKey(cityKey);
@@ -183,8 +175,6 @@ export function kantoGymLeaderByCity(cityKey) {
     ].filter(Boolean),
     challengeLimits: [
       { key: "max_level", level: maxLevel },
-      OFFICIAL_CHALLENGE_OHKO_LIMIT,
-      kantoGymPortItemChallengeLimit(city.badgeIndex),
       kantoGymSuperEffectiveChallengeLimit(city.badgeIndex)
     ].filter(Boolean),
     extraLimits: leader.extraLimits || [],
@@ -222,11 +212,6 @@ var CHAMPION_REWARDS = [
   { kind: "money", quantity: KANTO_LEAGUE_REWARDS.champion.money }
 ];
 
-var E4_CHALLENGE_LIMITS = [
-  OFFICIAL_CHALLENGE_OHKO_LIMIT,
-  { key: "port_items_max", count: 2, distinct: true }
-];
-
 export var KANTO_ELITE_FOUR = [
   {
     key: "lorelei",
@@ -241,7 +226,7 @@ export var KANTO_ELITE_FOUR = [
       buildNamedPokemon(279, 100, 420, [148, 33, 94, 95], 229)
     ],
     rewards: PLACEHOLDER_REWARDS,
-    challengeLimits: E4_CHALLENGE_LIMITS,
+    challengeLimits: [],
     extraLimits: []
   },
   {
@@ -257,7 +242,7 @@ export var KANTO_ELITE_FOUR = [
       buildNamedPokemon(212, 100, 420, [132, 313, 148, 342], 220)
     ],
     rewards: PLACEHOLDER_REWARDS,
-    challengeLimits: E4_CHALLENGE_LIMITS,
+    challengeLimits: [],
     extraLimits: []
   },
   {
@@ -273,7 +258,7 @@ export var KANTO_ELITE_FOUR = [
       buildNamedPokemon(198, 100, 420, [7, 148, 197, 128], 308)
     ],
     rewards: PLACEHOLDER_REWARDS,
-    challengeLimits: E4_CHALLENGE_LIMITS,
+    challengeLimits: [],
     extraLimits: []
   },
   {
@@ -289,7 +274,7 @@ export var KANTO_ELITE_FOUR = [
       buildNamedPokemon(142, 100, 420, [94, 115, 148, 154], 229)
     ],
     rewards: PLACEHOLDER_REWARDS,
-    challengeLimits: E4_CHALLENGE_LIMITS,
+    challengeLimits: [],
     extraLimits: []
   }
 ];
@@ -307,7 +292,7 @@ export var KANTO_CHAMPION = {
     buildNamedPokemon(103, 100, 420, [95, 133, 115, 248], 237)
   ],
   rewards: CHAMPION_REWARDS,
-  challengeLimits: E4_CHALLENGE_LIMITS,
+  challengeLimits: [],
   extraLimits: []
 };
 

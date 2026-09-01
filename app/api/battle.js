@@ -71,6 +71,7 @@ export async function invokeAuthoritativeBattleCommand(body) {
   if (result.error || !result.data || result.data.ok === false) {
     message = result.data && result.data.error && result.data.error.message || result.error && result.error.message || "Edge battle command failed.";
     var errorCode = result.data && result.data.error && result.data.error.code || "";
+    var errorDetails = result.data && result.data.error && result.data.error.details || null;
     var errorStatus = Number(result.error && result.error.context && result.error.context.status) || 0;
     var retryAfterSeconds = null;
     if (errorStatus === 429 && result.error.context.headers && typeof result.error.context.headers.get === "function") {
@@ -89,6 +90,7 @@ export async function invokeAuthoritativeBattleCommand(body) {
         if (errorBody && errorBody.error) {
           if (errorBody.error.message) { message = errorBody.error.message; }
           if (errorBody.error.code) { errorCode = errorBody.error.code; }
+          if (errorBody.error.details) { errorDetails = errorBody.error.details; }
         }
       } catch (error) {}
     }
@@ -101,6 +103,7 @@ export async function invokeAuthoritativeBattleCommand(body) {
       ok: false,
       message: message,
       code: errorStatus === 429 ? "rate_limited" : errorCode,
+      details: errorDetails,
       retryAfterSeconds: retryAfterSeconds,
       // A limiter rejection happens before a command can mutate canonical state.
       uncertain: errorStatus >= 500 || Boolean(result.error && !result.data && !errorCode)
@@ -209,17 +212,6 @@ export function startAuthoritativeTackleTestBattle(input) {
     commandId: battleCommandId(input),
     expectedPlayerRevision: Number(input.expectedPlayerRevision) || 0,
     runtimeOwnerId: String(input.runtimeOwnerId || "")
-  });
-}
-
-export function startAuthoritativeTrainingBattle(input) {
-  return invokeAuthoritativeBattleCommand({
-    action: "start_training",
-    commandId: battleCommandId(input),
-    expectedPlayerRevision: Number(input.expectedPlayerRevision) || 0,
-    runtimeOwnerId: String(input.runtimeOwnerId || authoritativeBattleRuntimeOwnerId()),
-    difficulty: String(input.difficulty || ""),
-    activeSlot: Math.floor(Number(input.activeSlot))
   });
 }
 

@@ -463,9 +463,8 @@ async function opponentStatements(release) {
     const leader = data.KANTO_GYM_LEADERS[city.key];
     if (!leader) throw new Error("Missing gym leader for " + city.key);
     const key = "gym_" + city.key;
-    const portMax = city.badgeIndex < 6 ? 0 : 1;
     const superEffectiveMax = city.badgeIndex === 5 || city.badgeIndex === 6 ? 3 : city.badgeIndex === 7 ? 2 : null;
-    rows.push(upsertJson("catalog_opponent", ["catalog_release_id", "opponent_key", "opponent_kind", "sort_order", "badge_index", "rules", "presentation"], [releaseId(release), key, "gym", order, city.badgeIndex, { unlockBadges: city.badgeIndex, maxPlayerLevel: progression.BADGE_LEVEL_LIMITS[city.badgeIndex], ohkoPokemonMax: 2, portItemMax: portMax, portItemsDistinct: false, superEffectivePokemonMax: superEffectiveMax }, { name: leader.name, sprite: leader.sprite, cityKey: city.key, cityImage: city.image }], new Set([5, 6]), ["catalog_release_id", "opponent_key"], ["opponent_kind", "sort_order", "badge_index", "rules", "presentation"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
+    rows.push(upsertJson("catalog_opponent", ["catalog_release_id", "opponent_key", "opponent_kind", "sort_order", "badge_index", "rules", "presentation"], [releaseId(release), key, "gym", order, city.badgeIndex, { unlockBadges: city.badgeIndex, maxPlayerLevel: progression.BADGE_LEVEL_LIMITS[city.badgeIndex], superEffectivePokemonMax: superEffectiveMax }, { name: leader.name, sprite: leader.sprite, cityKey: city.key, cityImage: city.image }], new Set([5, 6]), ["catalog_release_id", "opponent_key"], ["opponent_kind", "sort_order", "badge_index", "rules", "presentation"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
     counts.catalog_opponent += 1;
     opponentPokemonRows(release, key, leader.team, rows, counts);
     const reward = progression.GYM_REWARDS[city.badgeIndex];
@@ -480,7 +479,7 @@ async function opponentStatements(release) {
   league.forEach((member, index) => {
     const champion = index === data.KANTO_ELITE_FOUR.length;
     const key = champion ? "kanto_league_champion" : "kanto_league_" + (index + 1);
-    rows.push(upsertJson("catalog_opponent", ["catalog_release_id", "opponent_key", "opponent_kind", "sort_order", "badge_index", "rules", "presentation"], [releaseId(release), key, champion ? "champion" : "league", index, null, { unlockBadges: 8, ohkoPokemonMax: 2, portItemMax: 2, portItemsDistinct: true }, { name: member.name, sprite: member.sprite, sourceKey: member.key }], new Set([5, 6]), ["catalog_release_id", "opponent_key"], ["opponent_kind", "sort_order", "badge_index", "rules", "presentation"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
+    rows.push(upsertJson("catalog_opponent", ["catalog_release_id", "opponent_key", "opponent_kind", "sort_order", "badge_index", "rules", "presentation"], [releaseId(release), key, champion ? "champion" : "league", index, null, { unlockBadges: 8 }, { name: member.name, sprite: member.sprite, sourceKey: member.key }], new Set([5, 6]), ["catalog_release_id", "opponent_key"], ["opponent_kind", "sort_order", "badge_index", "rules", "presentation"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));
     counts.catalog_opponent += 1;
     opponentPokemonRows(release, key, member.team, rows, counts);
     opponentRewardRows(release, key, [{ kind: "money", quantity: champion ? progression.KANTO_LEAGUE_REWARDS.champion.money : progression.KANTO_LEAGUE_REWARDS.member.money }], rows, counts);

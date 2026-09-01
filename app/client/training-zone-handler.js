@@ -12,7 +12,7 @@ var findTeamCompositionViolation = Engine.findTeamCompositionViolation;
 import * as Engine from "../engine/index.js";
 import { activateAuthoritativeTrainingBattle, authoritativeBattleRuntimeOwnerId, discardAuthoritativeTrainingBattle, getAuthoritativeBattle, prepareAuthoritativeTrainingBattle, startAuthoritativeDebugTrainingBattle } from "../api/battle.js";
 import { openAuthoritativeBattleProjection } from "./battle-handler.js";
-import { pokemonDisplayName, teamViolationLines } from "./entity-text.js";
+import { pokemonDisplayName, teamViolationFromBattleResult, teamViolationLines } from "./entity-text.js";
 import { messageDescriptor, textDescriptor } from "./i18n.js";
 
 var DEBUG_TRAINING_START_STORAGE_KEY = "pokemon-game-revival:pending-debug-training-start";
@@ -231,6 +231,12 @@ function startAuthoritativeTraining(trainingScene, activeSlot, debug) {
     state.battleStartPending = false;
     if (!result.ok || !result.battle) {
       if (debug && !result.uncertain) { clearPendingDebugTrainingStart(input.commandId); }
+      var serverViolation = teamViolationFromBattleResult(result);
+      if (serverViolation) {
+        openMessage(teamViolationLines(serverViolation), { title: textDescriptor("ui.sceneTitles.trainingZone") });
+        render();
+        return;
+      }
       if (mayHaveCreatedAuthoritativeTraining(result)) {
         recoverAuthoritativeTrainingStart(result, trainingScene, { commandId: debug ? input.commandId : "" });
         return;

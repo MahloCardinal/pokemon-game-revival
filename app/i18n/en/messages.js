@@ -43,13 +43,11 @@ export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
     releaseFailed: "The Pokémon could not be released."
   }),
   teamRules: Object.freeze({
-    join_species_limit: Object.freeze({ line1: "There are already two Pokémon of the same species in your team.", line2: "The rules allow no more than 2 Pokémon of the same species." }),
-    join_held_item_limit: Object.freeze({ line1: "There are already two Pokémon holding {item} in your team.", line2: "The rules allow no more than 2 Pokémon holding the same item." }),
-    team_species_limit: Object.freeze({ line1: "The team contains more than 2 Pokémon of the same species.", line2: "{pokemon} exceeds the limit allowed for challenges." }),
-    team_held_item_limit: Object.freeze({ line1: "The team contains more than 2 Pokémon holding {item}.", line2: "The rules allow no more than 2 Pokémon holding the same item." }),
-    ohko_move_pokemon_limit: Object.freeze({ line1: "The team contains more than {max} Pokémon with one-hit knockout moves.", line2: "You may bring at most {max} Pokémon with {moves} to Gyms and the League." }),
-    port_held_item_limit: Object.freeze({ line1: "The team exceeds the Port Item limit for this challenge." }),
-    port_held_item_duplicate: Object.freeze({ line1: "The team's Port Items must all be different.", line2: "{item} cannot be held in this challenge." }),
+    team_species_limit: Object.freeze({ line1: "The team contains more than {max} {pokemon}.", line2: "You may bring at most {max} into a battle." }),
+    team_held_item_limit: Object.freeze({ line1: "The team contains more than {max} Pokémon holding {item}.", line2: "You may bring at most {max} copies of the same held item into a battle." }),
+    ohko_move_pokemon_limit: Object.freeze({ line1: "The team contains {count} Pokémon with one-hit knockout moves.", line2: "You may bring at most {max} into a battle: {moves}." }),
+    port_held_item_limit: Object.freeze({ line1: "The team contains {count} Port Items.", line2: "You may bring at most {max} into a battle." }),
+    port_held_item_duplicate: Object.freeze({ line1: "Two Pokémon in the team are holding {item}.", line2: "Port Items must be different when starting a battle." }),
     super_effective_pokemon_limit: Object.freeze({ line1: "The team contains {count} Pokémon that are super effective against the Gym Leader's Pokémon.", line2: "You may bring at most {max} to this Gym." })
   }),
   daycare: Object.freeze({

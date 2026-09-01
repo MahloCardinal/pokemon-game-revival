@@ -105,7 +105,6 @@ function clearStatusEffect(target, statusKey) {
   target.sleepDuration = 3;
   target.confCounter = 0;
   target.slpSource = null;
-  target.pendingDelayedStatus = null;
   target.nightmareActive = false;
   return true;}
 function setTeamPercentageNegative(team) {
@@ -715,12 +714,11 @@ function teamStatusCureMove() {
     after: function (attacker) {
       var count = 0;
       attacker.team.combatantList.forEach(function (c) {
-        if (c.status || c.sleepCounter || c.confCounter || c.pendingDelayedStatus) {
+        if (c.status || c.sleepCounter || c.confCounter) {
           c.status = null;
           c.sleepCounter = 0;
           c.sleepDuration = 3;
           c.confCounter = 0;
-          c.pendingDelayedStatus = null;
           c.nightmareActive = false;
           count++;
         }
@@ -1400,7 +1398,6 @@ export const smelling_salts = {
               defender.sleepCounter = 0;
               defender.sleepDuration = 3;
               defender.confCounter = 0;
-              defender.pendingDelayedStatus = null;
               this.logKey = "dmg_double";
             } else {
               this.logKey = "dmg";
@@ -1782,7 +1779,7 @@ export const endeavor = {
           }
         }
       };
-export const refresh = { index: 251, damagingMove: false, after: function(attacker) { if (attacker.status || attacker.sleepCounter || attacker.confCounter || attacker.pendingDelayedStatus) { attacker.status = null; attacker.sleepCounter = 0; attacker.sleepDuration = 3; attacker.confCounter = 0; attacker.pendingDelayedStatus = null; attacker.nightmareActive = false; this.logKey = "cure_status"; } else { this.logKey = "fail"; } } };
+export const refresh = { index: 251, damagingMove: false, after: function(attacker) { if (attacker.status || attacker.sleepCounter || attacker.confCounter) { attacker.status = null; attacker.sleepCounter = 0; attacker.sleepDuration = 3; attacker.confCounter = 0; attacker.slpSource = null; attacker.nightmareActive = false; this.logKey = "cure_status"; } else { this.logKey = "fail"; } } };
 export const heal_bell = Object.assign(teamStatusCureMove(), { index: 252 });
 export const encore = {
         index: 253,
@@ -1815,12 +1812,15 @@ export const rest = {
         index: 254,
         damagingMove: false,
         before: function (attacker) {
-          if (attacker.status !== null || attacker.hp !== attacker.pokemon.maxHp) {
+          if (attacker.pendingDelayedStatus) {
+            this.logKey = "fail";
+          } else if (attacker.status !== null || attacker.hp !== attacker.pokemon.maxHp) {
             attacker.status = null;
             attacker.sleepCounter = 0;
             attacker.sleepDuration = 3;
             attacker.confCounter = 0;
-            attacker.pendingDelayedStatus = null;
+            attacker.slpSource = null;
+            attacker.nightmareActive = false;
             applyStatusEffect(attacker, "slp", {
               ignoreTeamProtection: true,
               ignoreSleepImmunity: true,
@@ -1875,7 +1875,7 @@ export const yawn = {
                 status: "slp",
                 sleepDuration: 3,
                 confCounter: 0,
-                delay: 3,
+                delay: 1,
                 source: "yawn"
               };
               this.logKey = "sleep_delayed";

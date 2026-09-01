@@ -49,6 +49,7 @@ const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_deb
 const preferredTrainerTitlesMigration = read("supabase/migrations/20260828110000_preferred_trainer_titles.sql");
 const playerDirectoryAvatarMigration = read("supabase/migrations/20260828120000_player_directory_trainer_avatar.sql");
 const playerDirectoryPokedexMigration = read("supabase/migrations/20260901150000_player_directory_national_pokedex.sql");
+const battleItemRuntimeMigration = read("supabase/migrations/20260901160000_bind_battle_item_effect_runtime.sql");
 const battleDomeMigration = read("supabase/migrations/20260829120000_battle_dome.sql");
 const battleDomeCodesAndLeadsMigration = read("supabase/migrations/20260830120000_battle_dome_codes_and_leads.sql");
 const battleDomeInviteCleanupMigration = read("supabase/migrations/20260830123000_remove_legacy_battle_dome_invites.sql");
@@ -607,6 +608,7 @@ assert.match(globalTeamCompositionMigration, /create or replace function server_
 assert.match(globalTeamCompositionMigration, /perform server_authority_private\.assert_player_team_composition\(p_auth_user_id\)/i);
 assert.match(globalTeamCompositionMigration, /rules - array\['ohkoPokemonMax', 'portItemMax', 'portItemsDistinct'\]/i);
 assert.match(globalTeamCompositionMigration, /'f03ece940d261bcbd2ab5770af06fbc3073d7341c67c698431abcb7b8aabf37f'/);
+assert.match(battleItemRuntimeMigration, /'5293eb988f21a2d1437d5f3fd5962b3b54453b2e4b13688b6eeee3447c77246f'/);
 assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_gym_counts/i);
 assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_league_counts/i);
 
@@ -1234,6 +1236,93 @@ function moveMechanicsManager(playerMoves, enemyMoves, options = {}) {
   player.sleepDuration = 10;
   manager.resolveMoveAction("player", player.pokemon.moves[0]);
   assert.equal(enemy.hp, 180, "Sleep Talk must execute a known move while the user is asleep");
+  assert.equal(player.turnBeforeMoveUsed.key, "tackle", "Plessimetro must record the move actually called by Sleep Talk");
+  const restored = engineExports.restoreBattleManager(
+    engineExports.serializeBattleManager(manager, engineExports.createRngState(123), { playerItems: [] })
+  ).manager.playerTeam.getActive();
+  assert.equal(restored.turnBeforeMoveUsed.key, "tackle", "Called moves must survive authoritative snapshot restoration");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.toxic, { power: 20, stats: 0 }), createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  enemy.pokemon.heldItemIndex = ItemDefinitions.lax_incense.index;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(enemy.pendingDelayedStatus.delay, 2, "Distraroma must wait for two actions by its own trainer");
+  assert.equal(enemy.status, null);
+  manager.resolveMoveAction("player", player.pokemon.moves[1]);
+  assert.equal(enemy.pendingDelayedStatus.delay, 2, "Opposing actions must not advance Distraroma");
+  manager.resolveMoveAction("npc", enemy.pokemon.moves[0]);
+  assert.equal(enemy.pendingDelayedStatus.delay, 1);
+  manager.resolveMoveAction("npc", enemy.pokemon.moves[0]);
+  assert.equal(enemy.pendingDelayedStatus, null);
+  assert.equal(enemy.status, "psn", "Distraroma must apply the delayed status after the second own action");
+}
+
+{
+  const enemyBench = pursuitTestPokemon("DelayedBench", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]);
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.toxic, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    { enemyBench: [enemyBench] }
+  );
+  const delayed = manager.enemyTeam.getActive();
+  delayed.pokemon.heldItemIndex = ItemDefinitions.lax_incense.index;
+  manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[0]);
+  manager.resolveNpcSwitchAction(1);
+  assert.equal(delayed.pendingDelayedStatus.delay, 1, "A voluntary switch-out must count for Distraroma");
+  manager.resolveNpcSwitchAction(0);
+  assert.equal(delayed.pendingDelayedStatus.delay, 1, "Entering the field must not count as an action for the entering Pokemon");
+  manager.resolveMoveAction("npc", delayed.pokemon.moves[0]);
+  assert.equal(delayed.status, "psn");
+}
+
+{
+  const enemyBench = pursuitTestPokemon("YawnBench", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]);
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.yawn, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    { enemyBench: [enemyBench] }
+  );
+  const yawning = manager.enemyTeam.getActive();
+  manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[0]);
+  assert.equal(yawning.pendingDelayedStatus.delay, 1, "Yawn must wait for one action by the affected Pokemon's trainer");
+  manager.resolveNpcSwitchAction(1);
+  assert.equal(yawning.pendingDelayedStatus, null, "Switching out must clear Yawn before its delayed status is applied");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.rest, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  player.hp = 100;
+  player.pendingDelayedStatus = { status: "psn", delay: 2, source: "lax_incense" };
+  assert.equal(manager.canUseItemOnTarget(ItemDefinitions.full_heal, player).ok, false,
+    "Items must not cure or target a delayed status");
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.hp, 100, "Rest must fail while a delayed status exists");
+  assert.equal(player.status, null);
+  assert.equal(player.pendingDelayedStatus.delay, 1, "A failed Rest attempt still counts as the Pokemon's action");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.rest, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  player.hp = 100;
+  player.pokemon.heldItemIndex = ItemDefinitions.chesto_berry.index;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.hp, player.pokemon.maxHp);
+  assert.equal(player.status, null, "A status berry must also activate after a status caused during its holder's own move");
+  assert.equal(player.pokemon.heldItemIndex, 0);
 }
 
 for (const thawingMove of [MoveDefinitions.sacred_fire, MoveDefinitions.flame_wheel]) {
@@ -1307,6 +1396,99 @@ for (const buffLossDefinition of [MoveDefinitions.superpower, MoveDefinitions.ov
   enemy.hp = 101;
   manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[0]);
   assert.equal(enemy.hp, 50, "Super Fang must only halve current HP and must not add ordinary move damage");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.tackle, { power: 500, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  player.pokemon.heldItemIndex = ItemDefinitions.shell_bell.index;
+  player.hp = 100;
+  enemy.hp = 50;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.hp, 112, "Shell Bell must heal from HP actually removed, excluding overkill damage");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  player.pokemon.heldItemIndex = ItemDefinitions.metronome.index;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(enemy.hp, 180);
+  manager.beginTrainerAction("player", player, "item");
+  manager.endTurn(player, enemy);
+  assert.equal(player.turnBeforeMoveUsed, null, "An item action must reset Plessimetro's preceding move");
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(enemy.hp, 160, "Plessimetro must not boost a move after a non-move action");
+  player.status = "slp";
+  player.sleepDuration = 10;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.turnBeforeMoveUsed, null, "A move blocked by status must reset Plessimetro");
+}
+
+{
+  const enemyBench = pursuitTestPokemon("ProtectionBench", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]);
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    { enemyBench: [enemyBench] }
+  );
+  const player = manager.playerTeam.getActive();
+  player._brightPowderActive = true;
+  player._focusSashProtect = true;
+  manager.resolveNpcSwitchAction(1);
+  assert.equal(player._brightPowderActive, false, "An opposing voluntary switch must consume Luminpolvere");
+  assert.equal(player._focusSashProtect, false, "An opposing voluntary switch must consume Focalnastro");
+  player._brightPowderActive = true;
+  player._focusSashProtect = true;
+  manager.enemyTeam.getActive().hp = 0;
+  manager.npcNeedsSwitch = true;
+  manager.resolveNpcSwitchAction(0);
+  assert.equal(player._brightPowderActive, true, "A forced replacement must not consume Luminpolvere");
+  assert.equal(player._focusSashProtect, true, "A forced replacement must not consume Focalnastro");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.fire_spin, { power: 20, stats: 0 }), createMove(MoveDefinitions.spikes, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const enemy = manager.enemyTeam.getActive();
+  enemy.pokemon.heldItemIndex = ItemDefinitions.heavy_duty_boots.index;
+  manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[0]);
+  assert.equal(enemy.hp, 200, "Heavy-Duty Boots must prevent the initial damage of protected trapping moves");
+  assert.equal(enemy.trappedMoveIndex, 0);
+  manager.resolveMoveAction("player", manager.playerTeam.getActive().pokemon.moves[1]);
+  assert.equal(manager.enemyTeam.spikesActive, false, "Spikes must fail against the active Heavy-Duty Boots holder");
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.trick, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  player.pokemon.heldItemIndex = ItemDefinitions.protector.index;
+  enemy.pokemon.heldItemIndex = ItemDefinitions.heavy_duty_boots.index;
+  player.trappedMoveIndex = MoveDefinitions.fire_spin.index;
+  player.trappedTurns = 2;
+  player.seedTarget = manager.enemyTeam;
+  player.seedValue = 10;
+  manager.playerTeam.spikesActive = true;
+  manager.playerTeam.spikesLevel = 10;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.pokemon.heldItemIndex, ItemDefinitions.heavy_duty_boots.index);
+  assert.equal(player.trappedMoveIndex, 0, "Newly acquired Heavy-Duty Boots must clear protected trapping effects");
+  assert.equal(player.seedTarget, null);
+  assert.equal(manager.playerTeam.spikesActive, false);
 }
 
 {

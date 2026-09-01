@@ -107,13 +107,17 @@ function combatantFromRef(manager, ref) {
 }
 
 function serializeCombatant(manager, combatant) {
+  var previousMoveSlot = moveSlot(combatant, combatant.turnBeforeMoveUsed);
   return {
     state: ownState(combatant, [
       "pokemon", "team", "gui", "moveStates", "pendingMove", "turnBeforeMoveUsed",
       "seedTarget", "mimicInfo", "tempMoveInfo", "transformationInfo", "moveKoTrigger"
     ]),
     pendingMoveSlot: moveSlot(combatant, combatant.pendingMove),
-    turnBeforeMoveUsedSlot: moveSlot(combatant, combatant.turnBeforeMoveUsed),
+    turnBeforeMoveUsedSlot: previousMoveSlot,
+    turnBeforeMoveUsed: previousMoveSlot === null && combatant.turnBeforeMoveUsed && typeof combatant.turnBeforeMoveUsed.toJSON === "function"
+      ? serializeMove(combatant.turnBeforeMoveUsed)
+      : null,
     seedTargetSide: combatant.seedTarget === manager.playerTeam ? "player" : combatant.seedTarget === manager.enemyTeam ? "npc" : null,
     mimicInfo: serializeMoveReplacement(combatant, combatant.mimicInfo),
     tempMoveInfo: serializeMoveReplacement(combatant, combatant.tempMoveInfo),
@@ -169,7 +173,9 @@ function restoreCombatant(manager, combatant, snapshot) {
     combatant.destinyBondTurns = 1;
   }
   combatant.pendingMove = Number.isInteger(snapshot.pendingMoveSlot) ? combatant.pokemon.moves[snapshot.pendingMoveSlot] || null : null;
-  combatant.turnBeforeMoveUsed = Number.isInteger(snapshot.turnBeforeMoveUsedSlot) ? combatant.pokemon.moves[snapshot.turnBeforeMoveUsedSlot] || null : null;
+  combatant.turnBeforeMoveUsed = snapshot.turnBeforeMoveUsed
+    ? restoreMove(snapshot.turnBeforeMoveUsed)
+    : Number.isInteger(snapshot.turnBeforeMoveUsedSlot) ? combatant.pokemon.moves[snapshot.turnBeforeMoveUsedSlot] || null : null;
   combatant.seedTarget = snapshot.seedTargetSide === "player" ? manager.playerTeam : snapshot.seedTargetSide === "npc" ? manager.enemyTeam : null;
   combatant.mimicInfo = restoreMoveReplacement(snapshot.mimicInfo);
   combatant.tempMoveInfo = restoreMoveReplacement(snapshot.tempMoveInfo);

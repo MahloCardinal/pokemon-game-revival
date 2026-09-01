@@ -87,7 +87,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
     }),
     hazard: Object.freeze({
       bootsClearedSpikes: "Gli Scarponi robusti di {pokemon} rimuovono le Punte.", spikesDamage: "Le Punte infliggono {damage} PS di danno a {pokemon}.",
-      spikesDamageKo: "Le Punte infliggono {damage} PS di danno a {pokemon}, che va KO!", bootsClearedLeechSeed: "Gli Scarponi robusti liberano {pokemon} da Parassiseme.",
+      spikesDamageKo: "Le Punte infliggono {damage} PS di danno a {pokemon}, che va KO!", bootsClearedLeechSeed: "Gli Scarponi robusti liberano {pokemon} da Parassiseme.", bootsClearedTrap: "Gli Scarponi robusti liberano {pokemon} dalla mossa che lo bloccava.",
       leechSeedDamage: "{pokemon} perde {amount} PS per Parassiseme.", leechSeedDrain: "{pokemon} perde {amount} PS per Parassiseme; {target} recupera {healed} PS."
     }),
     future: Object.freeze({ hit: "{move} di {source} colpisce {target} e infligge {amount} PS di danno!", failedTargetKo: "{move} fallisce perché {target} è già KO." }),

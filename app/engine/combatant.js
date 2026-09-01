@@ -90,7 +90,7 @@ Combatant.prototype.resetSwitchModifiers = function () {
     this.status = null;
     this.confCounter = 0;
   }
-  if (this.pendingDelayedStatus && (this.pendingDelayedStatus.status === "cnf_block" || this.pendingDelayedStatus.status === "cnf_free")) {
+  if (this.pendingDelayedStatus && this.pendingDelayedStatus.source === "yawn") {
     this.pendingDelayedStatus = null;
   }
   this.atkBuff = 0;

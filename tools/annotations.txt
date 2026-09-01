@@ -1,7 +1,6 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- regolamento: status in attesa non curabili, tutte le limitazioni battaglia (squadra, strumenti, OHKO)
 - correggere testi e traduzioni i18n
 
 

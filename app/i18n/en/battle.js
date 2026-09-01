@@ -85,7 +85,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
     }),
     hazard: Object.freeze({
       bootsClearedSpikes: "{pokemon}'s Heavy-Duty Boots remove the Spikes.", spikesDamage: "Spikes deal {damage} HP of damage to {pokemon}.",
-      spikesDamageKo: "Spikes deal {damage} HP of damage to {pokemon}, knocking it out!", bootsClearedLeechSeed: "Heavy-Duty Boots free {pokemon} from Leech Seed.",
+      spikesDamageKo: "Spikes deal {damage} HP of damage to {pokemon}, knocking it out!", bootsClearedLeechSeed: "Heavy-Duty Boots free {pokemon} from Leech Seed.", bootsClearedTrap: "Heavy-Duty Boots free {pokemon} from the move trapping it.",
       leechSeedDamage: "{pokemon} loses {amount} HP to Leech Seed.", leechSeedDrain: "{pokemon} loses {amount} HP to Leech Seed; {target} restores {healed} HP."
     }),
     future: Object.freeze({ hit: "{source}'s {move} hits {target} and deals {amount} HP of damage!", failedTargetKo: "{move} fails because {target} is already knocked out." }),

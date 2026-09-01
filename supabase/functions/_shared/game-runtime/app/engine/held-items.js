@@ -64,7 +64,7 @@ export function heldItemMultiplierValue(item) {
 }
 
 export function combatantHasCurableStatus(combatant) {
-  return Boolean(combatant && (combatant.status || combatant.sleepCounter || combatant.confCounter || combatant.pendingDelayedStatus));
+  return Boolean(combatant && (combatant.status || combatant.sleepCounter || combatant.confCounter));
 }
 
 export function itemCanCureStatus(item, target) {
@@ -78,7 +78,7 @@ export function itemCanCureStatus(item, target) {
   if (statuses.indexOf(target.status) !== -1) {
     return true;
   }
-  return Boolean(target.pendingDelayedStatus && statuses.indexOf(target.pendingDelayedStatus.status) !== -1);
+  return false;
 }
 
 export function clearCombatantStatus(target, item) {
@@ -88,16 +88,13 @@ export function clearCombatantStatus(target, item) {
     return false;
   }
   if (!clearsAll && statuses.indexOf(target.status) === -1) {
-    if (!target.pendingDelayedStatus || statuses.indexOf(target.pendingDelayedStatus.status) === -1) {
-      return false;
-    }
+    return false;
   }
   target.status = null;
   target.sleepCounter = 0;
   target.sleepDuration = 3;
   target.confCounter = 0;
   target.slpSource = null;
-  target.pendingDelayedStatus = null;
   target.nightmareActive = false;
   return true;
 }
@@ -226,13 +223,13 @@ function applyHpCostBaseBoostCost(manager, context) {
   return Object.assign({}, context, { hpCost: hpCost });
 }
 
-function applyDamageDrain(manager, context) {
+function applyImmediateDamageDrain(manager, context) {
   var attacker = context && context.attacker;
-  var heldItem = getActiveHeldItem(attacker);
-  var damage = Number(context && context.damage) || 0;
+  var damage = Number(context && context.actualDamage) || 0;
+  var multiplier = Number(context && context.multiplier) || 0;
   var drainHeal;
-  if (damage > 0 && heldItem && heldItem.effect === "damage_drain") {
-    drainHeal = Math.floor(damage * heldItemMultiplierValue(heldItem));
+  if (damage > 0 && multiplier > 0 && attacker && attacker.hp > 0) {
+    drainHeal = Math.floor(damage * multiplier);
     if (drainHeal > 0) {
       attacker.hp = Math.min(attacker.pokemon.maxHp, attacker.hp + drainHeal);
       manager.emit(battleEvent("heldItem.shellBellHeal", { pokemon: battleSpeciesRef(attacker), amount: drainHeal }));
@@ -252,7 +249,7 @@ function applyHealStatusBerry(manager, context) {
   if (!itemCanCureStatus(berry, combatant)) {
     return Object.assign({}, context, { activated: false });
   }
-  curedStatus = combatant.status || (combatant.pendingDelayedStatus && combatant.pendingDelayedStatus.status);
+  curedStatus = combatant.status;
   if (!clearCombatantStatus(combatant, berry)) {
     return Object.assign({}, context, { activated: false });
   }
@@ -428,13 +425,13 @@ function applyStatusRetaliateDamage(manager, context) {
   return Object.assign({}, context, { activated: false });
 }
 
-function clearDefenderStatusProtectionFlags(_manager, context) {
-  var defender = context && context.defender;
-  if (defender && defender._brightPowderActive) {
-    defender._brightPowderActive = false;
+function clearStatusProtectionFlagsAfterOpponentAction(_manager, context) {
+  var combatant = context && context.combatant;
+  if (combatant && combatant._brightPowderActive) {
+    combatant._brightPowderActive = false;
   }
-  if (defender && defender._focusSashProtect) {
-    defender._focusSashProtect = false;
+  if (combatant && combatant._focusSashProtect) {
+    combatant._focusSashProtect = false;
   }
   return context;
 }
@@ -614,9 +611,9 @@ var HELD_ITEM_TRIGGER_HANDLERS = Object.freeze({
     applyTypeDisadvantageBoost
   ]),
   afterDamageApplied: Object.freeze([
-    applyHpCostBaseBoostCost,
-    applyDamageDrain
+    applyHpCostBaseBoostCost
   ]),
+  afterImmediateMoveResolved: Object.freeze([applyImmediateDamageDrain]),
   healStatusBerry: Object.freeze([applyHealStatusBerry]),
   healHpBerry: Object.freeze([applyHealHpBerry]),
   typeProtectBerry: Object.freeze([applyTypeProtectBerry]),
@@ -637,9 +634,9 @@ var HELD_ITEM_TRIGGER_HANDLERS = Object.freeze({
   entryChoiceApply: Object.freeze([applyEntryChoice]),
   statMods: Object.freeze([applyIgnoreStatMods]),
   afterMoveResolved: Object.freeze([
-    applyPercentageMoveAtkBuff,
-    clearDefenderStatusProtectionFlags
+    applyPercentageMoveAtkBuff
   ]),
+  opponentActionResolved: Object.freeze([clearStatusProtectionFlagsAfterOpponentAction]),
   moveStatusCheck: Object.freeze([applyInvertParCnf])
 });
 
@@ -660,9 +657,11 @@ export const HELD_ITEM_TRIGGER_ORDER = Object.freeze([
   "selfStatusChanged",
   "typeProtectBerry",
   "afterDamageApplied",
+  "afterImmediateMoveResolved",
   "statusProtection",
   "healStatusBerry",
   "afterMoveResolved",
+  "opponentActionResolved",
   "moveStatusCheck",
   "afterKo",
   "endTurnStatusEffects",
@@ -685,9 +684,11 @@ export const HeldItemTriggerContext = Object.freeze({
   selfStatusChanged: function (combatant, beforeStatus) { return { combatant: combatant, beforeStatus: beforeStatus }; },
   typeProtectBerry: function (attacker, defender) { return { attacker: attacker, defender: defender, activated: false, event: null }; },
   afterDamageApplied: function (attacker, defender, move, damage, hpCost) { return { attacker: attacker, defender: defender, move: move, damage: damage, hpCost: hpCost }; },
+  afterImmediateMoveResolved: function (attacker, defender, actualDamage, multiplier) { return { attacker: attacker, defender: defender, actualDamage: actualDamage, multiplier: multiplier }; },
   statusProtection: function (combatant, before) { return { combatant: combatant, before: before, event: null }; },
   healStatusBerry: function (combatant, before) { return { combatant: combatant, before: before, activated: false }; },
   afterMoveResolved: function (attacker, defender, percentageBefore) { return { attacker: attacker, defender: defender, percentageBefore: percentageBefore, activated: false }; },
+  opponentActionResolved: function (combatant) { return { combatant: combatant }; },
   moveStatusCheck: function (attacker) { return { attacker: attacker, handled: false, canMove: true }; },
   afterKo: function (attacker, defender) { return { attacker: attacker, defender: defender, activated: false }; },
   endTurnStatusEffects: function (combatant, opponent) { return { combatant: combatant, opponent: opponent }; },

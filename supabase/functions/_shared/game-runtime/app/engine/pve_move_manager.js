@@ -370,7 +370,7 @@ function chooseRandomAction(actions) {
 }
 
 function hasStatus(combatant) {
-  return Boolean(combatant && (combatant.status !== null || combatant.sleepCounter || combatant.confCounter || combatant.pendingDelayedStatus));
+  return Boolean(combatant && (combatant.status !== null || combatant.sleepCounter || combatant.confCounter));
 }
 
 function hasAttackBuff(combatant) {

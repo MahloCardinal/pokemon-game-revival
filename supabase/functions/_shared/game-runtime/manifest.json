@@ -5,7 +5,7 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "f03ece940d261bcbd2ab5770af06fbc3073d7341c67c698431abcb7b8aabf37f",
+  "bundleChecksum": "5293eb988f21a2d1437d5f3fd5962b3b54453b2e4b13688b6eeee3447c77246f",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
@@ -39,8 +39,8 @@
     },
     {
       "source": "app/data/moves.js",
-      "sha256": "4ef99be063e09646d947b4aa6e1234bbefd9e264225ee3bba0fe34ea68fe216f",
-      "bytes": 98780
+      "sha256": "b2080e2c8e2d954e73ceea940200dba3ae9ebc9029f0fd2a4c2f722bce6e0325",
+      "bytes": 98702
     },
     {
       "source": "app/data/progression.js",
@@ -99,13 +99,13 @@
     },
     {
       "source": "app/engine/battle-manager.js",
-      "sha256": "2b3ff38ffd1098479b1f1c9dd26f5cc307b5729cef8d610784032e2da27c02ef",
-      "bytes": 82629
+      "sha256": "92356bb3fb6e84f6e724c01cb1e5b90a229c32524094e91ee912fa52594d2877",
+      "bytes": 87501
     },
     {
       "source": "app/engine/battle-runtime.js",
-      "sha256": "d9c873e277b7de10ba967e689ca40e427d39fa4386b82ecfd628c5aee76c72dc",
-      "bytes": 44431
+      "sha256": "b5bcd460e73bb0e7e3d32aa2bc3515f0992834572231e9b63a04b289e5bd2173",
+      "bytes": 44758
     },
     {
       "source": "app/engine/battle-summary.js",
@@ -119,8 +119,8 @@
     },
     {
       "source": "app/engine/combatant.js",
-      "sha256": "1e6de37c54940480ea229e0b90f2868ab58be719aaa80b5b962911d45003d81d",
-      "bytes": 8244
+      "sha256": "f3294d57fbce9d17c2c35486d202f24d7b7af65168a20ea2c3b7d1ffb8278a21",
+      "bytes": 8186
     },
     {
       "source": "app/engine/deterministic-rng.js",
@@ -129,8 +129,8 @@
     },
     {
       "source": "app/engine/held-items.js",
-      "sha256": "b6169ab4f2ea3ad7f96a23c562d4e4a0f124ad6b99f9c0310955d544461c1d18",
-      "bytes": 29692
+      "sha256": "c705326d4469811878b77ba869258b0892884bf8750af8e760817a71d0b71317",
+      "bytes": 29771
     },
     {
       "source": "app/engine/index.js",
@@ -154,8 +154,8 @@
     },
     {
       "source": "app/engine/pve_move_manager.js",
-      "sha256": "ff44350029f41817260ff8d484541cfd96527c1914e1755b9aa8dbab7567f23a",
-      "bytes": 13593
+      "sha256": "b677d78e914389536dbbe96139229cccfd3754737f635870045a2790d4ce870b",
+      "bytes": 13556
     },
     {
       "source": "app/engine/species.js",

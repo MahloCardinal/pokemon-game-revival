@@ -1,6 +1,6 @@
 import { TYPE_CHART } from "../data/type-chart.js";
 import { getInventoryItemByIndex, ItemCategory, ItemSubcategory } from "../data/items.js";
-import { HeldItemTriggerContext, clearCombatantStatus, combatantHasCurableStatus, heldItemHasEffect, itemCanCureStatus, runHeldItemTrigger } from "./held-items.js";
+import { HeldItemTriggerContext, clearCombatantStatus, combatantHasCurableStatus, getActiveHeldItem, heldItemHasEffect, heldItemMultiplierValue, itemCanCureStatus, runHeldItemTrigger } from "./held-items.js";
 import * as m from "../data/moves.js";
 import { createMove } from "./moves.js";
 import { choosePveAction } from "./pve_move_manager.js";
@@ -40,6 +40,7 @@ export function BattleManager(playerTeam, enemyTeam) {
   this.waitingFor = "player";
   this.npcNeedsSwitch = false;
   this.npcItems = [];
+  this._trainerActionContext = null;
   this.initialEntry = { phase: "ready", order: [], nextActor: null, entered: { player: true, npc: true }, resolved: { player: true, npc: true } };
 }
 
@@ -107,6 +108,78 @@ BattleManager.prototype.actorForTeam = function (team) {
 
 BattleManager.prototype.opponentActor = function (actor) {
   return this.normalizedActor(actor) === "npc" ? "player" : "npc";
+};
+
+BattleManager.prototype.beginTrainerAction = function (actor, combatant, kind) {
+  this._trainerActionContext = {
+    actor: this.normalizedActor(actor),
+    combatant: combatant || null,
+    kind: kind || "",
+    pendingAtStart: combatant ? combatant.pendingDelayedStatus : null,
+    resolvedMove: null
+  };
+};
+
+BattleManager.prototype.recordTrainerActionMove = function (combatant) {
+  if (this._trainerActionContext && this._trainerActionContext.combatant === combatant) {
+    this._trainerActionContext.resolvedMove = this.lastResolvedMoveIndex ? combatant.turnBeforeMoveUsed : null;
+  }
+};
+
+BattleManager.prototype.syncBatonPassStatus = function (combatant) {
+  var stats = combatant && combatant.team && combatant.team.batonPassStats;
+  if (!stats) {
+    return;
+  }
+  stats.status = combatant.status;
+  stats.sleepCounter = combatant.sleepCounter || 0;
+  stats.sleepDuration = combatant.sleepDuration || 3;
+  stats.slpSource = combatant.slpSource || null;
+  stats.confCounter = combatant.confCounter || 0;
+  stats.pendingDelayedStatus = combatant.pendingDelayedStatus ? Object.assign({}, combatant.pendingDelayedStatus) : null;
+};
+
+BattleManager.prototype.advanceDelayedStatusAfterAction = function (combatant, pendingAtStart) {
+  var pending = combatant && combatant.pendingDelayedStatus;
+  var before;
+  if (!combatant || !pending || pending !== pendingAtStart) {
+    this.syncBatonPassStatus(combatant);
+    return;
+  }
+  pending.delay = Math.max(0, (Number(pending.delay) || 0) - 1);
+  if (pending.delay > 0 || combatant.status !== null || combatant.hp <= 0) {
+    this.syncBatonPassStatus(combatant);
+    return;
+  }
+  before = statusSnapshot(combatant);
+  combatant.status = pending.status;
+  combatant.sleepCounter = pending.sleepCounter || 0;
+  combatant.sleepDuration = pending.sleepDuration || 3;
+  combatant.confCounter = pending.confCounter || 0;
+  combatant.slpSource = pending.source || null;
+  combatant.pendingDelayedStatus = null;
+  if (combatant.status === "slp") {
+    this.emit(battleEvent("status.fellAsleep", { pokemon: battleSpeciesRef(combatant) }));
+  } else {
+    this.emit(battleEvent("status.applied", { pokemon: battleSpeciesRef(combatant), status: battleStatusRef(combatant.status) }));
+  }
+  runHeldItemTrigger(this, "healStatusBerry", HeldItemTriggerContext.healStatusBerry(combatant, before));
+  this.syncBatonPassStatus(combatant);
+};
+
+BattleManager.prototype.completeTrainerAction = function () {
+  var context = this._trainerActionContext;
+  var opponent;
+  if (!context) {
+    return;
+  }
+  this._trainerActionContext = null;
+  if (context.combatant) {
+    context.combatant.turnBeforeMoveUsed = context.resolvedMove || null;
+    this.advanceDelayedStatusAfterAction(context.combatant, context.pendingAtStart);
+  }
+  opponent = this.opponentTeamForActor(context.actor).getActive();
+  runHeldItemTrigger(this, "opponentActionResolved", HeldItemTriggerContext.opponentActionResolved(opponent));
 };
 
 BattleManager.prototype.isWeatherMoveBlocked = function (actor, move) {
@@ -233,12 +306,14 @@ BattleManager.prototype.resolveMoveAction = function (actor, move) {
     return false;
   }
   this.clearRecentSwitchTarget(attackerTeam);
+  this.beginTrainerAction(normalizedActor, attacker, "move");
   this.startTurn(attacker, defender);
   if (attacker.isFainted()) {
     this.clearRecentSwitchTarget(defenderTeam);
     return true;
   }
   this.executeMove(attacker, defender, move);
+  this.recordTrainerActionMove(attacker);
   this.recordWeatherMoveAction(normalizedActor, this.lastResolvedMoveWasWeather);
   if (normalizedActor === "player") {
     this.lastPlayerResolvedMoveIndex = this.lastResolvedMoveIndex;
@@ -251,6 +326,7 @@ BattleManager.prototype.resolveMoveAction = function (actor, move) {
 BattleManager.prototype.resolveNpcItemAction = function (item, target) {
   var effectResult;
   this.clearRecentSwitchTarget(this.enemyTeam);
+  this.beginTrainerAction("npc", this.enemyTeam.getActive(), "item");
   this.startTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
   this.recordWeatherMoveAction("npc", false);
   this.consumeChargeDamageMultiplier(this.enemyTeam.getActive());
@@ -351,6 +427,7 @@ BattleManager.prototype.resolveNpcSwitchAction = function (index, entryChoice) {
     this.npcNeedsSwitch = false;
     return true;
   }
+  this.beginTrainerAction("npc", this.enemyTeam.getActive(), "switch");
   this.startTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
   this.recordWeatherMoveAction("npc", false);
   this.consumeChargeDamageMultiplier(this.enemyTeam.getActive());
@@ -551,6 +628,32 @@ BattleManager.prototype.restoreHeldItemTransfers = function () {
   this.itemReturnSnapshots = [];
 };
 
+BattleManager.prototype.clearHazardMultiturnEffectsForBoots = function (combatant) {
+  var clearedTrap = false;
+  if (!combatant || !heldItemHasEffect(combatant, "hazard_multiturn_guard")) {
+    return false;
+  }
+  if (combatant.team && combatant.team.spikesActive) {
+    combatant.team.spikesActive = false;
+    combatant.team.spikesLevel = 0;
+    this.emit(battleEvent("hazard.bootsClearedSpikes", { pokemon: battleSpeciesRef(combatant) }));
+  }
+  if (combatant.trappedMoveIndex && m.isMultiturnEffectMoveIndex(combatant.trappedMoveIndex)) {
+    combatant.trappedTurns = 0;
+    combatant.trappedMoveIndex = 0;
+    clearedTrap = true;
+  }
+  if (combatant.seedTarget !== null) {
+    combatant.seedTarget = null;
+    combatant.seedValue = 0;
+    this.emit(battleEvent("hazard.bootsClearedLeechSeed", { pokemon: battleSpeciesRef(combatant) }));
+  }
+  if (clearedTrap) {
+    this.emit(battleEvent("hazard.bootsClearedTrap", { pokemon: battleSpeciesRef(combatant) }));
+  }
+  return true;
+};
+
 BattleManager.prototype.stealHeldItem = function (attacker, defender) {
   var stolenItemIndex = Number(defender && defender.pokemon && defender.pokemon.heldItemIndex) || 0;
   if (!attacker || !defender || !attacker.pokemon || !defender.pokemon || attacker.pokemon.heldItemIndex || !stolenItemIndex) {
@@ -560,6 +663,7 @@ BattleManager.prototype.stealHeldItem = function (attacker, defender) {
   this.snapshotHeldItemForReturn(defender);
   attacker.pokemon.heldItemIndex = stolenItemIndex;
   defender.pokemon.heldItemIndex = 0;
+  this.clearHazardMultiturnEffectsForBoots(attacker);
   return true;
 };
 
@@ -573,6 +677,8 @@ BattleManager.prototype.swapHeldItems = function (attacker, defender) {
   this.snapshotHeldItemForReturn(defender);
   attacker.pokemon.heldItemIndex = defenderItemIndex;
   defender.pokemon.heldItemIndex = attackerItemIndex;
+  this.clearHazardMultiturnEffectsForBoots(attacker);
+  this.clearHazardMultiturnEffectsForBoots(defender);
   return true;
 };
 
@@ -583,6 +689,7 @@ BattleManager.prototype.recycleHeldItem = function (combatant) {
   }
   combatant.pokemon.heldItemIndex = itemIndex;
   combatant.lastConsumedHeldItemIndex = 0;
+  this.clearHazardMultiturnEffectsForBoots(combatant);
   return true;
 };
 
@@ -670,6 +777,7 @@ BattleManager.prototype.applyItemEffect = function (item, target) {
       target.sleepCounter = 0;
       target.sleepDuration = 3;
       target.confCounter = 0;
+      target.slpSource = null;
       target.nightmareActive = false;
       this.emit(battleEvent(hadStatus ? "item.fullRestore" : "item.healedHp", { item: battleItemRef(item), pokemon: battleSpeciesRef(target), amount: healStatusHealed }));
       return { ok: true };
@@ -703,6 +811,7 @@ BattleManager.prototype.playerUseItem = function (item, target) {
   return this.resolvePlayerRound(function () {
     var effectResult;
     manager.clearRecentSwitchTarget(manager.playerTeam);
+    manager.beginTrainerAction("player", manager.playerTeam.getActive(), "item");
     manager.startTurn(manager.playerTeam.getActive(), manager.enemyTeam.getActive());
     manager.recordWeatherMoveAction("player", false);
     manager.consumeChargeDamageMultiplier(manager.playerTeam.getActive());
@@ -724,6 +833,7 @@ BattleManager.prototype.playerUseBall = function (item) {
   var manager = this;
   return this.resolvePlayerRound(function () {
     manager.clearRecentSwitchTarget(manager.playerTeam);
+    manager.beginTrainerAction("player", manager.playerTeam.getActive(), "ball");
     manager.startTurn(manager.playerTeam.getActive(), manager.enemyTeam.getActive());
     manager.recordWeatherMoveAction("player", false);
     manager.consumeChargeDamageMultiplier(manager.playerTeam.getActive());
@@ -792,7 +902,6 @@ BattleManager.prototype.startTurn = function (attacker, defender) {
   }
 
   this.emit(battleEvent("turn.started", { number: this.turn, team: battleTeamRef(attacker.team) }, { group: "turn", turn: this.turn }));
-  this.tickDelayedStatuses();
   this.applyWeatherBuffs(attacker);
   this.applyWeatherBuffs(defender);
   advanceCombatantStatus(attacker);
@@ -874,33 +983,13 @@ BattleManager.prototype.clearRecentSwitchTarget = function (team) {
   }
 };
 
-BattleManager.prototype.tickDelayedStatuses = function () {
-  this.combatants().forEach(function (combatant) {
-    var pending = combatant.pendingDelayedStatus;
-    if (!pending) {
-      return;
-    }
-    pending.delay -= 1;
-    if (pending.delay > 0) {
-      return;
-    }
-    if (combatant.status === null) {
-      combatant.status = pending.status;
-      combatant.sleepCounter = pending.sleepCounter || 0;
-      combatant.sleepDuration = pending.sleepDuration || 3;
-      combatant.confCounter = pending.confCounter || 0;
-      combatant.slpSource = pending.source || null;
-      if (pending.status === "slp") {
-        this.emit(battleEvent("status.fellAsleep", { pokemon: battleSpeciesRef(combatant) }));
-      } else {
-        this.emit(battleEvent("status.applied", { pokemon: battleSpeciesRef(combatant), status: battleStatusRef(pending.status) }));
-      }
-    }
-    combatant.pendingDelayedStatus = null;
-  }, this);
-};
-
 BattleManager.prototype.checkHeldHpBerryOnEntry = function (combatant) {
+  this.clearHazardMultiturnEffectsForBoots(combatant);
+  if (combatantHasCurableStatus(combatant)) {
+    runHeldItemTrigger(this, "healStatusBerry", HeldItemTriggerContext.healStatusBerry(combatant, {
+      status: null, sleepCounter: 0, sleepDuration: 3, confCounter: 0, slpSource: null, pendingDelayedStatus: combatant.pendingDelayedStatus
+    }));
+  }
   runHeldItemTrigger(this, "healHpBerry", HeldItemTriggerContext.healHpBerry(combatant));
   runHeldItemTrigger(this, "onEntry", HeldItemTriggerContext.onEntry(combatant));
 };
@@ -921,6 +1010,7 @@ BattleManager.prototype.applyEntryHeldItemChoice = function (combatant, choice) 
 BattleManager.prototype.interceptDelayedStatus = function (combatant, before, move, damage, source) {
   var pendingBefore = before.pendingDelayedStatus;
   var nextStatus = combatant.status;
+  var delayedStatus;
   if (before.status !== null || nextStatus === null) {
     return;
   }
@@ -940,14 +1030,16 @@ BattleManager.prototype.interceptDelayedStatus = function (combatant, before, mo
     return;
   }
 
-  combatant.pendingDelayedStatus = {
+  delayedStatus = {
     status: nextStatus,
     sleepCounter: combatant.sleepCounter || 0,
     sleepDuration: combatant.sleepDuration || 3,
     confCounter: combatant.confCounter || 0,
-    delay: 4
+    delay: 2,
+    source: "lax_incense"
   };
   restoreStatusSnapshot(combatant, before);
+  combatant.pendingDelayedStatus = delayedStatus;
   move.logKey = damage > 0 ? "dmg_status_delayed" : "status_delayed";
   move.delayedStatusKey = nextStatus;
   move.delayedStatusTargetSpeciesKey = combatant.pokemon.speciesKey;
@@ -1073,6 +1165,10 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   var typeProtectLog = "";
   var statusProtectionLog = "";
   var chargeDamageMultiplier = 1;
+  var damageDrainMultiplier = 0;
+  var heldItemAtMoveStart = getActiveHeldItem(attacker);
+  var attackerStatusAtMoveStart = statusSnapshot(attacker);
+  var defenderStatusAtMoveStart = statusSnapshot(defender);
 
   var percentageBefore = attacker.team ? attacker.team.percentage : undefined;
   var defenderHpBefore = defender.hp;
@@ -1090,7 +1186,12 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
     effectiveMove.before(attacker, defender, hit);
   }
 
-  if (hit && heldItemHasEffect(defender, "hazard_multiturn_guard") && m.isMultiturnEffectMoveIndex(effectiveMove.index)) {
+  if (heldItemAtMoveStart && heldItemAtMoveStart.effect === "damage_drain") {
+    damageDrainMultiplier = heldItemMultiplierValue(heldItemAtMoveStart);
+  }
+
+  if (hit && heldItemHasEffect(defender, "hazard_multiturn_guard")
+      && (m.isMultiturnEffectMoveIndex(effectiveMove.index) || effectiveMove.index === m.spikes.index)) {
     hit = false;
     effectiveMove.damagingMove = false;
   }
@@ -1189,7 +1290,6 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
     defender.sleepCounter = 0;
     defender.sleepDuration = 3;
     defender.confCounter = 0;
-    defender.pendingDelayedStatus = null;
     attacker.status = reflected;
     if (reflected === "slp") {
       attacker.sleepCounter = 0;
@@ -1210,8 +1310,12 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   if (typeProtectLog) {
     this.emit(typeProtectLog);
   }
-  runHeldItemTrigger(this, "healStatusBerry", HeldItemTriggerContext.healStatusBerry(defender, defenderStatusBefore));
-  if (damage > 0) {
+  runHeldItemTrigger(this, "afterImmediateMoveResolved", HeldItemTriggerContext.afterImmediateMoveResolved(
+    attacker, defender, Math.max(0, defenderHpBefore - defender.hp), damageDrainMultiplier
+  ));
+  runHeldItemTrigger(this, "healStatusBerry", HeldItemTriggerContext.healStatusBerry(defender, defenderStatusAtMoveStart));
+  runHeldItemTrigger(this, "healStatusBerry", HeldItemTriggerContext.healStatusBerry(attacker, attackerStatusAtMoveStart));
+  if (defenderHpBefore > defender.hp) {
     runHeldItemTrigger(this, "healHpBerry", HeldItemTriggerContext.healHpBerry(defender));
   }
   this.markMoveKoTrigger(attacker, defender, effectiveMove, defenderHpBefore);
@@ -1595,7 +1699,6 @@ BattleManager.prototype.moveStatusCheck = function (attacker, move) {
       attacker.sleepDuration = 3;
       attacker.confCounter = 0;
       attacker.slpSource = null;
-      attacker.pendingDelayedStatus = null;
       attacker.nightmareActive = false;
       manager.emit(battleEvent("status.thawed", { pokemon: battleSpeciesRef(attacker) }));
       return true;
@@ -1872,6 +1975,7 @@ BattleManager.prototype.canPlayerSwitchTo = function (index) {
 
 BattleManager.prototype.resolvePlayerSwitchAction = function (index, entryChoice) {
   var result;
+  this.beginTrainerAction("player", this.playerTeam.getActive(), "switch");
   this.startTurn(this.playerTeam.getActive(), this.enemyTeam.getActive());
   this.recordWeatherMoveAction("player", false);
   this.consumeChargeDamageMultiplier(this.playerTeam.getActive());
@@ -2116,6 +2220,8 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
     defender.destinyBondActive = defender.destinyBondTurns > 0;
   }
 
+  this.completeTrainerAction();
+
   if (this.firstActionInTurn) {
     this.firstActionInTurn = false;
   } else {
@@ -2137,6 +2243,7 @@ BattleManager.prototype.endTurn = function (attacker, defender) {
 };
 
 BattleManager.prototype.endBattle = function () {
+  this._trainerActionContext = null;
   this.restoreHeldItemTransfers();
   this.playerTeam.combatantList.concat(this.enemyTeam.combatantList).forEach(function (combatant) {
     combatant.resetSwitchModifiers();

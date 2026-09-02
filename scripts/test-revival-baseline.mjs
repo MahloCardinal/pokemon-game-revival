@@ -50,6 +50,7 @@ const preferredTrainerTitlesMigration = read("supabase/migrations/20260828110000
 const playerDirectoryAvatarMigration = read("supabase/migrations/20260828120000_player_directory_trainer_avatar.sql");
 const playerDirectoryPokedexMigration = read("supabase/migrations/20260901150000_player_directory_national_pokedex.sql");
 const battleItemRuntimeMigration = read("supabase/migrations/20260901160000_bind_battle_item_effect_runtime.sql");
+const selfInducedStatusRuntimeMigration = read("supabase/migrations/20260902120000_bind_self_induced_status_runtime.sql");
 const battleDomeMigration = read("supabase/migrations/20260829120000_battle_dome.sql");
 const battleDomeCodesAndLeadsMigration = read("supabase/migrations/20260830120000_battle_dome_codes_and_leads.sql");
 const battleDomeInviteCleanupMigration = read("supabase/migrations/20260830123000_remove_legacy_battle_dome_invites.sql");
@@ -609,6 +610,7 @@ assert.match(globalTeamCompositionMigration, /perform server_authority_private\.
 assert.match(globalTeamCompositionMigration, /rules - array\['ohkoPokemonMax', 'portItemMax', 'portItemsDistinct'\]/i);
 assert.match(globalTeamCompositionMigration, /'f03ece940d261bcbd2ab5770af06fbc3073d7341c67c698431abcb7b8aabf37f'/);
 assert.match(battleItemRuntimeMigration, /'5293eb988f21a2d1437d5f3fd5962b3b54453b2e4b13688b6eeee3447c77246f'/);
+assert.match(selfInducedStatusRuntimeMigration, /'37a8a2c205f9a8ed8c905890495966b37eb8e6976e78b2254fd504859c305d3d'/);
 assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_gym_counts/i);
 assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_league_counts/i);
 
@@ -1306,9 +1308,41 @@ function moveMechanicsManager(playerMoves, enemyMoves, options = {}) {
   assert.equal(manager.canUseItemOnTarget(ItemDefinitions.full_heal, player).ok, false,
     "Items must not cure or target a delayed status");
   manager.resolveMoveAction("player", player.pokemon.moves[0]);
-  assert.equal(player.hp, 100, "Rest must fail while a delayed status exists");
-  assert.equal(player.status, null);
-  assert.equal(player.pendingDelayedStatus.delay, 1, "A failed Rest attempt still counts as the Pokemon's action");
+  assert.equal(player.hp, player.pokemon.maxHp, "Rest must heal even while a delayed status exists");
+  assert.equal(player.status, "slp", "Rest's self-inflicted Sleep must take priority over a delayed status");
+  assert.equal(player.pendingDelayedStatus, null, "Rest must cancel the status that was waiting to be applied");
+}
+
+for (const selfConfusionMove of [MoveDefinitions.thrash, MoveDefinitions.outrage, MoveDefinitions.petal_dance]) {
+  const manager = moveMechanicsManager(
+    [createMove(selfConfusionMove, { power: 10, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  player.pokemon.heldItemIndex = ItemDefinitions.lax_incense.index;
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  player.pendingDelayedStatus = { status: "psn", delay: 1, source: "lax_incense" };
+  manager.resolveMoveAction("player", player.pokemon.moves[0]);
+  assert.equal(player.status, "cnf_block", `${selfConfusionMove.key} must apply its self-inflicted Confusion immediately`);
+  assert.equal(player.pendingDelayedStatus, null, `${selfConfusionMove.key} must cancel a status due on the same action`);
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.toxic, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]
+  );
+  const attacker = manager.playerTeam.getActive();
+  const reflector = manager.enemyTeam.getActive();
+  attacker.pokemon.heldItemIndex = ItemDefinitions.lax_incense.index;
+  reflector.magicCoatActive = true;
+  reflector.magicCoatTurns = 2;
+  manager.resolveMoveAction("player", attacker.pokemon.moves[0]);
+  assert.equal(reflector.status, null, "Magic Coat must remove the reflected status from its user");
+  assert.equal(attacker.status, null);
+  assert.equal(attacker.pendingDelayedStatus.status, "psn", "Lax Incense must delay a status reflected by Magic Coat");
+  assert.equal(attacker.pendingDelayedStatus.delay, 2);
 }
 
 {
@@ -1318,6 +1352,7 @@ function moveMechanicsManager(playerMoves, enemyMoves, options = {}) {
   );
   const player = manager.playerTeam.getActive();
   player.hp = 100;
+  player.status = "psn";
   player.pokemon.heldItemIndex = ItemDefinitions.chesto_berry.index;
   manager.resolveMoveAction("player", player.pokemon.moves[0]);
   assert.equal(player.hp, player.pokemon.maxHp);

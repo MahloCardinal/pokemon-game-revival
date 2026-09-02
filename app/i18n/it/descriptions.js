@@ -39,7 +39,7 @@ export var IT_DESCRIPTION_TRANSLATIONS = Object.freeze({
     effects: Object.freeze({
       status_damage_halve: "Dimezza i danni subiti dalle mosse dirette quando il Pokémon è affetto da status.",
       hazard_multiturn_guard: "Rimuove trappole come Punte e protegge da mosse che bloccano per più turni.",
-      status_delay: "Ritarda di 2 turni il prossimo problema di stato che il Pokémon subirebbe.",
+      status_delay: "Ritarda di 2 azioni il prossimo problema di stato causato dall’avversario. Gli status autoindotti hanno priorità.",
       status_ignore_delay: "Permette di infliggere problemi di stato ignorando Distraroma avversario.",
       ignore_stat_mods: "Fa ignorare al Pokémon le modifiche alle proprie statistiche.",
       entry_disable_move: "Se tenuto da un Pokémon Psico, blocca una mossa avversaria all'ingresso in campo.",

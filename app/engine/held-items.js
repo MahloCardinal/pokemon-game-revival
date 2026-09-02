@@ -243,7 +243,7 @@ function applyHealStatusBerry(manager, context) {
   var before = context && context.before;
   var berry = getHeldBerry(combatant);
   var curedStatus;
-  if (!berry || berry.subcategory !== ItemSubcategory.HealStatus || !before || before.status !== null) {
+  if (!berry || berry.subcategory !== ItemSubcategory.HealStatus || !before || before.status === combatant.status) {
     return Object.assign({}, context, { activated: false });
   }
   if (!itemCanCureStatus(berry, combatant)) {

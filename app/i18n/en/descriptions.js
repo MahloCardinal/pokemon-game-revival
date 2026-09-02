@@ -39,7 +39,7 @@ export var EN_DESCRIPTION_TRANSLATIONS = Object.freeze({
     effects: Object.freeze({
       status_damage_halve: "Halves damage taken from direct moves while the Pokémon is affected by a status condition.",
       hazard_multiturn_guard: "Removes hazards such as Spikes and protects against moves that trap the Pokémon for multiple turns.",
-      status_delay: "Delays the next incoming status condition by 2 turns.",
+      status_delay: "Delays the next status caused by the opponent for 2 actions. Self-inflicted statuses take priority.",
       status_ignore_delay: "Allows status conditions to ignore the opponent's Lax Incense.",
       ignore_stat_mods: "Makes the Pokémon ignore changes to its own stats.",
       entry_disable_move: "When held by a Psychic-type Pokémon, disables one opposing move on entry.",

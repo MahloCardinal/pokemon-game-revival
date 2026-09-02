@@ -1007,11 +1007,15 @@ BattleManager.prototype.applyEntryHeldItemChoice = function (combatant, choice) 
   return runHeldItemTrigger(this, "entryChoiceApply", HeldItemTriggerContext.entryChoiceApply(combatant, choice)).applied;
 };
 
-BattleManager.prototype.interceptDelayedStatus = function (combatant, before, move, damage, source) {
+BattleManager.prototype.interceptDelayedStatus = function (combatant, before, move, damage, source, bypassDelay) {
   var pendingBefore = before.pendingDelayedStatus;
   var nextStatus = combatant.status;
   var delayedStatus;
   if (before.status !== null || nextStatus === null) {
+    return;
+  }
+
+  if (bypassDelay) {
     return;
   }
 
@@ -1164,6 +1168,7 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   var defenderStatusBefore;
   var typeProtectLog = "";
   var statusProtectionLog = "";
+  var attackerStatusWasReflected = false;
   var chargeDamageMultiplier = 1;
   var damageDrainMultiplier = 0;
   var heldItemAtMoveStart = getActiveHeldItem(attacker);
@@ -1281,22 +1286,27 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
       if (npcEnemySwitch.ok) { this.emitEvents(npcEnemySwitch.events); }
     }
   }
-  this.interceptDelayedStatus(defender, defenderStatusBefore, effectiveMove, damage, attacker);
-  this.interceptDelayedStatus(attacker, attackerStatusBefore, effectiveMove, damage, defender);
   if (defender.magicCoatActive && hit && defender.status !== defenderStatusBefore.status && defenderStatusBefore.status === null) {
     var reflected = defender.status;
     var reflectedSleepDuration = defender.sleepDuration || 3;
-    defender.status = null;
-    defender.sleepCounter = 0;
-    defender.sleepDuration = 3;
-    defender.confCounter = 0;
+    restoreStatusSnapshot(defender, defenderStatusBefore);
     attacker.status = reflected;
+    attackerStatusWasReflected = true;
     if (reflected === "slp") {
       attacker.sleepCounter = 0;
       attacker.sleepDuration = reflectedSleepDuration;
     }
     this.emit(battleEvent("status.magicCoatReflected", { source: battleSpeciesRef(defender), target: battleSpeciesRef(attacker) }));
   }
+  this.interceptDelayedStatus(defender, defenderStatusBefore, effectiveMove, damage, attacker, false);
+  this.interceptDelayedStatus(
+    attacker,
+    attackerStatusBefore,
+    effectiveMove,
+    damage,
+    defender,
+    Boolean(effectiveMove.selfInducedStatusApplied) && !attackerStatusWasReflected
+  );
   attacker.turnBeforeMoveUsed = effectiveMove;
 
   this.emit(effectiveMove.prepareEvent(attacker, defender, damage, effectiveMove.lastTypeEfficacy));
@@ -1330,6 +1340,10 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   }
   effectiveMove.directDamage = 0;
   effectiveMove.boostSuppressed = false;
+  delete effectiveMove.selfInducedStatusApplied;
+  if (effectiveMove !== move) {
+    delete move.selfInducedStatusApplied;
+  }
   if (!defenderTeamForSwitch || defenderTeamForSwitch.activeIndex === defenderActiveIndexBefore) {
     this.clearRecentSwitchTarget(defenderTeamForSwitch);
   }

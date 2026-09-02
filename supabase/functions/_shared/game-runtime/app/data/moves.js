@@ -59,7 +59,7 @@ function applyStatusEffect(target, statusKey, options) {
   if (target) {
     target._lastStatusFailureReason = null;
   }
-  if (!target || target.status !== null || target.pendingDelayedStatus) {
+  if (!target || target.status !== null || (target.pendingDelayedStatus && !options.selfInduced)) {
     if (target) {
       target._lastStatusFailureReason = "status";
     }
@@ -77,6 +77,9 @@ function applyStatusEffect(target, statusKey, options) {
     target._lastStatusFailureReason = "status";
     return false;
   }
+  if (options.selfInduced) {
+    target.pendingDelayedStatus = null;
+  }
   target.status = statusKey;
   target.sleepCounter = 0;
   target.sleepDuration = 3;
@@ -88,6 +91,12 @@ function applyStatusEffect(target, statusKey, options) {
     target.confCounter = 0;
   }
   return true;}
+function applySelfInducedStatus(move, target, statusKey, options) {
+  var applied = applyStatusEffect(target, statusKey, Object.assign({}, options || {}, { selfInduced: true }));
+  if (applied && move) {
+    move.selfInducedStatusApplied = true;
+  }
+  return applied;}
 function statusFailureLogKey(target, statusKey) {
   if (target && target._lastStatusFailureReason === "safeguard") {
     return "status_safeguard";
@@ -385,7 +394,7 @@ function forcedTripleHitConfusionMove() {
     },
     after: function (attacker, _defender, hit) {
       if (attacker.pendingMove === this && attacker.pendingMoveTurns >= 3) {
-        applyStatusEffect(attacker, "cnf_block");
+        applySelfInducedStatus(this, attacker, "cnf_block");
         attacker.removePending();
         attacker.pendingMoveTurns = 0;
         this.logKey = hit ? "dmg_self_cnf" : "dmg_self_cnf_fail";
@@ -1812,16 +1821,14 @@ export const rest = {
         index: 254,
         damagingMove: false,
         before: function (attacker) {
-          if (attacker.pendingDelayedStatus) {
-            this.logKey = "fail";
-          } else if (attacker.status !== null || attacker.hp !== attacker.pokemon.maxHp) {
+          if (attacker.status !== null || attacker.hp !== attacker.pokemon.maxHp || attacker.pendingDelayedStatus) {
             attacker.status = null;
             attacker.sleepCounter = 0;
             attacker.sleepDuration = 3;
             attacker.confCounter = 0;
             attacker.slpSource = null;
             attacker.nightmareActive = false;
-            applyStatusEffect(attacker, "slp", {
+            applySelfInducedStatus(this, attacker, "slp", {
               ignoreTeamProtection: true,
               ignoreSleepImmunity: true,
               sleepDuration: 2

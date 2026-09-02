@@ -51,6 +51,9 @@ const playerDirectoryAvatarMigration = read("supabase/migrations/20260828120000_
 const playerDirectoryPokedexMigration = read("supabase/migrations/20260901150000_player_directory_national_pokedex.sql");
 const battleItemRuntimeMigration = read("supabase/migrations/20260901160000_bind_battle_item_effect_runtime.sql");
 const selfInducedStatusRuntimeMigration = read("supabase/migrations/20260902120000_bind_self_induced_status_runtime.sql");
+const debugOfficialBattleItemMigration = read("supabase/migrations/20260902130000_allow_debug_catalog_items_in_official_battles.sql");
+const adminGymWaitingKeyMigration = read("supabase/migrations/20260902131000_fix_admin_gym_waiting_catalog_keys.sql");
+const authoritativeGymKeyConstraintMigration = read("supabase/migrations/20260902132000_fix_authoritative_gym_key_constraint.sql");
 const battleDomeMigration = read("supabase/migrations/20260829120000_battle_dome.sql");
 const battleDomeCodesAndLeadsMigration = read("supabase/migrations/20260830120000_battle_dome_codes_and_leads.sql");
 const battleDomeInviteCleanupMigration = read("supabase/migrations/20260830123000_remove_legacy_battle_dome_invites.sql");
@@ -538,6 +541,12 @@ assert.match(discordTurnMigration, /primary key \(battle_id, battle_version\)/i)
 assert.match(discordTurnMigration, /contract_key not in \('admin_gym', 'league'\)/i);
 assert.match(discordTurnMigration, /waiting_for <> 'admin'/i);
 assert.match(discordTurnMigration, /grant execute on function public\.claim_discord_admin_battle_turn_notification\(uuid, bigint\) to service_role/i);
+assert.match(debugOfficialBattleItemMigration, /when coalesce\(p_debug_created, false\) then exists[\s\S]*from public\.catalog_item/i);
+assert.match(debugOfficialBattleItemMigration, /start_edge_admin_gym_battle_before_ordinary_guard/i);
+assert.match(debugOfficialBattleItemMigration, /start_edge_admin_league_battle_before_ordinary_guard/i);
+assert.match(adminGymWaitingKeyMigration, /battle_type = 'gym_' \|\| new\.gym_key/i);
+assert.doesNotMatch(adminGymWaitingKeyMigration, /isola-cannella|smeraldopoli/i);
+assert.match(authoritativeGymKeyConstraintMigration, /gym_key ~ '\^\[a-z0-9_\]\{1,40\}\$'/i);
 assert.match(migrationSql, /alter publication supabase_realtime add table public\.authoritative_battle/i);
 assert.match(battleDomeMigration, /create table public\.battle_dome_battle/i);
 assert.doesNotMatch(battleDomeMigration, /references public\.authoritative_battle/i,

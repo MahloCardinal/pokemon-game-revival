@@ -7,6 +7,19 @@ import { choosePveAction } from "./pve_move_manager.js";
 import { random } from "./deterministic-rng.js";
 import { battleEvent, battleItemRef, battleMoveRef, battleSpeciesRef, battleStatusRef, battleTeamRef } from "./battle-events.js";
 
+function typeEfficacyForTypes(attackerTypes, defenderTypes) {
+  var product = 1.0;
+  (attackerTypes || []).forEach(function (attackerType) {
+    var row = TYPE_CHART[attackerType] || {};
+    (defenderTypes || []).forEach(function (defenderType) {
+      product *= row[defenderType] !== undefined ? row[defenderType] : 1.0;
+    });
+  });
+  if (product > 1.0) { return 2.0; }
+  if (product < 1.0) { return 0.5; }
+  return 1.0;
+}
+
 export function BattleManager(playerTeam, enemyTeam) {
   this.playerTeam = playerTeam;
   this.enemyTeam = enemyTeam;
@@ -36,6 +49,7 @@ export function BattleManager(playerTeam, enemyTeam) {
   this.lastPlayerResolvedType = null;
   this.lastPlayerActionSkipped = false;
   this.weatherMoveUsedLastAction = { player: false, npc: false };
+  this.opponentControl = "automatic";
   this.adminControlled = false;
   this.waitingFor = "player";
   this.npcNeedsSwitch = false;
@@ -44,6 +58,10 @@ export function BattleManager(playerTeam, enemyTeam) {
   this._resolvedKoCombatants = [];
   this.initialEntry = { phase: "ready", order: [], nextActor: null, entered: { player: true, npc: true }, resolved: { player: true, npc: true } };
 }
+
+BattleManager.prototype.opponentIsExternallyControlled = function () {
+  return this.opponentControl === "admin" || this.opponentControl === "player" || Boolean(this.adminControlled);
+};
 
 BattleManager.prototype.canPlayerFlee = function () {
   return String(this.battleType || "").indexOf("capture_") === 0;
@@ -223,7 +241,7 @@ BattleManager.prototype.startReplacementFlow = function (actionActor, faintedAct
   var normalizedActor = this.normalizedActor(actionActor);
   var opponent = this.opponentActor(normalizedActor);
   var queue = [];
-  if (!this.adminControlled) {
+  if (!this.opponentIsExternallyControlled()) {
     return false;
   }
   if (faintedActors[normalizedActor] && faintedActors[opponent]) {
@@ -261,7 +279,7 @@ BattleManager.prototype.playerActionSucceeded = function (result) {
 };
 
 BattleManager.prototype.updateAdminControlledWaitingAfterPlayerAction = function (result) {
-  if (!this.adminControlled || !this.playerActionSucceeded(result) || this.battleOver) {
+  if (!this.opponentIsExternallyControlled() || !this.playerActionSucceeded(result) || this.battleOver) {
     return;
   }
   if (this.hasPendingReplacementFlow()) {
@@ -276,7 +294,7 @@ BattleManager.prototype.updateAdminControlledWaitingAfterPlayerAction = function
 };
 
 BattleManager.prototype.updateAdminControlledWaitingAfterNpcAction = function (result) {
-  if (!this.adminControlled || !this.playerActionSucceeded(result) || this.battleOver) {
+  if (!this.opponentIsExternallyControlled() || !this.playerActionSucceeded(result) || this.battleOver) {
     return;
   }
   if (this.hasPendingReplacementFlow()) {
@@ -408,8 +426,10 @@ BattleManager.prototype.resolveNpcSwitchAction = function (index, entryChoice) {
     this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
     if (entryChoice) {
       this.applyEntryHeldItemChoice(this.enemyTeam.getActive(), entryChoice);
+    } else if (!this.opponentIsExternallyControlled()) {
+      this.applyAutomaticNpcEntryHeldItemChoice(this.enemyTeam.getActive());
     }
-    if (this.adminControlled) {
+    if (this.opponentIsExternallyControlled()) {
       if (this.enemyTeam.getActive().isFainted()) {
         if (this.enemyTeam.isAllFainted()) {
           this.npcNeedsSwitch = false;
@@ -444,6 +464,8 @@ BattleManager.prototype.resolveNpcSwitchAction = function (index, entryChoice) {
   this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
   if (entryChoice) {
     this.applyEntryHeldItemChoice(this.enemyTeam.getActive(), entryChoice);
+  } else if (!this.opponentIsExternallyControlled()) {
+    this.applyAutomaticNpcEntryHeldItemChoice(this.enemyTeam.getActive());
   }
   this.endTurn(this.enemyTeam.getActive(), this.playerTeam.getActive());
   this.clearRecentSwitchTarget(this.playerTeam);
@@ -476,7 +498,7 @@ BattleManager.prototype.npcUseItem = function (item, target) {
 BattleManager.prototype.resolvePlayerRound = function (playerAction, skippedPlayerResult) {
   var playerResult;
   this.lastPlayerActionSkipped = false;
-  if (this.adminControlled) {
+  if (this.opponentIsExternallyControlled()) {
     if (this.waitingFor && this.waitingFor !== "player") {
       this.lastPlayerActionSkipped = true;
       return skippedPlayerResult;
@@ -511,7 +533,7 @@ BattleManager.prototype.resolvePlayerRound = function (playerAction, skippedPlay
 
 BattleManager.prototype.resolveNpcRound = function (npcAction, skippedNpcResult) {
   var npcResult;
-  if (this.adminControlled && this.waitingFor && this.waitingFor !== "admin") {
+  if (this.opponentIsExternallyControlled() && this.waitingFor && this.waitingFor !== "admin") {
     return skippedNpcResult;
   }
   npcResult = npcAction();
@@ -1006,6 +1028,42 @@ BattleManager.prototype.entryHeldItemChoiceEntries = function (combatant) {
   return runHeldItemTrigger(this, "entryChoiceEntries", HeldItemTriggerContext.entryChoiceEntries(combatant, kind)).entries;
 };
 
+BattleManager.prototype.chooseNpcEntryHeldItemChoice = function (combatant) {
+  var kind = this.entryHeldItemChoiceKind(combatant);
+  var entries = kind ? this.entryHeldItemChoiceEntries(combatant) : [];
+  var candidates;
+  var bestScore = -1;
+  if (!kind || !entries.length) {
+    return null;
+  }
+  if (kind === "move") {
+    candidates = entries;
+  } else if (kind === "type") {
+    candidates = [];
+    entries.forEach(function (entry) {
+      var defenderTypes = ["normal", entry.typeName || entry.name || entry.key];
+      var score = (this.playerTeam.combatantList || []).reduce(function (total, opponent) {
+        return total + Number(opponent && typeEfficacyForTypes(opponent.type, defenderTypes) < 1);
+      }, 0);
+      if (score > bestScore) {
+        bestScore = score;
+        candidates = [entry];
+      } else if (score === bestScore) {
+        candidates.push(entry);
+      }
+    }, this);
+  } else {
+    return null;
+  }
+  var selected = candidates[Math.floor(random() * candidates.length)];
+  return selected ? Object.assign({}, selected, { kind: kind }) : null;
+};
+
+BattleManager.prototype.applyAutomaticNpcEntryHeldItemChoice = function (combatant) {
+  var choice = this.chooseNpcEntryHeldItemChoice(combatant);
+  return choice ? this.applyEntryHeldItemChoice(combatant, choice) : false;
+};
+
 BattleManager.prototype.applyEntryHeldItemChoice = function (combatant, choice) {
   return runHeldItemTrigger(this, "entryChoiceApply", HeldItemTriggerContext.entryChoiceApply(combatant, choice)).applied;
 };
@@ -1280,13 +1338,17 @@ BattleManager.prototype.executeMove = function (attacker, defender, move) {
   if (effectiveMove.requestsBattleSwitch && hit && attacker.team.batonPassStats) {
     if (attacker.team === this.playerTeam) {
       this.playerPostMoveSwitch = true;
-    } else if (this.adminControlled) {
+    } else if (this.opponentIsExternallyControlled()) {
       this.npcNeedsSwitch = true;
       this.replacementFlow = { queue: ["npc"], nextActor: "player" };
       this.applyReplacementFlowWaiting();
     } else {
       var npcEnemySwitch = this.enemyTeam.switchRandom();
-      if (npcEnemySwitch.ok) { this.emitEvents(npcEnemySwitch.events); }
+      if (npcEnemySwitch.ok) {
+        this.emitEvents(npcEnemySwitch.events);
+        this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
+        this.applyAutomaticNpcEntryHeldItemChoice(this.enemyTeam.getActive());
+      }
     }
   }
   if (defender.magicCoatActive && hit && defender.status !== defenderStatusBefore.status && defenderStatusBefore.status === null) {
@@ -1423,23 +1485,21 @@ BattleManager.prototype.advanceInitialEntry = function () {
       state.entered[actor] = true;
     }
     choice = this.initialEntryChoiceFor(actor);
-    if (choice && (actor === "player" || this.adminControlled)) {
+    if (choice && (actor === "player" || this.opponentIsExternallyControlled())) {
       state.phase = actor === "player" ? "awaiting_player_entry_choice" : "awaiting_admin_entry_choice";
       state.nextActor = actor;
-      if (this.adminControlled) { this.waitingFor = actor === "npc" ? "admin" : "player"; }
+      if (this.opponentIsExternallyControlled()) { this.waitingFor = actor === "npc" ? "admin" : "player"; }
       return;
     }
-    if (choice) {
-      this.applyEntryHeldItemChoice(combatant, choice.entries[Math.floor(random() * choice.entries.length)]);
-    }
+    if (choice) { this.applyAutomaticNpcEntryHeldItemChoice(combatant); }
     state.resolved[actor] = true;
   }
   state.nextActor = null;
-  if (this.normalizedFirstActor() === "npc" && !this.adminControlled) {
+  if (this.normalizedFirstActor() === "npc" && !this.opponentIsExternallyControlled()) {
     state.phase = "awaiting_npc_opening";
   } else {
     state.phase = "ready";
-    if (this.adminControlled) { this.waitingFor = this.normalizedFirstActor() === "npc" ? "admin" : "player"; }
+    if (this.opponentIsExternallyControlled()) { this.waitingFor = this.normalizedFirstActor() === "npc" ? "admin" : "player"; }
   }
 };
 
@@ -1463,7 +1523,7 @@ BattleManager.prototype.resolveNpcOpeningMove = function () {
   var npcActive = this.enemyTeam.getActive();
   var actions;
   var action;
-  if (!state || state.phase !== "awaiting_npc_opening" || this.adminControlled || !npcActive || npcActive.isFainted()) {
+  if (!state || state.phase !== "awaiting_npc_opening" || this.opponentIsExternallyControlled() || !npcActive || npcActive.isFainted()) {
     return false;
   }
   actions = this.availableNpcMoveActions(npcActive);
@@ -1513,7 +1573,8 @@ BattleManager.prototype.availableNpcItemActions = function () {
   }, []);
 };
 
-BattleManager.prototype.chooseNpcAction = function (npcActive) {
+BattleManager.prototype.chooseNpcAction = function (npcActive, options) {
+  options = options || {};
   var actions = this.availableNpcMoveActions(npcActive).concat(this.availableNpcItemActions());
   return choosePveAction({
     battleManager: this,
@@ -1525,7 +1586,9 @@ BattleManager.prototype.chooseNpcAction = function (npcActive) {
     npcItems: this.npcItems,
     turn: this.turn,
     weather: this.weather,
-    battleType: this.battleType
+    battleType: this.battleType,
+    disableRandomMoveChoice: Boolean(options.disableRandomMoveChoice),
+    useAllHealingItems: Boolean(options.useAllHealingItems)
   });
 };
 
@@ -1765,20 +1828,7 @@ BattleManager.prototype.damageStatusCheck = function (attacker) {
 };
 
 BattleManager.prototype.typeEfficacy = function (attacker, defender) {
-  var product = 1.0;
-  attacker.type.forEach(function (attackerType) {
-    var row = TYPE_CHART[attackerType] || {};
-    defender.type.forEach(function (defenderType) {
-      product *= row[defenderType] !== undefined ? row[defenderType] : 1.0;
-    });
-  });
-  if (product > 1.0) {
-    return 2.0;
-  }
-  if (product < 1.0) {
-    return 0.5;
-  }
-  return 1.0;
+  return typeEfficacyForTypes(attacker.type, defender.type);
 };
 
 BattleManager.prototype.markMoveKoTrigger = function (attacker, defender, move, defenderHpBefore) {
@@ -1874,7 +1924,7 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
       return;
     }
 
-    if (this.adminControlled && this.startReplacementFlow(this.actorForTeam(attacker.team), {
+    if (this.opponentIsExternallyControlled() && this.startReplacementFlow(this.actorForTeam(attacker.team), {
       player: this.playerTeam.getActive().isFainted(),
       npc: this.enemyTeam.getActive().isFainted()
     })) {
@@ -1885,6 +1935,7 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
       var doubleKoEnemySwitchResult = this.switchNpcAfterKo();
       this.emitEvents(doubleKoEnemySwitchResult.events);
       this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
+      this.applyAutomaticNpcEntryHeldItemChoice(this.enemyTeam.getActive());
       this.playerNeedsSwitch = true;
       this.KOStatus = "recoil_player";
       return;
@@ -1911,7 +1962,7 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
     return;
   }
 
-  if (this.adminControlled && this.startReplacementFlow(this.actorForTeam(attacker.team), {
+  if (this.opponentIsExternallyControlled() && this.startReplacementFlow(this.actorForTeam(attacker.team), {
     player: this.playerTeam.getActive().isFainted(),
     npc: this.enemyTeam.getActive().isFainted()
   })) {
@@ -1941,6 +1992,7 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
       var enemySwitchResult = this.switchNpcAfterKo();
       this.emitEvents(enemySwitchResult.events);
       this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
+      this.applyAutomaticNpcEntryHeldItemChoice(this.enemyTeam.getActive());
     }
   }
 
@@ -1954,6 +2006,7 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
       var autoKoSwitchResult = this.switchNpcAfterKo();
       this.emitEvents(autoKoSwitchResult.events);
       this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
+      this.applyAutomaticNpcEntryHeldItemChoice(this.enemyTeam.getActive());
       return;
     }
 
@@ -2036,7 +2089,7 @@ BattleManager.prototype.resolveForcedPlayerSwitch = function (index, entryChoice
     this.applyEntryHeldItemChoice(this.playerTeam.getActive(), entryChoice);
   }
 
-  if (this.adminControlled) {
+  if (this.opponentIsExternallyControlled()) {
     if (this.playerTeam.getActive().isFainted()) {
       if (this.playerTeam.isAllFainted()) {
         this.playerNeedsSwitch = false;
@@ -2059,6 +2112,7 @@ BattleManager.prototype.resolveForcedPlayerSwitch = function (index, entryChoice
     var switchResult = this.switchNpcAfterKo();
     this.emitEvents(switchResult.events);
     this.checkHeldHpBerryOnEntry(this.enemyTeam.getActive());
+    this.applyAutomaticNpcEntryHeldItemChoice(this.enemyTeam.getActive());
   }
 
   return true;
@@ -2090,7 +2144,7 @@ BattleManager.prototype.resolvePostMovePlayerSwitch = function (index, entryChoi
     return true;
   }
 
-  if (this.adminControlled) {
+  if (this.opponentIsExternallyControlled()) {
     this.waitingFor = "admin";
   } else if (!this.battleOver && !this.playerNeedsSwitch && this.firstActionInTurn === false) {
     this.resolveNpcAction();

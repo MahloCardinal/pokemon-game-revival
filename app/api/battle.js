@@ -363,6 +363,14 @@ export async function readServerRoles() {
   return { ok: true, roles: Array.isArray(result.projection.roles) ? result.projection.roles : [] };
 }
 
+export function readAdminBattleAutomation() {
+  return invokeAuthoritativeBattleCommand({ action: "admin_automation_read" });
+}
+
+export function setAdminBattleAutomation(enabled) {
+  return invokeAuthoritativeBattleCommand({ action: "admin_automation_set", enabled: Boolean(enabled) });
+}
+
 function runAuthoritativeAdminCommand(action, input, semantic) {
   return invokeAuthoritativeBattleCommand(Object.assign({
     action: "admin_" + action,

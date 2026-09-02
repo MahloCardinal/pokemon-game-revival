@@ -241,6 +241,7 @@ export function applyAuthoritativeProjection(scene, projection, events, options)
     ? Object.assign({ player: false, npc: false }, projection.weather_move_used_last_action)
     : { player: false, npc: false };
   manager.adminControlled = Boolean(projection.admin_controlled);
+  manager.opponentControl = String(projection.opponent_control || (manager.adminControlled ? "admin" : scene.battleDome ? "player" : "automatic"));
   manager.waitingFor = projection.waiting_for === "admin" ? "admin" : "player";
   manager.npcNeedsSwitch = Boolean(projection.npc_needs_switch);
   scene.playerTeam = playerTeam;
@@ -1692,7 +1693,8 @@ export function battleTypeForGym(cityKey) {
 }
 
 function sceneIsAdminControlled(scene) {
-  return Boolean(scene && scene.manager && (scene.adminControlled || scene.manager.adminControlled || isAdminControlledBattleType(scene.battleType || scene.manager.battleType)));
+  return Boolean(scene && scene.manager && (scene.manager.opponentIsExternallyControlled()
+    || scene.adminControlled || isAdminControlledBattleType(scene.battleType || scene.manager.battleType)));
 }
 
 function battleTypeRequiresAdminEntryChoice(battleType) {
@@ -1764,12 +1766,16 @@ function attemptCaptureWithBall(scene, ballItem) {
 }
 
 function syncAdminControlledScene(scene) {
-  var controlled = sceneIsAdminControlled(scene);
+  var battleType;
+  var adminControlled;
   if (!scene || !scene.manager) {
     return;
   }
-  scene.adminControlled = controlled;
-  scene.manager.adminControlled = controlled;
+  battleType = scene.battleType || scene.manager.battleType;
+  adminControlled = isAdminControlledBattleType(battleType);
+  scene.adminControlled = adminControlled;
+  scene.manager.adminControlled = adminControlled;
+  scene.manager.opponentControl = scene.battleDome ? "player" : adminControlled ? "admin" : "automatic";
 }
 
 function createAdminBattleItems() {

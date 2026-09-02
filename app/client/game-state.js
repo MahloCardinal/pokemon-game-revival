@@ -103,6 +103,10 @@ function createDefaultAdminDashboardMessageState() {
   return { text: "", sending: false, error: "", notice: "" };
 }
 
+function createDefaultAdminAutomationState() {
+  return { enabled: false, loading: false, loaded: false, saving: false, error: "" };
+}
+
 export var state = {
   playerName: "",
   trainerInfo: [defaultTrainerIndex(), STARTING_POKEDOLLARS, STARTING_BADGES, STARTING_BATTLE_POINTS],
@@ -162,6 +166,7 @@ export var state = {
   fluteDaily: createDefaultFluteDailyState(),
   missions: createDefaultMissionState(),
   adminBattles: { loading: false, rows: [], error: "" },
+  adminAutomation: createDefaultAdminAutomationState(),
   adminDashboardMessage: createDefaultAdminDashboardMessageState(),
   activityFeed: createDefaultActivityFeedState(),
   battleDome: createDefaultBattleDomeState(),
@@ -262,6 +267,7 @@ export function resetPlayerState() {
   state.fluteDaily = createDefaultFluteDailyState();
   state.missions = createDefaultMissionState();
   state.adminBattles = { loading: false, rows: [], error: "" };
+  state.adminAutomation = createDefaultAdminAutomationState();
   state.adminDashboardMessage = createDefaultAdminDashboardMessageState();
   state.activityFeed = createDefaultActivityFeedState();
   state.pendingGlobalActivities = [];

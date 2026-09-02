@@ -18,7 +18,7 @@ import { clearPendingActivityRuntime, setBattleRuntimeActive, setPendingActivity
 import { evaluateBattleStateAfterAuth, resumeAuthoritativeOrdinaryProgression, resumeAuthoritativeTrainingProgression } from "./battle-handler.js";
 import { recoverPendingAuthoritativeDebugTrainingStart, recoverPreparedAuthoritativeTraining } from "./training-zone-handler.js";
 import { refreshMissionState } from "./mission-runtime.js";
-import { openAdminBattle, refreshAdminBattles } from "./admin-battle-handler.js";
+import { openAdminBattle, refreshAdminAutomation, refreshAdminBattles } from "./admin-battle-handler.js";
 import { readServerRoles } from "../api/battle.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
 import { messageDescriptor } from "./i18n.js";
@@ -232,6 +232,8 @@ export async function startAuthenticatedSession(session) {
     openAdminBattle(nextScene.playerAuthUserId || "", nextScene.battleId || "");
   } else if (nextScene && nextScene.name === "admin-battles") {
     refreshAdminBattles();
+  } else if (nextScene && nextScene.name === "admin-home") {
+    refreshAdminAutomation({ silent: true });
   }
   recoverPendingAuthoritativeDebugTrainingStart({ silent: true }).then(function () {
     return recoverPreparedAuthoritativeTraining({ history: "replace" });

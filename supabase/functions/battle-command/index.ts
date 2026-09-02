@@ -1,10 +1,12 @@
 import manifest from "../_shared/game-runtime/manifest.json" with { type: "json" };
 import {
   BATTLE_ENGINE_VERSION,
+  executeAutomaticAdminBattleCommand,
   executeAdminBattleCommand,
   executeBattleCommand,
   executeCaptureBattleCommand,
   executeInitialNpcOpening,
+  executeOpponentBattleCommand,
   initializeBattleRuntime,
   projectBattle,
   restoreBattleManager
@@ -33,7 +35,7 @@ const unchangedTerminalEffects = { reward: "none", inventory: "unchanged", team:
 const commonKeys = ["action", "battleId", "commandId", "expectedPlayerRevision", "expectedBattleVersion", "runtimeOwnerId"];
 const allowedActions = new Set([
   "roles", "turn_history", "debug_money", "debug_badges", "debug_titles", "debug_battle_points", "debug_create_pokemon", "inventory_adjust", "debug_complete_mission",
-  "admin_list", "admin_read", "admin_entry_choice", "start", "prepare_training", "discard_training", "activate_training", "start_debug_training", "start_capture", "flee_capture", "start_gym",
+  "admin_list", "admin_read", "admin_automation_read", "admin_automation_set", "admin_entry_choice", "start", "prepare_training", "discard_training", "activate_training", "start_debug_training", "start_capture", "flee_capture", "start_gym",
   "start_admin_gym", "start_league", "start_tower", "read", "restore", "read_training", "read_ordinary_progression",
   "resolve_ordinary_progression", "allocate_training", "resolve_training", "move", "switch", "entry_choice", "item", "ball",
   "abandon", "admin_move", "admin_switch", "admin_item",
@@ -115,6 +117,132 @@ async function notifyAdminTurnBestEffort(
     );
   } catch (error) {
     console.error("Unable to notify Discord that the admin turn is ready", error);
+  }
+}
+
+async function readAdminAutomation(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"]
+) {
+  const setting = await serviceClient.rpc("read_edge_admin_battle_automation");
+  if (setting.error) throw databaseError(setting.error);
+  return (setting.data || { enabled: false }) as Record<string, unknown>;
+}
+
+function automaticProjection(
+  battle: Record<string, unknown>,
+  transition: { projection: unknown }
+) {
+  return {
+    ...(transition.projection as Record<string, unknown>),
+    contract_key: battle.contract_key,
+    training_difficulty: battle.training_difficulty ?? null,
+    gym_key: battle.gym_key ?? null,
+    league_run_id: battle.league_run_id ?? null,
+    league_member_index: battle.league_member_index ?? null
+  };
+}
+
+async function advanceAutomaticAdminBattle(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  battleId: string,
+  baseResult?: Record<string, unknown> | null
+) {
+  let setting = await readAdminAutomation(serviceClient);
+  if (!setting.enabled || !setting.updated_by) return baseResult || null;
+  let result = baseResult || null;
+  let combinedEvents = Array.isArray(result?.events) ? (result!.events as unknown[]).slice() : [];
+  for (let step = 0; step < 8; step += 1) {
+    const preparedResult = await serviceClient.rpc("prepare_edge_admin_gym_battle", {
+      p_admin_user_id: String(setting.updated_by),
+      p_battle_id: battleId
+    });
+    if (preparedResult.error) throw databaseError(preparedResult.error);
+    const prepared = preparedResult.data as Record<string, unknown>;
+    const battle = prepared.battle as Record<string, unknown> | null;
+    if (!battle || !battle.engine_snapshot || battle.engine_runtime_state !== "ready"
+      || !["admin_gym", "league", "debug_training"].includes(String(battle.contract_key))
+      || !["active", "needs_player_switch"].includes(String(battle.status))
+      || String(battle.waiting_for) !== "admin") {
+      break;
+    }
+    if (battle.engine_version !== BATTLE_ENGINE_VERSION || battle.engine_checksum !== manifest.bundleChecksum) {
+      throw new BattleEdgeError("engine_version_conflict", "La battaglia salvata usa un pacchetto motore diverso.", 409);
+    }
+    const transition = executeAutomaticAdminBattleCommand(battle.engine_snapshot as Record<string, unknown>);
+    const projection = automaticProjection(battle, transition);
+    const commandId = crypto.randomUUID();
+    const commandType = String((transition.command as Record<string, unknown> | null)?.type || "");
+    const commandHash = await sha256({
+      automatic: true,
+      battleId,
+      battleVersion: Number(battle.battle_version),
+      command: transition.command
+    });
+    const committed = await serviceClient.rpc("commit_edge_automatic_admin_command", {
+      p_command_id: commandId,
+      p_command_type: commandType,
+      p_command_hash: commandHash,
+      p_battle_id: battleId,
+      p_expected_battle_version: Number(battle.battle_version),
+      p_engine_version: BATTLE_ENGINE_VERSION,
+      p_engine_checksum: manifest.bundleChecksum,
+      p_input_snapshot_hash: prepared.input_snapshot_hash,
+      p_next_snapshot: transition.snapshot,
+      p_events: transition.events,
+      p_projection: projectionForDatabase(projection)
+    });
+    if (committed.error) throw databaseError(committed.error);
+    const committedData = committed.data as Record<string, unknown> | null;
+    if (committedData?.ok === false && committedData.conflict === "automation_disabled") {
+      break;
+    }
+    const nextEvents = Array.isArray(committedData?.events) ? committedData!.events as unknown[] : [];
+    combinedEvents = combinedEvents.concat(nextEvents);
+    result = {
+      ...(committedData || {}),
+      battle: { ...((committedData?.battle || {}) as Record<string, unknown>), ...projection },
+      events: combinedEvents
+    };
+    if (String(projection.status) === "concluded" || String(projection.status) === "abandoned"
+      || String(projection.waiting_for) !== "admin") {
+      break;
+    }
+    setting = await readAdminAutomation(serviceClient);
+    if (!setting.enabled) break;
+  }
+  return result;
+}
+
+async function drainAutomaticAdminBattles(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"]
+) {
+  const listed = await serviceClient.rpc("list_edge_automatic_admin_battles");
+  if (listed.error) throw databaseError(listed.error);
+  const rows = Array.isArray(listed.data) ? listed.data : [];
+  const failures: Record<string, unknown>[] = [];
+  for (const row of rows) {
+    const battleId = String((row as Record<string, unknown>)?.battle_id || "");
+    if (!battleId) continue;
+    try {
+      await advanceAutomaticAdminBattle(serviceClient, battleId);
+    } catch (error) {
+      console.error("Unable to advance automatic admin battle", battleId, error);
+      failures.push({ battle_id: battleId, message: error instanceof Error ? error.message : String(error) });
+    }
+  }
+  return failures;
+}
+
+async function advanceAutomaticAdminBattleBestEffort(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  battleId: string,
+  baseResult?: Record<string, unknown> | null
+) {
+  try {
+    return await advanceAutomaticAdminBattle(serviceClient, battleId, baseResult) || baseResult || null;
+  } catch (error) {
+    console.error("Automatic admin battle action failed; manual control remains available", battleId, error);
+    return baseResult || null;
   }
 }
 
@@ -252,7 +380,9 @@ async function initializeAndNotifyAdminBattle(
   } catch (error) {
     console.error("Unexpected Discord battle notification error", error);
   }
-  return initialized;
+  return battle?.battle_id
+    ? await advanceAutomaticAdminBattleBestEffort(serviceClient, String(battle.battle_id), initialized) || initialized
+    : initialized;
 }
 
 function domeProjectionFromPrepared(prepared: Record<string, unknown>) {
@@ -731,7 +861,7 @@ Deno.serve(async (request) => {
       if (String(battle.waiting_for) !== role) throw new BattleEdgeError("waiting_for_opponent", "La sfida attende l'altro giocatore.", 409);
       const transition = role === "creator"
         ? executeBattleCommand(battle.engine_snapshot, semantic)
-        : executeAdminBattleCommand(battle.engine_snapshot, semantic);
+        : executeOpponentBattleCommand(battle.engine_snapshot, semantic);
       const committed = await commitDome(clients.serviceClient, clients.userId, body, prepared, semanticAction, transition);
       return jsonResponse(committed as Record<string, unknown>);
     }
@@ -742,6 +872,27 @@ Deno.serve(async (request) => {
       const listed = await clients.serviceClient.rpc("list_edge_admin_gym_battles", { p_admin_user_id: clients.userId });
       if (listed.error) throw databaseError(listed.error);
       return jsonResponse({ ok: true, battles: Array.isArray(listed.data) ? listed.data : [] });
+    }
+
+    if (action === "admin_automation_read") {
+      requireExactKeys(body, ["action"], []);
+      await requireServerRole(clients.serviceClient, clients.userId, "admin");
+      return jsonResponse({ ok: true, automation: await readAdminAutomation(clients.serviceClient) });
+    }
+
+    if (action === "admin_automation_set") {
+      requireExactKeys(body, ["action", "enabled"], ["enabled"]);
+      await requireServerRole(clients.serviceClient, clients.userId, "admin");
+      if (typeof body.enabled !== "boolean") {
+        throw new BattleEdgeError("invalid_request", "Lo stato dell'automazione non è valido.");
+      }
+      const updated = await clients.serviceClient.rpc("set_edge_admin_battle_automation", {
+        p_admin_user_id: clients.userId,
+        p_enabled: body.enabled
+      });
+      if (updated.error) throw databaseError(updated.error);
+      const failures = body.enabled ? await drainAutomaticAdminBattles(clients.serviceClient) : [];
+      return jsonResponse({ ok: true, automation: updated.data, failures });
     }
 
     if (action === "admin_read") {
@@ -895,7 +1046,12 @@ Deno.serve(async (request) => {
       if (startResult.error) throw databaseError(startResult.error);
       const startedBattle = startResult.data?.battle;
       const prepared = await prepareBattle(clients.serviceClient, clients.userId, String(startedBattle?.battle_id || ""));
-      return jsonResponse(await initializeIfNeeded(clients.serviceClient, clients.userId, body, prepared) as Record<string, unknown>);
+      const initialized = await initializeIfNeeded(clients.serviceClient, clients.userId, body, prepared) as Record<string, unknown>;
+      const initializedBattle = initialized.battle as Record<string, unknown> | null;
+      const advanced = initializedBattle?.battle_id
+        ? await advanceAutomaticAdminBattleBestEffort(clients.serviceClient, String(initializedBattle.battle_id), initialized)
+        : null;
+      return jsonResponse((advanced || initialized) as Record<string, unknown>);
     }
 
     if (action === "start_capture") {
@@ -1030,7 +1186,13 @@ Deno.serve(async (request) => {
         await initializeIfNeeded(clients.serviceClient, clients.userId, body, prepared);
         prepared = await prepareBattle(clients.serviceClient, clients.userId, String(preparedBattle.battle_id));
       }
-      const selectedBattle = prepared.battle as Record<string, unknown> | null;
+      let selectedBattle = prepared.battle as Record<string, unknown> | null;
+      if (selectedBattle && ["admin_gym", "league", "debug_training"].includes(String(selectedBattle.contract_key))
+        && String(selectedBattle.waiting_for) === "admin") {
+        await advanceAutomaticAdminBattleBestEffort(clients.serviceClient, String(selectedBattle.battle_id));
+        prepared = await prepareBattle(clients.serviceClient, clients.userId, String(selectedBattle.battle_id));
+        selectedBattle = prepared.battle as Record<string, unknown> | null;
+      }
       const events = selectedBattle
         ? await readBattleEvents(clients.serviceClient, clients.userId, String(selectedBattle.battle_id), afterSeq, limit)
         : [];
@@ -1072,7 +1234,12 @@ Deno.serve(async (request) => {
     if (action === "restore") {
       requireExactKeys(body, commonKeys, ["battleId", "commandId", "runtimeOwnerId"]);
       const prepared = await prepareBattle(clients.serviceClient, clients.userId, uuid(body.battleId, "battleId"));
-      return jsonResponse(await initializeIfNeeded(clients.serviceClient, clients.userId, body, prepared) as Record<string, unknown>);
+      const initialized = await initializeIfNeeded(clients.serviceClient, clients.userId, body, prepared) as Record<string, unknown>;
+      const initializedBattle = initialized.battle as Record<string, unknown> | null;
+      const advanced = initializedBattle?.battle_id
+        ? await advanceAutomaticAdminBattleBestEffort(clients.serviceClient, String(initializedBattle.battle_id), initialized)
+        : null;
+      return jsonResponse((advanced || initialized) as Record<string, unknown>);
     }
 
     if (action === "read_training") {
@@ -1216,7 +1383,14 @@ Deno.serve(async (request) => {
     if (replay.error) throw databaseError(replay.error);
     if (replay.data) {
       const replayData = replay.data as Record<string, unknown>;
-      if (!adminAction) await notifyAdminTurnBestEffort(clients.serviceClient, replayData);
+      if (!adminAction) {
+        await notifyAdminTurnBestEffort(clients.serviceClient, replayData);
+        const replayBattle = replayData.battle as Record<string, unknown> | null;
+        const advanced = replayBattle?.battle_id
+          ? await advanceAutomaticAdminBattleBestEffort(clients.serviceClient, String(replayBattle.battle_id), replayData)
+          : null;
+        return jsonResponse((advanced || replayData) as Record<string, unknown>);
+      }
       return jsonResponse(replayData);
     }
     const adminPrepared = adminAction ? await clients.serviceClient.rpc("prepare_edge_admin_gym_battle", {
@@ -1245,7 +1419,7 @@ Deno.serve(async (request) => {
       const projection = { ...(transition.projection as Record<string, unknown>), contract_key: battle.contract_key,
         gym_key: battle.gym_key ?? null, league_run_id: battle.league_run_id ?? null,
         league_member_index: battle.league_member_index ?? null };
-      const committed = await clients.serviceClient.rpc(battle.contract_key === "debug_training"
+      const committed = await clients.serviceClient.rpc(battle.contract_key === "debug_training" && semanticAction !== "entry_choice"
         ? "commit_edge_admin_debug_training_command" : "commit_edge_admin_gym_command", {
         p_admin_user_id: clients.userId,
         p_command_id: String(body.commandId),
@@ -1269,6 +1443,14 @@ Deno.serve(async (request) => {
     } else {
       result = await commit(clients.serviceClient, clients.userId, body, prepared, action, transition);
       await notifyAdminTurnBestEffort(clients.serviceClient, result as Record<string, unknown>);
+      const resultBattle = (result as Record<string, unknown>).battle as Record<string, unknown> | null;
+      if (resultBattle?.battle_id) {
+        result = await advanceAutomaticAdminBattleBestEffort(
+          clients.serviceClient,
+          String(resultBattle.battle_id),
+          result as Record<string, unknown>
+        ) || result;
+      }
     }
     return jsonResponse(result as Record<string, unknown>);
   } catch (error) {

@@ -62,6 +62,21 @@
   background: var(--surface-raised);
   box-shadow: 3px 3px 0 rgba(61, 96, 128, 0.12);
 }
+.admin-automation-panel {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  width: min(520px, 100%);
+  margin-top: 22px;
+  padding: 16px;
+  border: 2px solid rgba(53, 93, 115, 0.42);
+  border-radius: var(--radius-card);
+  background: var(--surface-raised);
+}
+.admin-automation-status {
+  margin: 0;
+  color: var(--text-soft);
+}
 .admin-dashboard-section-title {
   margin: 0;
   color: var(--text);

@@ -56,6 +56,21 @@ function renderAdminDashboardMessagePanel() {
   ].join("");
 }
 
+function renderAdminAutomationPanel() {
+  var automation = state.adminAutomation || { enabled: false, loading: false, saving: false, error: "" };
+  var pending = automation.loading || automation.saving;
+  var statusKey = automation.enabled ? "ui.admin.automationEnabled" : "ui.admin.automationDisabled";
+  return [
+    '<section class="admin-automation-panel">',
+    '  <h2 class="admin-dashboard-section-title">' + escapeHtml(t("ui.admin.automationTitle")) + '</h2>',
+    '  <p class="admin-automation-status">' + escapeHtml(t(pending ? "ui.admin.automationUpdating" : statusKey)) + '</p>',
+    button(t(automation.enabled ? "ui.admin.disableAutomation" : "ui.admin.enableAutomation"), "admin-automation-toggle",
+      pending ? "disabled" : "", automation.enabled ? "button-danger" : "button-primary"),
+    automation.error ? '<p class="admin-dashboard-message-feedback is-error">' + escapeHtml(resolveText(automation.error)) + '</p>' : "",
+    '</section>'
+  ].join("");
+}
+
 export function renderAdminBattlesScene() {
   var adminState = state.adminBattles || { loading: false, rows: [], error: "" };
   var content;
@@ -78,6 +93,7 @@ export function renderAdminHomeScene() {
     '    <span class="admin-dashboard-card-title">' + escapeHtml(t("ui.admin.activeBattles")) + '</span>',
     '  </a>',
     '</section>',
+    renderAdminAutomationPanel(),
     renderAdminDashboardMessagePanel()
   ].join("");
   return sceneShell(t("ui.admin.title"), "", content, "", "scene-content-admin scene-content-admin-home", "parent-back", true);

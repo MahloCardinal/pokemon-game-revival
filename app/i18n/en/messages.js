@@ -183,6 +183,9 @@ export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
   admin: Object.freeze({
     activeBattlesTitle: "Active battles",
     loadBattlesFailed: "The active battles could not be loaded.",
+    loadAutomationFailed: "The AI status could not be loaded.",
+    saveAutomationFailed: "The AI status could not be updated.",
+    automationPartialFailure: "AI enabled, but at least one battle requires manual intervention.",
     enterAnnouncement: "Enter a message to send.",
     sendAnnouncementFailed: "The announcement could not be sent.",
     announcementSent: "Announcement sent.",

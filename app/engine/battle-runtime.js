@@ -270,6 +270,9 @@ export function restoreBattleManager(snapshot) {
   enemyTeam = createTeam(snapshot.enemyTeam);
   manager = new BattleManager(playerTeam, enemyTeam);
   Object.assign(manager, jsonValue(snapshot.manager || {}, 0));
+  if (!manager.opponentControl || manager.opponentControl === "automatic" && manager.adminControlled) {
+    manager.opponentControl = manager.adminControlled ? "admin" : "automatic";
+  }
   manager.log = Array.isArray(snapshot.manager && snapshot.manager.log) ? snapshot.manager.log.slice() : [];
   manager.battleResultLines = snapshot.manager && Array.isArray(snapshot.manager.battleResultLines)
     ? snapshot.manager.battleResultLines.slice()
@@ -386,9 +389,11 @@ export function initializeBattleRuntime(input) {
   manager.trainingDifficulty = String(input.trainingDifficulty || "");
   manager.towerChallenge = Math.max(1, Number(input.towerChallenge) || 1);
   manager.firstActor = input.firstActor === "npc" ? "npc" : "player";
-  manager.adminControlled = ["admin_gym", "league", "debug_training", "battle_dome"].indexOf(String(input.contractKey)) !== -1;
-  manager.waitingFor = manager.adminControlled && manager.firstActor === "npc" ? "admin" : "player";
-  manager.npcItems = manager.adminControlled && Array.isArray(input.adminItems)
+  manager.opponentControl = String(input.contractKey) === "battle_dome" ? "player"
+    : ["admin_gym", "league", "debug_training"].indexOf(String(input.contractKey)) !== -1 ? "admin" : "automatic";
+  manager.adminControlled = manager.opponentControl === "admin";
+  manager.waitingFor = manager.opponentIsExternallyControlled() && manager.firstActor === "npc" ? "admin" : "player";
+  manager.npcItems = manager.opponentIsExternallyControlled() && Array.isArray(input.adminItems)
     ? input.adminItems.map(function (entry) { return [Number(entry[0]), Math.min(3, Math.max(0, Number(entry[1]) || 0))]; }).filter(function (entry) { return entry[1] > 0; })
     : authoritativeNpcItemsForBattle({ contractKey: manager.battleType, gymKey: input.gymKey });
   manager.presentation = presentation;
@@ -529,7 +534,7 @@ export function executeBattleCommand(snapshot, command) {
   if (manager.initialEntry && manager.initialEntry.phase !== "ready" && command.type !== "entry_choice" && command.type !== "abandon") {
     throw new Error("A held-item effect must be selected first.");
   }
-  if (manager.adminControlled) {
+  if (manager.opponentIsExternallyControlled()) {
     if (manager.waitingFor !== "player" && command.type !== "abandon") { throw new Error("Waiting for the admin action."); }
     if ((manager.playerNeedsSwitch || manager.playerPostMoveSwitch) && command.type !== "switch" && command.type !== "abandon") {
       throw new Error("A Pokemon must be sent out first.");
@@ -705,62 +710,110 @@ export function executeCaptureBattleCommand(snapshot, command) {
   };
 }
 
-export function executeAdminBattleCommand(snapshot, command) {
+function resolveOpponentCommand(manager, command) {
+  var active;
+  var move;
+  var target;
+  var item;
+  var result;
+  if (command.type === "entry_choice") {
+    active = manager.enemyTeam.getActive();
+    if (!active || !manager.resolveInitialEntryChoice("npc", command.entryChoice)) {
+      throw new Error("Invalid held-item choice.");
+    }
+  } else if (command.type === "move") {
+    active = manager.enemyTeam.getActive();
+    var opponentMoveAction = active && manager.moveActionForSlot("npc", command.moveSlot);
+    move = opponentMoveAction && opponentMoveAction.move;
+    if (!move) { throw new Error("Opponent move is unavailable or cannot be executed."); }
+    result = manager.npcUseMove(move);
+  } else if (command.type === "switch") {
+    var switchIndex = manager.enemyTeam.combatantList.findIndex(function (combatant) {
+      return combatant.pokemon.authoritativeSlot === Number(command.teamSlot);
+    });
+    var npcSwitchTarget = manager.enemyTeam.combatantList[switchIndex];
+    if (npcSwitchTarget && manager.entryHeldItemChoiceKind(npcSwitchTarget) && !command.entryChoice) {
+      throw new Error("An entry held-item effect must be selected first.");
+    }
+    result = manager.npcSwitch(switchIndex, command.entryChoice || null);
+  } else if (command.type === "item") {
+    item = getInventoryItemByIndex(manager.npcItems, Number(command.itemIndex));
+    target = Number.isInteger(command.targetSlot) ? manager.enemyTeam.combatantList.find(function (combatant) {
+      return combatant.pokemon.authoritativeSlot === Number(command.targetSlot);
+    }) || null : null;
+    if (!item || item.category === ItemCategory.Ball) { throw new Error("Opponent item unavailable."); }
+    result = manager.npcUseItem(item, target);
+  } else {
+    throw new Error("Unsupported opponent command.");
+  }
+  if (result === false || result && result.ok === false) {
+    throw new Error(result && result.code || "Opponent action cannot be executed.");
+  }
+  return result;
+}
+
+function chooseAutomaticOpponentCommand(manager) {
+  var active = manager.enemyTeam.getActive();
+  var choice;
+  var action;
+  var switchIndex;
+  var target;
+  if (manager.initialEntry && manager.initialEntry.phase === "awaiting_admin_entry_choice") {
+    choice = manager.chooseNpcEntryHeldItemChoice(active);
+    if (!choice) { throw new Error("The automatic held-item choice is unavailable."); }
+    return { type: "entry_choice", entryChoice: choice };
+  }
+  if (manager.npcNeedsSwitch || active && active.isFainted()) {
+    switchIndex = manager.chooseNpcSwitchIndex();
+    target = Number.isInteger(switchIndex) ? manager.enemyTeam.combatantList[switchIndex] : null;
+    if (!target) { throw new Error("The automatic replacement is unavailable."); }
+    choice = manager.chooseNpcEntryHeldItemChoice(target);
+    return {
+      type: "switch",
+      teamSlot: target.pokemon.authoritativeSlot,
+      entryChoice: choice || null
+    };
+  }
+  action = manager.chooseNpcAction(active, {
+    disableRandomMoveChoice: true,
+    useAllHealingItems: true
+  });
+  if (!action) { throw new Error("The automatic opponent action is unavailable."); }
+  if (action.type === "item") {
+    return {
+      type: "item",
+      itemIndex: action.item.index,
+      targetSlot: action.target && action.target.pokemon ? action.target.pokemon.authoritativeSlot : null
+    };
+  }
+  return { type: "move", moveSlot: action.moveSlot };
+}
+
+function runOpponentBattleCommand(snapshot, command, automatic) {
   var restored = restoreBattleManager(snapshot);
   var manager = restored.manager;
   var rngStart = restoreRngState(restored.rngState);
   var logStart = manager.log.length;
-  var turnHistory = captureTurnHistory(manager, restored.playerItems, command);
+  var turnHistory = captureTurnHistory(manager, restored.playerItems, command || null);
   var execution;
   var result;
-  if (!manager.adminControlled || manager.waitingFor !== "admin" || manager.battleOver) {
-    throw new Error("The battle is not waiting for an admin action.");
-  }
-  if (manager.npcNeedsSwitch && command.type !== "switch") {
-    throw new Error("The admin must send out a Pokemon first.");
+  var resolvedCommand = command;
+  if (!manager.opponentIsExternallyControlled() || manager.waitingFor !== "admin" || manager.battleOver) {
+    throw new Error("The battle is not waiting for an opponent action.");
   }
   execution = withDeterministicRng(restored.rngState, function () {
-    var active;
-    var move;
-    var target;
-    var item;
-    if (command.type === "entry_choice") {
-      active = manager.enemyTeam.getActive();
-      if (!active || !manager.resolveInitialEntryChoice("npc", command.entryChoice)) {
-        throw new Error("Invalid held-item choice.");
-      }
-    } else if (command.type === "move") {
-      active = manager.enemyTeam.getActive();
-      var adminMoveAction = active && manager.moveActionForSlot("npc", command.moveSlot);
-      move = adminMoveAction && adminMoveAction.move;
-      if (!move) { throw new Error("Opponent move is unavailable or cannot be executed."); }
-      result = manager.npcUseMove(move);
-    } else if (command.type === "switch") {
-      var switchIndex = manager.enemyTeam.combatantList.findIndex(function (combatant) {
-        return combatant.pokemon.authoritativeSlot === Number(command.teamSlot);
-      });
-      var npcSwitchTarget = manager.enemyTeam.combatantList[switchIndex];
-      if (npcSwitchTarget && manager.entryHeldItemChoiceKind(npcSwitchTarget) && !command.entryChoice) {
-        throw new Error("An entry held-item effect must be selected first.");
-      }
-      result = manager.npcSwitch(switchIndex, command.entryChoice || null);
-    } else if (command.type === "item") {
-      item = getInventoryItemByIndex(manager.npcItems, Number(command.itemIndex));
-      target = Number.isInteger(command.targetSlot) ? manager.enemyTeam.combatantList.find(function (combatant) {
-        return combatant.pokemon.authoritativeSlot === Number(command.targetSlot);
-      }) || null : null;
-      if (!item || item.category === ItemCategory.Ball) { throw new Error("Admin item unavailable."); }
-      result = manager.npcUseItem(item, target);
-    } else {
-      throw new Error("Unsupported admin command.");
+    if (automatic) {
+      resolvedCommand = chooseAutomaticOpponentCommand(manager);
     }
-    if (result === false || result && result.ok === false) {
-      throw new Error(result && result.code || "Admin action cannot be executed.");
+    if (manager.npcNeedsSwitch && resolvedCommand.type !== "switch") {
+      throw new Error("The opponent must send out a Pokemon first.");
     }
+    result = resolveOpponentCommand(manager, resolvedCommand);
     return result;
   });
   var status = battleStatus(manager);
-  var events = commandEvents(manager, logStart, { type: "admin_command_resolved", data: { command_type: command.type } }, [], turnHistory, restored.playerItems);
+  var events = commandEvents(manager, logStart, { type: automatic ? "automatic_opponent_command_resolved" : "opponent_command_resolved",
+    data: { command_type: resolvedCommand.type } }, [], turnHistory, restored.playerItems);
   return {
     snapshot: serializeBattleManager(manager, execution.rngState, { playerItems: restored.playerItems, presentation: manager.presentation }),
     events: events,
@@ -769,8 +822,25 @@ export function executeAdminBattleCommand(snapshot, command) {
     projection: projectBattle(manager, status, restored.playerItems),
     rngStart: rngStart,
     rngEnd: restoreRngState(execution.rngState),
-    rngDraws: execution.rngState.draws - rngStart.draws
+    rngDraws: execution.rngState.draws - rngStart.draws,
+    command: jsonValue(resolvedCommand, 0)
   };
+}
+
+export function executeOpponentBattleCommand(snapshot, command) {
+  return runOpponentBattleCommand(snapshot, command, false);
+}
+
+export function executeAdminBattleCommand(snapshot, command) {
+  return executeOpponentBattleCommand(snapshot, command);
+}
+
+export function executeAutomaticAdminBattleCommand(snapshot) {
+  var restored = restoreBattleManager(snapshot);
+  if (restored.manager.opponentControl !== "admin") {
+    throw new Error("The opponent is not controlled by the admin automation.");
+  }
+  return runOpponentBattleCommand(snapshot, null, true);
 }
 
 export function projectBattle(manager, status, playerItems) {
@@ -851,11 +921,12 @@ export function projectBattle(manager, status, playerItems) {
     player_post_move_switch: Boolean(manager.playerPostMoveSwitch),
     npc_needs_switch: Boolean(manager.npcNeedsSwitch),
     admin_controlled: Boolean(manager.adminControlled),
-    waiting_for: manager.adminControlled && !manager.battleOver ? manager.waitingFor : null,
-    admin_items: manager.adminControlled ? jsonValue(manager.npcItems || [], 0) || [] : [],
+    opponent_control: manager.opponentControl || (manager.adminControlled ? "admin" : "automatic"),
+    waiting_for: manager.opponentIsExternallyControlled() && !manager.battleOver ? manager.waitingFor : null,
+    admin_items: manager.opponentIsExternallyControlled() ? jsonValue(manager.npcItems || [], 0) || [] : [],
     initial_entry: jsonValue(manager.initialEntry || null, 0),
     entry_choice: manager.initialEntry && manager.initialEntry.phase === "awaiting_player_entry_choice" ? entryChoice("player") : null,
-    admin_entry_choice: manager.adminControlled && manager.initialEntry && manager.initialEntry.phase === "awaiting_admin_entry_choice" ? entryChoice("npc") : null,
+    admin_entry_choice: manager.opponentIsExternallyControlled() && manager.initialEntry && manager.initialEntry.phase === "awaiting_admin_entry_choice" ? entryChoice("npc") : null,
     battle_state: {
       player_team: ownState(manager.playerTeam, ["pokemonList", "combatantList", "battleManager"]),
       npc_team: ownState(manager.enemyTeam, ["pokemonList", "combatantList", "battleManager"]),

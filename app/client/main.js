@@ -13,7 +13,7 @@ import { bindHistoryNavigation, rememberCaptureSearchPreferences } from "./route
 import { initializeSession } from "./session.js";
 import { getResolvedInventoryItem } from "../data/items.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
-import { openAdminBattle, refreshAdminBattles } from "./admin-battle-handler.js";
+import { openAdminBattle, refreshAdminAutomation, refreshAdminBattles } from "./admin-battle-handler.js";
 import { initializeHeldItemTooltip } from "./held-item-tooltip.js";
 import { initializeDeploymentWatcher, setupDeploymentWatch } from "./deployment-version.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
@@ -453,6 +453,9 @@ bindHistoryNavigation(function (scene) {
   if (scene.name === "admin-battles") {
     refreshAdminBattles();
     return;
+  }
+  if (scene.name === "admin-home") {
+    refreshAdminAutomation({ silent: true });
   }
   if (scene.name === "city-daycare") {
     import("./daycare-handler.js").then(function (module) {

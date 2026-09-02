@@ -1,18 +1,19 @@
 import { pveMoveCategoriesFor } from "../data/pve-move-categories.js";
 import {
   antidote,
-  ice_heal,
+  awakening,
   burn_heal,
-  paralyze_heal,
   full_heal,
-  hyper_potion,
-  potion,
-  max_potion,
   full_restore,
-  revive,
+  hyper_potion,
+  ice_heal,
+  ItemSubcategory,
+  max_potion,
   max_revive,
-  super_potion,
-  awakening
+  paralyze_heal,
+  potion,
+  revive,
+  super_potion
 } from "../data/items.js";
 import { combatantHasCurableStatus } from "./held-items.js";
 import { random } from "./deterministic-rng.js";
@@ -26,11 +27,21 @@ var DAMAGE_NO_PERCENTAGE_CATEGORIES = [
   "damageNoPercentagePriority3",
   "damageNoPercentagePriority4"
 ];
-var NPC_REVIVE_ITEM_INDEXES = [revive.index, max_revive.index];
-var NPC_HP_ITEM_INDEXES = [potion.index, super_potion.index, hyper_potion.index, max_potion.index];
-var NPC_STATUS_ITEM_INDEXES = [full_heal.index, awakening.index, paralyze_heal.index, ice_heal.index, antidote.index, burn_heal.index];
-var NPC_ALLOWED_ITEM_INDEXES = NPC_REVIVE_ITEM_INDEXES.concat(NPC_HP_ITEM_INDEXES, [full_restore.index], NPC_STATUS_ITEM_INDEXES);
-
+var STANDARD_NPC_ITEM_INDEXES = [
+  potion.index,
+  super_potion.index,
+  hyper_potion.index,
+  max_potion.index,
+  full_restore.index,
+  antidote.index,
+  paralyze_heal.index,
+  awakening.index,
+  burn_heal.index,
+  ice_heal.index,
+  full_heal.index,
+  revive.index,
+  max_revive.index
+];
 export function choosePveAction(context) {
   var actions = context.availableActions || [];
   var moves = moveActions(actions);
@@ -53,7 +64,7 @@ function choosePveMoveAction(context, moves) {
   var damageCandidates;
   var nonDamageCandidates;
 
-  if (random() < RANDOM_MOVE_CHANCE) {
+  if (!context.disableRandomMoveChoice && random() < RANDOM_MOVE_CHANCE) {
     return chooseRandomAction(moves);
   }
 
@@ -84,7 +95,7 @@ function itemActions(actions) {
 }
 
 function choosePveItemAction(context, items) {
-  var allowedItems = allowedNpcItemActions(items, NPC_ALLOWED_ITEM_INDEXES);
+  var allowedItems = allowedNpcItemActions(items, Boolean(context && context.useAllHealingItems));
   var reviveAction;
   var survivalAction;
   var statusAction;
@@ -124,14 +135,17 @@ function chooseSurvivalAction(context, items) {
     return { handled: true, action: null };
   }
   if (combatantHasCurableStatus(npcActive)) {
-    action = itemActionForTarget(items, npcActive, full_restore.index);
+    action = itemActionForTargetBySubcategory(items, npcActive, ItemSubcategory.HealFull);
     return { handled: true, action: action && healedHp(action.item, npcActive) >= threshold ? action : null };
   }
-  action = NPC_HP_ITEM_INDEXES.map(function (itemIndex) {
-    return itemActionForTarget(items, npcActive, itemIndex);
-  }).find(function (candidate) {
-    return candidate && healedHp(candidate.item, npcActive) >= threshold;
-  });
+  action = items.filter(function (candidate) {
+    return candidate && candidate.target === npcActive && candidate.item
+      && candidate.item.subcategory === ItemSubcategory.HealHp
+      && healedHp(candidate.item, npcActive) >= threshold;
+  }).sort(function (left, right) {
+    return healedHp(left.item, npcActive) - healedHp(right.item, npcActive)
+      || Number(left.item.index) - Number(right.item.index);
+  })[0] || null;
   return { handled: true, action: action || null };
 }
 
@@ -145,10 +159,16 @@ function healedHp(item, combatant) {
   return Math.min(maxHp, currentHp + (Number.isFinite(value) ? value : 0));
 }
 
-function allowedNpcItemActions(items, allowedIndexes) {
+function allowedNpcItemActions(items, useAllHealingItems) {
   return (items || []).filter(function (action) {
-    var itemIndex = Number(action && action.item && action.item.index);
-    return allowedIndexes.indexOf(itemIndex) !== -1;
+    var subcategory = action && action.item && action.item.subcategory;
+    if (!useAllHealingItems) {
+      return STANDARD_NPC_ITEM_INDEXES.indexOf(Number(action && action.item && action.item.index)) !== -1;
+    }
+    return subcategory === ItemSubcategory.HealKo
+      || subcategory === ItemSubcategory.HealHp
+      || subcategory === ItemSubcategory.HealFull
+      || subcategory === ItemSubcategory.HealStatus;
   });
 }
 
@@ -178,7 +198,7 @@ function chooseReviveAction(context, items) {
 function bestReviveAction(items) {
   var reviveActions = (items || []).filter(function (action) {
     return action && action.target && action.target.isFainted && action.target.isFainted()
-      && NPC_REVIVE_ITEM_INDEXES.indexOf(Number(action.item && action.item.index)) !== -1;
+      && action.item && action.item.subcategory === ItemSubcategory.HealKo;
   });
   if (!reviveActions.length) {
     return null;
@@ -204,26 +224,24 @@ function compareReviveItemPriority(left, right) {
 }
 
 function reviveItemPriority(item) {
-  return Number(item && item.index) === max_revive.index ? 0 : 1;
+  return item && item.value === "max" ? 0 : 1;
 }
 
 function chooseStatusCureAction(context, items) {
   var manager = context.battleManager;
   var npcActive = context.attacker;
-  var specificItemIndex;
+  var action;
   if (!npcActive) {
     return null;
   }
-  specificItemIndex = specificStatusCureItemIndex(npcActive);
+  action = statusCureActionForTarget(items, npcActive);
   if (wouldFaintFromStatusTick(npcActive)) {
-    return itemActionForTarget(items, npcActive, specificItemIndex)
-      || itemActionForTarget(items, npcActive, full_heal.index);
+    return action;
   }
   if (!manager.combatantWillBeBlockedByStatus(npcActive) || playerHasStatusThreat(context.defender)) {
     return null;
   }
-  return itemActionForTarget(items, npcActive, specificItemIndex)
-    || itemActionForTarget(items, npcActive, full_heal.index);
+  return action;
 }
 
 function wouldFaintFromStatusTick(combatant) {
@@ -243,22 +261,21 @@ function playerHasStatusThreat(playerActive) {
   }));
 }
 
-function specificStatusCureItemIndex(combatant) {
-  var status = combatant && combatant.status;
-  if (status === "slp") { return awakening.index; }
-  if (status === "frz") { return ice_heal.index; }
-  if (status === "par_block" || status === "par_free") { return paralyze_heal.index; }
-  if (status === "psn") { return antidote.index; }
-  if (status === "brn") { return burn_heal.index; }
-  return null;
+function statusCureActionForTarget(items, target) {
+  var status = target && target.status;
+  return (items || []).filter(function (action) {
+    var statuses = action && action.item && action.item.statuses;
+    return action && action.target === target && action.item.subcategory === ItemSubcategory.HealStatus
+      && Array.isArray(statuses) && (statuses.indexOf(status) !== -1 || statuses.indexOf("all") !== -1);
+  }).sort(function (left, right) {
+    return Number(left.item.statuses.indexOf("all") !== -1) - Number(right.item.statuses.indexOf("all") !== -1)
+      || Number(left.item.index) - Number(right.item.index);
+  })[0] || null;
 }
 
-function itemActionForTarget(items, target, itemIndex) {
-  if (!itemIndex) {
-    return null;
-  }
+function itemActionForTargetBySubcategory(items, target, subcategory) {
   return (items || []).find(function (action) {
-    return action && action.target === target && Number(action.item && action.item.index) === Number(itemIndex);
+    return action && action.target === target && action.item && action.item.subcategory === subcategory;
   }) || null;
 }
 

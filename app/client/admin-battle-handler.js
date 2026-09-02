@@ -4,7 +4,7 @@ import { render, setScene } from "./renderer.js";
 import { openMessage } from "./dialog-handler.js";
 import { appendAuthoritativeEventLines, applyAuthoritativeProjection, closeBattleTargetPanel, openBattleEntryChoicePanel, openBattleTargetPanel, hpSnapshot, animateHpSequence } from "./battle-handler.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
-import { listAdminControlledBattles, loadAdminControlledBattle, resolveAuthoritativeAdminEntryChoice, submitAuthoritativeAdminMove, switchAuthoritativeAdminPokemon, useAuthoritativeAdminItem } from "../api/battle.js";
+import { listAdminControlledBattles, loadAdminControlledBattle, readAdminBattleAutomation, resolveAuthoritativeAdminEntryChoice, setAdminBattleAutomation, submitAuthoritativeAdminMove, switchAuthoritativeAdminPokemon, useAuthoritativeAdminItem } from "../api/battle.js";
 import { appendAdminGlobalActivityMessage } from "../api/activity-feed.js";
 import { getSupabaseClient } from "../api/supabase.js";
 import { getInventoryItemByIndex } from "../data/items.js";
@@ -26,6 +26,60 @@ function requireAdmin() {
   setScene({ name: "home" }, { history: "replace" });
   return false;
 }
+
+export function refreshAdminAutomation(options) {
+  options = options || {};
+  if (!requireAdmin()) {
+    return Promise.resolve({ ok: false });
+  }
+  if (state.adminAutomation.loading || state.adminAutomation.saving) {
+    return Promise.resolve({ ok: false, pending: true });
+  }
+  state.adminAutomation.loading = !options.silent;
+  state.adminAutomation.error = "";
+  if (!options.silent) { render(); }
+  return readAdminBattleAutomation().then(function (result) {
+    state.adminAutomation.loading = false;
+    state.adminAutomation.loaded = Boolean(result.ok);
+    if (result.ok) {
+      state.adminAutomation.enabled = Boolean(result.automation && result.automation.enabled);
+    } else {
+      state.adminAutomation.error = messageDescriptor("admin.loadAutomationFailed");
+    }
+    if (state.scene && state.scene.name === "admin-home") { render(); }
+    return result;
+  }).catch(function (error) {
+    state.adminAutomation.loading = false;
+    state.adminAutomation.error = messageDescriptor("admin.loadAutomationFailed");
+    if (state.scene && state.scene.name === "admin-home") { render(); }
+    return { ok: false, message: error.message };
+  });
+}
+
+registerAction("admin-automation-toggle", function () {
+  if (!requireAdmin() || state.adminAutomation.loading || state.adminAutomation.saving) { return; }
+  var enabled = !state.adminAutomation.enabled;
+  state.adminAutomation.saving = true;
+  state.adminAutomation.error = "";
+  render();
+  setAdminBattleAutomation(enabled).then(function (result) {
+    state.adminAutomation.saving = false;
+    if (!result.ok) {
+      state.adminAutomation.error = messageDescriptor("admin.saveAutomationFailed");
+    } else {
+      state.adminAutomation.enabled = Boolean(result.automation && result.automation.enabled);
+      state.adminAutomation.loaded = true;
+      if (Array.isArray(result.failures) && result.failures.length) {
+        state.adminAutomation.error = messageDescriptor("admin.automationPartialFailure");
+      }
+    }
+    render();
+  }).catch(function () {
+    state.adminAutomation.saving = false;
+    state.adminAutomation.error = messageDescriptor("admin.saveAutomationFailed");
+    render();
+  });
+});
 
 export function refreshAdminBattles(options) {
   options = options || {};

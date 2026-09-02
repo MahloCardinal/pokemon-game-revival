@@ -17,6 +17,7 @@ const discordBattleEdge = read("supabase/functions/_shared/discord-admin-battle.
 const recoveryEdge = read("supabase/functions/request-password-recovery/index.ts");
 const schema = read("supabase/migrations/20260812000000_revival_baseline.sql");
 const engine = read("app/engine/battle-runtime.js");
+const pveMoveManager = read("app/engine/pve_move_manager.js");
 const moveCatalogSource = read("app/data/moves.js");
 const moveEngineSource = read("app/engine/moves.js");
 const main = read("app/client/main.js");
@@ -52,6 +53,8 @@ const playerDirectoryPokedexMigration = read("supabase/migrations/20260901150000
 const battleItemRuntimeMigration = read("supabase/migrations/20260901160000_bind_battle_item_effect_runtime.sql");
 const selfInducedStatusRuntimeMigration = read("supabase/migrations/20260902120000_bind_self_induced_status_runtime.sql");
 const immediateKoRuntimeMigration = read("supabase/migrations/20260902133000_bind_immediate_ko_runtime.sql");
+const adminBattleAutomationMigration = read("supabase/migrations/20260902134000_admin_battle_automation.sql");
+const adminBattleAutomationRuntimeMigration = read("supabase/migrations/20260902135000_bind_admin_battle_automation_runtime.sql");
 const debugOfficialBattleItemMigration = read("supabase/migrations/20260902130000_allow_debug_catalog_items_in_official_battles.sql");
 const adminGymWaitingKeyMigration = read("supabase/migrations/20260902131000_fix_admin_gym_waiting_catalog_keys.sql");
 const authoritativeGymKeyConstraintMigration = read("supabase/migrations/20260902132000_fix_authoritative_gym_key_constraint.sql");
@@ -624,6 +627,7 @@ assert.match(globalTeamCompositionMigration, /'f03ece940d261bcbd2ab5770af06fbc30
 assert.match(battleItemRuntimeMigration, /'5293eb988f21a2d1437d5f3fd5962b3b54453b2e4b13688b6eeee3447c77246f'/);
 assert.match(selfInducedStatusRuntimeMigration, /'37a8a2c205f9a8ed8c905890495966b37eb8e6976e78b2254fd504859c305d3d'/);
 assert.match(immediateKoRuntimeMigration, /'04bdb0ee7705192127e9d72a154ef1a9f6128d3a7d46de0b79a54280bcc6a412'/);
+assert.match(adminBattleAutomationRuntimeMigration, /'118b342f70fbc5dc8e8db2be12dfa5e24cf0fa593ce5c920c847252c4517d698'/);
 assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_gym_counts/i);
 assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_league_counts/i);
 
@@ -781,7 +785,8 @@ const { BattleManager, buildBattleSummary, createMove, Pokemon, projectBattle, T
   challenger.authoritativeSlot = 0;
   const manager = new BattleManager(new Team("Creator", [creator]), new Team("Challenger", [challenger]));
   manager.battleType = "battle_dome";
-  manager.adminControlled = true;
+  manager.opponentControl = "player";
+  manager.adminControlled = false;
   manager.firstActor = "player";
   manager.startInitialEntry();
   assert.equal(manager.initialEntry.phase, "awaiting_player_entry_choice");
@@ -793,11 +798,95 @@ const { BattleManager, buildBattleSummary, createMove, Pokemon, projectBattle, T
   const secondChoice = first.projection.admin_entry_choice;
   assert.equal(secondChoice.kind, "type");
   const chosenType = secondChoice.entries[0];
-  const second = engineExports.executeAdminBattleCommand(first.snapshot, { type: "entry_choice", entryChoice: { kind: "type", index: chosenType.index } });
+  const second = engineExports.executeOpponentBattleCommand(first.snapshot, { type: "entry_choice", entryChoice: { kind: "type", index: chosenType.index } });
   assert.equal(second.snapshot.manager.initialEntry.phase, "ready");
   assert.equal(second.projection.waiting_for, "player", "Creator must retain the first attack after both incense choices");
   assert.ok(second.projection.participants.find(entry => entry.side === "npc").type_keys.includes(chosenType.key || chosenType.typeName));
 }
+
+assert.match(adminBattleAutomationMigration, /admin_battle_automation/i);
+assert.match(adminBattleAutomationMigration, /contract_key in \('admin_gym', 'league', 'debug_training'\)/i);
+assert.match(adminBattleAutomationMigration, /commit_edge_automatic_admin_command/i);
+assert.doesNotMatch(adminBattleAutomationMigration, /battle_dome/i,
+  "Battle Dome must remain separate from admin battle automation");
+assert.match(edge, /executeAutomaticAdminBattleCommand/);
+assert.match(edge, /executeOpponentBattleCommand\(battle\.engine_snapshot, semantic\)/,
+  "Battle Dome must use the neutral externally controlled opponent executor");
+assert.match(pveMoveManager, /!context\.disableRandomMoveChoice\s*&&\s*random\(\)\s*<\s*RANDOM_MOVE_CHANCE/,
+  "Automatic admin AI must be able to disable the generic random-move branch");
+assert.match(pveMoveManager, /context\s*&&\s*context\.useAllHealingItems/,
+  "Automatic admin AI must be able to use every healing-item subtype");
+
+{
+  const player = new Pokemon({ name: "Player", speciesKey: "7", ndex: 7, level: 50, type: ["water"], maxHp: 200,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  const opponent = new Pokemon({ name: "Opponent", speciesKey: "4", ndex: 4, level: 50, type: ["fire"], maxHp: 200,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  player.authoritativeSlot = 0;
+  opponent.authoritativeSlot = 0;
+  const manager = new BattleManager(new Team("Player", [player]), new Team("Admin", [opponent]));
+  manager.battleType = "admin_gym";
+  manager.opponentControl = "admin";
+  manager.adminControlled = true;
+  manager.waitingFor = "admin";
+  const snapshot = engineExports.serializeBattleManager(manager, engineExports.createRngState(456), { playerItems: [] });
+  const automatic = engineExports.executeAutomaticAdminBattleCommand(snapshot);
+  assert.equal(automatic.command.type, "move");
+  assert.equal(automatic.projection.waiting_for, "player");
+  assert.equal(automatic.projection.opponent_control, "admin");
+}
+
+{
+  const playerFire = new Pokemon({ name: "Fire", speciesKey: "4", ndex: 4, level: 50, type: ["fire"], maxHp: 200,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  const playerElectricKo = new Pokemon({ name: "Electric", speciesKey: "25", ndex: 25, level: 50, type: ["electric"], maxHp: 200,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  const incenseUser = new Pokemon({ name: "Aipom", speciesKey: "190", ndex: 190, level: 50, type: ["normal"], maxHp: 200,
+    heldItemIndex: ItemDefinitions.full_incense.index,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  playerFire.authoritativeSlot = 0;
+  playerElectricKo.authoritativeSlot = 1;
+  incenseUser.authoritativeSlot = 0;
+  const manager = new BattleManager(new Team("Player", [playerFire, playerElectricKo]), new Team("AI", [incenseUser]));
+  manager.playerTeam.combatantList[1].hp = 0;
+  const selected = engineExports.withDeterministicRng(engineExports.createRngState(789), () =>
+    manager.chooseNpcEntryHeldItemChoice(manager.enemyTeam.getActive())).result;
+  assert.equal(selected.kind, "type");
+  assert.equal(selected.typeName, "dragon",
+    "Gonfioaroma must count resistant matchups against the whole opposing team, including fainted Pokemon");
+}
+
+function automaticAdminItemCommand(item, configure) {
+  const player = new Pokemon({ name: "Player", speciesKey: "7", ndex: 7, level: 50, type: ["water"], maxHp: 200,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  const active = new Pokemon({ name: "Active", speciesKey: "4", ndex: 4, level: 50, type: ["fire"], maxHp: 200,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  const bench = new Pokemon({ name: "Bench", speciesKey: "5", ndex: 5, level: 50, type: ["fire"], maxHp: 200,
+    moves: [createMove(MoveDefinitions.tackle, { power: 30, stats: 10 })] });
+  player.authoritativeSlot = 0;
+  active.authoritativeSlot = 0;
+  bench.authoritativeSlot = 1;
+  const manager = new BattleManager(new Team("Player", [player]), new Team("Admin", [active, bench]));
+  manager.battleType = "admin_gym";
+  manager.opponentControl = "admin";
+  manager.adminControlled = true;
+  manager.waitingFor = "admin";
+  manager.npcItems = [[item.index, 1]];
+  configure(manager, manager.enemyTeam.combatantList[0], manager.enemyTeam.combatantList[1]);
+  const snapshot = engineExports.serializeBattleManager(manager, engineExports.createRngState(987), { playerItems: [] });
+  return engineExports.executeAutomaticAdminBattleCommand(snapshot).command;
+}
+
+assert.equal(automaticAdminItemCommand(ItemDefinitions.revival_herb, (_manager, active, bench) => {
+  active.hp = 1;
+  bench.hp = 0;
+}).itemIndex, ItemDefinitions.revival_herb.index, "Automatic admin AI must use Vitalerba");
+assert.equal(automaticAdminItemCommand(ItemDefinitions.energy_root, (_manager, active) => {
+  active.hp = 1;
+}).itemIndex, ItemDefinitions.energy_root.index, "Automatic admin AI must use additional HP remedies");
+assert.equal(automaticAdminItemCommand(ItemDefinitions.heal_powder, (_manager, active) => {
+  active.status = "par_block";
+}).itemIndex, ItemDefinitions.heal_powder.index, "Automatic admin AI must use additional status remedies");
 
 const gymDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/gyms.js", import.meta.url)));
 if (gymDefinitionsModule.status !== "evaluated") await gymDefinitionsModule.evaluate();

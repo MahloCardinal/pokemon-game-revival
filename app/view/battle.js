@@ -258,7 +258,8 @@ export function renderBattleScene(scene) {
   var playerNeedsSwitch = renderScene.manager.playerNeedsSwitch && !renderScene.manager.battleOver;
   var playerPostMoveSwitch = renderScene.manager.playerPostMoveSwitch && !renderScene.manager.battleOver;
   var adminNeedsSwitch = renderScene.manager.npcNeedsSwitch && !renderScene.manager.battleOver;
-  var waitingForAdmin = renderScene.manager.adminControlled && renderScene.manager.waitingFor === "admin" && !renderScene.manager.battleOver;
+  var waitingForAdmin = renderScene.manager.opponentIsExternallyControlled()
+    && renderScene.manager.waitingFor === "admin" && !renderScene.manager.battleOver;
   var pendingAdminEntryChoice = Boolean(scene.pendingAdminEntryChoice && waitingForAdmin);
   var adminEntryChoiceActive = scene.adminBattle && pendingAdminEntryChoice;
   var authoritativeAdminEntryChoice = scene.adminBattle && scene.authoritativeAdminEntryChoice;

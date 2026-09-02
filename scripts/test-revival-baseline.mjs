@@ -144,7 +144,9 @@ const adminCommandCommit = edge.slice(
   edge.indexOf("if (adminAction) {", edge.indexOf("const transition = adminAction")),
   edge.indexOf("} else {", edge.indexOf("if (adminAction) {", edge.indexOf("const transition = adminAction")))
 );
-assert.match(adminCommandCommit, /projectionForDatabase\(projection, "disabled_edge_first_slice"\)/);
+assert.match(adminCommandCommit, /p_projection:\s*projectionForDatabase\(projection\)/);
+assert.doesNotMatch(adminCommandCommit, /disabled_edge_first_slice/,
+  "Admin battle commands must preserve the canonical reward status produced by the engine");
 assert.match(edge, /notifyAdminTurnBestEffort\(clients\.serviceClient, result/);
 assert.match(battleEdgeHelpers, /pending ordinary progression[\s\S]*activity_in_progress/i);
 assert.match(battleEdgeHelpers, /Pokemon di livello superiore al limite consentito dalle medaglie[\s\S]*team_level_limit_exceeded/i);

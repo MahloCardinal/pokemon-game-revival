@@ -41,6 +41,7 @@ export function BattleManager(playerTeam, enemyTeam) {
   this.npcNeedsSwitch = false;
   this.npcItems = [];
   this._trainerActionContext = null;
+  this._resolvedKoCombatants = [];
   this.initialEntry = { phase: "ready", order: [], nextActor: null, entered: { player: true, npc: true }, resolved: { player: true, npc: true } };
 }
 
@@ -111,6 +112,7 @@ BattleManager.prototype.opponentActor = function (actor) {
 };
 
 BattleManager.prototype.beginTrainerAction = function (actor, combatant, kind) {
+  this._resolvedKoCombatants = [];
   this._trainerActionContext = {
     actor: this.normalizedActor(actor),
     combatant: combatant || null,
@@ -319,6 +321,7 @@ BattleManager.prototype.resolveMoveAction = function (actor, move) {
     this.lastPlayerResolvedMoveIndex = this.lastResolvedMoveIndex;
     this.lastPlayerResolvedType = this.lastResolvedType;
   }
+  this.KOCheck(attacker, defender);
   this.endTurn(attackerTeam.getActive(), defenderTeam.getActive());
   return true;
 };
@@ -1816,11 +1819,16 @@ BattleManager.prototype.applyMoveKoTriggeredEffects = function (defender) {
 };
 
 BattleManager.prototype.KOCheck = function (attacker, defender) {
-  if (!attacker.isFainted() && !defender.isFainted()) {
+  var resolvedCombatants = this._resolvedKoCombatants || (this._resolvedKoCombatants = []);
+  var defenderKoIsNew = defender.isFainted() && resolvedCombatants.indexOf(defender) === -1;
+  var attackerKoIsNew = attacker !== defender && attacker.isFainted() && resolvedCombatants.indexOf(attacker) === -1;
+
+  if (!defenderKoIsNew && !attackerKoIsNew) {
     return;
   }
 
-  if (defender.isFainted()) {
+  if (defenderKoIsNew) {
+    resolvedCombatants.push(defender);
     defender.team.teamKOTracker = true;
     this.emit(battleEvent("outcome.pokemonKo", { pokemon: battleSpeciesRef(defender) }));
     this.applyMoveKoTriggeredEffects(defender);
@@ -1834,7 +1842,8 @@ BattleManager.prototype.KOCheck = function (attacker, defender) {
     runHeldItemTrigger(this, "afterKo", HeldItemTriggerContext.afterKo(attacker, defender));
   }
 
-  if (attacker.isFainted()) {
+  if (attackerKoIsNew) {
+    resolvedCombatants.push(attacker);
     attacker.team.teamKOTracker = true;
     this.emit(battleEvent("outcome.pokemonKo", { pokemon: battleSpeciesRef(attacker) }));
   }

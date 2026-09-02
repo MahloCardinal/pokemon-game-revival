@@ -51,6 +51,7 @@ const playerDirectoryAvatarMigration = read("supabase/migrations/20260828120000_
 const playerDirectoryPokedexMigration = read("supabase/migrations/20260901150000_player_directory_national_pokedex.sql");
 const battleItemRuntimeMigration = read("supabase/migrations/20260901160000_bind_battle_item_effect_runtime.sql");
 const selfInducedStatusRuntimeMigration = read("supabase/migrations/20260902120000_bind_self_induced_status_runtime.sql");
+const immediateKoRuntimeMigration = read("supabase/migrations/20260902133000_bind_immediate_ko_runtime.sql");
 const debugOfficialBattleItemMigration = read("supabase/migrations/20260902130000_allow_debug_catalog_items_in_official_battles.sql");
 const adminGymWaitingKeyMigration = read("supabase/migrations/20260902131000_fix_admin_gym_waiting_catalog_keys.sql");
 const authoritativeGymKeyConstraintMigration = read("supabase/migrations/20260902132000_fix_authoritative_gym_key_constraint.sql");
@@ -622,6 +623,7 @@ assert.match(globalTeamCompositionMigration, /rules - array\['ohkoPokemonMax', '
 assert.match(globalTeamCompositionMigration, /'f03ece940d261bcbd2ab5770af06fbc3073d7341c67c698431abcb7b8aabf37f'/);
 assert.match(battleItemRuntimeMigration, /'5293eb988f21a2d1437d5f3fd5962b3b54453b2e4b13688b6eeee3447c77246f'/);
 assert.match(selfInducedStatusRuntimeMigration, /'37a8a2c205f9a8ed8c905890495966b37eb8e6976e78b2254fd504859c305d3d'/);
+assert.match(immediateKoRuntimeMigration, /'04bdb0ee7705192127e9d72a154ef1a9f6128d3a7d46de0b79a54280bcc6a412'/);
 assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_gym_counts/i);
 assert.match(specificBattleLimitCleanupMigration, /remove_obsolete_league_counts/i);
 
@@ -1113,6 +1115,50 @@ function moveMechanicsManager(playerMoves, enemyMoves, options = {}) {
   const playerList = [playerPokemon].concat(options.playerBench || []);
   const enemyList = [enemyPokemon].concat(options.enemyBench || []);
   return new BattleManager(new Team("Giocatore", playerList, 0), new Team("Avversario", enemyList, 0));
+}
+
+{
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })]
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  player.hp = 1;
+  enemy.hp = 1;
+  manager.weather = "hail";
+
+  assert.equal(manager.resolveMoveAction("npc", enemy.pokemon.moves[0]), true);
+  assert.equal(manager.battleOver, true, "A direct KO of the opponent's last Pokemon must end the battle immediately");
+  assert.equal(enemy.hp, 1, "End-of-action weather must not resolve after a direct move has already ended the battle");
+  assert.equal(manager.log.some((entry) => entry.key === "weather.hailDamage"), false,
+    "Hail must not be logged after a terminal direct KO");
+  assert.ok(manager.log.findIndex((entry) => entry.key === "outcome.pokemonKo")
+    < manager.log.findIndex((entry) => entry.key === "outcome.playerTeamKo"),
+    "The Pokemon KO must be logged before the terminal battle outcome");
+}
+
+{
+  const bench = pursuitTestPokemon("PlayerBench", [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })]);
+  const manager = moveMechanicsManager(
+    [createMove(MoveDefinitions.splash, { power: 20, stats: 0 })],
+    [createMove(MoveDefinitions.tackle, { power: 20, stats: 0 })],
+    { playerBench: [bench] }
+  );
+  const player = manager.playerTeam.getActive();
+  const enemy = manager.enemyTeam.getActive();
+  player.hp = 1;
+  enemy.hp = 100;
+  manager.weather = "hail";
+  manager.adminControlled = true;
+
+  assert.equal(manager.resolveMoveAction("npc", enemy.pokemon.moves[0]), true);
+  assert.equal(manager.battleOver, false, "A direct KO must leave the battle open when the defeated team has a reserve");
+  assert.equal(manager.log.filter((entry) => entry.key === "outcome.pokemonKo").length, 1,
+    "An immediate KO must be resolved only once before end-of-action effects");
+  assert.ok(manager.log.findIndex((entry) => entry.key === "outcome.pokemonKo")
+    < manager.log.findIndex((entry) => entry.key === "weather.hailDamage"),
+    "A direct KO must be logged before the attacker's end-of-action weather damage");
 }
 
 {

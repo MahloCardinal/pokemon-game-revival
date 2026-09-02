@@ -235,10 +235,11 @@ export function renderSummary(lines) {
 
   return groups.map(function (group) {
     var isTeamGroup = group[0] && group[0].kind === "team";
+    var groupClassName = "summary-group" + (isTeamGroup ? " summary-group-team" : " summary-group-weather");
     var teamTitle = isTeamGroup ? (String(group[0].text || "").trim() || t("common.opponent")) : "";
     var content = group.slice(isTeamGroup ? 1 : 0).map(function (entry) {
       return '<p class="summary-line">' + escapeHtml(entry.text) + "</p>";
     }).join("");
-    return '<section class="summary-group">' + (teamTitle ? "<h3>" + escapeHtml(teamTitle) + "</h3>" : "") + content + "</section>";
+    return '<section class="' + groupClassName + '">' + (teamTitle ? "<h3>" + escapeHtml(teamTitle) + "</h3>" : "") + content + "</section>";
   }).join("");
 }

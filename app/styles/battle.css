@@ -449,6 +449,9 @@
   display: grid;
   gap: 10px;
 }
+.battle-summary-pane .summary-group {
+  box-shadow: none;
+}
 .battle-summary-pane .summary-group:nth-last-child(1) {
   order: 1;
 }
@@ -718,6 +721,14 @@
   .pokemon-card-battle .move-button {
     height: auto;
     min-height: clamp(52px, 5.6vw, 64px);
+  }
+}
+@media (min-width: 881px) and (max-width: 1150px) {
+  .battle-summary-pane .summary-group-weather {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: max-content;
+    max-width: 100%;
   }
 }
 @media (max-width: 880px) {

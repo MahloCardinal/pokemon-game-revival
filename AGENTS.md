@@ -299,7 +299,7 @@ Quando cambia il deployment, le schede già aperte vengono ricaricate automatica
 
 `vercel.json` impone inoltre la rivalidazione di HTML, moduli applicativi e CSS, così un nuovo caricamento o refresh riceve gli asset correnti.
 
-Un push su `main` avvia il deploy automatico Vercel. Il dominio principale cambia soltanto quando il deployment è `Ready`; verificare il risultato pubblico e non soltanto il successo di `git push`.
+Un push su `main` avvia il deploy automatico Vercel. Nei flussi ordinari non è necessario attendere o verificare lo stato `Ready`/`Production` dopo ogni push; controllarlo soltanto quando il compito riguarda esplicitamente il deploy o quando emergono problemi di pubblicazione.
 
 ## Verifiche locali
 

@@ -1,7 +1,9 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- /
+- correggere messaggi in tag: per i pokemon catturati, deve valere solo se il pokemon è dal raro in su
+- correggere descrizione ossospesso
+- client/item-handler usa o no adjustInventoryItemQuantity?
 
 
 

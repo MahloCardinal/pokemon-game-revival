@@ -25,21 +25,21 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
     towerNext: "Hai vinto la sfida! Il prossimo sfidante sta arrivando...", captured: "Hai catturato {pokemon}!", addedToTeam: "{pokemon} è stato aggiunto alla squadra!", sentToBox: "{pokemon} è stato inviato al Box!",
     nextTowerFailed: "Impossibile avviare il prossimo sfidante.", ballEscaped: "Oh no, il Pokémon è uscito dalla Ball!", commandVerifying: "Il comando è ancora in verifica. Riprova prima di inviare altre azioni.",
     verifyFailed: "Impossibile verificare lo stato della battaglia.", commandFailed: "Comando battaglia non riuscito.", trainingResolutionFailed: "Risoluzione del premio non riuscita. Riprova.", commandUnverified: "Il comando non è ancora verificato.", automaticRecovery: "Comando in verifica. Recupero automatico in corso...",
-    noRewards: "L’incontro si è concluso senza premi.", wildKo: "{pokemon} è KO.", teamDefeated: "La tua squadra è stata sconfitta.", abandoned: "Hai abbandonato lo scontro.", lostChallenge: "Hai perso la sfida.", wonChallenge: "Hai vinto la sfida.",
+    noRewards: "L'incontro si è concluso senza premi.", wildKo: "{pokemon} è KO.", teamDefeated: "La tua squadra è stata sconfitta.", abandoned: "Hai abbandonato lo scontro.", lostChallenge: "Hai perso la sfida.", wonChallenge: "Hai vinto la sfida.",
     earnedBattlePoints: "Ottieni {points} PL.", lostMoney: "Perdi {money}.", lostMoneyConfusion: "Nella confusione perdi {money}.", defeatedMember: "Hai sconfitto {member}!", receivedPrizeMoney: "Hai ricevuto {money} come premio!",
     retiredChallenge: "Ti sei ritirato dalla sfida.", lostLeagueRun: "Hai perso la scalata della Lega.", leagueRestart: "Il prossimo tentativo ripartirà dal primo Superquattro.", earnedMoney: "Ottieni {money}.", earnedItem: "Ottieni {item}.", earnedItems: "Ottieni {quantity} {item}.", earnedBadge: "Ottieni la {badge}.",
     progressionComplete: "Progressione della battaglia completata.", progressionPokemonMissing: "Il Pokémon della progressione non è più disponibile.", rewardPokemonMissing: "Il Pokémon del premio non è più nella squadra canonica.", rewardRecoveryFailed: "Impossibile recuperare il premio in corso. Riprova.",
     captureDirectOnly: "In modalità autoritativa questo incontro supporta solo la cattura diretta con una Ball.", sendPokemonFirst: "Devi prima mandare un Pokémon in campo.", itemBattleOnly: "Lo strumento può essere usato solo durante una battaglia.", itemUnavailable: "Lo strumento selezionato non è disponibile nello zaino.", noBallsAgainstTrainer: "Non puoi usare Ball contro un Allenatore.",
-    activeActivity: "Completa prima l’attività in corso.", battleElsewhere: "La battaglia è stata ripresa in un’altra scheda.", itemUseLimit: "Hai già usato 3 copie di {item} in questa battaglia.", noWildTarget: "Non c’è nessun Pokémon selvatico da catturare.", updateFailed: "Impossibile aggiornare la battaglia.", unavailable: "Non disponibile", level100: "Livello 100", badgeCap: "Limite Medaglie",
+    activeActivity: "Completa prima l'attività in corso.", battleElsewhere: "La battaglia è stata ripresa in un'altra scheda.", itemUseLimit: "Hai già usato 3 copie di {item} in questa battaglia.", noWildTarget: "Non c'è nessun Pokémon selvatico da catturare.", updateFailed: "Impossibile aggiornare la battaglia.", unavailable: "Non disponibile", level100: "Livello 100", badgeCap: "Limite Medaglie",
     trainingWon: "Hai vinto la sfida della Zona allenamento!", assignTrainingLevel: "Assegna {levels} Livello Allenamento alla squadra.", assignTrainingLevels: "Assegna {levels} Livelli Allenamento alla squadra.", maxTrainingLevels: "Massimo {max} livelli per Pokémon.", dailyRewardFailed: "Premio giornaliero non registrato. Riprova.", rewardSaveFailed: "Errore durante il salvataggio della fase premio.", noEligibleLevels: "Nessun Pokémon in squadra può ricevere altri livelli con le Medaglie attuali.", levelAssignmentFailed: "Assegnazione dei livelli non riuscita. Riprova.",
     battleConcluded: "Battaglia conclusa.", rewardsAlreadyRegistered: "Premi già registrati sul profilo.", rewardAlreadyRegistered: "Premio già registrato sul profilo.", registerRewardsFailed: "Impossibile registrare i premi.", emptyTeam: "Non hai Pokémon in squadra.", leagueStateChanged: "Lo stato della Lega è cambiato. Aggiorna e riprova.", nextLeagueFailed: "Impossibile avviare il prossimo incontro della Lega.",
-    createFailed: "Impossibile creare la battaglia.", alreadyOpen: "Questa battaglia è già aperta in un’altra scheda.", resumeFailed: "Impossibile riprendere la battaglia.", closeFailed: "Impossibile chiudere la battaglia.", verifyLastCommand: "Prima verificheremo l’ultimo comando.", abandonIfMissing: "Se non risulta eseguito, la sfida verrà abbandonata.",
+    createFailed: "Impossibile creare la battaglia.", alreadyOpen: "Questa battaglia è già aperta in un'altra scheda.", resumeFailed: "Impossibile riprendere la battaglia.", closeFailed: "Impossibile chiudere la battaglia.", verifyLastCommand: "Prima verificheremo l'ultimo comando.", abandonIfMissing: "Se non risulta eseguito, la sfida verrà abbandonata.",
     batonPassChoice: "Scegli il Pokémon che entra in campo con Staffetta.", active: "Attivo", chooseMoveToBlock: "Scegli la mossa da bloccare", chooseSecondType: "Scegli il secondo tipo", choose: "Scegli", targetFainted: "{pokemon} è KO e non può entrare in campo.", switchFailed: "Cambio non riuscito.", unusable: "Non usabile", useOn: "Su chi vuoi usare {item}?", chooseFirst: "Scegli chi mandare per primo",
-    trainingAbandoned: "Hai abbandonato lo scontro. Non ricevi premi.", abandonConfirm: "Vuoi davvero abbandonare lo scontro?", abandonSaveFailed: "Impossibile salvare l’abbandono dello scontro.", closeEncounterFailed: "Impossibile chiudere lo scontro.", retired: "Ti sei ritirato dalla sfida.", trainingLost: "Hai perso la sfida. Non ricevi premi, ma non perdi nulla.", challengeConcluded: "Sfida conclusa.", allPokemonKo: "Tutti i tuoi Pokémon sono KO!"
+    trainingAbandoned: "Hai abbandonato lo scontro. Non ricevi premi.", abandonConfirm: "Vuoi davvero abbandonare lo scontro?", abandonSaveFailed: "Impossibile salvare l'abbandono dello scontro.", closeEncounterFailed: "Impossibile chiudere lo scontro.", retired: "Ti sei ritirato dalla sfida.", trainingLost: "Hai perso la sfida. Non ricevi premi, ma non perdi nulla.", challengeConcluded: "Sfida conclusa.", allPokemonKo: "Tutti i tuoi Pokémon sono KO!"
   }),
   events: Object.freeze({
     turn: Object.freeze({ started: "{team}", divider: "—" }),
-    action: Object.freeze({ playerInterruptedForSwitch: "L’azione viene interrotta: devi mandare in campo un altro Pokémon." }),
+    action: Object.freeze({ playerInterruptedForSwitch: "L'azione viene interrotta: devi mandare in campo un altro Pokémon." }),
     progression: Object.freeze({
       maxLevelNoExperience: "{pokemon} è già al Livello 100 e non ottiene altra esperienza.",
       maxLevelNoLevels: "{pokemon} è già al Livello 100 e non ottiene altri livelli.",
@@ -49,7 +49,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
     }),
     outcome: Object.freeze({
       pokemonKo: "{pokemon} è KO!", playerLost: "Hai perso la lotta!", playerTeamKo: "Tutti i tuoi Pokémon sono KO: hai perso la lotta.",
-      playerWon: "L’avversario non ha più Pokémon disponibili: hai vinto la lotta!", fled: "{pokemon} fugge dalla lotta.", abandoned: "Battaglia abbandonata."
+      playerWon: "L'avversario non ha più Pokémon disponibili: hai vinto la lotta!", fled: "{pokemon} fugge dalla lotta.", abandoned: "Battaglia abbandonata."
     }),
     switch: Object.freeze({
       targetNotFound: "Pokémon non trovato.", alreadyActive: "{pokemon} è già in campo.", targetFainted: "{pokemon} è KO e non può entrare in campo.",
@@ -61,10 +61,10 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
       notFound: "Strumento non trovato.", unusable: "{item} non può essere usato in battaglia.", targetRequired: "Seleziona un Pokémon su cui usare {item}.",
       targetFainted: "{pokemon} è KO.", targetNotFainted: "{pokemon} non è KO.", hpFull: "{pokemon} ha già tutti i PS.",
       noFullRestoreEffect: "{pokemon} non ha PS mancanti o problemi di stato da curare.", noCurableStatus: "{pokemon} non ha un problema di stato curabile con {item}.",
-      weatherInactive: "Non c’è alcun meteo attivo.", heldOnly: "{item} si attiva soltanto quando è tenuto da un Pokémon.", unsupported: "Questo strumento non è gestito in battaglia.",
-      healedHp: "L’Allenatore usa {item} su {pokemon}: recupera {amount} PS.", fullRestore: "L’Allenatore usa {item} su {pokemon}: recupera {amount} PS e cura il problema di stato.",
-      revived: "L’Allenatore usa {item} su {pokemon}: viene rianimato con {amount} PS.", curedStatus: "L’Allenatore usa {item} su {pokemon}: problema di stato curato.",
-      clearedWeather: "L’Allenatore usa {item}: il meteo torna normale."
+      weatherInactive: "Non c'è alcun meteo attivo.", heldOnly: "{item} si attiva soltanto quando è tenuto da un Pokémon.", unsupported: "Questo strumento non è gestito in battaglia.",
+      healedHp: "L'Allenatore usa {item} su {pokemon}: recupera {amount} PS.", fullRestore: "L'Allenatore usa {item} su {pokemon}: recupera {amount} PS e cura il problema di stato.",
+      revived: "L'Allenatore usa {item} su {pokemon}: viene rianimato con {amount} PS.", curedStatus: "L'Allenatore usa {item} su {pokemon}: problema di stato curato.",
+      clearedWeather: "L'Allenatore usa {item}: il meteo torna normale."
     }),
     capture: Object.freeze({ ballFailed: "{team} usa {item}, ma senza successo.", caught: "{team} usa {item} e cattura {pokemon}!", replayConcluded: "Ball usata. Battaglia conclusa." }),
     status: Object.freeze({
@@ -79,10 +79,10 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
     }),
     weather: Object.freeze({ sandDamage: "{pokemon} perde {amount} PS per la Terrempesta.", hailDamage: "{pokemon} perde {amount} PS per la Grandine." }),
     team: Object.freeze({
-      attackBuffEnded: "L’aumento di Attacco di {team} termina.", defenseBuffEnded: "L’aumento di Difesa di {team} termina.",
+      attackBuffEnded: "L'aumento di Attacco di {team} termina.", defenseBuffEnded: "L'aumento di Difesa di {team} termina.",
       statProtectionEnded: "La protezione dalle riduzioni statistiche di {team} termina.", moveBoostProtectionEnded: "La protezione dai potenziamenti delle mosse di {team} termina.",
-      statusProtectionEnded: "La protezione dai problemi di stato di {team} termina.", sleepImmunityEnded: "L’immunità al sonno di {team} termina.",
-      boostSuppressionEnded: "L’annullamento dei potenziamenti di {team} termina."
+      statusProtectionEnded: "La protezione dai problemi di stato di {team} termina.", sleepImmunityEnded: "L'immunità al sonno di {team} termina.",
+      boostSuppressionEnded: "L'annullamento dei potenziamenti di {team} termina."
     }),
     hazard: Object.freeze({
       bootsClearedSpikes: "Gli Scarponi robusti di {pokemon} rimuovono le Punte.", spikesDamage: "Le Punte infliggono {damage} PS di danno a {pokemon}.",
@@ -106,17 +106,17 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
       buff_self_atk_big: "{attacker} usa {move}: +{doubledStats} Attacco.", buff_self_atk_def: "{attacker} usa {move}: +{stats} Attacco e Difesa.",
       buff_self_def: "{attacker} usa {move}: +{stats} Difesa.", buff_self_def_burn: "{attacker} usa {move}: +{stats} Difesa e immunità alla scottatura.",
       buff_team_atk: "{attacker} usa {move}: +{stats} Attacco alla squadra per 5 turni.", buff_team_def: "{attacker} usa {move}: +{stats} Difesa alla squadra per 5 turni.",
-      charge: "{attacker} si sta caricando.", cnf: "{attacker} usa {move}: {defender} è confuso.", cnf_buff_enem: "{attacker} usa {move}: confonde {defender} e ne aumenta l’Attacco.",
+      charge: "{attacker} si sta caricando.", cnf: "{attacker} usa {move}: {defender} è confuso.", cnf_buff_enem: "{attacker} usa {move}: confonde {defender} e ne aumenta l'Attacco.",
       convers: "{attacker} usa {move} e diventa di tipo {resolvedType}.", copy_stats: "{attacker} usa {move} e copia le modifiche statistiche di {defender}.",
       cure_status: "{attacker} usa {move} e cura i propri problemi di stato.", cure_status_team: "{attacker} usa {move} e cura i problemi di stato della squadra.",
-      def_raise_block: "{attacker} usa {move}: {defender} non può aumentare la Difesa.", destiny_bond: "{attacker} usa {move}: se andrà KO durante la prossima mossa, manderà KO anche l’avversario.",
+      def_raise_block: "{attacker} usa {move}: {defender} non può aumentare la Difesa.", destiny_bond: "{attacker} usa {move}: se andrà KO durante la prossima mossa, manderà KO anche l'avversario.",
       dmg: "{attacker} usa {move} e infligge {damage} PS di danno.", dmg_1hp: "{attacker} usa {move}: {defender} resiste con 1 PS.",
       dmg_bind: "{attacker} usa {move}, infligge {damage} PS di danno e impedisce a {defender} di cambiare per {turns} turni.",
       dmg_brn: "{attacker} usa {move}, infligge {damage} PS di danno e scotta {defender}.", dmg_cnf: "{attacker} usa {move}, infligge {damage} PS di danno e confonde {defender}.",
-      dmg_double: "{attacker} usa {move}: la potenza raddoppia e infligge {damage} PS di danno.", dmg_double_lost_atk_buff: "{attacker} usa {move}: la potenza raddoppia, infligge {damage} PS di danno e perde il bonus Attacco.", dmg_lost_atk_buff: "{attacker} usa {move}, infligge {damage} PS di danno e perde il bonus Attacco.", dmg_enem_atk: "{attacker} usa {move}, infligge {damage} PS di danno e riduce di {stats} l’Attacco di {defender}.",
+      dmg_double: "{attacker} usa {move}: la potenza raddoppia e infligge {damage} PS di danno.", dmg_double_lost_atk_buff: "{attacker} usa {move}: la potenza raddoppia, infligge {damage} PS di danno e perde il bonus Attacco.", dmg_lost_atk_buff: "{attacker} usa {move}, infligge {damage} PS di danno e perde il bonus Attacco.", dmg_enem_atk: "{attacker} usa {move}, infligge {damage} PS di danno e riduce di {stats} l'Attacco di {defender}.",
       dmg_enem_def: "{attacker} usa {move}, infligge {damage} PS di danno e riduce di {stats} la Difesa di {defender}.", dmg_frz: "{attacker} usa {move}, infligge {damage} PS di danno e congela {defender}.",
       dmg_los_hp: "{attacker} usa {move}, infligge {damage} PS di danno e ne perde {recoil} per il contraccolpo.", dmg_los_perc: "{attacker} usa {move}, infligge {damage} PS di danno e perde la percentuale.",
-      dmg_one_half: "{attacker} usa {move}: l’effetto si attiva e infligge {damage} PS di danno.", dmg_par: "{attacker} usa {move}, infligge {damage} PS di danno e paralizza {defender}.",
+      dmg_one_half: "{attacker} usa {move}: l'effetto si attiva e infligge {damage} PS di danno.", dmg_par: "{attacker} usa {move}, infligge {damage} PS di danno e paralizza {defender}.",
       dmg_psn: "{attacker} usa {move}, infligge {damage} PS di danno e avvelena {defender}.", dmg_pursuit_switch: "{attacker} usa {move}, colpisce {defender} in ritirata e infligge {damage} PS di danno.",
       dmg_rec_hp: "{attacker} usa {move}, infligge {damage} PS di danno e recupera {absorbed} PS.", dmg_rec_perc: "{attacker} usa {move}, infligge {damage} PS di danno e recupera la percentuale.",
       dmg_seed: "{attacker} usa {move}, infligge {damage} PS di danno e infesta {defender} con Parassiseme.", dmg_self_cnf: "{attacker} usa {move}, infligge {damage} PS di danno e diventa confuso.",
@@ -134,9 +134,9 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
       inhibit: "{attacker} usa {move} e disabilita {relatedMove}.", invul_dig: "{attacker} usa {move} e si nasconde sotto terra.",
       invul_fly: "{attacker} usa {move} e vola alto nel cielo.", invul_sub: "{attacker} usa {move} e diventa temporaneamente non bersagliabile.",
       lose_enem_perc: "{attacker} usa {move}: la percentuale avversaria diventa negativa.", lose_self_perc: "{attacker} usa {move} e perde la percentuale.",
-      magic_coat: "{attacker} usa {move} e rifletterà i problemi di stato.", mimic: "{attacker} usa {move} e copia l’ultima mossa dell’avversario.",
+      magic_coat: "{attacker} usa {move} e rifletterà i problemi di stato.", mimic: "{attacker} usa {move} e copia l'ultima mossa dell'avversario.",
       nerf_enem_atk: "{attacker} usa {move}: -{stats} Attacco a {defender}.", nerf_enem_atk_def: "{attacker} usa {move}: -{stats} Attacco e Difesa a {defender}.",
-      nerf_enem_def: "{attacker} usa {move}: -{stats} Difesa a {defender}.", nightmare: "{attacker} usa {move}: {defender} è tormentato da un Incubo.", nightmare_dmg: "{attacker} usa {move}: {defender} perde PS per l’Incubo.",
+      nerf_enem_def: "{attacker} usa {move}: -{stats} Difesa a {defender}.", nightmare: "{attacker} usa {move}: {defender} è tormentato da un Incubo.", nightmare_dmg: "{attacker} usa {move}: {defender} perde PS per l'Incubo.",
       no_move_boost_team: "{attacker} usa {move}: la squadra è protetta dai potenziamenti delle mosse avversarie per 5 turni.",
       no_stat_nerf_team: "{attacker} usa {move}: la squadra è protetta dalle riduzioni statistiche per 5 turni.", nube: "{attacker} usa {move} e annulla tutte le modifiche statistiche.",
       pain_split: "{attacker} usa {move} e divide equamente i PS propri e di {defender}.", par: "{attacker} usa {move}: {defender} è paralizzato.", brn: "{attacker} usa {move}: {defender} è scottato.",
@@ -144,14 +144,14 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
       spikes_set: "{attacker} usa {move}: chi entra in campo subirà danni pari al livello.", rapid_spin: "{attacker} usa {move}, infligge {damage} PS di danno e rimuove gli effetti dal proprio terreno.",
       recharge: "{attacker} deve ricaricarsi.", recycle_item: "{attacker} usa {move} e ricrea lo strumento assegnato a inizio battaglia.",
       repeat: "{attacker} usa {move}: {defender} deve ripetere {relatedMove} per 3 turni.", rest: "{attacker} usa {move}, si addormenta e recupera tutti i PS.",
-      rest_hp: "{attacker} usa {move} e recupera {restored} PS.", roar: "{attacker} usa {move} e forza il cambio dell’avversario.",
+      rest_hp: "{attacker} usa {move} e recupera {restored} PS.", roar: "{attacker} usa {move} e forza il cambio dell'avversario.",
       root: "{attacker} usa {move} e mette radici.", selfdestruct: "{attacker} usa {move}, infligge {damage} PS di danno e va KO.",
       sleep_delayed: "{attacker} usa {move}: {defender} si addormenterà alla fine del prossimo turno.", slp: "{attacker} usa {move}: {defender} si addormenta.",
       smp_move: "{attacker} usa {move}.", status_delayed: "{attacker} usa {move}: Distraroma ritarda {delayedStatus} di {delayedTarget}.",
       status_uproar: "{attacker} usa {move}, ma Baraonda protegge {defender}.", status_not_done: "{attacker} usa {move}, ma {defender} ha già un problema di stato.",
       status_protect: "{attacker} usa {move}: la squadra è protetta dai problemi di stato per 5 turni.", status_safeguard: "{attacker} usa {move}, ma Salvaguardia protegge {defender}.",
       status_waiting: "{attacker} usa {move}, ma {delayedTarget} ha già un problema di stato in attesa.", steal_item: "{attacker} usa {move} e ruba lo strumento di {defender}.",
-      suppress_boost: "{attacker} usa {move} e annulla i potenziamenti avversari nel prossimo turno.", transform: "{attacker} usa {move} e si trasforma nell’avversario.",
+      suppress_boost: "{attacker} usa {move} e annulla i potenziamenti avversari nel prossimo turno.", transform: "{attacker} usa {move} e si trasforma nell'avversario.",
       trick_item: "{attacker} usa {move} e scambia lo strumento con {defender}.", trap: "{attacker} usa {move}: {defender} non può scappare.",
       weather_set: "{attacker} usa {move} e modifica il meteo.", wish: "{attacker} usa {move}: il desiderio si avvererà nel prossimo turno."
     })

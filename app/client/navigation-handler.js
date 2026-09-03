@@ -239,16 +239,28 @@ registerAction("open-zone", function(element) {
 });
 
 var zoneRequirementPanelCleanup = null;
+var zoneRequirementPanelFrame = null;
 
 registerAction("zone-requirement-close", function () {
   closeClosedSectionRequirementPanel();
 });
+
+root.addEventListener("click", function (event) {
+  var panel = root.querySelector("[data-zone-requirement-panel]");
+  if (panel && !panel.contains(event.target)) {
+    closeClosedSectionRequirementPanel();
+  }
+}, true);
 
 function closeClosedSectionRequirementPanel() {
   var existingPanel = root.querySelector("[data-zone-requirement-panel]");
   if (zoneRequirementPanelCleanup) {
     zoneRequirementPanelCleanup();
     zoneRequirementPanelCleanup = null;
+  }
+  if (zoneRequirementPanelFrame) {
+    window.cancelAnimationFrame(zoneRequirementPanelFrame);
+    zoneRequirementPanelFrame = null;
   }
   if (existingPanel) {
     existingPanel.remove();
@@ -263,17 +275,13 @@ function positionClosedSectionRequirementPanel(anchorElement) {
 }
 
 function openClosedSectionRequirementPanel(anchorElement, message) {
-  var backdrop = document.createElement("div");
   var panel = document.createElement("section");
   var emptyMessage = document.createElement("div");
 
   closeClosedSectionRequirementPanel();
 
-  backdrop.className = "floating-panel-backdrop";
-  backdrop.dataset.action = "zone-requirement-close";
-  backdrop.dataset.zoneRequirementPanel = "true";
-
   panel.className = "floating-panel is-empty";
+  panel.dataset.zoneRequirementPanel = "true";
   panel.style.left = "0";
   panel.style.top = "0";
   panel.style.transform = "translate(-50%, -50%)";
@@ -283,8 +291,7 @@ function openClosedSectionRequirementPanel(anchorElement, message) {
   emptyMessage.textContent = message;
   panel.appendChild(emptyMessage);
 
-  backdrop.appendChild(panel);
-  root.appendChild(backdrop);
+  root.appendChild(panel);
 
   function syncClosedSectionRequirementPanelPosition() {
     var nextPosition;
@@ -299,11 +306,21 @@ function openClosedSectionRequirementPanel(anchorElement, message) {
   }
 
   syncClosedSectionRequirementPanelPosition();
-  window.addEventListener("scroll", syncClosedSectionRequirementPanelPosition, true);
-  window.addEventListener("resize", syncClosedSectionRequirementPanelPosition);
+  function scheduleClosedSectionRequirementPanelPosition() {
+    if (zoneRequirementPanelFrame) {
+      return;
+    }
+    zoneRequirementPanelFrame = window.requestAnimationFrame(function () {
+      zoneRequirementPanelFrame = null;
+      syncClosedSectionRequirementPanelPosition();
+    });
+  }
+
+  window.addEventListener("scroll", scheduleClosedSectionRequirementPanelPosition, true);
+  window.addEventListener("resize", scheduleClosedSectionRequirementPanelPosition);
   zoneRequirementPanelCleanup = function () {
-    window.removeEventListener("scroll", syncClosedSectionRequirementPanelPosition, true);
-    window.removeEventListener("resize", syncClosedSectionRequirementPanelPosition);
+    window.removeEventListener("scroll", scheduleClosedSectionRequirementPanelPosition, true);
+    window.removeEventListener("resize", scheduleClosedSectionRequirementPanelPosition);
   };
 }
 

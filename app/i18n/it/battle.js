@@ -6,17 +6,17 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
   }),
   effectiveness: Object.freeze({ super: "È superefficace!", weak: "Non è molto efficace." }),
   summary: Object.freeze({
-    weather: "Meteo: {weather}", weatherTypes: Object.freeze({ sun: "giornata di sole", rain: "pioggia", sand: "tempesta di sabbia", hail: "grandine" }),
+    weather: "Meteo: {weather}", weatherTypes: Object.freeze({ sun: "sole", rain: "pioggia", sand: "tempesta di sabbia", hail: "grandine" }),
     activePokemon: "Pokémon in campo: {pokemon}", alivePokemon: "Pokémon disponibili: {pokemon}", koPokemon: "Pokémon KO: {pokemon}", items: "Strumenti: {items}", type: "Tipo: {types}",
     percentage: "%: {value}", positive: "positiva", negative: "negativa", attackBuff: "+{value} Att", attackNerf: "-{value} Att", defenseBuff: "+{value} Dif", defenseNerf: "-{value} Dif", drowsy: "Assopito", pendingStatus: "Problema di stato in attesa: {turns}",
-    status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Avv", brn: "Sco", frz: "Cong", slp: "Add {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
+    status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Avv", brn: "Bru", frz: "Cong", slp: "Add {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
     doubleDamageNextTurn: "Danno x2 nel prossimo turno", repeatMove: "Ripete {move} {turns}/3", pendingMove: "{move} in corso", noDefenseBoost: "Nessun aumento Difesa",
     endure: "Resiste fino al prossimo turno", itemLocked: "Strumento bloccato", disabledMoves: "Bloccata: {moves}", trapped: "Intrappolato", trappedTurns: "Intrappolato {turns}/4",
     teamAttackBuff: "+{value} Att {turns}/5", teamDefenseBuff: "+{value} Dif {turns}/5", noBurn: "No Scottatura",
     moveCounter: "{move} {turns}/{max}", moveDamage: "{move} (-{amount})",
     leechSeed: "Parassiseme (-{amount})", koInTurns: "KO tra {turns} turni", noStatNerfs: "Nessuna riduzione statistiche {turns}/5",
     noMoveBoosts: "No boost avversari {turns}/{max}", noStatus: "No Status {turns}/5", noSleep: "Immunità al sonno {turns}/5",
-    wishNextTurn: "Desiderio si avvera tra 1 turno", futureMove: "{move} colpirà tra {turns} turni"
+    wishNextTurn: "Desiderio si avvera tra 1 turno", futureMove: "{move} colpirà tra turni: {turns}"
   }),
   dialog: Object.freeze({
     titles: Object.freeze({ battle: "Battaglia", capture: "Cattura", tower: "Torre Lotta", training: "Zona allenamento", gym: "Palestra", league: "Lega Kanto", experience: "Esperienza", bag: "Zaino", withdraw: "Ritiro dalla sfida", abandon: "Abbandona scontro", deleteChallenge: "Cancella sfida", batonPass: "Staffetta" }),
@@ -49,8 +49,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
     }),
     outcome: Object.freeze({
       pokemonKo: "{pokemon} è KO!", playerLost: "Hai perso la lotta!", playerTeamKo: "Tutti i tuoi Pokémon sono KO: hai perso la lotta.",
-      playerWon: "L’avversario non ha più Pokémon disponibili: hai vinto la lotta!", fled: "{pokemon} fugge dalla lotta.",
-      abandoned: "Battaglia abbandonata."
+      playerWon: "L’avversario non ha più Pokémon disponibili: hai vinto la lotta!", fled: "{pokemon} fugge dalla lotta.", abandoned: "Battaglia abbandonata."
     }),
     switch: Object.freeze({
       targetNotFound: "Pokémon non trovato.", alreadyActive: "{pokemon} è già in campo.", targetFainted: "{pokemon} è KO e non può entrare in campo.",
@@ -73,7 +72,7 @@ export var IT_BATTLE_TRANSLATIONS = Object.freeze({
       paralyzedCannotMove: "{pokemon} è paralizzato e non può attaccare.", confusionSelfDamage: "{pokemon} è così confuso da colpirsi da solo e perde {amount} PS.",
       asleepCannotMove: "{pokemon} è addormentato e non può attaccare.", frozenCannotMove: "{pokemon} è congelato e non può attaccare.",
       poisonDamage: "{pokemon} è avvelenato e perde {amount} PS.", burnDamage: "{pokemon} è scottato e perde {amount} PS.",
-      thawed: "{pokemon} si scongela.", nightmareDamage: "{pokemon} perde {amount} PS per l’Incubo.",
+      thawed: "{pokemon} si scongela.", nightmareDamage: "{pokemon} perde {amount} PS per Incubo.",
       ingrainHeal: "{pokemon} recupera {amount} PS con Radicamento.", wishHeal: "Il Desiderio di {source} fa recuperare {amount} PS a {pokemon}.",
       perishSongKo: "Ultimocanto manda KO {pokemon}!", endured: "{pokemon} ha resistito!", magicCoatReflected: "{source} riflette il problema di stato su {target} con Magivelo!",
       destinyBondKo: "Destinobbligato manda KO {pokemon}!", grudgeDisabledMove: "Rancore impedisce a {pokemon} di usare ancora {move}!"

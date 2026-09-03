@@ -6,7 +6,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
   }),
   effectiveness: Object.freeze({ super: "It's super effective!", weak: "It's not very effective." }),
   summary: Object.freeze({
-    weather: "Weather: {weather}", weatherTypes: Object.freeze({ sun: "harsh sunlight", rain: "rain", sand: "sandstorm", hail: "hail" }),
+    weather: "Weather: {weather}", weatherTypes: Object.freeze({ sun: "sunlight", rain: "rain", sand: "sandstorm", hail: "hail" }),
     activePokemon: "Active Pokémon: {pokemon}", alivePokemon: "Available Pokémon: {pokemon}", koPokemon: "Knocked-out Pokémon: {pokemon}", items: "Items: {items}", type: "Type: {types}",
     percentage: "%: {value}", positive: "positive", negative: "negative", attackBuff: "+{value} Atk", attackNerf: "-{value} Atk", defenseBuff: "+{value} Def", defenseNerf: "-{value} Def", drowsy: "Drowsy", pendingStatus: "Pending status: {turns}",
     status: Object.freeze({ par_block: "Par", par_free: "Par", psn: "Psn", brn: "Brn", frz: "Frz", slp: "Slp {current}/{max}", cnf_block: "Conf {current}/{max}", cnf_free: "Conf {current}/{max}" }),
@@ -16,7 +16,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
     moveCounter: "{move} {turns}/{max}", moveDamage: "{move} (-{amount})",
     leechSeed: "Leech Seed (-{amount})", koInTurns: "Knocked out in {turns} turns", noStatNerfs: "No stat reductions {turns}/5",
     noMoveBoosts: "No opposing boosts {turns}/{max}", noStatus: "No Status {turns}/5", noSleep: "Sleep immunity {turns}/5",
-    wishNextTurn: "Wish triggers in 1 turn", futureMove: "{move} strikes in {turns} turns"
+    wishNextTurn: "Wish triggers in 1 turn", futureMove: "{move} strikes in turns: {turns}"
   }),
   dialog: Object.freeze({
     titles: Object.freeze({ battle: "Battle", capture: "Capture", tower: "Battle Tower", training: "Training Zone", gym: "Gym", league: "Kanto League", experience: "Experience", bag: "Bag", withdraw: "Challenge withdrawal", abandon: "Abandon battle", deleteChallenge: "Delete challenge", batonPass: "Baton Pass" }),
@@ -72,7 +72,7 @@ export var EN_BATTLE_TRANSLATIONS = Object.freeze({
       paralyzedCannotMove: "{pokemon} is paralyzed and cannot attack.", confusionSelfDamage: "{pokemon} hurts itself in its confusion and loses {amount} HP.",
       asleepCannotMove: "{pokemon} is asleep and cannot attack.", frozenCannotMove: "{pokemon} is frozen and cannot attack.",
       poisonDamage: "{pokemon} is poisoned and loses {amount} HP.", burnDamage: "{pokemon} is burned and loses {amount} HP.",
-      thawed: "{pokemon} thaws out.", nightmareDamage: "{pokemon} loses {amount} HP to the nightmare.",
+      thawed: "{pokemon} thaws out.", nightmareDamage: "{pokemon} loses {amount} HP to Nightmare.",
       ingrainHeal: "{pokemon} restores {amount} HP with Ingrain.", wishHeal: "{source}'s Wish restores {amount} HP to {pokemon}.",
       perishSongKo: "Perish Song knocks out {pokemon}!", endured: "{pokemon} endured the hit!", magicCoatReflected: "{source} reflects the status condition onto {target} with Magic Coat!",
       destinyBondKo: "Destiny Bond knocks out {pokemon}!", grudgeDisabledMove: "Grudge prevents {pokemon} from using {move} again!"

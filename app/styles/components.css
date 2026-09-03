@@ -946,6 +946,11 @@ button:disabled {
   color: var(--text-soft);
   font-weight: 700;
 }
+.floating-panel[data-zone-requirement-panel] {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+}
 @media (max-width: 1150px) {
   .pokemon-grid {
     grid-template-columns: repeat(2, var(--zone-card-width));

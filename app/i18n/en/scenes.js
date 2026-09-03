@@ -4,7 +4,7 @@ export var EN_SCENE_TRANSLATIONS = Object.freeze({
       name: "Viridian Forest",
       presentation: [
         "Hi! My name is Gennaro, and I'm a Bug Catcher. Here in Viridian Forest you'll find Grass-, Poison-, and Bug-type Pokémon, my absolute favorites!",
-        "I've been looking for a Beedrill for hours. You should know it's an incredibly strong Pokémon. Hey, that looks like a Kakuna—I'm going to catch it right away!!!"
+        "I've been looking for a Beedrill for hours, it's an incredibly strong Pokémon. Hey, that looks like a Kakuna—I'm going to catch it right away!!!"
       ]
     }),
     mt_moon: Object.freeze({
@@ -51,7 +51,7 @@ export var EN_SCENE_TRANSLATIONS = Object.freeze({
   scenes: Object.freeze({
     start: Object.freeze({
       title: "Start",
-      presentation: ["Hello! I'm Professor Oak. Before you begin your adventure, I'd like to know a little more about you. Tell me which appearance best represents you as a Trainer. To help you get off to a good start, I've decided to entrust one of my Pokémon to you. Choose whichever one you prefer."]
+      presentation: ["Hello! I'm Professor Oak. Before you begin your adventure, I'd like to know a little more about you. Tell me which appearance best represents you as a Trainer. Then, to help you get off to a good start, I've decided to entrust one of my Pokémon to you. Choose whichever one you prefer."]
     }),
     pokemon_center: Object.freeze({
       title: "Pokémon Center",

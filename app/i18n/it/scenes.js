@@ -4,7 +4,7 @@ export var IT_SCENE_TRANSLATIONS = Object.freeze({
       name: "Bosco Smeraldo",
       presentation: [
         "Ciao! Mi chiamo Gennaro, e sono un appassionato pigliamosche. Qua nel Bosco Smeraldo troverai Pokémon Erba, Veleno, e Coleottero, in assoluto tra i miei preferiti!",
-        "Io è da ore che sto cercando un Beedrill, devi sapere che è un Pokémon fortissimissimo. Ehi, quello sembra un Kakuna, vado subito ad acchiapparlo!!!"
+        "Io è da ore che sto cercando un Beedrill, è un Pokémon fortissimissimo. Ehi, quello sembra un Kakuna, vado subito ad acchiapparlo!!!"
       ]
     }),
     mt_moon: Object.freeze({
@@ -51,7 +51,7 @@ export var IT_SCENE_TRANSLATIONS = Object.freeze({
   scenes: Object.freeze({
     start: Object.freeze({
       title: "Start",
-      presentation: ["Salve, sono il Professor Oak. Prima di iniziare la tua avventura vorrei sapere qualcosa di più su di te: dimmi quale aspetto ti rappresenta meglio come allenatore o allenatrice. Per aiutarti a partire con il piede giusto ho deciso di affidarti uno dei miei Pokémon, scegli pure quello che preferisci."]
+      presentation: ["Salve, sono il Professor Oak. Prima di iniziare la tua avventura vorrei sapere qualcosa di più su di te: dimmi quale aspetto ti rappresenta meglio come allenatore o allenatrice. Poi, per aiutarti a partire con il piede giusto, ho deciso di affidarti uno dei miei Pokémon. Scegli pure quello che preferisci."]
     }),
     pokemon_center: Object.freeze({
       title: "Centro Pokémon",

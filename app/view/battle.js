@@ -347,7 +347,7 @@ export function renderBattleScene(scene) {
     '          <div class="summary-list" data-battle-summary-measure>' + renderSummary(summaryLines) + "</div>",
     "        </div>",
     '        <div class="battle-info-pane battle-log-pane' + (battleInfoPanel === "log" ? " is-active" : "") + '" data-battle-info-pane="log" aria-hidden="' + (battleInfoPanel === "log" ? "false" : "true") + '">',
-    '          <div class="log-panel" data-scroll-key="battle-log"><div class="log-list">' + (logLines || '<div class="log-line">' + escapeHtml(t("ui.battle.noTurns")) + '</div>') + waitingLogLine + "</div></div>",
+    '          <div class="log-panel" data-scroll-key="battle-log"><div class="log-list" data-battle-log-measure>' + (logLines || '<div class="log-line">' + escapeHtml(t("ui.battle.noTurns")) + '</div>') + waitingLogLine + "</div></div>",
     "        </div>",
     "      </div>",
     battleInfoFooter,

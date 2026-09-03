@@ -817,6 +817,14 @@ assert.match(battleApiSource, /automation:\s*projection\.automation/,
   "The admin automation API must unwrap the Edge projection before updating the UI");
 assert.match(edge, /list_edge_admin_gym_battles/,
   "Enabling automation must drain the same authoritative battle list shown to the admin");
+const automaticAdminAdvanceSource = edge.slice(
+  edge.indexOf("async function advanceAutomaticAdminBattle("),
+  edge.indexOf("async function drainAutomaticAdminBattles(")
+);
+assert.doesNotMatch(automaticAdminAdvanceSource, /battle\.waiting_for/,
+  "The admin prepare projection omits waiting_for; the restored engine snapshot must validate turn ownership");
+assert.match(renderer, /Math\.max\(summary\.scrollHeight, Math\.ceil\(logContentHeight\)\)/,
+  "The shared Log/Summary panel height must include the tallest horizontal turn card");
 assert.match(pveMoveManager, /!context\.disableRandomMoveChoice\s*&&\s*random\(\)\s*<\s*RANDOM_MOVE_CHANCE/,
   "Automatic admin AI must be able to disable the generic random-move branch");
 assert.match(pveMoveManager, /context\s*&&\s*context\.useAllHealingItems/,

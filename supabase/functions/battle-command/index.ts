@@ -161,8 +161,7 @@ async function advanceAutomaticAdminBattle(
     const battle = prepared.battle as Record<string, unknown> | null;
     if (!battle || !battle.engine_snapshot || battle.engine_runtime_state !== "ready"
       || !["admin_gym", "league", "debug_training"].includes(String(battle.contract_key))
-      || !["active", "needs_player_switch"].includes(String(battle.status))
-      || String(battle.waiting_for) !== "admin") {
+      || !["active", "needs_player_switch"].includes(String(battle.status))) {
       break;
     }
     if (battle.engine_version !== BATTLE_ENGINE_VERSION || battle.engine_checksum !== manifest.bundleChecksum) {
@@ -891,7 +890,11 @@ Deno.serve(async (request) => {
     if (action === "admin_automation_read") {
       requireExactKeys(body, ["action"], []);
       await requireServerRole(clients.serviceClient, clients.userId, "admin");
-      return jsonResponse({ ok: true, automation: await readAdminAutomation(clients.serviceClient) });
+      const automation = await readAdminAutomation(clients.serviceClient);
+      const drain = automation.enabled
+        ? await drainAutomaticAdminBattles(clients.serviceClient)
+        : { failures: [], attempted: 0, advanced: 0 };
+      return jsonResponse({ ok: true, automation, ...drain });
     }
 
     if (action === "admin_automation_set") {

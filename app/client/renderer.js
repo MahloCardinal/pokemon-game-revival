@@ -294,31 +294,44 @@ function scheduleBattleLogScroll() {
 }
 
 export function syncBattleLayoutMeasurements() {
-  var layout = root.querySelector(".battle-layout");
   var infoCard = root.querySelector("[data-battle-info-card]");
   var panelInner = infoCard ? infoCard.querySelector(".battle-info-inner") : null;
   var tabs = panelInner ? panelInner.querySelector(".battle-info-tabs") : null;
   var summary = panelInner ? panelInner.querySelector("[data-battle-summary-measure]") : null;
+  var logList = panelInner ? panelInner.querySelector("[data-battle-log-measure]") : null;
+  var logPanel = logList ? logList.closest(".log-panel") : null;
   var actions = panelInner ? panelInner.querySelector(".battle-info-actions") : null;
   var panelStyle;
+  var logPanelStyle;
+  var logContentHeight = 0;
+  var contentHeight = 0;
   var rowGap = 0;
   var paddingTop = 0;
   var paddingBottom = 0;
   var minHeight = 0;
-  var configuredHeight = "";
-  if (!layout || !infoCard || !panelInner || !summary) {
+  var scrollbarHeight = 0;
+  if (!infoCard || !panelInner || !summary || !logList || !logPanel) {
     return;
   }
-  configuredHeight = window.getComputedStyle(layout).getPropertyValue("--battle-stage-min-height").trim();
-  if (configuredHeight && configuredHeight !== "auto") {
+  infoCard.style.removeProperty("min-height");
+  logPanelStyle = window.getComputedStyle(logPanel);
+  if (window.getComputedStyle(logList).display !== "flex" || logPanelStyle.overflowY !== "hidden") {
     return;
   }
+  Array.prototype.forEach.call(logList.children, function (entry) {
+    logContentHeight = Math.max(logContentHeight, entry.scrollHeight, entry.getBoundingClientRect().height);
+  });
+  scrollbarHeight = Math.max(12, logPanel.offsetHeight - logPanel.clientHeight);
+  logContentHeight += (parseFloat(logPanelStyle.paddingTop) || 0)
+    + (parseFloat(logPanelStyle.paddingBottom) || 0)
+    + scrollbarHeight;
+  contentHeight = Math.max(summary.scrollHeight, Math.ceil(logContentHeight));
   panelStyle = window.getComputedStyle(panelInner);
   rowGap = parseFloat(panelStyle.rowGap || panelStyle.gap) || 0;
   paddingTop = parseFloat(panelStyle.paddingTop) || 0;
   paddingBottom = parseFloat(panelStyle.paddingBottom) || 0;
   minHeight = Math.ceil(
-    summary.scrollHeight +
+    contentHeight +
     (tabs ? tabs.getBoundingClientRect().height : 0) +
     (actions ? actions.getBoundingClientRect().height : 0) +
     (actions ? rowGap * 2 : rowGap) +
@@ -326,8 +339,21 @@ export function syncBattleLayoutMeasurements() {
     paddingBottom
   );
   if (minHeight > 0) {
-    layout.style.setProperty("--battle-stage-min-height", minHeight + "px");
+    infoCard.style.minHeight = minHeight + "px";
   }
+}
+
+if (typeof window !== "undefined") {
+  var battleLayoutResizeFrame = null;
+  window.addEventListener("resize", function () {
+    if (battleLayoutResizeFrame !== null) {
+      window.cancelAnimationFrame(battleLayoutResizeFrame);
+    }
+    battleLayoutResizeFrame = window.requestAnimationFrame(function () {
+      battleLayoutResizeFrame = null;
+      syncBattleLayoutMeasurements();
+    });
+  });
 }
 
 export function syncRulesHeadingButtonWidths(scope) {

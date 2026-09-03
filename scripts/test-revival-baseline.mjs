@@ -58,6 +58,7 @@ const immediateKoRuntimeMigration = read("supabase/migrations/20260902133000_bin
 const adminBattleAutomationMigration = read("supabase/migrations/20260902134000_admin_battle_automation.sql");
 const adminBattleAutomationRuntimeMigration = read("supabase/migrations/20260902135000_bind_admin_battle_automation_runtime.sql");
 const currentServerRolesMigration = read("supabase/migrations/20260903130000_read_current_server_roles.sql");
+const internalHelperHardeningMigration = read("supabase/migrations/20260903140000_harden_internal_helper_functions.sql");
 const debugOfficialBattleItemMigration = read("supabase/migrations/20260902130000_allow_debug_catalog_items_in_official_battles.sql");
 const adminGymWaitingKeyMigration = read("supabase/migrations/20260902131000_fix_admin_gym_waiting_catalog_keys.sql");
 const authoritativeGymKeyConstraintMigration = read("supabase/migrations/20260902132000_fix_authoritative_gym_key_constraint.sql");
@@ -377,6 +378,12 @@ assert.match(currentServerRolesMigration, /where usr\.auth_user_id = v_auth_user
 assert.match(currentServerRolesMigration, /grant execute on function public\.read_current_server_roles\(\) to authenticated, service_role/i);
 assert.doesNotMatch(edge, /action === "roles"|"roles", "turn_history"/,
   "Role discovery must not use the battle command endpoint");
+assert.match(internalHelperHardeningMigration,
+  /alter function server_authority_private\.battle_dome_today\(\)\s+set search_path = pg_catalog/i);
+assert.match(internalHelperHardeningMigration,
+  /revoke execute on function public\.get_game_data_revision\(\)\s+from public, anon, authenticated/i);
+assert.match(internalHelperHardeningMigration,
+  /grant execute on function public\.get_game_data_revision\(\)\s+to service_role/i);
 assert.match(session, /event === "PASSWORD_RECOVERY"/);
 assert.match(vercel, /"source": "\/\(\.\*\)", "destination": "\/index\.html"/);
 assert.doesNotMatch(main, /app-version|AppVersion/);

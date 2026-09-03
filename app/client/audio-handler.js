@@ -7,6 +7,7 @@ import { t } from "./i18n.js";
 
 var MUSIC_ENABLED_KEY = "pokemon_game_revival:music_enabled";
 var MUSIC_VOLUME_KEY = "pokemon_game_revival:music_volume";
+var DEFAULT_MUSIC_VOLUME = 0.2;
 var mainTrack = null;
 var adminBattleTrack = null;
 var lastScene = null;
@@ -26,7 +27,7 @@ var musicEnabled = storedMusicEnabled();
 function clampVolume(value) {
   var number = Number(value);
   if (!Number.isFinite(number)) {
-    return 0.1;
+    return DEFAULT_MUSIC_VOLUME;
   }
   return Math.max(0, Math.min(1, number));
 }
@@ -35,9 +36,9 @@ function storedMusicVolume() {
   var value;
   try {
     value = localStorage.getItem(MUSIC_VOLUME_KEY);
-    return value === null ? 0.1 : clampVolume(value);
+    return value === null ? DEFAULT_MUSIC_VOLUME : clampVolume(value);
   } catch (error) {
-    return 0.1;
+    return DEFAULT_MUSIC_VOLUME;
   }
 }
 
@@ -99,13 +100,18 @@ function activeBattleType() {
   return state.activeBattle ? state.activeBattle.battleType || "" : "";
 }
 
+function usesBattleMusic(battleType) {
+  var type = String(battleType || "");
+  return isGymOrLeagueBattleType(type) || type === "battle_dome" || type === "battle_tower";
+}
+
 function isAdminMusicScene(scene) {
   return Boolean(scene && (
     scene.name === "admin-battle"
     || scene.adminBattle
     || scene.adminControlled
     || (scene.manager && scene.manager.adminControlled)
-    || isGymOrLeagueBattleType(battleTypeForScene(scene))
+    || usesBattleMusic(battleTypeForScene(scene))
   ));
 }
 
@@ -113,7 +119,7 @@ function desiredModeForScene(scene) {
   if (!scene || scene.name === "login" || scene.name === "privacy-policy" || scene.name === "terms") {
     return "none";
   }
-  return isAdminMusicScene(scene) || isGymOrLeagueBattleType(activeBattleType()) ? "admin-battle" : "main";
+  return isAdminMusicScene(scene) || usesBattleMusic(activeBattleType()) ? "admin-battle" : "main";
 }
 
 function playMode(mode) {

@@ -91,6 +91,7 @@ const authView = read("app/view/auth.js");
 const gymsView = read("app/view/gyms.js");
 const gymsHandler = read("app/client/gyms-handler.js");
 const battleHandler = read("app/client/battle-handler.js");
+const audioHandler = read("app/client/audio-handler.js");
 const navigationHandler = read("app/client/navigation-handler.js");
 const captureHandler = read("app/client/capture-handler.js");
 const adminBattleHandler = read("app/client/admin-battle-handler.js");
@@ -669,6 +670,10 @@ assert.doesNotMatch(battleDomeMigration, /battle_dome_battle[\s\S]{0,200}(expire
   "Active Battle Dome challenges must not expire automatically");
 assert.match(battleView, /ItemCategory\.Ball && sceneAllowsBallUse\(renderScene\)/,
   "Poké Balls must only be visible in capture-zone battles");
+assert.match(audioHandler, /DEFAULT_MUSIC_VOLUME\s*=\s*0\.2/,
+  "New players must start with music volume at 20 percent");
+assert.match(audioHandler, /type\s*===\s*"battle_dome"\s*\|\|\s*type\s*===\s*"battle_tower"/,
+  "Battle Dome and Battle Tower battles must use the battle music");
 
 const ordinaryBattleCommit = finalFunctionBody("server_authority_private", "commit_edge_battle_command_before_snapshot");
 assert.match(ordinaryBattleCommit, /contract_key in \('gym', 'admin_gym', 'capture', 'league'\)/i);
@@ -813,6 +818,9 @@ for (const battleType of ["battle_dome", "battle_tower", "gym_pewter_city", "tra
   assert.equal(sceneAllowsBallUse({ battleType, captureScene: { name: "capture" } }), false);
 }
 assert.equal(sceneAllowsBallUse(null), false);
+assert.equal(sceneAllowsBallUse({ authoritativeContractKey: "capture" }), true);
+assert.equal(sceneAllowsBallUse({ manager: { battleType: "capture_forest" } }), true);
+assert.equal(sceneAllowsBallUse({ battleType: "capture_forest" }), true);
 assert.equal(sceneAllowsBallUse({ battleType: "capture_forest", authoritativeCapture: true }), true);
 assert.equal(sceneAllowsBallUse({ battleType: "capture_forest", captureScene: { name: "capture" } }), true);
 assert.match(battleView, /if \(sceneAllowsBallUse\(renderScene\)\) \{\s*battleInventorySections\.push\(\{ key: "balls"/);

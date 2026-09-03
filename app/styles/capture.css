@@ -554,4 +554,17 @@
     width: min(220px, 100%);
   }
 
+.capture-search-actions .capture-search-button {
+    order: 1;
+  }
+
+.capture-search-actions .capture-fight-button {
+    order: 2;
+  }
+
+.capture-search-actions .capture-flee-button {
+    order: 3;
+    margin-top: 8px;
+  }
+
 }

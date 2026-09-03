@@ -1,7 +1,8 @@
 // Battle-only affordances default to unavailable outside their explicit contract.
 export function sceneAllowsBallUse(scene) {
-  return Boolean(scene && /^capture_[a-z0-9_]+$/.test(String(scene.battleType || ""))
-    && (scene.authoritativeCapture || scene.captureScene && scene.captureScene.name === "capture"));
+  var battleType = String(scene && (scene.battleType || scene.manager && scene.manager.battleType) || "");
+  return Boolean(scene && (scene.authoritativeContractKey === "capture"
+    || /^capture_[a-z0-9_]+$/.test(battleType)));
 }
 
 export function pendingOwnedBattleEntryChoice(scene) {

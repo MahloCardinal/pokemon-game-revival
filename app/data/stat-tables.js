@@ -118,7 +118,7 @@ var POWER_CAPS = {
 };
 
 var STATS_CAPS = {
-  5: 5, 10: 5, 20: 5, 30: 25, 40: 50, 50: 70, 60: 90, 70: 110, 80: 130, 90: 150, 100: 170
+  5: 2, 10: 5, 20: 10, 25: 20, 30: 25, 40: 50, 50: 70, 60: 90, 70: 110, 80: 130, 90: 150, 100: 170
 };
 
 export var STAT_CAP_LEVELS = Object.keys(Object.assign({}, HP_CAPS, POWER_CAPS, STATS_CAPS)).map(Number).sort(function (a, b) { return a - b; });
@@ -147,9 +147,8 @@ export function maxPowerForLevel(level) {
 export function maxStatsForLevel(level) {
   var numericLevel = Math.max(5, Math.floor(Number(level) || 5));
   var tbl;
-  if (numericLevel <= 20) { return 5; }
   tbl = nearestTableLevel(STATS_CAPS, numericLevel);
-  if (tbl === numericLevel) { return STATS_CAPS[numericLevel]; }
+  if (numericLevel < 30 || tbl === numericLevel) { return STATS_CAPS[tbl]; }
   return STATS_CAPS[tbl] + (numericLevel - tbl) * 2;
 }
 

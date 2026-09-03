@@ -1057,6 +1057,20 @@ assert.deepEqual(
   [[453, 53, "cut", 2], [454, 54, "surf", 0], [455, 55, "waterfall", 2]]
 );
 assert.equal(StatDefinitions.STATS_BY_LEVEL[56], 53);
+for (let level = 5; level < 30; level += 1) {
+  const cap = level < 10 ? 2 : level < 20 ? 5 : level < 25 ? 10 : 20;
+  assert.equal(StatDefinitions.maxStatsForLevel(level), cap, `Stats checkpoint at level ${level}`);
+  assert.equal(StatDefinitions.maxStatsForPokemon({ level, isShiny: true, rarityKey: "legendary" }),
+    cap + StatDefinitions.shinyStatsBonusForLevel(level) + StatDefinitions.legendaryStatsBonusForLevel(level));
+  const pokemon = { level, maxHp: 1, moves: [{ stats: 100 }] };
+  StatDefinitions.clampToLimits(pokemon);
+  assert.equal(pokemon.moves[0].stats, cap);
+}
+for (const [checkpoint, cap] of [[30, 25], [40, 50], [50, 70], [60, 90], [70, 110], [80, 130], [90, 150], [100, 170]]) {
+  for (let level = checkpoint; level <= Math.min(checkpoint + 9, 100); level += 1) {
+    assert.equal(StatDefinitions.maxStatsForLevel(level), cap + (level - checkpoint) * 2);
+  }
+}
 assert.deepEqual(
   [5, 10, 20, 30, 40, 60].map((level) => [
     level,

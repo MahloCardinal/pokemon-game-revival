@@ -5,32 +5,32 @@
     "app/engine/battle-runtime.js"
   ],
   "checksumAlgorithm": "sha256",
-  "bundleChecksum": "118b342f70fbc5dc8e8db2be12dfa5e24cf0fa593ce5c920c847252c4517d698",
+  "bundleChecksum": "18aec756514634336096985609c690330472469b5a5dfdae2621a07d3d3965c9",
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
-      "sha256": "3c975aaf381242354ab5543974e88485738672b0f9f78fc65d85b9adaf7f020e",
-      "bytes": 1397
+      "sha256": "26de827e2f6fd0e1cdfcd0ab57cde7d670f128d256e0f0de56f53f3ba4416d86",
+      "bytes": 1460
     },
     {
       "source": "app/data/battle-tower.js",
-      "sha256": "104873e783ec7b452e482ec672e948130efb1b8cf796c9bfa9a1a4ce031ccd8e",
-      "bytes": 1674
+      "sha256": "df490c170906dd211525b9f6630472feacc27c94acc2b75a9143ed1284dbc483",
+      "bytes": 1705
     },
     {
       "source": "app/data/capture-zones.js",
-      "sha256": "65ed3e9c4878a09b478f6c44c5e945f6b054f7366d56a2f6a52b0fb588ede50d",
-      "bytes": 1023
+      "sha256": "8d63c3e9429850680ec6636dc3d83b8acd08d873332ddfc0f123c63468650b74",
+      "bytes": 1074
     },
     {
       "source": "app/data/gyms.js",
-      "sha256": "088600a5ed342c58386bc5cf1d944c0079b306b4412cb248a78075d33a5926f6",
-      "bytes": 14456
+      "sha256": "bbd23d9c5e5b5191e01a993247df07dea9bae9e5312824e5d41a3ca798d343bd",
+      "bytes": 14466
     },
     {
       "source": "app/data/index.js",
-      "sha256": "31f634234cfdaf768b8b4462ff76fd3ae200daf41d10a590f8569d902b47043b",
-      "bytes": 2576
+      "sha256": "cf75281a9758168117696088ac74067b456241866526842c1d4907f9578dd7f2",
+      "bytes": 2611
     },
     {
       "source": "app/data/items.js",
@@ -39,13 +39,13 @@
     },
     {
       "source": "app/data/moves.js",
-      "sha256": "f3705a6209cc74da039aeb23260ba5c9c016726ee99e3018e48260a8339a8aea",
-      "bytes": 99037
+      "sha256": "72db1991659b50bdfd2a0a0544955366a7642f718f60c175d9d9c3cfbae2d33b",
+      "bytes": 101833
     },
     {
       "source": "app/data/progression.js",
-      "sha256": "df55d5a3e7c8872d49cedb24085c807fb1d24a352840a8722efe3c1338eb6413",
-      "bytes": 10552
+      "sha256": "47418d09c443fe5e459cb90593ee7afb8d03c61f064c49af300e91b074a56620",
+      "bytes": 10571
     },
     {
       "source": "app/data/pve-move-categories.js",
@@ -69,23 +69,23 @@
     },
     {
       "source": "app/data/stat-tables.js",
-      "sha256": "bdd0843b1536976dcc925cc44c83cfe98c8c8b65739df84379fdd59483047c0b",
-      "bytes": 6817
+      "sha256": "2e3c5f295e51aae614ac7fa941ac22e5115072d9366beaa173bf587d8445d0b7",
+      "bytes": 6899
     },
     {
       "source": "app/data/team-composition.js",
-      "sha256": "d31eac6a6be9b915b7ccd7ef059eeae7888e91f37b7b8870dc517a0631380730",
-      "bytes": 3252
+      "sha256": "ac5ed1dc747d3e3dc36edeb0fce31af70c1c28049d87b705074e3f3a1e56b052",
+      "bytes": 3350
     },
     {
       "source": "app/data/team-rule-items.js",
-      "sha256": "0a5e55e580ee74f28a7f803337fa1e377108ca1ab713c4c31ce4b4421a718878",
-      "bytes": 229
+      "sha256": "da218b9bd1567023fc938b1e96172538ad3b0391609d0ed74adafd799c816cb0",
+      "bytes": 232
     },
     {
       "source": "app/data/trainers.js",
-      "sha256": "f09e0a96aac3c77dd52b075e8453dfcee12211c0edd97e2d20e65086857bc87e",
-      "bytes": 3851
+      "sha256": "7b690d3e9d94fdedcaec0f9923e9194b14a72dbc20ccefb048011a573ed9b8b5",
+      "bytes": 3911
     },
     {
       "source": "app/data/type-chart.js",
@@ -99,28 +99,28 @@
     },
     {
       "source": "app/engine/battle-manager.js",
-      "sha256": "48eaa884fa32c34255f33073b1ac7ab6093665bbdd43aa211554a20da95b0489",
-      "bytes": 90956
+      "sha256": "252787da966237f6cc3f9370926285535d40a1fb45aeb2c54e5104bae442db96",
+      "bytes": 91495
     },
     {
       "source": "app/engine/battle-runtime.js",
-      "sha256": "8154766ae75bc11bcb131b4cd54da5098d55eb289e57853d55824714278de868",
-      "bytes": 47583
+      "sha256": "30e29046af9beef5f60a3ae6cbbeac501765ee46a79f869e0a4e15c92b28c030",
+      "bytes": 47849
     },
     {
       "source": "app/engine/battle-summary.js",
-      "sha256": "f81a37aef5bf16a3b4d9b3e263dafe6d1378317bc16ff60b515df3849c46e0b0",
-      "bytes": 4624
+      "sha256": "fbf75ed9f65b75d66b076531f3e638327a10c77bce7fd2c1efc5cfcc33f022f3",
+      "bytes": 4638
     },
     {
       "source": "app/engine/capture-calc.js",
-      "sha256": "81c2fada9a118fa9b0384ca8d662acd7df8258e2a597db2998be90cd3beb4e28",
-      "bytes": 2067
+      "sha256": "56ee2c694bba709412cf84914cee50a4e3882f43b4c75d716d3ae035888d7493",
+      "bytes": 2119
     },
     {
       "source": "app/engine/combatant.js",
-      "sha256": "f3294d57fbce9d17c2c35486d202f24d7b7af65168a20ea2c3b7d1ffb8278a21",
-      "bytes": 8186
+      "sha256": "032de31b2ee9ee3c4d32811f0574a7eb68a720436f13333f5d5ee3c211fb15a4",
+      "bytes": 8269
     },
     {
       "source": "app/engine/deterministic-rng.js",
@@ -129,8 +129,8 @@
     },
     {
       "source": "app/engine/held-items.js",
-      "sha256": "892249488b02ebd2e9a4aae2184009a39134c1d532374b375839e04996224b9c",
-      "bytes": 29782
+      "sha256": "92bc131f79e88baaea31c4bdf33939462e79a6ade44e8b71ba313fc253fd386a",
+      "bytes": 29833
     },
     {
       "source": "app/engine/index.js",
@@ -139,43 +139,43 @@
     },
     {
       "source": "app/engine/level-calc.js",
-      "sha256": "000d00cc0fc7b665861a9d3bad511c4c44c3eb5f90a62712cd87cb887390e8a8",
-      "bytes": 2132
+      "sha256": "b5ebefec464a03d7a823e1c0990de803ae7d3cbf23435a62cbc564f7a8178c60",
+      "bytes": 2166
     },
     {
       "source": "app/engine/moves.js",
-      "sha256": "888e7164681f8b00d797377a11cc4dead2675cad8c70a40f941e5e0fe40191e8",
-      "bytes": 3905
+      "sha256": "4408f6c357825e5b2e3a2caf27be46d0dbaca94bffe01ac7a7004d0ac4072e36",
+      "bytes": 4037
     },
     {
       "source": "app/engine/pokemon.js",
-      "sha256": "1fb77155905d421037a0b509799cdc53750c00d109355a37c1591a60dc0e824b",
-      "bytes": 6725
+      "sha256": "b084d1d5c70460ecee45b6ce11509af5eff61ac02039f1ca8c0a425c31842294",
+      "bytes": 6764
     },
     {
       "source": "app/engine/pve_move_manager.js",
-      "sha256": "8fbe839f153c81dffe9ec5ac825d1c6c7d76b927a3e94c659a48721efd6cd94e",
-      "bytes": 13909
+      "sha256": "b360cbe7e3468baa75c1fe62d42132c9a7b52fc8109e6efc48ac3c8cd5321bc8",
+      "bytes": 14068
     },
     {
       "source": "app/engine/species.js",
-      "sha256": "a6d0d14eb2fe2cf18db4f9b129ca61d13c0be75c55c093f50aa7e3901a4a40a9",
-      "bytes": 7253
+      "sha256": "69f14d4101090b094716ace1e3ef5645e646fb4a922d1ecfac94a28eac8d5bc2",
+      "bytes": 7400
     },
     {
       "source": "app/engine/team-composition-rules.js",
-      "sha256": "947ee1c0b2ae8079545cf7a2605f97be13efeabb03b8d79c0abb7b699c10cde4",
-      "bytes": 2021
+      "sha256": "e001867d707861ec31f3fc0c8ee4c578dcf523936449e14ae929856836858cc7",
+      "bytes": 2025
     },
     {
       "source": "app/engine/team.js",
-      "sha256": "6cf0b8539830df2a428a8434232b1a4da35bd44799cde4141cd48a726cf48229",
-      "bytes": 6011
+      "sha256": "f6ce7228fe9494be60b93606b5306a68719a5d77f777e914be171d703d92c425",
+      "bytes": 6016
     },
     {
       "source": "app/engine/tower-opponent.js",
-      "sha256": "c753516b2df8daaef53f2da5e37c145d63291bc8b68dd374495c7538759c47e5",
-      "bytes": 8367
+      "sha256": "7d6e5c0728848f7caaedfe51c2d22a41faaeaa06ab7466d91d165daa68ae17a8",
+      "bytes": 8567
     },
     {
       "source": "app/engine/training-opponent.js",

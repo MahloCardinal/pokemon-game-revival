@@ -258,6 +258,8 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     pokemonGender: "Pokémon gender",
     characterAlt: "Character",
     generation: "Gen {generation}",
+    nameFilter: "Name",
+    nameSearch: "Search Pokémon by name (at least 2 letters)",
     character: "Character",
     starterPokemon: "Starter Pokémon",
     genders: Object.freeze({ male: "Male", female: "Female", genderless: "Genderless" })

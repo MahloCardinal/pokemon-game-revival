@@ -102,6 +102,10 @@ const playerDirectoryView = read("app/view/player-directory.js");
 const playerDirectoryStyles = read("app/styles/player-directory.css");
 const playerDirectoryHandler = read("app/client/player-directory-handler.js");
 const inventoryViewHelpers = read("app/view/inventory-helpers.js");
+const starterView = read("app/view/starter.js");
+const starterHandler = read("app/client/starter-handler.js");
+const starterStyles = read("app/styles/starter.css");
+const searchCombobox = read("app/client/search-combobox.js");
 const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
 const migrationSql = readdirSync(migrationDirectory)
   .filter((name) => name.endsWith(".sql"))
@@ -333,6 +337,19 @@ assert.doesNotMatch(battleHandler, /Nella confusione perdi|Pokédollari/);
 assert.match(captureHandler, /await refreshCaptureEncounterState\(captureScene\)/);
 assert.match(captureHandler, /state\.ordinaryProgression[\s\S]*openActiveProgressionScene\(\)/);
 assert.match(inventoryViewHelpers, /SINGLE_COPY_INVENTORY_ITEM_INDEXES[\s\S]*go_goggles\.index[\s\S]*silph_scope\.index[\s\S]*white_flute\.index[\s\S]*black_flute\.index/);
+assert.match(starterView, /getPokemonStaticImage\(source\)/,
+  "Starter list entries must use the genderless static species sprites");
+assert.match(starterView, /data-generation="0"/);
+assert.match(starterView, /data-starter-name-filter/);
+assert.match(starterView, /normalizedNameQuery\.length < 2/);
+assert.match(starterView, /speciesDisplayName\(species\.speciesKey\)\.toLocaleLowerCase\(\)\.indexOf\(normalizedNameQuery\) !== -1/,
+  "Starter name search must match localized name fragments across all generations");
+assert.match(starterHandler, /generation < 0 \|\| generation > 3/);
+assert.match(starterHandler, /renderStarterPokemonGrid\(state\.starterSetup, event\.target\.value\)/);
+assert.match(starterStyles, /\.starter-name-filter\s*\{[^}]*flex:\s*0 1 250px/);
+assert.match(searchCombobox, /normalized\(label\)\.indexOf\(query\) !== -1/,
+  "Shared Pokemon, move and held-item searches must match fragments, not only prefixes");
+assert.doesNotMatch(searchCombobox, /normalized\(label\)\.indexOf\(query\) === 0/);
 assert.match(teamView, /isSingleCopyInventoryItem\(item\) \? ""/);
 assert.match(teamView, /sectionItems\.length[\s\S]*t\("common\.emptyPocket"\)/);
 assert.doesNotMatch(teamView, /if \(!sectionItems\.length\) return ""/);
@@ -1068,10 +1085,13 @@ assert.deepEqual(
   const femaleNormalPath = AssetHelpers.getPokemonImage(Object.assign({}, femaleShiny, { isShiny: false }));
   const femaleShinyPath = AssetHelpers.getPokemonImage(femaleShiny);
   const maleShinyPath = AssetHelpers.getPokemonImage(Object.assign({}, femaleShiny, { gender: "male" }));
+  const femaleStaticPath = AssetHelpers.getPokemonStaticImage(femaleShiny);
 
   assert.equal(femaleNormalPath, "/app/assets/img_pokemon/3_f.webp");
   assert.equal(femaleShinyPath, "/app/assets/img_pokemon/3_f_shiny.webp");
   assert.equal(maleShinyPath, "/app/assets/img_pokemon/3_shiny.webp");
+  assert.equal(femaleStaticPath, "/app/assets/img_pokemon_static/3.webp",
+    "Static Pokemon cards must ignore gender, Shiny and form sprite suffixes");
   [femaleNormalPath, femaleShinyPath, maleShinyPath].forEach((assetPath) => {
     assert.equal(existsSync(new URL(".." + assetPath, import.meta.url)), true, `Missing Pokemon sprite: ${assetPath}`);
   });

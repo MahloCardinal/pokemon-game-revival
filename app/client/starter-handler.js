@@ -99,7 +99,8 @@ registerAction("starter-set-generation", function(element) {
     var setup = selectedStarterSetup();
     var picker;
     var previousButton;
-    if (state.starterSetup && state.starterSetup.loading || generation < 1 || generation > 3 || generation === setup.generation) {
+    var nameFilterInput;
+    if (state.starterSetup && state.starterSetup.loading || generation < 0 || generation > 3 || generation === setup.generation) {
       return;
     }
     state.starterSetup = {
@@ -114,6 +115,14 @@ registerAction("starter-set-generation", function(element) {
     picker = root.querySelector(".starter-picker");
     setHtml(picker, renderStarterPokemonGrid(state.starterSetup));
     filterControls = element.closest(".starter-generation-filters");
+    nameFilterInput = filterControls ? filterControls.querySelector("[data-starter-name-filter]") : null;
+    if (nameFilterInput) {
+      nameFilterInput.value = "";
+      nameFilterInput.hidden = generation !== 0;
+      if (generation === 0) {
+        nameFilterInput.focus();
+      }
+    }
     previousButton = filterControls ? filterControls.querySelector(".starter-generation-button.active") : null;
     if (previousButton) {
       previousButton.classList.remove("active");
@@ -121,6 +130,15 @@ registerAction("starter-set-generation", function(element) {
     element.classList.add("active");
     return;
 
+});
+
+document.addEventListener("input", function(event) {
+    var picker;
+    if (!event.target.matches || !event.target.matches("[data-starter-name-filter]") || selectedStarterSetup().generation !== 0) {
+      return;
+    }
+    picker = root.querySelector(".starter-picker");
+    setHtml(picker, renderStarterPokemonGrid(state.starterSetup, event.target.value));
 });
 
 registerAction("starter-confirm", function(element) {
@@ -139,11 +157,15 @@ registerAction("starter-change-selection", function(element) {
 
 function selectedStarterSetup() {
   var setup = state.starterSetup || {};
+  var configuredGeneration = setup.generation;
+  var generation = configuredGeneration === undefined || configuredGeneration === null || configuredGeneration === ""
+    ? 1
+    : Math.floor(Number(configuredGeneration));
   return {
     trainerIndex: Number(setup.trainerIndex || 0),
     speciesName: String(setup.speciesName || ""),
     gender: String(setup.gender || ""),
-    generation: Math.max(1, Math.min(3, Math.floor(Number(setup.generation) || 1)))
+    generation: generation === 0 ? 0 : Math.max(1, Math.min(3, generation || 1))
   };
 }
 

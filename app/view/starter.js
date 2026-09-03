@@ -1,7 +1,7 @@
 import { TRAINER_SPRITES } from "../data/trainers.js";
 import * as Engine from "../engine/index.js";
 import { state } from "../client/game-state.js";
-import { escapeHtml, getGenderImage, getPokemonImage, getTrainerImage, renderImage, withPokemonSpriteAttrs, withPokemonSpriteClass, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
+import { escapeHtml, getGenderImage, getPokemonStaticImage, getTrainerImage, renderImage, withPokemonSpriteAttrs, withPokemonSpriteClass, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
 import { button, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { speciesDisplayName } from "../client/entity-text.js";
 import { resolveText, t } from "../client/i18n.js";
@@ -21,7 +21,13 @@ function baseStarterSpecies() {
 }
 
 function starterGenerationFilter(setup) {
-  var generation = Number((setup || state.starterSetup || {}).generation || 1);
+  var configuredGeneration = (setup || state.starterSetup || {}).generation;
+  var generation = configuredGeneration === undefined || configuredGeneration === null || configuredGeneration === ""
+    ? 1
+    : Number(configuredGeneration);
+  if (generation === 0) {
+    return 0;
+  }
   return generation >= 1 && generation <= 3 ? generation : 1;
 }
 
@@ -36,13 +42,20 @@ function renderStarterGenderPicker(species, selectedGender) {
   }).join("") + "</span>";
 }
 
-export function renderStarterPokemonGrid(setup) {
+export function renderStarterPokemonGrid(setup, nameQuery) {
   setup = setup || state.starterSetup || { error: "", loading: false };
   var selectedSpeciesName = String(setup.speciesName || "");
   var selectedGender = String(setup.gender || "");
   var activeGeneration = starterGenerationFilter(setup);
+  var normalizedNameQuery = String(nameQuery || "").trim().toLocaleLowerCase();
   var speciesList = baseStarterSpecies();
+  if (activeGeneration === 0 && normalizedNameQuery.length < 2) {
+    return "";
+  }
   return speciesList.filter(function (species) {
+    if (activeGeneration === 0) {
+      return speciesDisplayName(species.speciesKey).toLocaleLowerCase().indexOf(normalizedNameQuery) !== -1;
+    }
     return (Engine.generationForDexNumber(Number(species.dexNumber)) || 1) === activeGeneration;
   }).map(function (species) {
     var selectedClass = species.speciesKey === selectedSpeciesName ? " is-selected" : "";
@@ -52,7 +65,7 @@ export function renderStarterPokemonGrid(setup) {
       return [
         '<button type="button" class="starter-card' + selectedClass + '" data-action="starter-pick" data-species="' + escapeHtml(species.speciesKey) + '" ' + (setup.loading ? "disabled" : "") + '>',
         '  <span class="starter-card-visual">',
-        renderImage(getPokemonImage(source), speciesName, withPokemonSpriteClass("starter-card-sprite", source), withPokemonSpriteAttrs(source)),
+        renderImage(getPokemonStaticImage(source), speciesName, withPokemonSpriteClass("starter-card-sprite", source), withPokemonSpriteAttrs(source)),
         "  </span>",
         '  <strong>' + escapeHtml(speciesName) + "</strong>",
         selectedClass ? renderStarterGenderPicker(species, selectedGender) : "",
@@ -60,10 +73,7 @@ export function renderStarterPokemonGrid(setup) {
       ].join("");
     }
 
-    var selectedSpeciesSource = selectedClass && selectedGender
-      ? { speciesKey: species.speciesKey, name: species.name, gender: selectedGender }
-      : species;
-    return renderCard(selectedSpeciesSource);
+    return renderCard(species);
   }).join("");
 }
 
@@ -83,6 +93,8 @@ export function renderStarterScene() {
     var activeClass = generation === activeStarterGeneration ? " active" : "";
     return button(t("ui.starter.generation", { generation: generation }), "starter-set-generation", 'data-generation="' + generation + '"' + (setup.loading ? " disabled" : ""), "button-ghost button-slim starter-generation-button" + activeClass);
   }).join("");
+  var nameFilterButton = button(t("ui.starter.nameFilter"), "starter-set-generation", 'data-generation="0"' + (setup.loading ? " disabled" : ""), "button-ghost button-slim starter-generation-button" + (activeStarterGeneration === 0 ? " active" : ""));
+  var nameFilterInput = '<input type="search" class="starter-name-filter" data-starter-name-filter autocomplete="off" maxlength="40" placeholder="' + escapeHtml(t("ui.starter.nameSearch")) + '" aria-label="' + escapeHtml(t("ui.starter.nameSearch")) + '"' + (activeStarterGeneration === 0 ? "" : " hidden") + (setup.loading ? " disabled" : "") + '>';
 
   var content = [
     setup.error ? '<p class="starter-error starter-setup-error">' + escapeHtml(resolveText(setup.error)) + "</p>" : "",
@@ -97,7 +109,7 @@ export function renderStarterScene() {
     '<section class="panel starter-choice-panel"><div class="panel-inner">',
     '  <section class="starter-choice-section">',
     '    <h2 class="starter-section-title">' + escapeHtml(t("ui.starter.starterPokemon")) + "</h2>",
-    '    <div class="starter-generation-filters">' + generationButtons + "</div>",
+    '    <div class="starter-generation-filters">' + generationButtons + nameFilterButton + nameFilterInput + "</div>",
     '    <div class="starter-picker" data-scroll-key="starter-picker">' + renderStarterPokemonGrid(setup) + "</div>",
     "  </section>",
     "</div></section>",

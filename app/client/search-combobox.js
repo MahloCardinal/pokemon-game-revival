@@ -44,7 +44,7 @@ function syncTypedValue(combobox) {
   var exact = null;
   buttons.forEach(function (button) {
     var label = String(button.dataset.searchLabel || "");
-    var matches = !query || normalized(label).indexOf(query) === 0;
+    var matches = !query || normalized(label).indexOf(query) !== -1;
     button.hidden = !matches;
     if (normalized(label) === query) exact = button;
   });

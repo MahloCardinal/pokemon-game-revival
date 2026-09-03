@@ -281,7 +281,8 @@ export function getPokemonImage(pokemon) {
 }
 
 export function getPokemonStaticImage(pokemon) {
-  return assetPath("img_pokemon_static", pokemonSpriteFileBaseName(pokemon));
+  var speciesEntry = pokemonSpeciesEntry(pokemon);
+  return assetPath("img_pokemon_static", speciesEntry ? String(speciesEntry.data.dexNumber) : pokemonSpriteFileBaseName(pokemon));
 }
 
 export function getItemImage(fileName) {

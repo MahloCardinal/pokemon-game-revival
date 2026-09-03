@@ -134,6 +134,16 @@
   gap: 8px;
 }
 
+.starter-name-filter {
+  box-sizing: border-box;
+  flex: 0 1 250px;
+  min-width: min(250px, 100%);
+}
+
+.starter-name-filter[hidden] {
+  display: none;
+}
+
 .starter-generation-button.active {
   border-color: rgba(25, 125, 115, 0.54);
   background: rgba(232, 246, 242, 0.96);

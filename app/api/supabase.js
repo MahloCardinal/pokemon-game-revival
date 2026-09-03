@@ -81,8 +81,27 @@ async function authenticatedSessionStillMatches(client, context) {
   return Boolean(current.ok && context && current.sessionIdentity === context.sessionIdentity);
 }
 
+async function invokePublicEdgeFunction(functionName, options) {
+  var client = getSupabaseClient();
+  var config = runtimeConfig();
+  var invokeOptions;
+  if (!client || !config.publishableKey) {
+    return { data: null, error: new Error("Supabase is not configured.") };
+  }
+  invokeOptions = Object.assign({}, options || {});
+  invokeOptions.headers = Object.assign({}, invokeOptions.headers || {}, {
+    apikey: config.publishableKey
+  });
+  try {
+    return await client.functions.invoke(String(functionName || ""), invokeOptions);
+  } catch (error) {
+    return { data: null, error: error };
+  }
+}
+
 export async function invokeAuthenticatedEdgeFunction(functionName, options) {
   var client = getSupabaseClient();
+  var config = runtimeConfig();
   var context = await authenticatedSessionContext(client);
   var invokeOptions;
   var result;
@@ -91,6 +110,7 @@ export async function invokeAuthenticatedEdgeFunction(functionName, options) {
   }
   invokeOptions = Object.assign({}, options || {});
   invokeOptions.headers = Object.assign({}, invokeOptions.headers || {}, {
+    apikey: config.publishableKey,
     Authorization: "Bearer " + context.accessToken
   });
   try {
@@ -241,7 +261,7 @@ export async function registerWithUsername(username, password, recoveryEmail) {
   var errorMessage;
   if (!validation.ok) { return validation; }
   if (!client) { return { ok: false, code: "missing_configuration" }; }
-  result = await client.functions.invoke("register-with-username", {
+  result = await invokePublicEdgeFunction("register-with-username", {
     body: {
       username: validation.username,
       password: validation.password,
@@ -273,7 +293,7 @@ export async function loginWithUsername(username, password) {
   var message;
   if (!validation.ok) { return validation; }
   if (!client) { return { ok: false, code: "missing_configuration" }; }
-  result = await client.functions.invoke("login-with-username", {
+  result = await invokePublicEdgeFunction("login-with-username", {
     body: { username: validation.username, password: validation.password }
   });
   if (result.error) {
@@ -323,7 +343,7 @@ export async function requestPasswordRecovery(username, recoveryEmail) {
     return { ok: false, code: "invalid_email" };
   }
   if (!client) { return { ok: false, code: "missing_configuration" }; }
-  result = await client.functions.invoke("request-password-recovery", {
+  result = await invokePublicEdgeFunction("request-password-recovery", {
     body: { username: normalizedUsername, email: normalizedEmail }
   });
   if (result.error) {

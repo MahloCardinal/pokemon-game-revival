@@ -394,6 +394,14 @@ assert.match(supabaseApi, /authenticatedSessionContext[\s\S]*auth\.getSession\(\
   "Protected Edge calls must be gated by the current session");
 assert.match(supabaseApi, /invokeAuthenticatedEdgeFunction[\s\S]*Authorization:\s*"Bearer " \+ context\.accessToken/,
   "Protected Edge calls must carry the current token explicitly");
+assert.match(supabaseApi, /invokeAuthenticatedEdgeFunction[\s\S]*apikey:\s*config\.publishableKey[\s\S]*Authorization:/,
+  "Protected Edge calls must explicitly carry the publishable API key and user JWT");
+assert.match(supabaseApi, /invokePublicEdgeFunction[\s\S]*apikey:\s*config\.publishableKey/,
+  "Public authentication Edge calls must explicitly carry the publishable API key");
+for (const functionName of ["register-with-username", "login-with-username", "request-password-recovery"]) {
+  assert.match(supabaseApi, new RegExp(`invokePublicEdgeFunction\\("${functionName}"`));
+  assert.doesNotMatch(supabaseApi, new RegExp(`client\\.functions\\.invoke\\("${functionName}"`));
+}
 assert.match(supabaseApi, /authenticatedSessionStillMatches\(client, context\)/,
   "Protected requests must reject responses belonging to a previous session");
 assert.match(supabaseApi, /payload && payload\.session_id[\s\S]*current\.sessionIdentity === context\.sessionIdentity/,

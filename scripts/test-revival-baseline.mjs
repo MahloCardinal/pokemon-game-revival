@@ -51,6 +51,7 @@ const debugTrainerTitlesMigration = read("supabase/migrations/20260826160000_deb
 const preferredTrainerTitlesMigration = read("supabase/migrations/20260828110000_preferred_trainer_titles.sql");
 const playerDirectoryAvatarMigration = read("supabase/migrations/20260828120000_player_directory_trainer_avatar.sql");
 const playerDirectoryPokedexMigration = read("supabase/migrations/20260901150000_player_directory_national_pokedex.sql");
+const playerDirectoryDebugVisibilityMigration = read("supabase/migrations/20260903120000_hide_debug_user_from_player_directory.sql");
 const battleItemRuntimeMigration = read("supabase/migrations/20260901160000_bind_battle_item_effect_runtime.sql");
 const selfInducedStatusRuntimeMigration = read("supabase/migrations/20260902120000_bind_self_induced_status_runtime.sql");
 const immediateKoRuntimeMigration = read("supabase/migrations/20260902133000_bind_immediate_ko_runtime.sql");
@@ -422,6 +423,8 @@ assert.match(playerDirectoryPokedexMigration, /'pokedex_caught', least\(catalog_
 assert.match(playerDirectoryPokedexMigration, /'pokedex_total', catalog_data\.pokedex_total/i);
 assert.match(playerDirectoryPokedexMigration, /from public\.player_dex_entry[\s\S]*group by auth_user_id, catalog_release_id/i);
 assert.match(playerDirectoryPokedexMigration, /from public\.catalog_species[\s\S]*group by catalog_release_id/i);
+assert.match(playerDirectoryDebugVisibilityMigration, /not exists\s*\(\s*select 1\s*from public\.user_server_role role/i);
+assert.match(playerDirectoryDebugVisibilityMigration, /role\.auth_user_id = profile\.auth_user_id[\s\S]*role\.role_key = 'debug'/i);
 assert.match(shinyMigration, /rule_key = 'shiny_odds_denominator'[\s\S]*v_is_shiny := floor\(random\(\) \* v_shiny_odds\)::integer = 0/i);
 assert.match(shinyMigration, /p_requires_battle_idle => true/i);
 assert.match(rarityStatsMigration, /state = state - 'shl'/i);

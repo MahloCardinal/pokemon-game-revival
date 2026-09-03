@@ -98,7 +98,7 @@ export var EN_SCENE_TRANSLATIONS = Object.freeze({
     battle_dome: Object.freeze({
       title: "Battle Dome",
       presentation: [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        "I set this structure up so everyone can build their own team and test out different Pokémon and strategies. Unfortunately, I don't have Legendary Pokémon available, but you'll see that you can still have plenty of fun. I'm curious to see what your best team will be!"
       ]
     }),
     training_zone: Object.freeze({

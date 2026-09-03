@@ -22,7 +22,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     battle_tower: Object.freeze({ title: "Torre Lotta", description: "Cimentatevi nella scalata e dimostrate il vostro valore" }),
     training_zone: Object.freeze({ title: "Zona allenamento", description: "Pronti a dare il massimo assieme alla vostra squadra!" }),
     battle_shop: Object.freeze({ title: "Negozio Lotta", description: "Premi rari e particolari in cambio di Punti Lotta" }),
-    battle_dome: Object.freeze({ title: "Cupola Lotta", description: "Crea una squadra libera e sfida gli altri giocatori" }),
+    battle_dome: Object.freeze({ title: "Cupola Lotta", description: "Crea la tua squadra ideale e sfida gli altri giocatori" }),
     pokemon_center: Object.freeze({ title: "Centro Pokémon", description: "Qua ti permettiamo di preparare al meglio la tua squadra" }),
     shopping_center: Object.freeze({ title: "Centro commerciale", description: "Il posto perfetto per fare rifornimento di strumenti" }),
     garden: Object.freeze({ title: "Giardino", description: "Avrai il pollice verde?\nO quelle povere Bacche non hanno scampo?" }),
@@ -32,7 +32,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
   }),
   playerDirectory: Object.freeze({
     sceneTitle: "Schede giocatori",
-    description: "Consulta le squadre Pokémon e le Medaglie degli altri giocatori!",
+    description: "Consulta le squadre Pokémon e altre info degli altri giocatori!",
     loading: "Caricamento delle schede giocatori...",
     empty: "Non ci sono ancora giocatori disponibili.",
     emptyTeam: "Squadra vuota",
@@ -81,8 +81,8 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
       fuchsia_city: Object.freeze({ name: "Fucsiapoli", description: "Capopalestra: Koga" }),
       cinnabar_island: Object.freeze({ name: "Isola Cannella", description: "Capopalestra: Blaine" }),
       viridian_city: Object.freeze({ name: "Smeraldopoli", description: "Capopalestra: Giovanni" }),
-      elite_four: Object.freeze({ name: "Superquattro", description: "Qui si decide il destino degli eroi" }),
-      kanto_champion: Object.freeze({ name: "Campione Kanto", description: "L'ultimo ostacolo: la vera sfida" })
+      elite_four: Object.freeze({ name: "Superquattro", description: "Qui si vedrà l'abilità dei veri allenatori" }),
+      kanto_champion: Object.freeze({ name: "Campione Kanto", description: "La fine della scalata" })
     }),
     badges: Object.freeze({
       boulder: "Medaglia Sasso", cascade: "Medaglia Cascata", thunder: "Medaglia Tuono", rainbow: "Medaglia Arcobaleno",
@@ -580,13 +580,13 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
   }),
   battleDome: Object.freeze({
     teamTab: "Squadra", lobbyTab: "Lobby", loading: "Caricamento della Cupola Lotta...",
-    builderTitle: "Crea un Pokémon", pokemon: "Pokémon", heldItem: "Strumento tenuto", noItem: "Nessuno strumento",
+    builderTitle: "Crea i tuoi Pokémon", pokemon: "Pokémon", heldItem: "Strumento tenuto", noItem: "Nessuno strumento",
     move: "Mossa {number}", addPokemon: "Aggiungi Pokémon", removePokemon: "Togli",
-    fixedStats: "Livello {level}, {hp} PS, {power} Power e {stats} Stats per ogni mossa.",
+    fixedStats: "Livello {level}, PS {hp}, potenza {power} e statistiche {stats} per ogni mossa.",
     emptyTeam: "La squadra è ancora vuota.",
     yourLobby: "La tua lobby", yourCode: "Codice della lobby", createChallenge: "Crea sfida", cancelLobby: "Annulla lobby", copy: "Copia",
     expired: "Il codice della tua lobby è scaduto al reset di mezzanotte.",
-    teamRequirement: "Per creare o accettare una sfida serve almeno 1 Pokémon e non puoi avere più di 2 sfide PvP.",
+    teamRequirement: "Per creare o accettare una sfida serve almeno 1 Pokémon e non puoi avere più di 2 sfide PvP attive.",
     joinByCode: "Entra tramite codice", codePlaceholder: "Inserisci il codice a 6 cifre", join: "Entra",
     waitingPlayers: "Giocatori in attesa", noLobbies: "Nessun giocatore è in attesa.", challenge: "Sfida",
     ongoing: "Sfide in corso", noBattles: "Non ci sono sfide in corso.", versus: "{creator} contro {challenger}", watch: "Guarda", rejoin: "Rientra",

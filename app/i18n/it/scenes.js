@@ -98,7 +98,7 @@ export var IT_SCENE_TRANSLATIONS = Object.freeze({
     battle_dome: Object.freeze({
       title: "Cupola Lotta",
       presentation: [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        "Ho creato questa struttura per permettere a tutti di poter creare la propria squadra in modo da testare Pokémon e strategie diverse. Purtroppo non ho a disposizione i Pokémon Leggendari, ma vedrai che riuscirete a divertirvi anche così. Sono curioso di vedere quale sarà la tua squadra migliore!"
       ]
     }),
     training_zone: Object.freeze({

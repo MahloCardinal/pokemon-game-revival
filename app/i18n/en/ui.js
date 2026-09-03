@@ -22,7 +22,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     battle_tower: Object.freeze({ title: "Battle Tower", description: "Climb the tower and prove your worth" }),
     training_zone: Object.freeze({ title: "Training Zone", description: "Get ready to give it your all alongside your team!" }),
     battle_shop: Object.freeze({ title: "Battle Shop", description: "Rare and unusual rewards in exchange for Battle Points" }),
-    battle_dome: Object.freeze({ title: "Battle Dome", description: "Build a free team and challenge other players" }),
+    battle_dome: Object.freeze({ title: "Battle Dome", description: "Build your best team and challenge other players" }),
     pokemon_center: Object.freeze({ title: "Pokémon Center", description: "We help you prepare your team for whatever comes next" }),
     shopping_center: Object.freeze({ title: "Department Store", description: "The perfect place to stock up on items" }),
     garden: Object.freeze({ title: "Garden", description: "Do you have a green thumb?\nOr will those poor Berries have no chance?" }),
@@ -32,7 +32,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
   }),
   playerDirectory: Object.freeze({
     sceneTitle: "Player Cards",
-    description: "View other players' Pokémon's teams and Badges!",
+    description: "View other players' Pokémon's teams and other infos!",
     loading: "Loading player cards...",
     empty: "There are no players available yet.",
     emptyTeam: "Empty team",
@@ -81,8 +81,8 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
       fuchsia_city: Object.freeze({ name: "Fuchsia City", description: "Gym Leader: Koga" }),
       cinnabar_island: Object.freeze({ name: "Cinnabar Island", description: "Gym Leader: Blaine" }),
       viridian_city: Object.freeze({ name: "Viridian City", description: "Gym Leader: Giovanni" }),
-      elite_four: Object.freeze({ name: "Elite Four", description: "This is where heroes meet their fate" }),
-      kanto_champion: Object.freeze({ name: "Kanto Champion", description: "The final obstacle: the ultimate challenge" })
+      elite_four: Object.freeze({ name: "Elite Four", description: "This is where the skill of true trainers will be seen." }),
+      kanto_champion: Object.freeze({ name: "Kanto Champion", description: "The end of the climb" })
     }),
     badges: Object.freeze({
       boulder: "Boulder Badge", cascade: "Cascade Badge", thunder: "Thunder Badge", rainbow: "Rainbow Badge",
@@ -580,13 +580,13 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
   }),
   battleDome: Object.freeze({
     teamTab: "Team", lobbyTab: "Lobby", loading: "Loading the Battle Dome...",
-    builderTitle: "Create a Pokémon", pokemon: "Pokémon", heldItem: "Held item", noItem: "No item",
+    builderTitle: "Create your Pokémon", pokemon: "Pokémon", heldItem: "Held item", noItem: "No item",
     move: "Move {number}", addPokemon: "Add Pokémon", removePokemon: "Remove",
-    fixedStats: "Level {level}, {hp} HP, {power} Power and {stats} Stats for every move.",
+    fixedStats: "Level {level}, HP {hp} HP, power {power} and stats {stats} for every move.",
     emptyTeam: "The team is still empty.",
     yourLobby: "Your lobby", yourCode: "Lobby code", createChallenge: "Create challenge", cancelLobby: "Cancel lobby", copy: "Copy",
     expired: "Your lobby code expired at the midnight reset.",
-    teamRequirement: "You need at least 1 Pokémon to create or accept a challenge and may not have more than 2 PvP challenges.",
+    teamRequirement: "You need at least 1 Pokémon to create or accept a challenge and may not have more than 2 PvP actvive challenges.",
     joinByCode: "Join by code", codePlaceholder: "Enter the 6-digit code", join: "Join",
     waitingPlayers: "Waiting players", noLobbies: "No player is waiting.", challenge: "Challenge",
     ongoing: "Ongoing challenges", noBattles: "There are no ongoing challenges.", versus: "{creator} vs {challenger}", watch: "Watch", rejoin: "Rejoin",

@@ -10,6 +10,7 @@ import vm from "node:vm";
 
 const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const config = read("app/api/supabase-config.js");
+const battleApiSource = read("app/api/battle.js");
 const supabaseConfig = read("supabase/config.toml");
 const edge = read("supabase/functions/battle-command/index.ts");
 const battleEdgeHelpers = read("supabase/functions/_shared/battle-edge.ts");
@@ -812,6 +813,10 @@ assert.doesNotMatch(adminBattleAutomationMigration, /battle_dome/i,
 assert.match(edge, /executeAutomaticAdminBattleCommand/);
 assert.match(edge, /executeOpponentBattleCommand\(battle\.engine_snapshot, semantic\)/,
   "Battle Dome must use the neutral externally controlled opponent executor");
+assert.match(battleApiSource, /automation:\s*projection\.automation/,
+  "The admin automation API must unwrap the Edge projection before updating the UI");
+assert.match(edge, /list_edge_admin_gym_battles/,
+  "Enabling automation must drain the same authoritative battle list shown to the admin");
 assert.match(pveMoveManager, /!context\.disableRandomMoveChoice\s*&&\s*random\(\)\s*<\s*RANDOM_MOVE_CHANCE/,
   "Automatic admin AI must be able to disable the generic random-move branch");
 assert.match(pveMoveManager, /context\s*&&\s*context\.useAllHealingItems/,

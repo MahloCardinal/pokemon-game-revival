@@ -70,7 +70,9 @@ registerAction("admin-automation-toggle", function () {
       state.adminAutomation.enabled = Boolean(result.automation && result.automation.enabled);
       state.adminAutomation.loaded = true;
       if (Array.isArray(result.failures) && result.failures.length) {
-        state.adminAutomation.error = messageDescriptor("admin.automationPartialFailure");
+        state.adminAutomation.error = messageDescriptor("admin.automationPartialFailure", {
+          reason: String(result.failures[0] && result.failures[0].message || "-")
+        });
       }
     }
     render();

@@ -216,21 +216,35 @@ async function advanceAutomaticAdminBattle(
 async function drainAutomaticAdminBattles(
   serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"]
 ) {
-  const listed = await serviceClient.rpc("list_edge_automatic_admin_battles");
+  const setting = await readAdminAutomation(serviceClient);
+  if (!setting.enabled || !setting.updated_by) {
+    return { failures: [] as Record<string, unknown>[], attempted: 0, advanced: 0 };
+  }
+  const listed = await serviceClient.rpc("list_edge_admin_gym_battles", {
+    p_admin_user_id: String(setting.updated_by)
+  });
   if (listed.error) throw databaseError(listed.error);
-  const rows = Array.isArray(listed.data) ? listed.data : [];
+  const rows = (Array.isArray(listed.data) ? listed.data : []).filter((row) =>
+    String((row as Record<string, unknown>)?.waiting_for || "") === "admin"
+  );
   const failures: Record<string, unknown>[] = [];
+  let advanced = 0;
   for (const row of rows) {
     const battleId = String((row as Record<string, unknown>)?.battle_id || "");
     if (!battleId) continue;
     try {
-      await advanceAutomaticAdminBattle(serviceClient, battleId);
+      const result = await advanceAutomaticAdminBattle(serviceClient, battleId);
+      if (result) {
+        advanced += 1;
+      } else {
+        failures.push({ battle_id: battleId, message: "La sfida non è risultata pronta per il comando automatico." });
+      }
     } catch (error) {
       console.error("Unable to advance automatic admin battle", battleId, error);
       failures.push({ battle_id: battleId, message: error instanceof Error ? error.message : String(error) });
     }
   }
-  return failures;
+  return { failures, attempted: rows.length, advanced };
 }
 
 async function advanceAutomaticAdminBattleBestEffort(
@@ -891,8 +905,10 @@ Deno.serve(async (request) => {
         p_enabled: body.enabled
       });
       if (updated.error) throw databaseError(updated.error);
-      const failures = body.enabled ? await drainAutomaticAdminBattles(clients.serviceClient) : [];
-      return jsonResponse({ ok: true, automation: updated.data, failures });
+      const drain = body.enabled
+        ? await drainAutomaticAdminBattles(clients.serviceClient)
+        : { failures: [], attempted: 0, advanced: 0 };
+      return jsonResponse({ ok: true, automation: updated.data, ...drain });
     }
 
     if (action === "admin_read") {

@@ -185,7 +185,7 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
     loadBattlesFailed: "Impossibile caricare le sfide.",
     loadAutomationFailed: "Impossibile leggere lo stato dell'IA.",
     saveAutomationFailed: "Impossibile aggiornare lo stato dell'IA.",
-    automationPartialFailure: "IA attivata, ma almeno una sfida richiede l'intervento manuale.",
+    automationPartialFailure: "IA attivata, ma almeno una sfida non è avanzata. Dettaglio: {reason}",
     enterAnnouncement: "Inserisci un testo da inviare.",
     sendAnnouncementFailed: "Impossibile inviare la comunicazione.",
     announcementSent: "Comunicazione inviata.",

@@ -363,12 +363,26 @@ export async function readServerRoles() {
   return { ok: true, roles: Array.isArray(result.projection.roles) ? result.projection.roles : [] };
 }
 
-export function readAdminBattleAutomation() {
-  return invokeAuthoritativeBattleCommand({ action: "admin_automation_read" });
+function unwrapAdminBattleAutomationResult(result) {
+  var projection = result && result.projection || {};
+  if (!result || !result.ok) { return result; }
+  return Object.assign({}, result, {
+    automation: projection.automation || null,
+    failures: Array.isArray(projection.failures) ? projection.failures : [],
+    attempted: Math.max(0, Number(projection.attempted) || 0),
+    advanced: Math.max(0, Number(projection.advanced) || 0)
+  });
 }
 
-export function setAdminBattleAutomation(enabled) {
-  return invokeAuthoritativeBattleCommand({ action: "admin_automation_set", enabled: Boolean(enabled) });
+export async function readAdminBattleAutomation() {
+  return unwrapAdminBattleAutomationResult(await invokeAuthoritativeBattleCommand({ action: "admin_automation_read" }));
+}
+
+export async function setAdminBattleAutomation(enabled) {
+  return unwrapAdminBattleAutomationResult(await invokeAuthoritativeBattleCommand({
+    action: "admin_automation_set",
+    enabled: Boolean(enabled)
+  }));
 }
 
 function runAuthoritativeAdminCommand(action, input, semantic) {

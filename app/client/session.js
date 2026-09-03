@@ -235,6 +235,12 @@ export async function startAuthenticatedSession(session) {
   } else if (nextScene && nextScene.name === "admin-home") {
     refreshAdminAutomation({ silent: true });
   }
+  // The administration account intentionally has no player_state_revision.
+  // Player battle/progression recovery would call prepare_edge_battle_command
+  // with the admin user id and produce a misleading P0002 PostgreSQL error.
+  if (currentUserIsAdmin()) {
+    return;
+  }
   recoverPendingAuthoritativeDebugTrainingStart({ silent: true }).then(function () {
     return recoverPreparedAuthoritativeTraining({ history: "replace" });
   }).then(function (preparedTrainingRecovered) {
@@ -258,7 +264,7 @@ export async function startAuthenticatedSession(session) {
     }
   });
   refreshMissionState({ renderOnComplete: true });
-  if (state.playerLoadStatus.state === "ready" && !currentUserIsAdmin()) {
+  if (state.playerLoadStatus.state === "ready") {
     import("./battle-dome-handler.js").then(function (module) {
       return module.refreshBattleDomeState({ silent: true });
     }).then(function () { render(); });

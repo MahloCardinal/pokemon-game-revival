@@ -825,6 +825,14 @@ assert.doesNotMatch(automaticAdminAdvanceSource, /battle\.waiting_for/,
   "The admin prepare projection omits waiting_for; the restored engine snapshot must validate turn ownership");
 assert.match(renderer, /Math\.max\(summary\.scrollHeight, Math\.ceil\(logContentHeight\)\)/,
   "The shared Log/Summary panel height must include the tallest horizontal turn card");
+assert.match(renderer, /matchMedia\("\(min-width: 881px\) and \(max-width: 1150px\)"\)\.matches/,
+  "Dynamic horizontal log sizing must be limited to the 881-1150px layout");
+assert.match(renderer, /battleLog\.scrollTop = 0;[\s\S]*battleLog\.scrollLeft = battleLog\.scrollWidth;/,
+  "The horizontal battle log must stay vertically aligned at its top edge");
+assert.match(renderer, /infoCard\.style\.height = minHeight \+ "px"/,
+  "The measured Log/Summary height must reach the inner panel rather than only the outer minimum");
+assert.match(session, /if \(currentUserIsAdmin\(\)\) \{\s*return;\s*\}\s*recoverPendingAuthoritativeDebugTrainingStart/,
+  "Admin login must not run player-only authoritative battle recovery without player state");
 assert.match(pveMoveManager, /!context\.disableRandomMoveChoice\s*&&\s*random\(\)\s*<\s*RANDOM_MOVE_CHANCE/,
   "Automatic admin AI must be able to disable the generic random-move branch");
 assert.match(pveMoveManager, /context\s*&&\s*context\.useAllHealingItems/,

@@ -247,8 +247,13 @@ function restoreScrollPositions(positions) {
 function scrollBattleLogToBottom() {
   var battleLog = root.querySelector('[data-scroll-key="battle-log"]');
   if (battleLog) {
-    battleLog.scrollTop = battleLog.scrollHeight;
-    battleLog.scrollLeft = battleLog.scrollWidth;
+    if (window.matchMedia("(min-width: 881px) and (max-width: 1150px)").matches) {
+      battleLog.scrollTop = 0;
+      battleLog.scrollLeft = battleLog.scrollWidth;
+    } else {
+      battleLog.scrollTop = battleLog.scrollHeight;
+      battleLog.scrollLeft = 0;
+    }
   }
 }
 
@@ -313,7 +318,11 @@ export function syncBattleLayoutMeasurements() {
   if (!infoCard || !panelInner || !summary || !logList || !logPanel) {
     return;
   }
+  infoCard.style.removeProperty("height");
   infoCard.style.removeProperty("min-height");
+  if (!window.matchMedia("(min-width: 881px) and (max-width: 1150px)").matches) {
+    return;
+  }
   logPanelStyle = window.getComputedStyle(logPanel);
   if (window.getComputedStyle(logList).display !== "flex" || logPanelStyle.overflowY !== "hidden") {
     return;
@@ -339,7 +348,10 @@ export function syncBattleLayoutMeasurements() {
     paddingBottom
   );
   if (minHeight > 0) {
-    infoCard.style.minHeight = minHeight + "px";
+    // An explicit height lets the 100%-high inner panel consume the measured
+    // room. A min-height on the outer card alone leaves its child at the old
+    // intrinsic height and the horizontal log vertically clipped.
+    infoCard.style.height = minHeight + "px";
   }
 }
 

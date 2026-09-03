@@ -724,6 +724,10 @@
   }
 }
 @media (min-width: 881px) and (max-width: 1150px) {
+  .battle-info-body {
+    max-height: none;
+  }
+
   .battle-summary-pane .summary-group-weather {
     grid-column: 1 / -1;
     justify-self: center;

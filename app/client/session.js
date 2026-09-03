@@ -5,6 +5,7 @@ import {
   loginWithUsername,
   logout,
   onAuthStateChange,
+  readServerRoles,
   registerWithUsername,
   requestPasswordRecovery,
   updateCurrentUserPassword
@@ -19,7 +20,6 @@ import { evaluateBattleStateAfterAuth, resumeAuthoritativeOrdinaryProgression, r
 import { recoverPendingAuthoritativeDebugTrainingStart, recoverPreparedAuthoritativeTraining } from "./training-zone-handler.js";
 import { refreshMissionState } from "./mission-runtime.js";
 import { openAdminBattle, refreshAdminAutomation, refreshAdminBattles } from "./admin-battle-handler.js";
-import { readServerRoles } from "../api/battle.js";
 import { currentUserIsAdmin } from "./admin-auth.js";
 import { messageDescriptor } from "./i18n.js";
 

@@ -1,4 +1,4 @@
-import { getSupabaseClient, currentUserId } from "./supabase.js";
+import { getSupabaseClient, currentUserId, invokeAuthenticatedEdgeFunction } from "./supabase.js";
 import { serializePokemonList, serializePokedexNumbers } from "./player.js";
 import { adminControlledBattleRewardForType } from "../data/progression.js";
 
@@ -54,7 +54,7 @@ export async function invokeAuthoritativeBattleCommand(body) {
   }
   try {
     result = await Promise.race([
-      client.functions.invoke("battle-command", { body: body }),
+      invokeAuthenticatedEdgeFunction("battle-command", { body: body }),
       new Promise(function (resolve) {
         timeoutId = globalThis.setTimeout(function () { resolve(timeoutResult); }, AUTHORITATIVE_BATTLE_COMMAND_TIMEOUT_MS);
       })
@@ -67,6 +67,14 @@ export async function invokeAuthoritativeBattleCommand(body) {
     return { ok: false, message: error && error.message || "Edge battle command failed.", uncertain: true };
   } finally {
     if (timeoutId !== null) { globalThis.clearTimeout(timeoutId); }
+  }
+  if (result.authError) {
+    return {
+      ok: false,
+      message: result.authError.detail || "User session unavailable.",
+      code: result.authError.code || "invalid_session",
+      uncertain: Boolean(result.authError.uncertain)
+    };
   }
   if (result.error || !result.data || result.data.ok === false) {
     message = result.data && result.data.error && result.data.error.message || result.error && result.error.message || "Edge battle command failed.";
@@ -355,12 +363,6 @@ export function startAuthoritativeBattleTower(input) {
     expectedPlayerRevision: Number(input.expectedPlayerRevision) || 0,
     runtimeOwnerId: String(input.runtimeOwnerId || authoritativeBattleRuntimeOwnerId())
   });
-}
-
-export async function readServerRoles() {
-  var result = await invokeAuthoritativeBattleCommand({ action: "roles" });
-  if (!result.ok) { return result; }
-  return { ok: true, roles: Array.isArray(result.projection.roles) ? result.projection.roles : [] };
 }
 
 function unwrapAdminBattleAutomationResult(result) {

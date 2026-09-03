@@ -33,12 +33,93 @@ export function getSupabaseClient() {
   return supabaseClient;
 }
 
-export async function currentUserId(client) {
-  var userResult = await client.auth.getUser();
-  if (userResult.error || !userResult.data.user) {
-    return { ok: false, code: "invalid_session", detail: userResult.error && userResult.error.message || "", userId: null };
+function authSessionIdentity(session) {
+  var token = String(session && session.access_token || "");
+  var encodedPayload = token.split(".")[1] || "";
+  var payload;
+  try {
+    encodedPayload = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
+    while (encodedPayload.length % 4) { encodedPayload += "="; }
+    payload = JSON.parse(globalThis.atob(encodedPayload));
+  } catch (error) {
+    payload = null;
   }
-  return { ok: true, userId: userResult.data.user.id };
+  return String(session && session.user && session.user.id || "") + ":"
+    + String(payload && payload.session_id || "");
+}
+
+async function authenticatedSessionContext(client) {
+  var result;
+  var session;
+  if (!client) {
+    return { ok: false, code: "missing_configuration", detail: "Supabase is not configured." };
+  }
+  try {
+    result = await client.auth.getSession();
+  } catch (error) {
+    return { ok: false, code: "invalid_session", detail: error && error.message || "Session check failed." };
+  }
+  session = result && result.data ? result.data.session : null;
+  if (result && result.error || !session || !session.access_token || !session.user || !session.user.id) {
+    return {
+      ok: false,
+      code: "invalid_session",
+      detail: result && result.error && result.error.message || "The authenticated session is unavailable."
+    };
+  }
+  return {
+    ok: true,
+    session: session,
+    accessToken: session.access_token,
+    userId: session.user.id,
+    sessionIdentity: authSessionIdentity(session)
+  };
+}
+
+async function authenticatedSessionStillMatches(client, context) {
+  var current = await authenticatedSessionContext(client);
+  return Boolean(current.ok && context && current.sessionIdentity === context.sessionIdentity);
+}
+
+export async function invokeAuthenticatedEdgeFunction(functionName, options) {
+  var client = getSupabaseClient();
+  var context = await authenticatedSessionContext(client);
+  var invokeOptions;
+  var result;
+  if (!context.ok) {
+    return { data: null, error: null, authError: context, requestStarted: false };
+  }
+  invokeOptions = Object.assign({}, options || {});
+  invokeOptions.headers = Object.assign({}, invokeOptions.headers || {}, {
+    Authorization: "Bearer " + context.accessToken
+  });
+  try {
+    result = await client.functions.invoke(String(functionName || ""), invokeOptions);
+  } catch (error) {
+    result = { data: null, error: error };
+  }
+  if (!await authenticatedSessionStillMatches(client, context)) {
+    return {
+      data: null,
+      error: null,
+      authError: {
+        ok: false,
+        code: "stale_session",
+        detail: "The authenticated session changed while the request was running.",
+        uncertain: true
+      },
+      requestStarted: true
+    };
+  }
+  return Object.assign({}, result, { authError: null, requestStarted: true });
+}
+
+export async function currentUserId(client) {
+  var context = await authenticatedSessionContext(client);
+  if (!context.ok) {
+    return { ok: false, code: context.code, detail: context.detail || "", userId: null };
+  }
+  return { ok: true, userId: context.userId };
 }
 
 export async function runQuery(resultPromise) {
@@ -136,6 +217,21 @@ export function onAuthStateChange(callback) {
   var client = getSupabaseClient();
   if (!client) { return null; }
   return client.auth.onAuthStateChange(callback);
+}
+
+export async function readServerRoles() {
+  var client = getSupabaseClient();
+  var context = await authenticatedSessionContext(client);
+  var result;
+  if (!context.ok) { return context; }
+  result = await client.rpc("read_current_server_roles");
+  if (!await authenticatedSessionStillMatches(client, context)) {
+    return { ok: false, code: "stale_session", detail: "The authenticated session changed while reading roles." };
+  }
+  if (result.error) {
+    return { ok: false, code: "roles_read_failed", detail: result.error.message || "" };
+  }
+  return { ok: true, roles: Array.isArray(result.data) ? result.data.map(String) : [] };
 }
 
 export async function registerWithUsername(username, password, recoveryEmail) {
@@ -263,7 +359,10 @@ export async function deletePlayerAccount() {
   var client = getSupabaseClient();
   var result;
   if (!client) { return { ok: false, code: "missing_configuration" }; }
-  result = await client.functions.invoke("delete-account");
+  result = await invokeAuthenticatedEdgeFunction("delete-account");
+  if (result.authError) {
+    return { ok: false, code: result.authError.code || "invalid_session", detail: result.authError.detail || "" };
+  }
   if (result.error) {
     var errorMessage = result.error.message || "Account deletion failed.";
     if (result.error.context && typeof result.error.context.json === "function") {

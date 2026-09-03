@@ -24,7 +24,6 @@ import {
   requireExactKeys,
   requireServerRole,
   requireRevivalProject,
-  rolesForUser,
   sha256,
   uuid
 } from "../_shared/battle-edge.ts";
@@ -34,7 +33,7 @@ import { notifyDiscordAdminBattleStarted, notifyDiscordAdminBattleTurnReady } fr
 const unchangedTerminalEffects = { reward: "none", inventory: "unchanged", team: "unchanged" };
 const commonKeys = ["action", "battleId", "commandId", "expectedPlayerRevision", "expectedBattleVersion", "runtimeOwnerId"];
 const allowedActions = new Set([
-  "roles", "turn_history", "debug_money", "debug_badges", "debug_titles", "debug_battle_points", "debug_create_pokemon", "inventory_adjust", "debug_complete_mission",
+  "turn_history", "debug_money", "debug_badges", "debug_titles", "debug_battle_points", "debug_create_pokemon", "inventory_adjust", "debug_complete_mission",
   "admin_list", "admin_read", "admin_automation_read", "admin_automation_set", "admin_entry_choice", "start", "prepare_training", "discard_training", "activate_training", "start_debug_training", "start_capture", "flee_capture", "start_gym",
   "start_admin_gym", "start_league", "start_tower", "read", "restore", "read_training", "read_ordinary_progression",
   "resolve_ordinary_progression", "allocate_training", "resolve_training", "move", "switch", "entry_choice", "item", "ball",
@@ -565,11 +564,6 @@ Deno.serve(async (request) => {
     const clients = await clientsForRequest(request);
     const rateLimited = await enforceEdgeRateLimit(clients.serviceClient, "battle_user", clients.userId, corsHeaders);
     if (rateLimited) return rateLimited;
-
-    if (action === "roles") {
-      requireExactKeys(body, ["action"], []);
-      return jsonResponse({ ok: true, roles: await rolesForUser(clients.serviceClient, clients.userId) });
-    }
 
     if (action === "turn_history") {
       requireExactKeys(body, ["action", "battleId", "dome", "turnNumber"], ["battleId", "dome", "turnNumber"]);

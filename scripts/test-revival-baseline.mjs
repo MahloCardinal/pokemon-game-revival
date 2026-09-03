@@ -57,6 +57,7 @@ const selfInducedStatusRuntimeMigration = read("supabase/migrations/202609021200
 const immediateKoRuntimeMigration = read("supabase/migrations/20260902133000_bind_immediate_ko_runtime.sql");
 const adminBattleAutomationMigration = read("supabase/migrations/20260902134000_admin_battle_automation.sql");
 const adminBattleAutomationRuntimeMigration = read("supabase/migrations/20260902135000_bind_admin_battle_automation_runtime.sql");
+const currentServerRolesMigration = read("supabase/migrations/20260903130000_read_current_server_roles.sql");
 const debugOfficialBattleItemMigration = read("supabase/migrations/20260902130000_allow_debug_catalog_items_in_official_battles.sql");
 const adminGymWaitingKeyMigration = read("supabase/migrations/20260902131000_fix_admin_gym_waiting_catalog_keys.sql");
 const authoritativeGymKeyConstraintMigration = read("supabase/migrations/20260902132000_fix_authoritative_gym_key_constraint.sql");
@@ -287,6 +288,10 @@ for (const expCap of [0, 1000]) {
 assert.match(domeView, /renderPokemonCard\(battleDomePokemon\(entry\), \{ showExperience: false \}\)/);
 assert.doesNotMatch(domeHandler, /ui\.battleDome\.(?:lobbyCancelled|battleCancelled|battleUnavailable)/,
   "Cancelled or deleted Battle Dome challenges must return silently without a loose page notice");
+assert.match(domeHandler, /function shouldPollBattleDome\(\)[\s\S]*document\.hidden[\s\S]*hasOpenOwnedDomeLobby\(\) \|\| hasOwnedDomeBattle\(\)/,
+  "Battle Dome polling must pause in hidden tabs and outside relevant scenes unless the player owns active PvP state");
+assert.doesNotMatch(domeHandler, /state\.battleDome\.loaded \|\|/,
+  "Visiting the Battle Dome once must not enable permanent global polling");
 assert.doesNotMatch(i18nItalian + i18nEnglish, /(?:lobbyCancelled|battleCancelled|battleUnavailable):/,
   "Removed Battle Dome cancellation notices must not leave unused i18n entries");
 assert.match(read("app/view/battle-dome-lead-selection.js"), /renderPokemonCard\(participantPokemon\(entry\), \{\s*showExperience: false/);
@@ -357,6 +362,21 @@ assert.match(recoveryEdge, /resetPasswordForEmail\(email,[\s\S]*redirectTo:\s*RE
 assert.doesNotMatch(recoveryEdge, /Deno\.env\.get\("APP_URL"\)|localhost|web-gdr-staging/);
 assert.match(supabaseApi, /detectSessionInUrl:\s*true/);
 assert.match(supabaseApi, /auth\.updateUser\(\{ password: normalizedPassword \}\)/);
+assert.match(supabaseApi, /authenticatedSessionContext[\s\S]*auth\.getSession\(\)/,
+  "Protected Edge calls must be gated by the current session");
+assert.match(supabaseApi, /invokeAuthenticatedEdgeFunction[\s\S]*Authorization:\s*"Bearer " \+ context\.accessToken/,
+  "Protected Edge calls must carry the current token explicitly");
+assert.match(supabaseApi, /authenticatedSessionStillMatches\(client, context\)/,
+  "Protected requests must reject responses belonging to a previous session");
+assert.match(supabaseApi, /payload && payload\.session_id[\s\S]*current\.sessionIdentity === context\.sessionIdentity/,
+  "Token refreshes may preserve a request only inside the same authenticated session");
+assert.match(battleApiSource, /invokeAuthenticatedEdgeFunction\("battle-command"/);
+assert.doesNotMatch(battleApiSource, /functions\.invoke\("battle-command"/);
+assert.match(currentServerRolesMigration, /create or replace function public\.read_current_server_roles\(\)/i);
+assert.match(currentServerRolesMigration, /where usr\.auth_user_id = v_auth_user_id/i);
+assert.match(currentServerRolesMigration, /grant execute on function public\.read_current_server_roles\(\) to authenticated, service_role/i);
+assert.doesNotMatch(edge, /action === "roles"|"roles", "turn_history"/,
+  "Role discovery must not use the battle command endpoint");
 assert.match(session, /event === "PASSWORD_RECOVERY"/);
 assert.match(vercel, /"source": "\/\(\.\*\)", "destination": "\/index\.html"/);
 assert.doesNotMatch(main, /app-version|AppVersion/);

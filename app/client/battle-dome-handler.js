@@ -17,7 +17,21 @@ function payload(result) {
 }
 
 function hasOwnedDomeBattle() {
-  return state.battleDome.battles.some(function (battle) { return battle.own_role !== "spectator"; });
+  return Array.isArray(state.battleDome.battles) && state.battleDome.battles.some(function (battle) {
+    return battle.own_role !== "spectator";
+  });
+}
+
+function hasOpenOwnedDomeLobby() {
+  return Boolean(state.battleDome.lobby && !state.battleDome.lobby.expired);
+}
+
+function shouldPollBattleDome() {
+  var sceneName = state.scene && state.scene.name || "";
+  if (typeof document !== "undefined" && document.hidden) return false;
+  if (!state.auth.user || !state.auth.session || !state.auth.session.access_token) return false;
+  if (sceneName === "battle-dome" || sceneName === "battle-dome-battle") return true;
+  return hasOpenOwnedDomeLobby() || hasOwnedDomeBattle();
 }
 
 function applyDomeState(data) {
@@ -36,16 +50,18 @@ function applyDomeState(data) {
 
 export async function refreshBattleDomeState(options) {
   options = options || {};
+  var requestUserId = state.auth.user && state.auth.user.id || "";
   var ownedBattleBefore = hasOwnedDomeBattle();
   var ownedBattleIdsBefore = state.battleDome.battles.filter(function (battle) {
     return battle.own_role !== "spectator";
   }).map(function (battle) { return String(battle.battle_id || ""); });
-  if (!state.auth.user || refreshPending) return false;
+  if (!requestUserId || !state.auth.session || !state.auth.session.access_token || refreshPending) return false;
   refreshPending = true;
   if (!state.battleDome.loaded) state.battleDome.loading = true;
   if (!options.silent && state.scene && state.scene.name === "battle-dome") render();
   var result = await readBattleDomeState();
   refreshPending = false;
+  if (!state.auth.user || state.auth.user.id !== requestUserId) return false;
   if (!result.ok) {
     state.battleDome.loading = false;
     state.battleDome.error = result.message || t("ui.battleDome.commandFailed");
@@ -360,7 +376,7 @@ function startPoll() {
   if (pollStarted || typeof window === "undefined") return;
   pollStarted = true;
   window.setInterval(async function () {
-    if (!state.auth.user) return;
+    if (!shouldPollBattleDome()) return;
     if (state.scene && state.scene.name === "battle-dome-battle" && state.scene.battleDomeBattleId) {
       var scene = state.scene;
       if (scene.authoritativeCommandPending || !scene.playerTeam && !scene.battleDomeLeadSelection) return;
@@ -389,7 +405,7 @@ function startPoll() {
       scene.terminalExitReady = scene.manager.battleOver;
       render({ preserveScroll: true, scrollBattleLogToBottom: true });
       openPendingBattleEntryChoice(scene);
-    } else if (state.battleDome.loaded || state.scene && state.scene.name === "battle-dome") {
+    } else {
       refreshBattleDomeState({ silent: true,
         openNewBattle: true,
         renderAfter: Boolean(state.scene && state.scene.name === "battle-dome" && state.battleDome.tab === "lobby") });

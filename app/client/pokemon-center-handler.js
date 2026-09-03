@@ -12,7 +12,6 @@ import { renderPokemonCenterItemPanelContent, renderPokemonCenterMoveButton } fr
 import { getLocale, messageDescriptor, t, textDescriptor } from "./i18n.js";
 import { itemNameDescriptor, moveDisplayName, moveNameDescriptor, pokemonNameDescriptor, speciesNameDescriptor } from "./entity-text.js";
 
-import { queueGlobalActivityEvent } from "./activity-feed-runtime.js";
 import { createMissionEventKey, recordMissionEvent } from "./mission-runtime.js";
 import { executePokemonCenterCommandAuthoritative, executePokemonCenterMoveTutorAuthoritative } from "../api/player-command.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";

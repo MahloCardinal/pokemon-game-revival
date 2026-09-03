@@ -4,7 +4,6 @@ import { registerPokedexPokemon, root, state } from "./game-state.js";
 import { markDirty, render, setScene } from "./renderer.js";
 import { markTeamRuntimeStateChanged, replaceTeamRuntimeState } from "./runtime-state.js";
 import { openMessage } from "./dialog-handler.js";
-import { queueGlobalActivityEvent } from "./activity-feed-runtime.js";
 import { createMissionEventKey, recordMissionEvent } from "./mission-runtime.js";
 import { moveNameDescriptor, pokemonNameDescriptor } from "./entity-text.js";
 import { messageDescriptor, resolveText, textDescriptor, t } from "./i18n.js";
@@ -241,7 +240,6 @@ function applyEvolution(session, evolution) {
   pokemon.type = targetData.type.slice();
   pokemon.expCap = targetData.exp;
   registerPokedexPokemon(pokemon);
-  queueGlobalActivityEvent({ eventType: "evolution", subjectName: sourceSpeciesKey, secondarySubjectName: String(pokemon.speciesKey) });
   session.scene.manager.log.push(Engine.battleEvent("progression.evolved", {
     from: Engine.battleSpeciesRef({ speciesKey: sourceSpeciesKey }),
     to: Engine.battleSpeciesRef(pokemon)

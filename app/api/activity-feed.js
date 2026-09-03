@@ -34,23 +34,6 @@ export async function loadGlobalActivityFeed() {
   return normalizeRpcResult(result.data, "activity_feed_load_failed");
 }
 
-export async function appendGlobalActivityFeedEvent(event) {
-  var client = getSupabaseClient();
-  var result;
-  if (!client) {
-    return { ok: false, code: "missing_configuration" };
-  }
-  result = await client.rpc("append_global_activity_feed_event", {
-    p_event_type: String(event && event.eventType || ""),
-    p_subject_name: String(event && event.subjectName || ""),
-    p_secondary_subject_name: String(event && event.secondarySubjectName || "")
-  });
-  if (result.error) {
-    return { ok: false, code: "activity_feed_save_failed", detail: result.error.message || "" };
-  }
-  return normalizeRpcResult(result.data, "activity_feed_save_failed");
-}
-
 export async function appendAdminGlobalActivityMessage(message) {
   var client = getSupabaseClient();
   var result;

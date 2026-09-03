@@ -10,7 +10,6 @@ import { setHtml } from "./renderer.js";
 import { renderDialog } from "../view/dialogs.js";
 import { renderStarterPokemonGrid } from "../view/starter.js";
 import { refreshMissionState } from "./mission-runtime.js";
-import { recordGlobalActivityEvent } from "./activity-feed-runtime.js";
 import { messageDescriptor, t } from "./i18n.js";
 
 registerAction("starter-pick", function(element) {
@@ -254,7 +253,6 @@ function openStarterConfirmIfReady() {
 }
 
 async function confirmStarterPick() {
-  var starterPokemon;
   var result;
   var setup = selectedStarterSetup();
 
@@ -307,12 +305,10 @@ async function confirmStarterPick() {
   }
 
   applyPlayerSave(result.save);
-  starterPokemon = state.team[0];
   // The starter is now persisted; later history navigation must not reopen it.
   state.playerLoadStatus = { state: "ready", message: "" };
   state.starterSetup = { error: "", loading: false };
   state.saveStatus = { state: "saved", message: "" };
-  await recordGlobalActivityEvent({ eventType: "starter", subjectName: String(starterPokemon.speciesKey) });
   refreshMissionState({ renderOnComplete: false });
   setScene({ name: "home" }, { history: "replace" });
 }

@@ -31,7 +31,6 @@ import { renderPokemonCard } from "./pokemon-card.js";
 import { broadcastCaptureEncounterRuntimeInvalidation, broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { recordMissionEvent } from "./mission-runtime.js";
 import { renderCaptureTeamSectionInner } from "../view/capture.js";
-import { queueGlobalActivityEvent } from "./activity-feed-runtime.js";
 import { getResolvedInventoryItem } from "../data/items.js";
 import { claimFluteDailyUse, startAuthoritativeWildEncounter } from "../api/search-tools.js";
 import { authoritativeBattleRuntimeOwnerId, clearPendingAuthoritativeCaptureFlee, fleeAuthoritativeCaptureEncounter, getAuthoritativeBattle, startAuthoritativeCaptureBattle } from "../api/battle.js";

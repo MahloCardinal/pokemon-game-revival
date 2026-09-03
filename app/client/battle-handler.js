@@ -43,7 +43,6 @@ import { getSupabaseClient } from "../api/supabase.js";
 import { GYM_REWARDS, KANTO_LEAGUE_REWARDS, MAX_TRAINING_LEVELS_PER_POKEMON, expMultiplierForWinnerLevel, levelLimitForBadges, trainingRewardForBadges } from "../data/progression.js";
 import { claimTrainingZoneReward } from "../api/training-zone.js";
 import { computeBallCaptureResult } from "../engine/capture-calc.js";
-import { queueGlobalActivityEvent } from "./activity-feed-runtime.js";
 import { createMissionEventKey, recordMissionEvent } from "./mission-runtime.js";
 
 var activeBattleRealtimeChannel = null;
@@ -768,7 +767,6 @@ function openAuthoritativeGymReward(scene, reward) {
   });
   if (Number.isInteger(badgeIndex) && KANTO_GYM_BADGES[badgeIndex]) {
     lines.push(battleText("earnedBadge", { badge: textDescriptor("ui.gyms.badges." + KANTO_GYM_BADGES[badgeIndex].key) }));
-    queueGlobalActivityEvent({ eventType: "badge", subjectName: KANTO_GYM_BADGES[badgeIndex].key });
   }
   openMessage(lines, {
     title: battleTitle("gym"),
@@ -2502,25 +2500,6 @@ function openFinalizedGymRewardMessage(scene, baseLines, result) {
   });
 }
 
-function queueFinalizedGymActivity(scene, result) {
-  var city = scene && scene.gymScene ? kantoGymCityByKey(scene.gymScene.cityKey) : null;
-  var badgeIndex = result && result.badgeIndex !== null && result.badgeIndex !== undefined
-    ? result.badgeIndex
-    : city && city.badgeIndex;
-  var badge = KANTO_GYM_BADGES[badgeIndex];
-  if (!result || result.already || result.rewardKind !== "gym" || !badge) {
-    return;
-  }
-  queueGlobalActivityEvent({ eventType: "badge", subjectName: badge.key });
-}
-
-function queueFinalizedKantoLeagueActivity(result, isChampion, member) {
-  if (!result || result.already || result.rewardKind !== "league") {
-    return;
-  }
-  queueGlobalActivityEvent({ eventType: "league", subjectName: isChampion ? KANTO_CHAMPION.key : member && member.key || "" });
-}
-
 function finishAdminControlledGymBattle(scene, lines) {
   var eventResult = rewardResultFromEvent(scene && scene.rewardEvent);
   var baseLines = (lines && lines.length ? lines : localizedBattleResultLines(scene)).slice();
@@ -2536,7 +2515,6 @@ function finishAdminControlledGymBattle(scene, lines) {
       return;
     }
     applyFinalizedBattleReward(scene, result);
-    queueFinalizedGymActivity(scene, result);
     saveBattleEndAfterInventorySync(scene).then(function () {
       openFinalizedGymRewardMessage(scene, baseLines, result);
     });
@@ -2649,7 +2627,6 @@ function finishAdminControlledKantoLeagueBattle(scene, lines) {
       return;
     }
     applyFinalizedBattleReward(scene, result);
-    queueFinalizedKantoLeagueActivity(result, isChampion, member);
     rewardLines.push(battleText("defeatedMember", { member: memberName }));
     rewardLines.push(result.already ? battleText("rewardAlreadyRegistered") : battleText("receivedPrizeMoney", { money: moneyText(result.money) }));
     saveBattleEndAfterInventorySync(scene).then(function () {
@@ -4181,7 +4158,6 @@ function finishGymBattle(scene, lines) {
       rewardLines.push(battleText(rewardItemQuantity > 1 ? "earnedItems" : "earnedItem", { quantity: rewardItemQuantity, item: itemNameDescriptor(rewardItem) }));
     }
     rewardLines.push(battleText("earnedBadge", { badge: textDescriptor("ui.gyms.badges." + KANTO_GYM_BADGES[city.badgeIndex].key) }));
-    queueGlobalActivityEvent({ eventType: "badge", subjectName: KANTO_GYM_BADGES[city.badgeIndex].key });
   }
   saveBattleEndAfterInventorySync(scene);
   openMessage(rewardLines, {

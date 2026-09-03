@@ -169,8 +169,7 @@ export var state = {
   adminAutomation: createDefaultAdminAutomationState(),
   adminDashboardMessage: createDefaultAdminDashboardMessageState(),
   activityFeed: createDefaultActivityFeedState(),
-  battleDome: createDefaultBattleDomeState(),
-  pendingGlobalActivities: []
+  battleDome: createDefaultBattleDomeState()
 };
 
 function trainerInfoFromProfile(profile) {
@@ -270,7 +269,6 @@ export function resetPlayerState() {
   state.adminAutomation = createDefaultAdminAutomationState();
   state.adminDashboardMessage = createDefaultAdminDashboardMessageState();
   state.activityFeed = createDefaultActivityFeedState();
-  state.pendingGlobalActivities = [];
   state.dirty = false;
   state.saveStatus = { state: "idle", message: "" };
   state.playerLoadStatus = { state: "idle", message: "" };
@@ -423,7 +421,6 @@ export function applyPlayerSave(save) {
   }
   state.adminDashboardMessage = createDefaultAdminDashboardMessageState();
   state.activityFeed = createDefaultActivityFeedState();
-  state.pendingGlobalActivities = [];
   if (save.garden) {
     state.garden = {
       plots: [

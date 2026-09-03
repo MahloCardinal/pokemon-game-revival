@@ -11,6 +11,8 @@ import vm from "node:vm";
 const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const config = read("app/api/supabase-config.js");
 const battleApiSource = read("app/api/battle.js");
+const activityFeedApi = read("app/api/activity-feed.js");
+const activityFeedRuntime = read("app/client/activity-feed-runtime.js");
 const supabaseConfig = read("supabase/config.toml");
 const edge = read("supabase/functions/battle-command/index.ts");
 const battleEdgeHelpers = read("supabase/functions/_shared/battle-edge.ts");
@@ -59,6 +61,7 @@ const adminBattleAutomationMigration = read("supabase/migrations/20260902134000_
 const adminBattleAutomationRuntimeMigration = read("supabase/migrations/20260902135000_bind_admin_battle_automation_runtime.sql");
 const currentServerRolesMigration = read("supabase/migrations/20260903130000_read_current_server_roles.sql");
 const internalHelperHardeningMigration = read("supabase/migrations/20260903140000_harden_internal_helper_functions.sql");
+const authoritativeActivityFeedMigration = read("supabase/migrations/20260903150000_authoritative_global_activity_feed.sql");
 const debugOfficialBattleItemMigration = read("supabase/migrations/20260902130000_allow_debug_catalog_items_in_official_battles.sql");
 const adminGymWaitingKeyMigration = read("supabase/migrations/20260902131000_fix_admin_gym_waiting_catalog_keys.sql");
 const authoritativeGymKeyConstraintMigration = read("supabase/migrations/20260902132000_fix_authoritative_gym_key_constraint.sql");
@@ -384,6 +387,19 @@ assert.match(internalHelperHardeningMigration,
   /revoke execute on function public\.get_game_data_revision\(\)\s+from public, anon, authenticated/i);
 assert.match(internalHelperHardeningMigration,
   /grant execute on function public\.get_game_data_revision\(\)\s+to service_role/i);
+assert.match(authoritativeActivityFeedMigration,
+  /create or replace function server_authority_private\.append_global_activity_feed_event\(/i);
+assert.match(authoritativeActivityFeedMigration,
+  /after insert on public\.player_starter_selection[\s\S]*after update of status, captured_pokemon_instance_id on public\.player_encounter[\s\S]*after insert on public\.player_gym_victory[\s\S]*after insert on public\.player_league_victory[\s\S]*after update of species_key on public\.player_pokemon_instance/i,
+  "The global feed must originate from successful canonical mutations");
+assert.match(authoritativeActivityFeedMigration,
+  /revoke all on function server_authority_private\.append_global_activity_feed_event\(uuid, text, text, text\)\s+from public, anon, authenticated/i);
+assert.match(authoritativeActivityFeedMigration,
+  /drop function public\.append_global_activity_feed_event\(text, text, text\)/i);
+assert.doesNotMatch(activityFeedApi, /append_global_activity_feed_event|appendGlobalActivityFeedEvent/,
+  "The browser API must not expose player activity writes");
+assert.doesNotMatch(activityFeedRuntime, /pendingGlobalActivities|queueGlobalActivityEvent|recordGlobalActivityEvent|flushPendingGlobalActivityEvents/,
+  "The frontend must not queue authoritative activity events");
 assert.match(session, /event === "PASSWORD_RECOVERY"/);
 assert.match(vercel, /"source": "\/\(\.\*\)", "destination": "\/index\.html"/);
 assert.doesNotMatch(main, /app-version|AppVersion/);

@@ -1,7 +1,6 @@
 import { Pokemon } from "../engine/index.js";
 import { state } from "./game-state.js";
 import { render } from "./renderer.js";
-import { flushPendingGlobalActivityEvents } from "./activity-feed-runtime.js";
 
 export function serializePokemonList(list) {
   return (list || []).map(function (pokemon) { return pokemon.toJSON(); });
@@ -59,11 +58,10 @@ export function reviveDaycareRows(entries) {
 }
 
 // Every durable mutation is already committed by its authoritative command.
-// This helper only closes the local UI lifecycle and flushes informational events.
+// This helper only closes the local UI lifecycle.
 export function saveAfterStateChange(reason, options) {
   state.dirty = false;
   state.saveStatus = { state: "saved", message: "" };
-  flushPendingGlobalActivityEvents();
   if (!(options && options.renderOnComplete === false)) render();
   return Promise.resolve({ ok: true, canonical: true, reason: reason || "" });
 }

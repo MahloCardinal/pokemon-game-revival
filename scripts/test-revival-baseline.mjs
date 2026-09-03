@@ -345,8 +345,15 @@ assert.match(starterView, /normalizedNameQuery\.length < 2/);
 assert.match(starterView, /speciesDisplayName\(species\.speciesKey\)\.toLocaleLowerCase\(\)\.indexOf\(normalizedNameQuery\) !== -1/,
   "Starter name search must match localized name fragments across all generations");
 assert.match(starterHandler, /generation < 0 \|\| generation > 3/);
-assert.match(starterHandler, /renderStarterPokemonGrid\(state\.starterSetup, event\.target\.value\)/);
+assert.match(starterHandler, /state\.starterSetup\.nameQuery = event\.target\.value[\s\S]*renderStarterPokemonGrid\(state\.starterSetup, state\.starterSetup\.nameQuery\)/,
+  "Starter name searches must remain in state when switching filters or rerendering");
+assert.match(starterHandler, /trainerIndex: setup\.trainerIndex,[\s\S]*speciesName: "",[\s\S]*nameQuery: setup\.nameQuery/,
+  "Changing starter selection must preserve the trainer while clearing the Pokemon");
 assert.match(starterStyles, /\.starter-name-filter\s*\{[^}]*flex:\s*0 1 250px/);
+assert.match(starterStyles, /\.starter-picker\s*\{[^}]*align-items:\s*start;/,
+  "Starter Pokemon cards must not stretch to fill a short final grid row");
+assert.match(starterStyles, /\.starter-picker \.starter-card\s*\{[^}]*height:\s*236px;/,
+  "Starter Pokemon cards must keep a fixed height");
 assert.match(searchCombobox, /normalized\(label\)\.indexOf\(query\) !== -1/,
   "Shared Pokemon, move and held-item searches must match fragments, not only prefixes");
 assert.doesNotMatch(searchCombobox, /normalized\(label\)\.indexOf\(query\) === 0/);

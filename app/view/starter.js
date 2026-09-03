@@ -94,7 +94,8 @@ export function renderStarterScene() {
     return button(t("ui.starter.generation", { generation: generation }), "starter-set-generation", 'data-generation="' + generation + '"' + (setup.loading ? " disabled" : ""), "button-ghost button-slim starter-generation-button" + activeClass);
   }).join("");
   var nameFilterButton = button(t("ui.starter.nameFilter"), "starter-set-generation", 'data-generation="0"' + (setup.loading ? " disabled" : ""), "button-ghost button-slim starter-generation-button" + (activeStarterGeneration === 0 ? " active" : ""));
-  var nameFilterInput = '<input type="search" class="starter-name-filter" data-starter-name-filter autocomplete="off" maxlength="40" placeholder="' + escapeHtml(t("ui.starter.nameSearch")) + '" aria-label="' + escapeHtml(t("ui.starter.nameSearch")) + '"' + (activeStarterGeneration === 0 ? "" : " hidden") + (setup.loading ? " disabled" : "") + '>';
+  var nameQuery = String(setup.nameQuery || "");
+  var nameFilterInput = '<input type="search" class="starter-name-filter" data-starter-name-filter autocomplete="off" maxlength="40" value="' + escapeHtml(nameQuery) + '" placeholder="' + escapeHtml(t("ui.starter.nameSearch")) + '" aria-label="' + escapeHtml(t("ui.starter.nameSearch")) + '"' + (activeStarterGeneration === 0 ? "" : " hidden") + (setup.loading ? " disabled" : "") + '>';
   var starterPickerClass = "starter-picker" + (activeStarterGeneration === 0 ? " starter-picker-name-filter" : "");
 
   var content = [
@@ -111,7 +112,7 @@ export function renderStarterScene() {
     '  <section class="starter-choice-section">',
     '    <h2 class="starter-section-title">' + escapeHtml(t("ui.starter.starterPokemon")) + "</h2>",
     '    <div class="starter-generation-filters">' + generationButtons + nameFilterButton + nameFilterInput + "</div>",
-    '    <div class="' + starterPickerClass + '" data-scroll-key="starter-picker">' + renderStarterPokemonGrid(setup) + "</div>",
+    '    <div class="' + starterPickerClass + '" data-scroll-key="starter-picker">' + renderStarterPokemonGrid(setup, nameQuery) + "</div>",
     "  </section>",
     "</div></section>",
     "</div>"

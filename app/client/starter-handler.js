@@ -30,7 +30,8 @@ registerAction("starter-pick", function(element) {
       trainerIndex: currentStarterSetup.trainerIndex,
       speciesName: nextSpeciesName,
       gender: "",
-      generation: currentStarterSetup.generation
+      generation: currentStarterSetup.generation,
+      nameQuery: currentStarterSetup.nameQuery
     };
     syncStarterPickUi(previousCard, element, nextSpeciesName);
     openStarterConfirmIfReady();
@@ -54,7 +55,8 @@ registerAction("starter-gender-pick", function(element) {
       trainerIndex: currentGenderSetup.trainerIndex,
       speciesName: currentGenderSetup.speciesName,
       gender: pickedStarterGender,
-      generation: currentGenderSetup.generation
+      generation: currentGenderSetup.generation,
+      nameQuery: currentGenderSetup.nameQuery
     };
     clearStarterSetupError();
     closeStarterConfirmDialog();
@@ -85,7 +87,8 @@ registerAction("trainer-pick", function(element) {
       trainerIndex: nextTrainerIndex,
       speciesName: currentTrainerSetup.speciesName,
       gender: currentTrainerSetup.gender,
-      generation: currentTrainerSetup.generation
+      generation: currentTrainerSetup.generation,
+      nameQuery: currentTrainerSetup.nameQuery
     };
     syncTrainerPickUi(previousCard, element, nextTrainerIndex);
     openStarterConfirmIfReady();
@@ -109,18 +112,18 @@ registerAction("starter-set-generation", function(element) {
       trainerIndex: setup.trainerIndex,
       speciesName: setup.speciesName,
       gender: setup.gender,
-      generation: generation
+      generation: generation,
+      nameQuery: setup.nameQuery
     };
     clearStarterSetupError();
     picker = root.querySelector(".starter-picker");
-    setHtml(picker, renderStarterPokemonGrid(state.starterSetup));
+    setHtml(picker, renderStarterPokemonGrid(state.starterSetup, setup.nameQuery));
     if (picker) {
       picker.classList.toggle("starter-picker-name-filter", generation === 0);
     }
     filterControls = element.closest(".starter-generation-filters");
     nameFilterInput = filterControls ? filterControls.querySelector("[data-starter-name-filter]") : null;
     if (nameFilterInput) {
-      nameFilterInput.value = "";
       nameFilterInput.hidden = generation !== 0;
       if (generation === 0) {
         nameFilterInput.focus();
@@ -141,7 +144,8 @@ document.addEventListener("input", function(event) {
       return;
     }
     picker = root.querySelector(".starter-picker");
-    setHtml(picker, renderStarterPokemonGrid(state.starterSetup, event.target.value));
+    state.starterSetup.nameQuery = event.target.value;
+    setHtml(picker, renderStarterPokemonGrid(state.starterSetup, state.starterSetup.nameQuery));
 });
 
 registerAction("starter-confirm", function(element) {
@@ -151,8 +155,17 @@ registerAction("starter-confirm", function(element) {
 });
 
 registerAction("starter-change-selection", function(element) {
+    var setup = selectedStarterSetup();
     state.dialog = null;
-    state.starterSetup = { error: "", loading: false };
+    state.starterSetup = {
+      error: "",
+      loading: false,
+      trainerIndex: setup.trainerIndex,
+      speciesName: "",
+      gender: "",
+      generation: setup.generation,
+      nameQuery: setup.nameQuery
+    };
     render();
     return;
 
@@ -168,7 +181,8 @@ function selectedStarterSetup() {
     trainerIndex: Number(setup.trainerIndex || 0),
     speciesName: String(setup.speciesName || ""),
     gender: String(setup.gender || ""),
-    generation: generation === 0 ? 0 : Math.max(1, Math.min(3, generation || 1))
+    generation: generation === 0 ? 0 : Math.max(1, Math.min(3, generation || 1)),
+    nameQuery: String(setup.nameQuery || "")
   };
 }
 
@@ -288,7 +302,8 @@ async function confirmStarterPick() {
       trainerIndex: setup.trainerIndex,
       speciesName: setup.speciesName,
       gender: setup.gender,
-      generation: setup.generation
+      generation: setup.generation,
+      nameQuery: setup.nameQuery
     };
     state.dialog = null;
     render();
@@ -301,7 +316,8 @@ async function confirmStarterPick() {
     trainerIndex: setup.trainerIndex,
     speciesName: setup.speciesName,
     gender: setup.gender,
-    generation: setup.generation
+    generation: setup.generation,
+    nameQuery: setup.nameQuery
   };
   state.dialog = null;
   render();
@@ -323,7 +339,8 @@ async function confirmStarterPick() {
       trainerIndex: setup.trainerIndex,
       speciesName: setup.speciesName,
       gender: setup.gender,
-      generation: setup.generation
+      generation: setup.generation,
+      nameQuery: setup.nameQuery
     };
     render();
     return;

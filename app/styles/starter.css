@@ -122,6 +122,7 @@
 
 .starter-picker {
   grid-template-columns: repeat(auto-fill, minmax(min(196px, 100%), 1fr));
+  align-items: start;
   gap: 14px;
   max-height: 560px;
   padding: 8px 8px 8px;
@@ -208,6 +209,7 @@
 }
 
 .starter-picker .starter-card {
+  height: 236px;
   min-height: 236px;
 }
 

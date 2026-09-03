@@ -188,7 +188,7 @@ registerAction("battle-dome-create-lobby", async function () {
 registerAction("battle-dome-cancel-lobby", async function () {
   var result = await cancelBattleDomeLobby();
   if (!result.ok) return domeError(result);
-  state.battleDome.notice = t("ui.battleDome.lobbyCancelled");
+  state.battleDome.notice = "";
   await refreshBattleDomeState({ silent: true });
   render({ preserveScroll: true });
 });
@@ -310,7 +310,7 @@ export async function openBattleDomeBattle(battleId, history) {
   var result = await readBattleDomeBattle(battleId);
   if (state.scene !== previousScene) return null;
   if (!result.ok || !result.battle) {
-    state.battleDome.notice = t("ui.battleDome.battleUnavailable");
+    state.battleDome.notice = "";
     setScene({ name: "battle-dome", battleDomeTab: "lobby" }, { history: "replace" });
     return null;
   }
@@ -342,7 +342,7 @@ export async function runBattleDomeCommand(scene, kind, input) {
 export async function abandonCurrentBattleDome(scene) {
   var result = await abandonBattleDomeBattle(scene.battleDomeBattleId);
   if (!result.ok) return domeError(result);
-  state.battleDome.notice = t("ui.battleDome.battleCancelled");
+  state.battleDome.notice = "";
   await refreshBattleDomeState({ silent: true });
   setScene({ name: "battle-dome" }, { history: "replace" });
   return result;
@@ -368,7 +368,7 @@ function startPoll() {
       if (state.scene !== scene || scene.authoritativeCommandPending) return;
       if (!result.ok) return;
       if (!result.battle) {
-        state.battleDome.notice = t("ui.battleDome.battleCancelled");
+        state.battleDome.notice = "";
         await refreshBattleDomeState({ silent: true });
         setScene({ name: "battle-dome", battleDomeTab: "lobby" }, { history: "replace" });
         return;

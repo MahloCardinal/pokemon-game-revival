@@ -1,7 +1,6 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- quando viene annullata una sfida nella Cupola Lotta, apppare in basso la scritta 'La sfida è stata annullata.' fuori da qualsiasi panel. Elimina quella scritta, verifica se appare anche in altri annullamenti di sfide, ed eventualmente eliminala anche lì (a meno che non sia un messaggio ben costruito, per esempio con un popup o all'interno di panel appositi)
 - correggere testi e traduzioni i18n
 
 

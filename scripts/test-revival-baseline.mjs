@@ -260,6 +260,7 @@ for (const name of ["battle", "admin-battle", "battle-dome-battle"]) {
   }
 }
 const domeView = read("app/view/battle-dome.js");
+const domeHandler = read("app/client/battle-dome-handler.js");
 const pokemonCardSource = read("app/client/pokemon-card.js");
 const pokemonCardRenderer = pokemonCardSource.slice(
   pokemonCardSource.indexOf("export function renderPokemonCard("),
@@ -283,6 +284,10 @@ for (const expCap of [0, 1000]) {
   assert.doesNotMatch(renderExperienceCard(pokemon, { showVitals: false, showExperience: true }), /pokemon-card-exp/);
 }
 assert.match(domeView, /renderPokemonCard\(battleDomePokemon\(entry\), \{ showExperience: false \}\)/);
+assert.doesNotMatch(domeHandler, /ui\.battleDome\.(?:lobbyCancelled|battleCancelled|battleUnavailable)/,
+  "Cancelled or deleted Battle Dome challenges must return silently without a loose page notice");
+assert.doesNotMatch(i18nItalian + i18nEnglish, /(?:lobbyCancelled|battleCancelled|battleUnavailable):/,
+  "Removed Battle Dome cancellation notices must not leave unused i18n entries");
 assert.match(read("app/view/battle-dome-lead-selection.js"), /renderPokemonCard\(participantPokemon\(entry\), \{\s*showExperience: false/);
 assert.match(battleView, /var showExperience = !scene\.battleDome;/, "Only Cupola battles must hide experience, regardless of player perspective");
 assert.equal((battleView.match(/showExperience: options\.showExperience/g) || []).length, 2,

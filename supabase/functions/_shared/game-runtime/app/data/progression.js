@@ -4,7 +4,7 @@ export var BADGE_LEVEL_LIMITS = [14, 20, 30, 40, 50, 60, 70, 80, 100];
 export var CAPTURE_LEVEL_LIMITS = [10, 15, 20, 25, 30, 40, 50, 60, 60];
 
 export var CAPTURE_LEVEL_RANGES = [
-  [{ min: 5, max: 10 }],
+  [{ min: 5, max: 7 }, { min: 8, max: 10 }],
   [{ min: 11, max: 15 }],
   [{ min: 16, max: 20 }],
   [{ min: 21, max: 25 }],

@@ -773,6 +773,16 @@ const TitleDefinitions = titleDefinitionsModule.namespace;
 const statDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/stat-tables.js", import.meta.url)));
 if (statDefinitionsModule.status !== "evaluated") await statDefinitionsModule.evaluate();
 const StatDefinitions = statDefinitionsModule.namespace;
+const progressionDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/progression.js", import.meta.url)));
+if (progressionDefinitionsModule.status !== "evaluated") await progressionDefinitionsModule.evaluate();
+const ProgressionDefinitions = progressionDefinitionsModule.namespace;
+for (const includePrevious of [false, true]) {
+  assert.equal(JSON.stringify(ProgressionDefinitions.captureLevelRangesForBadges(0, includePrevious)),
+    JSON.stringify([{ min: 5, max: 7 }, { min: 8, max: 10 }]), "Zero badges unlock both initial search groups");
+}
+assert.equal(JSON.stringify(ProgressionDefinitions.captureLevelRangesForBadges(1, true)),
+  JSON.stringify([{ min: 5, max: 7 }, { min: 8, max: 10 }, { min: 11, max: 15 }]),
+  "Cumulative search indexes retain both zero-badge groups before the next badge group");
 const captureCalcModule = await loadEsModule(fileURLToPath(new URL("../app/engine/capture-calc.js", import.meta.url)));
 if (captureCalcModule.status !== "evaluated") await captureCalcModule.evaluate();
 const CaptureCalc = captureCalcModule.namespace;

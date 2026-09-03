@@ -114,6 +114,9 @@ registerAction("starter-set-generation", function(element) {
     clearStarterSetupError();
     picker = root.querySelector(".starter-picker");
     setHtml(picker, renderStarterPokemonGrid(state.starterSetup));
+    if (picker) {
+      picker.classList.toggle("starter-picker-name-filter", generation === 0);
+    }
     filterControls = element.closest(".starter-generation-filters");
     nameFilterInput = filterControls ? filterControls.querySelector("[data-starter-name-filter]") : null;
     if (nameFilterInput) {

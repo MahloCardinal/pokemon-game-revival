@@ -856,6 +856,8 @@ function trainingEvolutionTarget(targetSpeciesKey, pokemon) {
 
 function finishAuthoritativeTrainingProgression() {
   activeAuthoritativeTrainingResolution = null;
+  state.dialog = null;
+  renderDialogLayer();
   showTerminalBattleScreen(state.scene);
 }
 
@@ -1069,7 +1071,6 @@ export function openAuthoritativeTrainingProgression() {
   var maxLevelsPerPokemon;
   var entries;
   if (!progression) { finishAuthoritativeTrainingProgression(); return; }
-  if (state.dialog && state.dialog.authoritative && state.dialog.progressionId === progression.id) { return; }
   if (progression.status === "awaiting_choices") {
     if (!activeAuthoritativeTrainingResolution
       || activeAuthoritativeTrainingResolution.resolution !== authoritativeTrainingResolution()) {
@@ -1077,6 +1078,10 @@ export function openAuthoritativeTrainingProgression() {
     }
     return;
   }
+  // The allocation and its following choices share an id. Only preserve an
+  // interactive allocation, never the held popup from the completed request.
+  if (state.dialog && state.dialog.type === "training-level-assignment" && state.dialog.authoritative
+    && state.dialog.progressionId === progression.id && !state.dialog.pending) { return; }
   maxLevelsPerPokemon = Math.max(1, Math.floor(Number(progression.max_levels_per_pokemon) || MAX_TRAINING_LEVELS_PER_POKEMON));
   entries = (progression.eligible_pokemon || []).map(function (eligible) {
     var pokemon = pokemonByInstanceId(eligible.pokemon_instance_id);
@@ -1091,7 +1096,7 @@ export function openAuthoritativeTrainingProgression() {
       Number(progression.assignable_levels) || 0, maxLevelsPerPokemon),
     entries: entries
   };
-  render();
+  renderDialogLayer();
 }
 
 export function resumeAuthoritativeTrainingProgression(options) {

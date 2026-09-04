@@ -17,6 +17,7 @@ function actionSource(name) {
 export async function testProgressionDialogFlow(Engine) {
   const actions = {};
   const requests = [];
+  let trainingCompleted = 0;
   const state = { team: [], pendingResolutions: [], authoritativeRevision: 1 };
   const context = vm.createContext({
     Engine, state, console, crypto: { randomUUID: () => "command-id" },
@@ -32,11 +33,15 @@ export async function testProgressionDialogFlow(Engine) {
     moveDisplayName: move => "Move " + move.index,
     t: key => key,
     battleTitle: key => key, battleText: key => key, battleFailure: key => key,
+    battleTextNow: key => key, MAX_TRAINING_LEVELS_PER_POKEMON: 3,
+    trainingRewardLines: () => [],
+    showTerminalBattleScreen: () => { trainingCompleted++; },
     openMessage: (lines, options) => { state.dialog = { type: "message", lines, ...options }; },
     applyAuthoritativeBattlePlayerState: projection => Object.assign(state, projection),
     resolveAuthoritativeOrdinaryProgression: request => new Promise(resolve => { requests.push({ request, resolve }); }),
     resolveAuthoritativeTrainingPokemon: request => new Promise(resolve => { requests.push({ request, resolve }); }),
-    openAuthoritativeTrainingProgression() {}, resumeAuthoritativeTrainingProgression() {},
+    allocateAuthoritativeTrainingLevels: request => new Promise(resolve => { requests.push({ request, resolve }); }),
+    resumeAuthoritativeTrainingProgression() {},
     finishAuthoritativeOrdinaryProgression() {},
     readAuthoritativeOrdinaryProgression: () => Promise.resolve({ ok: true, projection: { player_state: {} } })
   });
@@ -47,9 +52,12 @@ export async function testProgressionDialogFlow(Engine) {
       "authoritativeOrdinaryResolution", "pokemonByInstanceId", "trainingEvolutionTarget",
       "submitAuthoritativeTrainingResolution", "resumeAuthoritativeOrdinaryChoices",
       "openAuthoritativeOrdinaryProgression", "resumeAuthoritativeOrdinaryProgression",
-      "openNextAuthoritativeTrainingChoice"].map(functionSource),
+      "openNextAuthoritativeTrainingChoice", "authoritativeTrainingResolution", "resumeAuthoritativeTrainingChoices",
+      "openAuthoritativeTrainingProgression", "finishAuthoritativeTrainingProgression",
+      "trainingLevelAssignmentTotalAssigned", "trainingLevelAssignmentRemaining", "trainingLevelAssignmentCanAssignMore",
+      "trainingLevelAssignmentReady", "trainingLevelAssignmentPayloads", "confirmTrainingLevelAssignment"].map(functionSource),
     ...["authoritative-progression-level-continue", "training-resolution-replace-move",
-      "training-resolution-decline-move", "training-resolution-choose-evolution"].map(actionSource)
+      "training-resolution-decline-move", "training-resolution-choose-evolution", "training-level-confirm"].map(actionSource)
   ].join("\n"), context);
   const pokemon = (id, level, xp, moves = [[25, 10, 2]]) => {
     const result = Engine.Pokemon.fromJSON({ s: "4", l: level, xp, hp: 32, m: moves });
@@ -246,5 +254,75 @@ export async function testProgressionDialogFlow(Engine) {
   assert.equal(state.dialog.beforePokemon.level, 8);
   assert.equal(state.dialog.afterPokemon.level, 15);
   assert.equal(state.dialog.resultLines.length, 1, "Later segments must not repeat awarded EXP");
-  console.log("Progression dialogs: combined EXP/comparison, free-slot confirmation, failures, multiple Pokemon/levels, evolution and recovery passed.");
+  // Allocation retains the disabled assignment dialog until the server replies.
+  // Its progression id is unchanged, but awaiting_choices must replace it.
+  context.authoritativeExpPresentation = null;
+  context.activeAuthoritativeTrainingResolution = null;
+  state.ordinaryProgression = null;
+  state.pendingResolutions = [];
+  state.trainingProgression = { id: "training", status: "awaiting_allocation", assignable_levels: 3,
+    eligible_pokemon: [{ pokemon_instance_id: "training-pokemon", max_assignable: 3 }] };
+  const trainingBefore = pokemon("training-pokemon", 5, 0);
+  const trainingAfter = pokemon("training-pokemon", 8, 0);
+  state.team = [trainingBefore];
+  state.dialog = { type: "training-level-assignment", authoritative: true, progressionId: "training", commandId: "allocation",
+    totalLevels: 3, entries: [{ pokemon: trainingBefore, pokemonInstanceId: "training-pokemon", assigned: 3, maxAssignable: 3 }] };
+  const assignment = state.dialog;
+  actions["training-level-confirm"]();
+  actions["training-level-confirm"]();
+  assert.equal(requests.length, 1, "Double confirmation must not allocate twice");
+  assert.equal(state.dialog, assignment);
+  assert.equal(state.dialog.pending, true);
+  const trainingResolution = resolution("training-pokemon", trainingBefore, trainingAfter, [{ move_index: 245, power: 18, stats: 6 }]);
+  trainingResolution.options.source = "training";
+  const allocation = await settle({ team: [trainingAfter], pendingResolutions: [trainingResolution],
+    trainingProgression: { id: "training", status: "awaiting_choices" } });
+  assert.equal(allocation.allocations[0].levels, 3);
+  assert.equal(state.dialog.type, "level-up", "Successful allocation must replace the held assignment popup");
+  assert.equal(state.dialog.pending, undefined, "The next popup must be interactive");
+  assert.equal(state.dialog.beforePokemon.level, 5);
+  assert.equal(state.dialog.afterPokemon.level, 8);
+  actions["authoritative-progression-level-continue"]();
+  const trainingLearned = pokemon("training-pokemon", 8, 0, [[25, 10, 2], [245, 18, 6]]);
+  await settle({ team: [trainingLearned], pendingResolutions: [], trainingProgression: null });
+  assert.equal(state.dialog.type, "message");
+  assert.equal(state.dialog.pokemon, trainingLearned);
+  close();
+  assert.equal(trainingCompleted, 1);
+  assert.equal(state.dialog, null);
+
+  // With no moves/evolution left, a held comparison must also close at completion.
+  context.activeAuthoritativeTrainingResolution = null;
+  state.team = [trainingAfter];
+  state.trainingProgression = { id: "training-end", status: "awaiting_choices" };
+  const finalTrainingResolution = resolution("training-pokemon", trainingBefore, trainingAfter);
+  finalTrainingResolution.options.source = "training";
+  state.pendingResolutions = [finalTrainingResolution];
+  state.dialog = { ...assignment, progressionId: "training-end", pending: true };
+  context.openAuthoritativeTrainingProgression();
+  actions["authoritative-progression-level-continue"]();
+  await settle({ pendingResolutions: [], trainingProgression: null });
+  assert.equal(state.dialog, null);
+  assert.equal(trainingCompleted, 2);
+
+  // A read-only recovery that still requires allocation must not preserve an inert popup.
+  state.team = [trainingBefore];
+  state.trainingProgression = { id: "training-retry", status: "awaiting_allocation", assignable_levels: 3,
+    eligible_pokemon: [{ pokemon_instance_id: "training-pokemon", max_assignable: 3 }] };
+  state.dialog = { ...assignment, progressionId: "training-retry", pending: true };
+  context.openAuthoritativeTrainingProgression();
+  assert.equal(state.dialog.pending, undefined);
+  const recoveredAssignment = state.dialog;
+  context.openAuthoritativeTrainingProgression();
+  assert.equal(state.dialog, recoveredAssignment, "An interactive allocation must retain the player's choices");
+  recoveredAssignment.entries[0].assigned = 3;
+  actions["training-level-confirm"]();
+  requests.shift().resolve({ ok: false, uncertain: false });
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(state.dialog.lines[0], "levelAssignmentFailed");
+  close();
+  assert.equal(state.dialog, recoveredAssignment);
+  assert.equal(state.dialog.pending, undefined);
+  assert.equal(state.dialog.entries[0].assigned, 3);
+  console.log("Progression dialogs: EXP/comparison, learning/evolution, training allocation/continuation, retry and recovery passed.");
 }

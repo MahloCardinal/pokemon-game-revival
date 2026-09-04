@@ -5,14 +5,14 @@ import { applyPlayerSave, root, state } from "./game-state.js";
 import * as Engine from "../engine/index.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
-import { render, renderDialogLayer, setScene } from "./renderer.js";
+import { holdDialogContent, render, renderDialogLayer, setScene } from "./renderer.js";
 import { moneyText } from "./render-utils.js";
 import { registerAction } from "./action-registry.js";
 import { replaceTeamRuntimeState } from "./runtime-state.js";
 import { recordMissionEvent } from "./mission-runtime.js";
 import { clearPendingActivityRuntime, requireNotInBattle, setPendingActivityRuntime } from "./battle-scene-lock.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
-import { confirmMoveForget, progressionMove, progressionPokemon } from "./progression-dialog.js";
+import { confirmMoveForget, progressionMove, progressionPokemon, showEvolutionResult } from "./progression-dialog.js";
 import { previewDaycareWithdrawal } from "../api/player-command.js";
 import { moveNameDescriptor, pokemonNameDescriptor, pokemonDisplayName } from "./entity-text.js";
 import { messageDescriptor, t, textDescriptor } from "./i18n.js";
@@ -126,7 +126,7 @@ function submitAuthoritativeDaycareResolution(targetSpeciesKey) {
     return;
   }
   authoritativeDaycareCommandPending = true;
-  state.dialog = null;
+  holdDialogContent();
   state.saveStatus = { state: "saving", message: "daycare-resolution" };
   renderDialogLayer();
   resolveDaycareWithdrawalCommand({
@@ -142,13 +142,18 @@ function submitAuthoritativeDaycareResolution(targetSpeciesKey) {
     }
     applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
     replaceTeamRuntimeState(state.team);
-    clearPendingActivityRuntime("daycare_withdraw");
-    recordMissionEvent("daycare_cycle_completed", {}, {
-      eventKey: "daycare-withdraw-resolution:" + session.resolution.id
-    });
+    var hasNext = result.projection.withdrawal_status === "resolution_required";
+    if (!hasNext) {
+      clearPendingActivityRuntime("daycare_withdraw");
+      recordMissionEvent("daycare_cycle_completed", {}, {
+        eventKey: "daycare-withdraw-resolution:" + session.resolution.id
+      });
+    }
     activeDaycareResolution = null;
+    authoritativeDaycareCommandPending = false;
     state.saveStatus = { state: "saved", message: "" };
-    var pokemon = state.team.find(function (entry) { return entry.instanceId === session.resolution.pokemon_instance_id; });
+    var pokemon = state.team.concat((state.daycare || []).filter(Boolean).map(function (slot) { return slot.pokemon; }))
+      .find(function (entry) { return entry.instanceId === session.resolution.pokemon_instance_id; });
     var learned = (pokemon && pokemon.moves || []).filter(function (move) {
       return session.choices.some(function (choice) { return choice.move_index === move.index; })
         && !session.pokemon.moves.some(function (previous) { return previous.index === move.index; });
@@ -156,15 +161,23 @@ function submitAuthoritativeDaycareResolution(targetSpeciesKey) {
     var lines = learned.map(function (move) {
       return messageDescriptor("progression.learned", { pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move) });
     });
-    lines.push(messageDescriptor("daycare.returnedToTeam"));
+    if (!hasNext) lines.push(messageDescriptor("daycare.returnedToTeam"));
     render();
-    openMessage(lines, { title: textDescriptor("ui.daycare.sceneTitle"), pokemon: learned.length ? pokemon : null, requireButtonClose: true });
+    var evolved = targetSpeciesKey && pokemon && pokemon.speciesKey === targetSpeciesKey
+      && pokemon.speciesKey !== session.pokemon.speciesKey;
+    var continueProgression = hasNext ? resumePendingDaycareWithdraw : null;
+    var afterLearning = evolved ? function () { showEvolutionResult(session.pokemon, pokemon, continueProgression); } : continueProgression;
+    if (evolved && !learned.length) { afterLearning(); }
+    else if (hasNext && !learned.length) { continueProgression(); }
+    else {
+      openMessage(lines, { title: textDescriptor("ui.daycare.sceneTitle"), pokemon: learned.length ? pokemon : null,
+        requireButtonClose: true, onClose: afterLearning });
+    }
   }).catch(function (error) {
     activeDaycareResolution = null;
+    authoritativeDaycareCommandPending = false;
     state.saveStatus = { state: "error", message: messageDescriptor("daycare.resolutionFailed") };
     openMessage([state.saveStatus.message], { title: textDescriptor("ui.daycare.sceneTitle") });
-  }).finally(function () {
-    authoritativeDaycareCommandPending = false;
   });
 }
 
@@ -174,6 +187,18 @@ function openNextAuthoritativeDaycareChoice() {
   var moveIndex;
   var knownSlot;
   if (!session) {
+    return;
+  }
+  if (!session.levelShown) {
+    state.dialog = {
+      type: "level-up", pokemonName: session.pokemon.name,
+      beforePokemon: session.pokemon, afterPokemon: session.previewPokemon,
+      resultLines: [messageDescriptor("progression.levelReached", {
+        pokemon: pokemonNameDescriptor(session.pokemon), level: session.previewPokemon.level
+      })],
+      continueAction: "daycare-level-continue"
+    };
+    renderDialogLayer();
     return;
   }
   while (session.offerIndex < session.offers.length) {
@@ -230,6 +255,7 @@ async function startAuthoritativeDaycareResolution(slot) {
   }
   authoritativeDaycareCommandPending = true;
   var result;
+  holdDialogContent();
   try { result = await previewDaycareWithdrawal(resolution.id); }
   catch (error) { result = { ok: false }; }
   finally { authoritativeDaycareCommandPending = false; }
@@ -243,6 +269,7 @@ async function startAuthoritativeDaycareResolution(slot) {
     resolution: resolution,
     pokemon: slot.pokemon,
     previewPokemon: preview,
+    levelShown: preview.level === slot.pokemon.level,
     offers: result.projection.level_moves,
     evolutions: Array.isArray(options.evolutions) ? options.evolutions : [],
     offerIndex: 0,
@@ -450,10 +477,12 @@ registerAction("daycare-withdraw", function (element) {
       return;
     }
     authoritativeDaycareCommandPending = true;
+    holdDialogContent();
     withdrawDaycarePokemonCommand({
       expectedRevision: state.authoritativeRevision,
       pokemonInstanceId: pokemon.instanceId
     }).then(function (result) {
+      authoritativeDaycareCommandPending = false;
       if (!result.ok) {
         openMessage([messageDescriptor("daycare.withdrawFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
         return;
@@ -462,14 +491,14 @@ registerAction("daycare-withdraw", function (element) {
       state.scene.daycareDepositSlotIndex = null;
       replaceTeamRuntimeState(state.team);
       if (result.projection.withdrawal_status === "resolution_required") {
-        authoritativeDaycareCommandPending = false;
         resumePendingDaycareWithdraw();
+      } else {
+        openMessage([messageDescriptor("daycare.returnedToTeam")], { title: textDescriptor("ui.daycare.sceneTitle") });
       }
       render();
     }).catch(function (error) {
-      openMessage([messageDescriptor("daycare.withdrawFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
-    }).finally(function () {
       authoritativeDaycareCommandPending = false;
+      openMessage([messageDescriptor("daycare.withdrawFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
     });
     return;
   }, { confirmLabel: textDescriptor("ui.daycare.withdraw"), confirmClass: "button-accent", requireButtonClose: true });
@@ -500,6 +529,12 @@ registerAction("daycare-resolution-replace-move", function (element) {
     state.dialog = null;
     openNextAuthoritativeDaycareChoice();
   });
+});
+
+registerAction("daycare-level-continue", function () {
+  if (!activeDaycareResolution || authoritativeDaycareCommandPending) return;
+  activeDaycareResolution.levelShown = true;
+  openNextAuthoritativeDaycareChoice();
 });
 
 registerAction("daycare-resolution-decline-move", function () {

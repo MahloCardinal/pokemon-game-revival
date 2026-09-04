@@ -125,10 +125,8 @@ registerAction("dialog-confirm", function(element) {
       state.dialog = null;
     }
     if (dialog && typeof dialog.onConfirm === "function") {
-      if (!dialog.inline) {
-        renderDialogLayer();
-      }
       dialog.onConfirm();
+      if (!dialog.inline) renderDialogLayer();
     } else {
       renderDialogLayer();
     }

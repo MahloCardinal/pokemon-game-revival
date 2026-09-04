@@ -14,6 +14,7 @@ export function registerAction(action, handler) {
 }
 
 export function handleAction(action, element) {
+  if (element && element.closest && element.closest("[inert]")) return;
   if (actionGuards.some(function (guard) { return guard(action, element) === false; })) return;
   var handler = actionHandlers[action];
   if (handler) {

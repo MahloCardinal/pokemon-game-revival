@@ -1,5 +1,6 @@
 import { resetBoxFilter, state, root } from "./game-state.js";
 import { renderDialog } from "../view/dialogs.js";
+import { replaceSceneContent, updateDialogContent } from "./dialog-layer.js";
 import { renderLoginScene } from "../view/auth.js";
 import { renderBattleRestoreScene, renderBattleScene } from "../view/battle.js";
 import { renderBattleAreaScene, renderBattleTowerScene } from "../view/battle-area.js";
@@ -406,14 +407,15 @@ export function render(options) {
   state.scene = normalizeRenderableScene(state.scene);
   scene = state.scene;
   syncMusicForScene(scene);
-  sceneMarkup = renderGlobalNavigation(scene) + currentSceneMarkup() + renderDialog(state.dialog);
+  sceneMarkup = renderGlobalNavigation(scene) + currentSceneMarkup();
   root.classList.add("is-scene-loading");
   return Promise.all([prepareSceneBackground(scene), preloadSceneMarkup(sceneMarkup)]).then(function (results) {
     if (requestId !== renderRequestId || state.scene !== scene) {
       return;
     }
     applySceneBackground(results[0]);
-    root.innerHTML = sceneMarkup;
+    replaceSceneContent(root, sceneMarkup);
+    syncDialogContent();
     root.classList.remove("is-scene-loading");
     restoreCaptureWildCard();
   var sceneHeading = root.querySelector(".scene-heading");
@@ -511,24 +513,30 @@ export function renderRegions(regionNames, options) {
   return Promise.resolve(true);
 }
 
+var displayedDialog = null;
+
+function syncDialogContent() {
+  updateDialogContent(root, renderDialog(state.dialog), !!(state.dialog && state.dialog.pending));
+  displayedDialog = state.dialog;
+}
+
+// Call before an asynchronous continuation, even if its click handler has
+// already cleared state.dialog. A new dialog replaces this pending screen.
+export function holdDialogContent() {
+  var dialog = state.dialog || displayedDialog;
+  if (!dialog) return;
+  state.dialog = dialog;
+  dialog.pending = true;
+  syncDialogContent();
+}
+
 export function renderDialogLayer(options) {
   options = options || {};
   var regionNames = Array.prototype.slice.call(root.querySelectorAll("[data-render-region]"))
     .map(function (element) { return String(element.dataset.renderRegion || ""); })
     .filter(function (name, index, entries) { return name && entries.indexOf(name) === index; });
-  if (!regionNames.length) {
-    return render(options);
-  }
-  renderRegions(regionNames, options);
-  Array.prototype.slice.call(root.children).forEach(function (element) {
-    if (element.classList && element.classList.contains("dialog-backdrop")) {
-      element.remove();
-    }
-  });
-  var markup = renderDialog(state.dialog);
-  if (markup) {
-    root.insertAdjacentHTML("beforeend", markup);
-  }
+  if (regionNames.length) renderRegions(regionNames, options);
+  syncDialogContent();
   if (options.scrollBattleLogToBottom) {
     scheduleBattleLogScroll();
   }

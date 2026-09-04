@@ -1,8 +1,8 @@
 import { registerAction } from "./action-registry.js";
 import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
-import { confirmMoveForget } from "./progression-dialog.js";
+import { confirmMoveForget, showEvolutionResult } from "./progression-dialog.js";
 import { openMessage } from "./dialog-handler.js";
-import { render, renderDialogLayer } from "./renderer.js";
+import { holdDialogContent, render, renderDialogLayer } from "./renderer.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
 import * as Engine from "../engine/index.js";
 import { getItemByIndex, getResolvedInventoryItem, resolveInventoryItems, ItemCategory, ItemSubcategory, itemCanTriggerEvolution, pokemonCanHoldItem } from "../data/items.js";
@@ -282,6 +282,7 @@ async function runAuthoritativePokemonCenterCommand(input, notice) {
     return false;
   }
   authoritativePokemonCenterCommandPending = true;
+  if (input.operation === "teach_tm" || input.operation === "evolve") holdDialogContent();
   clearPokemonCenterChoicePopup();
   try {
     result = await executePokemonCenterCommandAuthoritative({
@@ -301,7 +302,14 @@ async function runAuthoritativePokemonCenterCommand(input, notice) {
     state.saveStatus = { state: "saved", message: "" };
     renderPokemonCenter();
     if (input.operation === "teach_tm") showPokemonCenterLearnedResult(input.pokemon, notice);
+    if (input.operation === "evolve") {
+      var evolved = state.team.find(function (entry) { return entry.instanceId === input.pokemon.instanceId; });
+      if (evolved && evolved.speciesKey !== input.pokemon.speciesKey) showEvolutionResult(input.pokemon, evolved);
+    }
     return true;
+  } catch (error) {
+    openMessage([pokemonCenterCommandError("")], { title: textDescriptor("ui.pokemonCenter.sceneTitle") });
+    return false;
   } finally {
     authoritativePokemonCenterCommandPending = false;
   }
@@ -312,6 +320,7 @@ async function runAuthoritativePokemonCenterTutorCommand(pokemon, item, move, re
   var result;
   if (!scene || scene.name !== "pokemon-center" || authoritativePokemonCenterCommandPending) return false;
   authoritativePokemonCenterCommandPending = true;
+  holdDialogContent();
   clearPokemonCenterChoicePopup();
   try {
     result = await executePokemonCenterMoveTutorAuthoritative({ expectedRevision: state.authoritativeRevision, pokemonInstanceId: pokemon.instanceId, itemIndex: item.index, moveIndex: move.index, replacementSlot: replacementSlot });
@@ -329,6 +338,9 @@ async function runAuthoritativePokemonCenterTutorCommand(pokemon, item, move, re
       pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move), item: itemNameDescriptor(item)
     }));
     return true;
+  } catch (error) {
+    openMessage([pokemonCenterCommandError("")], { title: textDescriptor("ui.pokemonCenter.sceneTitle") });
+    return false;
   } finally { authoritativePokemonCenterCommandPending = false; }
 }
 
@@ -759,8 +771,6 @@ registerAction("pokemon-center-resolution-replace-move", function (element) {
   var index = Number(element.dataset.index);
   if (!dialog || dialog.type !== "pokemon-center-move-resolution" || authoritativePokemonCenterCommandPending) return;
   confirmMoveForget(index, function () {
-    state.dialog = null;
-    renderDialogLayer();
     if (dialog.tutor) {
       runAuthoritativePokemonCenterTutorCommand(dialog.pokemon, dialog.item, dialog.move, index);
     } else {

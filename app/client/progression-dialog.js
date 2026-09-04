@@ -15,6 +15,29 @@ export function progressionPokemon(pokemon, moves) {
   return preview;
 }
 
+// A successful resolution may already have advanced to the next segment.
+// Its frozen before_state is the canonical result at the previous boundary.
+export function progressionResultPokemon(pokemon, pendingResolutions) {
+  if (!pokemon) return null;
+  var next = (pendingResolutions || []).find(function (resolution) {
+    return resolution.status === "pending" && resolution.pokemon_instance_id === pokemon.instanceId
+      && resolution.options && ["ordinary", "training"].indexOf(resolution.options.source) !== -1
+      && resolution.options.before_state;
+  });
+  if (!next) return pokemon;
+  var result = Engine.Pokemon.fromJSON(next.options.before_state);
+  result.instanceId = pokemon.instanceId;
+  return result;
+}
+
+export function showEvolutionResult(oldPokemon, pokemon, onClose) {
+  state.dialog = {
+    type: "evolution-result", oldPokemon: oldPokemon, pokemon: pokemon,
+    continueAction: "dialog-close", onClose: onClose || null
+  };
+  renderDialogLayer();
+}
+
 export function confirmMoveForget(index, onConfirm) {
   var dialog = state.dialog;
   if (!dialog || dialog.forgetConfirmation || !Number.isInteger(index) || !dialog.moves || !dialog.moves[index]) return;

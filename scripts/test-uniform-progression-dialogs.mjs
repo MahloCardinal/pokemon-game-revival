@@ -66,6 +66,14 @@ for (const locale of ["it", "en"]) {
     assert.ok(html.includes(t("ui.dialogs.evolve")) && html.includes(t("ui.dialogs.stopEvolution")));
     if (locale === "it" && type === "training-evolution-resolution") previews.push(["Evoluzione", html]);
   }
+  const evolved = Engine.Pokemon.fromJSON({ ...pokemon.toJSON(), s: "5" });
+  const resultHtml = renderDialog({ type: "evolution-result", oldPokemon: pokemon, pokemon: evolved, continueAction: "dialog-close" });
+  assert.ok(resultHtml.includes(t("ui.dialogs.evolved", { pokemon: "Charmander", target: "Charmeleon" })));
+  assert.match(resultHtml, /pokemon-card/);
+  for (const known of evolved.moves) assert.ok(resultHtml.includes(escapeHtml(text.moveDisplayDescription(known))));
+  assert.match(resultHtml, /data-action="dialog-close"/);
+  assert.doesNotMatch(resultHtml, /evolution-result-image/);
+  if (locale === "it") previews.push(["Evoluzione completata", resultHtml]);
 }
 setLocale("it");
 
@@ -91,6 +99,7 @@ for (const tutor of [false, true]) {
     Engine, state, messageDescriptor, textDescriptor: key => key, ...text,
     authoritativePokemonCenterCommandPending: false, clearPokemonCenterChoicePopup() {},
     renderDialogLayer() {}, renderPokemonCenter() {}, updatePokemonCenterModeDom() {},
+    holdDialogContent() { if (state.dialog) state.dialog.pending = true; },
     clearPokemonCenterAfterAction() {}, saveFromAuthoritativeProjection: value => value,
     applyPlayerSave: value => Object.assign(state, value), pokemonCenterCommandError: value => value,
     executePokemonCenterCommandAuthoritative: command, executePokemonCenterMoveTutorAuthoritative: command,
@@ -126,41 +135,60 @@ for (const tutor of [false, true]) {
   respond({ ok: false, message: "failed" });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(state.dialog.pokemon, undefined, "Failure must never show a learned card");
+  const evolved = Engine.Pokemon.fromJSON({ ...canonical.toJSON(), s: "5" }); evolved.instanceId = canonical.instanceId;
+  context.runAuthoritativePokemonCenterCommand({ operation: "evolve", pokemon: canonical, item: items.fire_stone }, "evolved");
+  respond({ ok: true, projection: { team: [evolved] } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(state.dialog.type, "evolution-result");
+  assert.equal(state.dialog.pokemon, evolved);
 }
 
 // Daycare: use the server preview, preserve choices on No, then show only the
 // canonical withdrawn Pokemon after commit (including automatic learning).
 const daycareSource = read("app/client/daycare-handler.js");
-for (const full of [false, true]) {
+for (const mode of ["free", "full", "segmented"]) {
+  const full = mode === "full", segmented = mode === "segmented";
   const actions = {};
   const original = Engine.Pokemon.fromJSON(pokemon.toJSON());
+  if (segmented) original.level = 5;
   if (!full) original.moves = original.moves.slice(0, 2);
   const state = { team: [], pendingResolutions: [], authoritativeRevision: 1 };
   const resolution = { id: "withdrawal", pokemon_instance_id: "daycare-pokemon", status: "pending",
-    options: { source: "daycare_withdrawal", evolutions: [] } };
+    options: { source: "daycare_withdrawal", evolutions: full ? [{ target_species_key: "5" }] : [] } };
   state.pendingResolutions = [resolution];
-  const preview = Engine.Pokemon.fromJSON(original.toJSON()); preview.level = 34;
+  const preview = Engine.Pokemon.fromJSON(original.toJSON()); preview.level = segmented ? 8 : 34;
   preview.moves.forEach(move => { move.power += 8; move.stats += 8; });
   const offer = { move_index: 55, power: 91, stats: 48 };
   let respond;
   const requests = [];
+  const serverPreviews = [{ pokemon: preview.toJSON(), level_moves: [offer] }];
+  let completedCycles = 0;
   const context = vm.createContext({
     Engine, state, ...text, messageDescriptor, textDescriptor: key => key,
     activeDaycareResolution: null, authoritativeDaycareCommandPending: false,
     render() {}, renderDialogLayer() {}, replaceTeamRuntimeState() {},
-    clearPendingActivityRuntime() {}, recordMissionEvent() {},
+    holdDialogContent() { if (state.dialog) state.dialog.pending = true; },
+    clearPendingActivityRuntime() {}, recordMissionEvent() { completedCycles++; },
+    setDaycareWithdrawPending() {}, daycareLevelGain: slot => slot.pendingLevels,
     registerAction: (name, callback) => { actions[name] = callback; },
-    previewDaycareWithdrawal: async () => ({ ok: true, projection: { pokemon: preview.toJSON(), level_moves: [offer] } }),
+    previewDaycareWithdrawal: async () => ({ ok: true, projection: serverPreviews.shift() }),
     resolveDaycareWithdrawalCommand: request => { requests.push(request); return new Promise(resolve => { respond = resolve; }); },
     saveFromAuthoritativeProjection: value => value, applyPlayerSave: value => Object.assign(state, value),
     openMessage: (lines, options) => { state.dialog = { type: "message", lines, ...options }; }
   });
   vm.runInContext([shared,
-    ...["pendingResolutionForSlot", "speciesChoice", "submitAuthoritativeDaycareResolution", "openNextAuthoritativeDaycareChoice"].map(name => extract(daycareSource, name)),
+    ...["pendingResolutionForSlot", "speciesChoice", "submitAuthoritativeDaycareResolution", "openNextAuthoritativeDaycareChoice",
+      "pendingDaycareSlot", "resumePendingDaycareWithdraw"].map(name => extract(daycareSource, name)),
     extract(daycareSource, "startAuthoritativeDaycareResolution", true),
-    action(daycareSource, "daycare-resolution-replace-move")
+    action(daycareSource, "daycare-resolution-replace-move"),
+    action(daycareSource, "daycare-level-continue"),
+    action(daycareSource, "daycare-resolution-choose-evolution")
   ].join("\n"), context);
   await context.startAuthoritativeDaycareResolution({ pendingResolutionId: resolution.id, pokemon: original });
+  assert.equal(state.dialog.type, "level-up");
+  assert.equal(state.dialog.beforePokemon.level, original.level);
+  assert.equal(state.dialog.afterPokemon.level, preview.level);
+  actions["daycare-level-continue"]();
   if (full) {
     assert.equal(state.dialog.pokemon.level, 34);
     assert.equal(state.dialog.move.power, 91);
@@ -171,16 +199,51 @@ for (const full of [false, true]) {
     actions["move-forget-cancel"](); assert.equal(state.dialog, selection);
     actions["daycare-resolution-replace-move"]({ dataset: { index: "1" } });
     actions["move-forget-confirm"]();
+    assert.equal(state.dialog.type, "daycare-evolution-resolution");
+    actions["daycare-resolution-choose-evolution"]({ dataset: { speciesKey: "5" } });
   }
   assert.equal(requests.length, 1);
   assert.equal(requests[0].choices.moves[0].replacement_slot, full ? 1 : null);
-  const canonical = Engine.Pokemon.fromJSON(preview.toJSON()); canonical.instanceId = resolution.pokemon_instance_id;
+  const canonical = Engine.Pokemon.fromJSON({ ...preview.toJSON(), s: full ? "5" : "4" }); canonical.instanceId = resolution.pokemon_instance_id;
   if (full) canonical.moves[1] = Engine.moveFromJSON([55, 91, 48]);
   else canonical.moves.push(Engine.moveFromJSON([55, 91, 48]));
-  respond({ ok: true, projection: { team: [canonical] } });
+  const nextResolution = { ...resolution, id: "next-segment", options: { source: "daycare_withdrawal", evolutions: [] } };
+  respond({ ok: true, projection: segmented ? {
+    team: [], daycare: [{ pokemon: canonical, pendingResolutionId: nextResolution.id, status: "withdraw_pending", pendingLevels: 7 }],
+    pendingResolutions: [nextResolution], withdrawal_status: "resolution_required"
+  } : { team: [canonical] } });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(state.dialog.pokemon, canonical);
   assert.equal(original.moves.some(move => move.index === 55), false);
+  if (full) {
+    state.dialog.onClose();
+    assert.equal(state.dialog.type, "evolution-result");
+    assert.equal(state.dialog.oldPokemon.speciesKey, "4");
+    assert.equal(state.dialog.pokemon.speciesKey, "5");
+  }
+  if (segmented) {
+    assert.equal(completedCycles, 0, "Intermediate learning must not complete the daycare cycle");
+    assert.equal(state.dialog.pokemon.level, 8, "Learning result shows the boundary, not the final level");
+    const final = Engine.Pokemon.fromJSON(canonical.toJSON()); final.level = 15; final.instanceId = canonical.instanceId;
+    serverPreviews.push({ pokemon: final.toJSON(), level_moves: [] });
+    const continueProgression = state.dialog.onClose;
+    state.dialog = null;
+    continueProgression();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(state.dialog.type, "level-up");
+    assert.equal(state.dialog.beforePokemon.level, 8);
+    assert.equal(state.dialog.afterPokemon.level, 15);
+    assert.equal(state.dialog.beforePokemon.moves.at(-1).index, 55);
+    actions["daycare-level-continue"]();
+    assert.equal(requests.length, 2);
+    assert.equal(requests[1].choices.moves.length, 0);
+    assert.equal(state.dialog.pending, true, "Final comparison remains disabled while committing");
+    respond({ ok: true, projection: { team: [final], daycare: [], pendingResolutions: [], withdrawal_status: "completed" } });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(state.dialog.type, "message");
+    assert.equal(state.dialog.onClose, null, "Final exit must not open another progression step");
+    assert.equal(completedCycles, 1);
+  }
 }
 
 if (process.argv.includes("--preview")) {

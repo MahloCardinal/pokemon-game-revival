@@ -1,7 +1,9 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- /
+- aggiornare pokemon shiny
+- aggiornare sfide pvp in modo che chi inizia abbia un rev in più a disposizione
+- aggiornare regolamento con pokemob shiny e precisazione sul rev nelle pvp
 
 
 

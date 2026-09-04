@@ -89,7 +89,6 @@
   line-height: 1.35;
 }
 .evolution-preview-image,
-.evolution-result-image,
 .level-up-arrow-image {
   display: block;
   object-fit: contain;
@@ -115,6 +114,15 @@
   background: var(--surface-panel);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.58);
 }
+.dialog-backdrop--pending .dialog {
+  cursor: wait;
+}
+
+.dialog-backdrop--pending .dialog button {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
 .dialog-backdrop {
   box-sizing: border-box;
   display: flex;
@@ -168,8 +176,7 @@
   min-height: 150px;
   margin: 4px 0 18px;
 }
-.evolution-preview-image,
-.evolution-result-image {
+.evolution-preview-image {
   width: auto;
   height: auto;
   max-width: 180px;
@@ -368,12 +375,6 @@
 }
 .training-level-grid .pokemon-card-frame:has(.pokemon-card-external) {
   padding-bottom: 40px;
-}
-.evolution-result-image-wrap {
-  display: grid;
-  place-items: end center;
-  min-height: 150px;
-  margin: 8px 0 18px;
 }
 .dialog-title {
   position: relative;

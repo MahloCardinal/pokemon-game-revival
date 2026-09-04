@@ -25,6 +25,7 @@ export async function testProgressionDialogFlow(Engine) {
     registerAction: (name, callback) => { actions[name] = callback; },
     render: () => { throw new Error("A progression popup must only render the dialog layer"); },
     renderDialogLayer() {},
+    holdDialogContent() { if (state.dialog) state.dialog.pending = true; },
     textDescriptor: (key, params) => ({ key, params }),
     pokemonNameDescriptor: pokemon => pokemon.speciesKey,
     moveNameDescriptor: move => move.index,
@@ -148,8 +149,20 @@ export async function testProgressionDialogFlow(Engine) {
   actions["authoritative-progression-level-continue"]();
   assert.equal(state.dialog.type, "training-evolution-resolution");
   actions["training-resolution-choose-evolution"]({ dataset: { speciesKey: "5" } });
-  const evolutionRequest = await settle({ pendingResolutions: [], ordinaryProgression: null });
+  const evolved = Engine.Pokemon.fromJSON({ ...nextLevel.toJSON(), s: "5" }); evolved.instanceId = "first";
+  const evolvedLater = Engine.Pokemon.fromJSON({ ...evolved.toJSON(), l: 15 }); evolvedLater.instanceId = "first";
+  const evolutionRequest = await settle({ team: [evolvedLater], pendingResolutions: [resolution("first", evolved, evolvedLater)] });
   assert.equal(evolutionRequest.choices.evolutionTargetSpeciesKey, "5");
+  assert.equal(state.dialog.type, "evolution-result");
+  assert.equal(state.dialog.oldPokemon.speciesKey, "4");
+  assert.equal(state.dialog.pokemon.speciesKey, "5");
+  assert.equal(state.dialog.pokemon.level, 8, "Do not show next segment levels in evolution confirmation");
+  assert.equal(state.team[0].level, 15, "Presentation must not rewind canonical state");
+  close();
+  assert.equal(state.dialog.beforePokemon.level, 8);
+  assert.equal(state.dialog.afterPokemon.level, 15);
+  actions["authoritative-progression-level-continue"]();
+  await settle({ pendingResolutions: [], ordinaryProgression: null });
   assert.equal(complete, 3);
 
   // An award below the next-level threshold still gets an actual comparison.
@@ -210,5 +223,28 @@ export async function testProgressionDialogFlow(Engine) {
   assert.match(html, /Lv 7 EXP 5/);
   assert.match(html, /authoritative-progression-level-continue/);
   assert.doesNotMatch(dialogs, /function renderExperienceDialog/);
+
+  // Multi-level segment recovery: 5->8, learn, 8->15; EXP appears only once.
+  const segmentBefore = pokemon("segment", 5, 500);
+  const segmentAtMove = pokemon("segment", 8, 350);
+  state.team = [segmentAtMove];
+  state.pendingResolutions = [resolution("segment", segmentBefore, segmentAtMove, [{ move_index: 245, power: 18, stats: 6 }])];
+  state.ordinaryProgression = { pokemon: [{ pokemon_instance_id: "segment", levels_gained: 3, exp_awarded: 500 }] };
+  context.openAuthoritativeOrdinaryProgression();
+  assert.equal(state.dialog.beforePokemon.level, 5);
+  assert.equal(state.dialog.beforePokemon.expCurrent, 0);
+  assert.equal(state.dialog.afterPokemon.level, 8);
+  assert.equal(state.dialog.resultLines[0].params.experience, 500);
+  actions["authoritative-progression-level-continue"]();
+  const learnedAt8 = pokemon("segment", 8, 350, [[25, 16, 8], [245, 18, 6]]);
+  const finalAt15 = pokemon("segment", 15, 0, [[25, 30, 22], [245, 32, 20]]);
+  await settle({ team: [finalAt15], pendingResolutions: [resolution("segment", learnedAt8, finalAt15)],
+    ordinaryProgression: { pokemon: [{ pokemon_instance_id: "segment", levels_gained: 10, exp_awarded: 500 }] } });
+  assert.equal(state.dialog.pokemon.level, 8);
+  assert.equal(state.dialog.pokemon.moves[1].power, 18);
+  close();
+  assert.equal(state.dialog.beforePokemon.level, 8);
+  assert.equal(state.dialog.afterPokemon.level, 15);
+  assert.equal(state.dialog.resultLines.length, 1, "Later segments must not repeat awarded EXP");
   console.log("Progression dialogs: combined EXP/comparison, free-slot confirmation, failures, multiple Pokemon/levels, evolution and recovery passed.");
 }

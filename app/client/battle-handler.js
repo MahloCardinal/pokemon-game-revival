@@ -3,7 +3,7 @@ import { pendingOwnedBattleEntryChoice, sceneAllowsBallUse } from "./battle-scen
 import { createCaptureScene } from "./router.js";
 import { backgroundKeyForScene } from "../data/scene-backgrounds.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
-import { markDirty, render, renderDialogLayer, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
+import { holdDialogContent, markDirty, render, renderDialogLayer, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
 import { applyPlayerSave, state, root } from "./game-state.js";
 import { getInventoryItemByIndex, getItemByIndex, updateInventoryQuantity, ItemCategory, ItemSubcategory, revive, max_revive } from "../data/items.js";
 import * as Engine from "../engine/index.js";
@@ -49,7 +49,7 @@ var activeAuthoritativeRealtimeDirty = false;
 var activeAuthoritativeRealtimeDeferred = false;
 var BATTLE_ITEM_USE_LIMIT = 3;
 var activeAuthoritativeTrainingResolution = null;
-import { confirmMoveForget, progressionMove, progressionPokemon } from "./progression-dialog.js";
+import { confirmMoveForget, progressionMove, progressionPokemon, progressionResultPokemon, showEvolutionResult } from "./progression-dialog.js";
 var authoritativeTrainingProgressionPending = false;
 var authoritativeTrainingRecoveryPromise = null;
 var authoritativeOrdinaryProgressionComplete = null;
@@ -863,8 +863,7 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
   var session = activeAuthoritativeTrainingResolution;
   if (!session || authoritativeTrainingProgressionPending) { return; }
   authoritativeTrainingProgressionPending = true;
-  state.dialog = null;
-  renderDialogLayer();
+  holdDialogContent();
   (session.source === "ordinary" ? resolveAuthoritativeOrdinaryProgression : resolveAuthoritativeTrainingPokemon)({
     commandId: session.commandId,
     expectedPlayerRevision: state.authoritativeRevision,
@@ -888,7 +887,7 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
     applyAuthoritativeBattlePlayerState(result.projection.player_state);
     activeAuthoritativeTrainingResolution = null;
     authoritativeTrainingProgressionPending = false;
-    var pokemon = pokemonByInstanceId(session.resolution.pokemon_instance_id);
+    var pokemon = progressionResultPokemon(pokemonByInstanceId(session.resolution.pokemon_instance_id), state.pendingResolutions);
     var learned = (pokemon && pokemon.moves || []).filter(function (move) {
       return session.choices.some(function (choice) { return choice.moveIndex === Number(move.index); })
         && !(session.pokemon.moves || []).some(function (oldMove) { return Number(oldMove.index) === Number(move.index); });
@@ -897,14 +896,20 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
       if (session.source === "ordinary") { openAuthoritativeOrdinaryProgression(); }
       else { openAuthoritativeTrainingProgression(); }
     };
+    var afterLearning = function () {
+      if (evolutionTargetSpeciesKey && pokemon && pokemon.speciesKey === evolutionTargetSpeciesKey
+        && pokemon.speciesKey !== session.pokemon.speciesKey) {
+        showEvolutionResult(session.pokemon, pokemon, continueProgression);
+      } else { continueProgression(); }
+    };
     if (learned.length) {
       openMessage(learned.map(function (move) {
         return textDescriptor("messages.progression.learned", {
           pokemon: pokemonNameDescriptor(session.pokemon), move: moveNameDescriptor(move)
         });
       }), { title: battleTitle(session.source === "ordinary" ? "experience" : "training"),
-        pokemon: pokemon, requireButtonClose: true, onClose: continueProgression });
-    } else { continueProgression(); }
+        pokemon: pokemon, requireButtonClose: true, onClose: afterLearning });
+    } else { afterLearning(); }
   }).catch(function (error) {
     authoritativeTrainingProgressionPending = false;
     openMessage([battleFailure("trainingResolutionFailed")], {
@@ -940,7 +945,10 @@ function resumeAuthoritativeOrdinaryChoices(experienceAward) {
     var entry = (state.ordinaryProgression.pokemon || []).find(function (candidate) {
       return candidate.pokemon_instance_id === resolution.pokemon_instance_id;
     });
-    if (entry && Number(entry.levels_gained) === 1) { experienceAward = { exp: Number(entry.exp_awarded) || 0 }; }
+    var segmentLevels = options.after_state ? Number(options.after_state.l) - Number(options.before_state.l) : 0;
+    if (entry && segmentLevels > 0 && Number(entry.levels_gained) === segmentLevels) {
+      experienceAward = { exp: Number(entry.exp_awarded) || 0 };
+    }
   }
   activeAuthoritativeTrainingResolution = {
     source: "ordinary", resolution: resolution, pokemon: pokemon,
@@ -969,12 +977,19 @@ export function openAuthoritativeOrdinaryProgression() {
 }
 
 export function resumeAuthoritativeOrdinaryProgression() {
+  holdDialogContent();
+  var waitingDialog = state.dialog;
   return readAuthoritativeOrdinaryProgression().then(function (result) {
     if (!result.ok || !result.projection || !result.projection.player_state) { return false; }
     applyAuthoritativeBattlePlayerState(result.projection.player_state);
     if (!state.ordinaryProgression) { return false; }
     openAuthoritativeOrdinaryProgression();
     return true;
+  }).finally(function () {
+    if (waitingDialog && state.dialog === waitingDialog && waitingDialog.pending) {
+      state.dialog = null;
+      renderDialogLayer();
+    }
   });
 }
 
@@ -1082,6 +1097,8 @@ export function openAuthoritativeTrainingProgression() {
 export function resumeAuthoritativeTrainingProgression(options) {
   options = options || {};
   if (authoritativeTrainingRecoveryPromise) { return authoritativeTrainingRecoveryPromise; }
+  if (!options.silent) holdDialogContent();
+  var waitingDialog = state.dialog;
   authoritativeTrainingRecoveryPromise = retryPendingAuthoritativeTrainingProgressionCommand().then(function (retry) {
     if (retry.pending && retry.ok && retry.projection && retry.projection.player_state) {
       applyAuthoritativeBattlePlayerState(retry.projection.player_state);
@@ -1103,6 +1120,10 @@ export function resumeAuthoritativeTrainingProgression(options) {
     return true;
   }).finally(function () {
     authoritativeTrainingRecoveryPromise = null;
+    if (!options.silent && waitingDialog && state.dialog === waitingDialog && waitingDialog.pending) {
+      state.dialog = null;
+      renderDialogLayer();
+    }
   });
   return authoritativeTrainingRecoveryPromise;
 }
@@ -2399,8 +2420,7 @@ function confirmTrainingLevelAssignment() {
   if (dialog.authoritative) {
     if (authoritativeTrainingProgressionPending) { return; }
     authoritativeTrainingProgressionPending = true;
-    state.dialog = null;
-    render();
+    holdDialogContent();
     allocateAuthoritativeTrainingLevels({ commandId: dialog.commandId,
       expectedPlayerRevision: state.authoritativeRevision, progressionId: dialog.progressionId,
       allocations: payloads }).then(function (result) {
@@ -2410,7 +2430,7 @@ function confirmTrainingLevelAssignment() {
         openMessage([battleFailure("levelAssignmentFailed")], {
           title: battleTitle("training"), onClose: function () {
             if (result.uncertain) { resumeAuthoritativeTrainingProgression(); }
-            else { state.dialog = dialog; render(); }
+            else { delete dialog.pending; state.dialog = dialog; renderDialogLayer(); }
           }
         });
         return;

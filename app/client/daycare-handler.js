@@ -1,19 +1,20 @@
 import { completeDaycareWithdraw, depositDaycarePokemonCommand, loadPlayerDaycare, resolveDaycareWithdrawalCommand, withdrawDaycarePokemonCommand } from "../api/daycare.js";
 import { DAYCARE_WITHDRAW_BASE_COST, DAYCARE_WITHDRAW_LEVEL_COST, levelLimitForBadges } from "../data/progression.js";
-import { GDR_DATA as DATA } from "../data/index.js";
 import { openConfirm, openMessage } from "./dialog-handler.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
 import * as Engine from "../engine/index.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
-import { render, setScene } from "./renderer.js";
+import { render, renderDialogLayer, setScene } from "./renderer.js";
 import { moneyText } from "./render-utils.js";
 import { registerAction } from "./action-registry.js";
 import { replaceTeamRuntimeState } from "./runtime-state.js";
 import { recordMissionEvent } from "./mission-runtime.js";
 import { clearPendingActivityRuntime, requireNotInBattle, setPendingActivityRuntime } from "./battle-scene-lock.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
-import { moveDisplayName, pokemonDisplayName } from "./entity-text.js";
+import { confirmMoveForget, progressionMove, progressionPokemon } from "./progression-dialog.js";
+import { previewDaycareWithdrawal } from "../api/player-command.js";
+import { moveNameDescriptor, pokemonNameDescriptor, pokemonDisplayName } from "./entity-text.js";
 import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 
 var DAYCARE_LEVEL_INTERVAL_MS = 3600000;
@@ -109,13 +110,6 @@ function pendingResolutionForSlot(slot) {
   }) || null;
 }
 
-function moveNameByIndex(moveIndex, fallback) {
-  var move = (DATA.moveLibrary || []).find(function (entry) {
-    return Number(entry && entry.index) === Number(moveIndex);
-  });
-  return moveDisplayName(move || { index: moveIndex }) || moveDisplayName({ key: fallback }) || t("entityDescriptions.moves.fallbackName");
-}
-
 function speciesChoice(targetSpeciesKey, pokemon) {
   var species = Engine.findSpecies(targetSpeciesKey);
   return {
@@ -134,7 +128,7 @@ function submitAuthoritativeDaycareResolution(targetSpeciesKey) {
   authoritativeDaycareCommandPending = true;
   state.dialog = null;
   state.saveStatus = { state: "saving", message: "daycare-resolution" };
-  render();
+  renderDialogLayer();
   resolveDaycareWithdrawalCommand({
     expectedRevision: state.authoritativeRevision,
     pendingResolutionId: session.resolution.id,
@@ -154,7 +148,17 @@ function submitAuthoritativeDaycareResolution(targetSpeciesKey) {
     });
     activeDaycareResolution = null;
     state.saveStatus = { state: "saved", message: "" };
-    openMessage([messageDescriptor("daycare.returnedToTeam")], { title: textDescriptor("ui.daycare.sceneTitle") });
+    var pokemon = state.team.find(function (entry) { return entry.instanceId === session.resolution.pokemon_instance_id; });
+    var learned = (pokemon && pokemon.moves || []).filter(function (move) {
+      return session.choices.some(function (choice) { return choice.move_index === move.index; })
+        && !session.pokemon.moves.some(function (previous) { return previous.index === move.index; });
+    });
+    var lines = learned.map(function (move) {
+      return messageDescriptor("progression.learned", { pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move) });
+    });
+    lines.push(messageDescriptor("daycare.returnedToTeam"));
+    render();
+    openMessage(lines, { title: textDescriptor("ui.daycare.sceneTitle"), pokemon: learned.length ? pokemon : null, requireButtonClose: true });
   }).catch(function (error) {
     activeDaycareResolution = null;
     state.saveStatus = { state: "error", message: messageDescriptor("daycare.resolutionFailed") };
@@ -183,17 +187,17 @@ function openNextAuthoritativeDaycareChoice() {
     }
     if (session.moves.length < 4) {
       session.choices.push({ offer_index: session.offerIndex, move_index: moveIndex, replacement_slot: null });
-      session.moves.push({ index: moveIndex, name: moveNameByIndex(moveIndex, offer.name) });
+      session.moves.push(progressionMove(offer));
       session.offerIndex += 1;
       continue;
     }
     state.dialog = {
       type: "daycare-move-resolution",
-      pokemonName: session.pokemon.name,
-      moveName: moveNameByIndex(moveIndex, offer.name),
+      pokemon: progressionPokemon(session.previewPokemon, session.moves),
+      move: progressionMove(offer),
       moves: session.moves.slice()
     };
-    render();
+    renderDialogLayer();
     return;
   }
   if (session.evolutions.length) {
@@ -204,13 +208,13 @@ function openNextAuthoritativeDaycareChoice() {
         return speciesChoice(evolution.target_species_key, session.pokemon);
       })
     };
-    render();
+    renderDialogLayer();
     return;
   }
   submitAuthoritativeDaycareResolution(null);
 }
 
-function startAuthoritativeDaycareResolution(slot) {
+async function startAuthoritativeDaycareResolution(slot) {
   var resolution = pendingResolutionForSlot(slot);
   var options;
   if (!resolution) {
@@ -224,17 +228,26 @@ function startAuthoritativeDaycareResolution(slot) {
     openNextAuthoritativeDaycareChoice();
     return;
   }
+  authoritativeDaycareCommandPending = true;
+  var result;
+  try { result = await previewDaycareWithdrawal(resolution.id); }
+  catch (error) { result = { ok: false }; }
+  finally { authoritativeDaycareCommandPending = false; }
+  if (!result.ok || !result.projection || !result.projection.pokemon || !pendingResolutionForSlot(slot)) {
+    openMessage([messageDescriptor("daycare.resolutionUnavailable")], { title: textDescriptor("ui.daycare.sceneTitle") });
+    return;
+  }
   options = resolution.options || {};
+  var preview = Engine.Pokemon.fromJSON(result.projection.pokemon);
   activeDaycareResolution = {
     resolution: resolution,
     pokemon: slot.pokemon,
-    offers: Array.isArray(options.level_moves) ? options.level_moves : [],
+    previewPokemon: preview,
+    offers: result.projection.level_moves,
     evolutions: Array.isArray(options.evolutions) ? options.evolutions : [],
     offerIndex: 0,
     choices: [],
-    moves: (slot.pokemon.moves || []).map(function (move) {
-      return { index: Number(move.index) };
-    })
+    moves: preview.moves.slice()
   };
   openNextAuthoritativeDaycareChoice();
 }
@@ -479,11 +492,14 @@ registerAction("daycare-resolution-replace-move", function (element) {
   }
   offer = session.offers[session.offerIndex];
   moveIndex = Number(offer.move_index);
-  session.choices.push({ offer_index: session.offerIndex, move_index: moveIndex, replacement_slot: replacementSlot });
-  session.moves[replacementSlot] = { index: moveIndex, name: moveNameByIndex(moveIndex, offer.name) };
-  session.offerIndex += 1;
-  state.dialog = null;
-  openNextAuthoritativeDaycareChoice();
+  confirmMoveForget(replacementSlot, function () {
+    if (activeDaycareResolution !== session) return;
+    session.choices.push({ offer_index: session.offerIndex, move_index: moveIndex, replacement_slot: replacementSlot });
+    session.moves[replacementSlot] = progressionMove(offer);
+    session.offerIndex += 1;
+    state.dialog = null;
+    openNextAuthoritativeDaycareChoice();
+  });
 });
 
 registerAction("daycare-resolution-decline-move", function () {

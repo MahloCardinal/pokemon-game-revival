@@ -24,17 +24,14 @@ import "./activity-feed-handler.js";
 import "./player-directory-handler.js";
 import "./search-combobox.js";
 import "./battle-dome-handler.js";
-import { closeProgressionMoveConfirmPanel, continueAfterEvolutionResult, continueAfterLevelUp, continueAfterMoveResult, replaceProgressionMove, resolveProgressionEvolution, showProgressionMoveConfirmPanel, skipProgressionMove } from "./level-up.js";
+import { continueAfterEvolutionResult, continueAfterLevelUp, continueAfterMoveResult, replaceProgressionMove, resolveProgressionEvolution, skipProgressionMove } from "./level-up.js";
+import { confirmMoveForget } from "./progression-dialog.js";
 import { registerAction } from "./action-registry.js";
 
 registerAction("progression-replace-move", function(element) {
-  showProgressionMoveConfirmPanel(Number(element.dataset.index), element);
+  var index = Number(element.dataset.index);
+  confirmMoveForget(index, function () { replaceProgressionMove(index); });
 });
-registerAction("progression-replace-move-confirm", function(element) {
-  closeProgressionMoveConfirmPanel();
-  replaceProgressionMove(Number(element.dataset.index));
-});
-registerAction("progression-replace-move-cancel", function() { closeProgressionMoveConfirmPanel(); });
 registerAction("progression-skip-move", function() { skipProgressionMove(); });
 registerAction("progression-move-result-continue", function() { continueAfterMoveResult(); });
 registerAction("progression-level-up-continue", function() { continueAfterLevelUp(); });

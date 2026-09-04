@@ -1,13 +1,12 @@
 import { registerAction } from "./action-registry.js";
 import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
+import { confirmMoveForget } from "./progression-dialog.js";
 import { openMessage } from "./dialog-handler.js";
-import { render } from "./renderer.js";
-import { saveAfterStateChange } from "./save-runtime.js";
+import { render, renderDialogLayer } from "./renderer.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
 import * as Engine from "../engine/index.js";
 import { getItemByIndex, getResolvedInventoryItem, resolveInventoryItems, ItemCategory, ItemSubcategory, itemCanTriggerEvolution, pokemonCanHoldItem } from "../data/items.js";
-import { clampToLimits, maxHpForPokemon, maxPowerForPokemon, maxStatsForPokemon } from "../data/index.js";
-import { markTeamRuntimeStateChanged } from "./runtime-state.js";
+import { maxHpForPokemon, maxPowerForPokemon, maxStatsForPokemon } from "../data/index.js";
 import { renderPokemonCenterItemPanelContent, renderPokemonCenterMoveButton } from "../view/pokemon-center.js";
 import { getLocale, messageDescriptor, t, textDescriptor } from "./i18n.js";
 import { itemNameDescriptor, moveDisplayName, moveNameDescriptor, pokemonNameDescriptor, speciesNameDescriptor } from "./entity-text.js";
@@ -51,13 +50,6 @@ function positionPokemonCenterChoicePopup(popup, card) {
   popup.style.top = "0px";
   popup.style.maxHeight = "";
   popupRect = popup.getBoundingClientRect();
-  if (popup.classList.contains("is-move-replacement-notice") && movesRect) {
-    popup.style.width = Math.max(0, movesRect.width - 16) + "px";
-    popupRect = popup.getBoundingClientRect();
-    popup.style.left = movesRect.left + (movesRect.width - popupRect.width) / 2 + "px";
-    popup.style.top = Math.max(viewportPadding, movesRect.top - gap - popupRect.height) + "px";
-    return;
-  }
   if (window.innerWidth > 680 && cardRect.right + gap + popupRect.width <= window.innerWidth - viewportPadding) {
     left = cardRect.right + gap;
   } else if (window.innerWidth > 680 && cardRect.left - gap - popupRect.width >= viewportPadding) {
@@ -85,41 +77,33 @@ function syncPokemonCenterChoicePopup() {
   var candidates;
   clearPokemonCenterChoicePopup();
   if (!pending || !Number.isFinite(pokemonIndex)) return;
-  if (["choose-tutor-move", "replace-tm-move", "replace-tutor-move"].indexOf(pending.type) === -1) return;
+  if (pending.type !== "choose-tutor-move") return;
   card = root.querySelectorAll(".pokemon-center-card-frame > .pokemon-card")[pokemonIndex];
   pokemon = state.team[pokemonIndex];
   if (!card || !pokemon) return;
   popup = document.createElement("section");
   popup.className = "pokemon-center-choice-popup";
   popup.setAttribute("aria-live", "polite");
-  if (pending.type === "choose-tutor-move") {
-    title = document.createElement("p");
-    title.className = "pokemon-center-choice-popup-title";
-    title.textContent = t("ui.pokemonCenter.chooseTutorMove");
-    popup.appendChild(title);
-    list = document.createElement("div");
-    list.className = "pokemon-center-choice-popup-list";
-    candidates = Engine.pokemonMoveTutorPool(pokemon).slice().sort(function (first, second) {
-      return moveDisplayName(first).localeCompare(moveDisplayName(second), getLocale());
-    });
-    candidates.forEach(function (move) {
-      var button = document.createElement("button");
-      button.type = "button";
-      button.className = "pokemon-center-choice-popup-button";
-      button.dataset.action = "pokemon-center-tutor-move-pick";
-      button.dataset.index = String(pokemonIndex);
-      button.dataset.moveIndex = String(move.index);
-      button.textContent = moveDisplayName(move);
-      list.appendChild(button);
-    });
-    popup.appendChild(list);
-  } else {
-    popup.classList.add("is-move-replacement-notice");
-    title = document.createElement("p");
-    title.className = "pokemon-center-choice-popup-notice";
-    title.textContent = t("ui.pokemonCenter.chooseMoveToForget");
-    popup.appendChild(title);
-  }
+  title = document.createElement("p");
+  title.className = "pokemon-center-choice-popup-title";
+  title.textContent = t("ui.pokemonCenter.chooseTutorMove");
+  popup.appendChild(title);
+  list = document.createElement("div");
+  list.className = "pokemon-center-choice-popup-list";
+  candidates = Engine.pokemonMoveTutorPool(pokemon).slice().sort(function (first, second) {
+    return moveDisplayName(first).localeCompare(moveDisplayName(second), getLocale());
+  });
+  candidates.forEach(function (move) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "pokemon-center-choice-popup-button";
+    button.dataset.action = "pokemon-center-tutor-move-pick";
+    button.dataset.index = String(pokemonIndex);
+    button.dataset.moveIndex = String(move.index);
+    button.textContent = moveDisplayName(move);
+    list.appendChild(button);
+  });
+  popup.appendChild(list);
   root.appendChild(popup);
   pokemonCenterChoicePopupPositioner = function () {
     if (!popup.isConnected) return;
@@ -257,11 +241,7 @@ registerAction("pokemon-center-tutor-move-pick", function(element) {
     runAuthoritativePokemonCenterTutorCommand(pokemon, item, candidate, null);
     return;
   }
-  scene.targetKind = "move";
-  scene.pokemonIndex = pokemonIndex;
-  scene.moveIndex = null;
-  scene.pendingAction = { type: "replace-tutor-move", pokemonIndex: pokemonIndex, itemIndex: item.index, tutorMoveIndex: candidate.index };
-  renderPokemonCenter();
+  openPokemonCenterMoveResolution(pokemon, item, createPokemonCenterLearnedMove(candidate, pokemon), true);
 });
 
 registerAction("pokemon-center-evolution-choose", function(element) {
@@ -320,6 +300,7 @@ async function runAuthoritativePokemonCenterCommand(input, notice) {
     clearPokemonCenterAfterAction(scene, notice);
     state.saveStatus = { state: "saved", message: "" };
     renderPokemonCenter();
+    if (input.operation === "teach_tm") showPokemonCenterLearnedResult(input.pokemon, notice);
     return true;
   } finally {
     authoritativePokemonCenterCommandPending = false;
@@ -344,6 +325,9 @@ async function runAuthoritativePokemonCenterTutorCommand(pokemon, item, move, re
     }));
     state.saveStatus = { state: "saved", message: "" };
     renderPokemonCenter();
+    showPokemonCenterLearnedResult(pokemon, messageDescriptor("pokemonCenter.learnedUsing", {
+      pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move), item: itemNameDescriptor(item)
+    }));
     return true;
   } finally { authoritativePokemonCenterCommandPending = false; }
 }
@@ -498,10 +482,6 @@ function applyPokemonCenterConfirmedSelection(mode, pokemonIndex, itemIndex, tar
     return;
   }
   if (mode === "use-tm") {
-    if (targetKind === "move") {
-      replacePokemonCenterTMMoveInline(pokemon, item, moveIndex);
-      return;
-    }
     teachPokemonCenterTMInline(pokemon, item, pokemonIndex);
     return;
   }
@@ -511,11 +491,6 @@ function applyPokemonCenterConfirmedSelection(mode, pokemonIndex, itemIndex, tar
   }
   if (mode === "use-item") {
     if (item.category === ItemCategory.Item && item.subcategory === ItemSubcategory.MoveTutor) {
-      if (targetKind === "move" && scene.pendingAction && scene.pendingAction.type === "replace-tutor-move") {
-        var candidate = Engine.pokemonMoveTutorPool(pokemon).find(function (entry) { return Number(entry.index) === Number(scene.pendingAction.tutorMoveIndex); });
-        if (candidate) runAuthoritativePokemonCenterTutorCommand(pokemon, item, candidate, Number(moveIndex));
-        return;
-      }
       scene.pendingAction = { type: "choose-tutor-move", pokemonIndex: Number(pokemonIndex), itemIndex: item.index };
       scene.pokemonIndex = Number(pokemonIndex);
       scene.targetKind = "pokemon";
@@ -535,6 +510,10 @@ function createPokemonCenterTMMove(item, pokemon) {
   if (!item || item.category !== ItemCategory.TM || !item.move || !pokemon) {
     return null;
   }
+  return createPokemonCenterLearnedMove(item.move, pokemon);
+}
+
+function createPokemonCenterLearnedMove(moveDefinition, pokemon) {
   var maxPower = 0;
   var maxStats = 0;
   (pokemon.moves || []).forEach(function (move) {
@@ -543,9 +522,7 @@ function createPokemonCenterTMMove(item, pokemon) {
       if (move.stats > maxStats) maxStats = move.stats;
     }
   });
-  if (!maxPower) maxPower = Engine.powerForLevel(pokemon.level);
-  if (!maxStats) maxStats = Engine.statsForLevel(pokemon.level);
-  return Engine.createMove(item.move, {
+  return Engine.createMove(moveDefinition, {
     power: maxPower,
     stats: maxStats
   });
@@ -566,53 +543,7 @@ function teachPokemonCenterTMInline(pokemon, item, pokemonIndex) {
       messageDescriptor("pokemonCenter.learned", { pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move) }));
     return;
   }
-  if (pokemon.moves.length < 4) {
-    pokemon.moves.push(move);
-    clampToLimits(pokemon);
-    markTeamRuntimeStateChanged();
-    clearPokemonCenterAfterAction(scene, messageDescriptor("pokemonCenter.learned", {
-      pokemon: pokemonNameDescriptor(pokemon), move: moveNameDescriptor(move)
-    }));
-    saveAfterStateChange("tm_use");
-    renderPokemonCenter();
-    return;
-  }
-  scene.targetKind = "move";
-  scene.pokemonIndex = Number(pokemonIndex);
-  scene.moveIndex = null;
-  scene.notice = "";
-  scene.pendingAction = {
-    type: "replace-tm-move",
-    pokemonIndex: Number(pokemonIndex),
-    itemIndex: item.index
-  };
-  renderPokemonCenter();
-}
-
-function replacePokemonCenterTMMoveInline(pokemon, item, moveIndex) {
-  var scene = state.scene;
-  var oldMove = pokemon && pokemon.moves ? pokemon.moves[Number(moveIndex)] : null;
-  var newMove = createPokemonCenterTMMove(item, pokemon);
-  if (
-    !scene
-      || !scene.pendingAction
-      || scene.pendingAction.type !== "replace-tm-move"
-      || !pokemon
-      || !oldMove
-      || !newMove
-      || Number(scene.pendingAction.itemIndex) !== Number(item.index)
-  ) {
-    return;
-  }
-  runAuthoritativePokemonCenterCommand({
-    operation: "teach_tm",
-    pokemon: pokemon,
-    item: item,
-    replacementSlot: Number(moveIndex)
-  }, messageDescriptor("pokemonCenter.forgotAndLearned", {
-    pokemon: pokemonNameDescriptor(pokemon), oldMove: moveNameDescriptor(oldMove), newMove: moveNameDescriptor(newMove)
-  }));
-  return;
+  openPokemonCenterMoveResolution(pokemon, item, move, false);
 }
 
 function selectPokemonCenterTarget(targetKind, pokemonIndex, moveIndex) {
@@ -754,9 +685,11 @@ function useEvolutionItemOnPokemonInline(pokemon, item) {
     pokemonName: pokemon.speciesKey,
     item: item,
     itemName: item.key,
-    targets: targets
+    targets: targets.map(function (target) {
+      return Object.assign({}, target, { gender: pokemon.gender, isShiny: pokemon.isShiny });
+    })
   };
-  renderPokemonCenter();
+  renderDialogLayer();
   return;
 }
 
@@ -804,3 +737,45 @@ function useVitaminOnPokemonInline(pokemon, item, pokemonIndex, targetKind, move
     return;
   }
 }
+
+function showPokemonCenterLearnedResult(previousPokemon, notice) {
+  var pokemon = state.team.find(function (entry) { return entry.instanceId === previousPokemon.instanceId; });
+  if (!pokemon) return;
+  openMessage([notice], { title: textDescriptor("ui.dialogs.newMove"), pokemon: pokemon, requireButtonClose: true });
+}
+
+function openPokemonCenterMoveResolution(pokemon, item, move, tutor) {
+  clearPokemonCenterChoicePopup();
+  state.scene.pendingAction = null;
+  state.dialog = {
+    type: "pokemon-center-move-resolution", pokemon: pokemon, item: item,
+    move: move, moves: pokemon.moves.slice(), tutor: tutor
+  };
+  renderDialogLayer();
+}
+
+registerAction("pokemon-center-resolution-replace-move", function (element) {
+  var dialog = state.dialog;
+  var index = Number(element.dataset.index);
+  if (!dialog || dialog.type !== "pokemon-center-move-resolution" || authoritativePokemonCenterCommandPending) return;
+  confirmMoveForget(index, function () {
+    state.dialog = null;
+    renderDialogLayer();
+    if (dialog.tutor) {
+      runAuthoritativePokemonCenterTutorCommand(dialog.pokemon, dialog.item, dialog.move, index);
+    } else {
+      runAuthoritativePokemonCenterCommand({
+        operation: "teach_tm", pokemon: dialog.pokemon, item: dialog.item, replacementSlot: index
+      }, messageDescriptor("pokemonCenter.forgotAndLearned", {
+        pokemon: pokemonNameDescriptor(dialog.pokemon),
+        oldMove: moveNameDescriptor(dialog.moves[index]), newMove: moveNameDescriptor(dialog.move)
+      }));
+    }
+  });
+});
+
+registerAction("pokemon-center-resolution-decline-move", function () {
+  if (!state.dialog || state.dialog.type !== "pokemon-center-move-resolution") return;
+  state.dialog = null;
+  renderDialogLayer();
+});

@@ -381,7 +381,6 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     emptyTeam: "Your team is empty.",
     removeHeldItem: "Remove item",
     chooseTutorMove: "Choose the move to teach",
-    chooseMoveToForget: "Choose the move to forget",
     modes: Object.freeze({ assignHeld: "Assign item", useItem: "Use item", useTm: "Use TM" }),
     pokemonTitles: Object.freeze({ assignHeld: "Pokémon to give the item to", useItem: "Pokémon to use the item on", useTm: "Pokémon to teach the TM to" }),
     emptyItems: Object.freeze({ assignHeld: "No assignable items available.", useItem: "No usable items available.", useTm: "No TMs available." }),
@@ -425,6 +424,8 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
   dialogs: Object.freeze({
     choose: "Choose",
     close: "Close",
+    yes: "Yes",
+    no: "No",
     confirm: "Confirm",
     cancel: "Cancel",
     ok: "OK",

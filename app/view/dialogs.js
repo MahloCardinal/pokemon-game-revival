@@ -103,7 +103,7 @@ function renderMoveLearnDialog(dialog) {
   var replacementMoves = dialog.moves.map(function (knownMove, index) {
     var knownDescription = moveDisplayDescription(knownMove);
     var moveContent = '<span class="move-name">' + escapeHtml(moveDisplayName(knownMove)) + (knownDescription ? ' <span class="move-effect">(' + escapeHtml(knownDescription) + ")</span>" : "") + "</span>";
-    return '<button type="button" class="move-button progression-replace-move-button" data-action="progression-replace-move" data-index="' + escapeHtml(index) + '">' + moveContent + "</button>";
+    return '<button type="button" class="move-button progression-replace-move-button" data-action="' + escapeHtml(dialog.replaceAction || "progression-replace-move") + '" data-index="' + escapeHtml(index) + '">' + moveContent + "</button>";
   }).join("");
   var replacementCard = renderPokemonCard(dialog.pokemon, {
     className: "mini-card",
@@ -121,7 +121,7 @@ function renderMoveLearnDialog(dialog) {
     '    <div class="dialog-copy"><p>' + escapeHtml(t("ui.dialogs.selectMoveToReplace")) + '</p></div>',
     '    <div class="progression-card-slot">' + replacementCard + "</div>",
     '    <div class="dialog-actions progression-actions">',
-    button(t("ui.dialogs.skipLearning", { move: moveName }), "progression-skip-move", "", "button-dark"),
+    button(t("ui.dialogs.skipLearning", { move: moveName }), dialog.declineAction || "progression-skip-move", "", "button-dark"),
     "    </div>",
     "  </section>",
     "</div>"
@@ -143,67 +143,38 @@ function renderMoveLearnResultDialog(dialog) {
 }
 
 function renderDaycareMoveResolutionDialog(dialog) {
-  var training = dialog.type === "training-move-resolution";
-  var replaceAction = training ? "training-resolution-replace-move" : "daycare-resolution-replace-move";
-  var declineAction = training ? "training-resolution-decline-move" : "daycare-resolution-decline-move";
-  var replacementMoves = (dialog.moves || []).map(function (move, index) {
-    return '<button type="button" class="move-button progression-replace-move-button" data-action="' + replaceAction + '" data-index="' + escapeHtml(index) + '"><span class="move-name">' + escapeHtml(moveDisplayName(move)) + "</span></button>";
+  var prefix = dialog.type === "training-move-resolution" ? "training" : "daycare";
+  return renderMoveLearnDialog(Object.assign({}, dialog, {
+    replaceAction: prefix + "-resolution-replace-move",
+    declineAction: prefix + "-resolution-decline-move"
+  }));
+}
+
+function renderEvolutionChoices(dialog, chooseAction, declineAction, copy) {
+  var targets = (dialog.targets || []).map(function (target) {
+    return '<div class="evolution-choice"><div class="evolution-preview-wrap">'
+      + renderImage(getPokemonImage(target), speciesDisplayName(target.speciesKey), withPokemonSpriteClass("evolution-preview-image", target), withPokemonSpriteAttrs(target, 'loading="eager" decoding="async"'))
+      + '<strong>' + escapeHtml(speciesDisplayName(target.speciesKey)) + '</strong></div>'
+      + '<div class="dialog-actions progression-actions evolution-actions">'
+      + button(t("ui.dialogs.evolve"), chooseAction, 'data-species-key="' + escapeHtml(target.speciesKey) + '"', "button-primary")
+      + button(t("ui.dialogs.stopEvolution"), declineAction, "", "button-dark")
+      + '</div></div>';
   }).join("");
-  return [
-    '<div class="dialog-backdrop">',
-    '  <section class="dialog progression-dialog move-learn-dialog">',
-    '    <h2 class="dialog-title">' + escapeHtml(t(training ? "ui.dialogs.trainingZone" : "ui.dialogs.daycareReturn")) + "</h2>",
-    '    <div class="dialog-copy"><p>' + escapeHtml(t("ui.dialogs.canLearn", { pokemon: pokemonDisplayName(dialog.pokemon || dialog.pokemonName), move: moveDisplayName(dialog.move || dialog.moveName) })) + '</p><p>' + escapeHtml(t("ui.dialogs.selectMoveToReplace")) + '</p></div>',
-    '    <div class="pokemon-card-moves progression-replace-move-list">' + replacementMoves + "</div>",
-    '    <div class="dialog-actions progression-actions">',
-    button(t("ui.dialogs.skipLearning", { move: moveDisplayName(dialog.move || dialog.moveName) }), declineAction, "", "button-dark"),
-    "    </div>",
-    "  </section>",
-    "</div>"
-  ].join("");
+  return '<div class="dialog-backdrop"><section class="dialog progression-dialog evolution-dialog">'
+    + '<h2 class="dialog-title">' + escapeHtml(t("ui.dialogs.evolution")) + '</h2>'
+    + '<div class="dialog-copy"><p>' + escapeHtml(copy) + '</p></div>'
+    + '<div class="team-choice-grid">' + targets + '</div></section></div>';
 }
 
 function renderDaycareEvolutionResolutionDialog(dialog) {
-  var training = dialog.type === "training-evolution-resolution";
-  var chooseAction = training ? "training-resolution-choose-evolution" : "daycare-resolution-choose-evolution";
-  var declineAction = training ? "training-resolution-decline-evolution" : "daycare-resolution-decline-evolution";
-  var targets = (dialog.targets || []).map(function (target) {
-    return '<button type="button" class="capture-starter-slot battle-switch-choice" data-action="' + chooseAction + '" data-species-key="' + escapeHtml(target.speciesKey) + '">' +
-      renderImage(getPokemonImage(target), speciesDisplayName(target.speciesKey), withPokemonSpriteClass("evolution-preview-image", target), withPokemonSpriteAttrs(target, 'loading="eager" decoding="async"')) +
-      "<strong>" + escapeHtml(speciesDisplayName(target.speciesKey)) + "</strong></button>";
-  }).join("");
-  return [
-    '<div class="dialog-backdrop">',
-    '  <section class="dialog progression-dialog evolution-dialog">',
-    '    <h2 class="dialog-title">' + escapeHtml(t("ui.dialogs.evolution")) + '</h2>',
-    '    <div class="dialog-copy"><p>' + escapeHtml(t("ui.dialogs.chooseEvolution", { pokemon: pokemonDisplayName(dialog.pokemon || dialog.pokemonName) })) + '</p></div>',
-    '    <div class="team-choice-grid">' + targets + "</div>",
-    '    <div class="dialog-actions progression-actions">',
-    button(t("ui.dialogs.stopEvolution"), declineAction, "", "button-dark"),
-    "    </div>",
-    "  </section>",
-    "</div>"
-  ].join("");
+  var prefix = dialog.type === "training-evolution-resolution" ? "training" : "daycare";
+  return renderEvolutionChoices(dialog, prefix + "-resolution-choose-evolution", prefix + "-resolution-decline-evolution",
+    t("ui.dialogs.chooseEvolution", { pokemon: pokemonDisplayName(dialog.pokemon || dialog.pokemonName) }));
 }
 
 function renderPokemonCenterEvolutionDialog(dialog) {
-  var targets = (dialog.targets || []).map(function (target) {
-    return '<button type="button" class="capture-starter-slot battle-switch-choice" data-action="pokemon-center-evolution-choose" data-species-key="' + escapeHtml(target.speciesKey) + '">' +
-      renderImage(getPokemonImage(target), speciesDisplayName(target.speciesKey), withPokemonSpriteClass("evolution-preview-image", target), withPokemonSpriteAttrs(target, 'loading="eager" decoding="async"')) +
-      "<strong>" + escapeHtml(speciesDisplayName(target.speciesKey)) + "</strong></button>";
-  }).join("");
-  return [
-    '<div class="dialog-backdrop">',
-    '  <section class="dialog progression-dialog evolution-dialog">',
-    '    <h2 class="dialog-title">' + escapeHtml(t("ui.dialogs.evolution")) + '</h2>',
-    '    <div class="dialog-copy"><p>' + escapeHtml(t("ui.dialogs.chooseItemEvolution", { pokemon: pokemonDisplayName(dialog.pokemon || dialog.pokemonName), item: itemDisplayName(dialog.item || dialog.itemName) })) + '</p></div>',
-    '    <div class="team-choice-grid">' + targets + "</div>",
-    '    <div class="dialog-actions progression-actions">',
-    button(t("ui.dialogs.stopEvolution"), "pokemon-center-evolution-decline", "", "button-dark"),
-    "    </div>",
-    "  </section>",
-    "</div>"
-  ].join("");
+  return renderEvolutionChoices(dialog, "pokemon-center-evolution-choose", "pokemon-center-evolution-decline",
+    t("ui.dialogs.chooseItemEvolution", { pokemon: pokemonDisplayName(dialog.pokemon), item: itemDisplayName(dialog.item) }));
 }
 
 function renderEvolutionDialog(dialog) {
@@ -417,6 +388,22 @@ function renderRewardClaimDialog(dialog) {
 export function renderDialog(dialog) {
   if (!dialog) {
     return "";
+  }
+  if (dialog.forgetConfirmation) {
+    var underlying = renderDialog(Object.assign({}, dialog, { forgetConfirmation: null }));
+    return underlying.replace('<div class="dialog-backdrop">', '<div class="dialog-backdrop" inert aria-hidden="true">')
+      + '<div class="dialog-backdrop move-forget-backdrop"><section class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="move-forget-title">'
+      + '<h2 class="dialog-title" id="move-forget-title">' + escapeHtml(t("messages.progression.confirmForget", { move: moveDisplayName(dialog.forgetConfirmation.move) })) + '</h2>'
+      + '<div class="dialog-actions">'
+      + button(t("ui.dialogs.yes"), "move-forget-confirm", "", "button-primary")
+      + button(t("ui.dialogs.no"), "move-forget-cancel", "", "button-dark")
+      + '</div></section></div>';
+  }
+  if (dialog.type === "pokemon-center-move-resolution") {
+    return renderMoveLearnDialog(Object.assign({}, dialog, {
+      replaceAction: "pokemon-center-resolution-replace-move",
+      declineAction: "pokemon-center-resolution-decline-move"
+    }));
   }
   if (dialog.type === "message") {
     return renderMessageDialog(dialog);

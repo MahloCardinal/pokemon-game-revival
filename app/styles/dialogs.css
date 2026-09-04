@@ -159,6 +159,9 @@
 .evolution-result-dialog {
   width: fit-content;
 }
+.move-forget-backdrop {
+  z-index: 210;
+}
 .evolution-preview-wrap {
   display: grid;
   place-items: end center;

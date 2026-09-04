@@ -432,18 +432,7 @@ button.pokemon-center-move-button:focus-visible {
   width: min(260px, calc(100vw - 16px));
 }
 
-.pokemon-center-choice-popup.is-move-replacement-notice {
-  width: auto;
-  height: auto;
-  padding: 6px 8px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-control);
-  box-shadow: var(--shadow-soft-hover), 0 7px 14px rgba(61, 96, 128, 0.12);
-  backdrop-filter: none;
-}
-
-.pokemon-center-choice-popup-title,
-.pokemon-center-choice-popup-notice {
+.pokemon-center-choice-popup-title {
   margin: 0;
   color: var(--text);
   font-size: 13px;

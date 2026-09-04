@@ -35,9 +35,6 @@ export function pokemonCenterModeConfig(mode) {
 
 export function pokemonCenterTargetMode(scene, mode, item) {
   var pendingAction = scene && scene.pendingAction;
-  if (pendingAction && (pendingAction.type === "replace-tm-move" || pendingAction.type === "replace-tutor-move")) {
-    return "forget-move";
-  }
   if (!item) {
     return "none";
   }
@@ -86,15 +83,6 @@ export function pokemonCenterPokemonMatchesItem(mode, item, pokemon, compatibili
 
 export function pokemonCenterMoveMatchesItem(scene, mode, item, pokemon, pokemonIndex, move) {
   var targetMode = pokemonCenterTargetMode(scene, mode, item);
-  if (targetMode === "forget-move") {
-    return Boolean(
-      pokemon
-        && move
-        && scene
-        && scene.pendingAction
-        && Number(scene.pendingAction.pokemonIndex) === Number(pokemonIndex)
-    );
-  }
   return Boolean(
     targetMode === "move" && item && pokemon && move && item.category === ItemCategory.Vitamin && item.effect === "move_power"
       && (Number(move.power) < pokemonCenterLimit(pokemon, maxPowerForPokemon(pokemon))
@@ -105,7 +93,7 @@ export function pokemonCenterMoveMatchesItem(scene, mode, item, pokemon, pokemon
 export function pokemonCenterPokemonDisplayState(scene, mode, item, pokemon, pokemonIndex, compatibility) {
   var targetMode = pokemonCenterTargetMode(scene, mode, item);
   var compatible = pokemonCenterPokemonMatchesItem(mode, item, pokemon, compatibility);
-  var forgetPokemonIndex = scene && scene.pendingAction ? Number(scene.pendingAction.pokemonIndex) : NaN;
+  var tutorPokemonIndex = scene && scene.pendingAction ? Number(scene.pendingAction.pokemonIndex) : NaN;
   if (targetMode === "none") {
     return { clickable: false, muted: false, bodyMuted: false };
   }
@@ -116,14 +104,7 @@ export function pokemonCenterPokemonDisplayState(scene, mode, item, pokemon, pok
     return { clickable: false, muted: false, bodyMuted: true };
   }
   if (targetMode === "tutor-move") {
-    return { clickable: false, muted: Number(pokemonIndex) !== forgetPokemonIndex, bodyMuted: false };
-  }
-  if (targetMode === "forget-move") {
-    return {
-      clickable: false,
-      muted: Number(pokemonIndex) !== forgetPokemonIndex,
-      bodyMuted: Number(pokemonIndex) === forgetPokemonIndex
-    };
+    return { clickable: false, muted: Number(pokemonIndex) !== tutorPokemonIndex, bodyMuted: false };
   }
   return { clickable: compatible, muted: !compatible, bodyMuted: false };
 }

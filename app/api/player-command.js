@@ -32,6 +32,10 @@ function createCommandId() {
   }).join("").replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5");
 }
 
+export function previewDaycareWithdrawal(pendingResolutionId) {
+  return runRpc("preview_daycare_withdrawal", { p_pending_resolution_id: pendingResolutionId });
+}
+
 async function runRpc(name, params) {
   var client = getSupabaseClient();
   var result;

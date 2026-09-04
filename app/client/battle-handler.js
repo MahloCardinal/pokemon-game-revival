@@ -49,6 +49,7 @@ var activeAuthoritativeRealtimeDirty = false;
 var activeAuthoritativeRealtimeDeferred = false;
 var BATTLE_ITEM_USE_LIMIT = 3;
 var activeAuthoritativeTrainingResolution = null;
+import { confirmMoveForget, progressionMove, progressionPokemon } from "./progression-dialog.js";
 var authoritativeTrainingProgressionPending = false;
 var authoritativeTrainingRecoveryPromise = null;
 var authoritativeOrdinaryProgressionComplete = null;
@@ -847,11 +848,6 @@ function pokemonByInstanceId(instanceId) {
   }) || null;
 }
 
-function trainingMoveName(moveIndex, fallback) {
-  var move = Engine.moveFromJSON([Number(moveIndex), 0, 0]);
-  return moveDisplayName(move) || fallback || t("entityDescriptions.moves.fallbackName") + " " + moveIndex;
-}
-
 function trainingEvolutionTarget(targetSpeciesKey, pokemon) {
   var species = Engine.findSpecies(targetSpeciesKey);
   return { speciesKey: String(targetSpeciesKey), name: species && species.name || String(targetSpeciesKey),
@@ -907,7 +903,7 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
           pokemon: pokemonNameDescriptor(session.pokemon), move: moveNameDescriptor(move)
         });
       }), { title: battleTitle(session.source === "ordinary" ? "experience" : "training"),
-        requireButtonClose: true, onClose: continueProgression });
+        pokemon: pokemon, requireButtonClose: true, onClose: continueProgression });
     } else { continueProgression(); }
   }).catch(function (error) {
     authoritativeTrainingProgressionPending = false;
@@ -953,7 +949,7 @@ function resumeAuthoritativeOrdinaryChoices(experienceAward) {
     offerIndex: 0, choices: [], commandId: globalThis.crypto.randomUUID(), levelShown: false,
     beforePokemon: options.before_state ? Engine.Pokemon.fromJSON(options.before_state) : null,
     afterPokemon: options.after_state ? Engine.Pokemon.fromJSON(options.after_state) : null,
-    moves: (pokemon.moves || []).map(function (move) { return { index: Number(move.index) }; })
+    moves: (pokemon.moves || []).map(function (move) { return Engine.moveFromJSON(move.toJSON()); })
   };
   if (experienceAward && activeAuthoritativeTrainingResolution.beforePokemon) {
     activeAuthoritativeTrainingResolution.gainedExp = experienceAward.exp;
@@ -1012,12 +1008,12 @@ function openNextAuthoritativeTrainingChoice() {
     }
     if (session.moves.length < 4) {
       session.choices.push({ offerIndex: session.offerIndex, moveIndex: moveIndex, replacementSlot: null });
-      session.moves.push({ index: moveIndex, name: trainingMoveName(moveIndex, offer.name) });
+      session.moves.push(progressionMove(offer));
       session.offerIndex += 1;
       continue;
     }
-    state.dialog = { type: "training-move-resolution", pokemonName: session.pokemon.name,
-      moveName: trainingMoveName(moveIndex, offer.name), moves: session.moves.slice() };
+    state.dialog = { type: "training-move-resolution", pokemon: progressionPokemon(session.pokemon, session.moves),
+      move: progressionMove(offer), moves: session.moves.slice() };
     renderDialogLayer();
     return;
   }
@@ -1048,7 +1044,7 @@ function resumeAuthoritativeTrainingChoices() {
     offerIndex: 0, choices: [], commandId: globalThis.crypto.randomUUID(), levelShown: false,
     beforePokemon: options.before_state ? Engine.Pokemon.fromJSON(options.before_state) : null,
     afterPokemon: options.after_state ? Engine.Pokemon.fromJSON(options.after_state) : null,
-    moves: (pokemon.moves || []).map(function (move) { return { index: Number(move.index) }; })
+    moves: (pokemon.moves || []).map(function (move) { return Engine.moveFromJSON(move.toJSON()); })
   };
   openNextAuthoritativeTrainingChoice();
 }
@@ -1277,11 +1273,14 @@ registerAction("training-resolution-replace-move", function (element) {
   if (!session || slot < 0 || slot > 3) { return; }
   offer = session.offers[session.offerIndex];
   moveIndex = Number(offer.move_index);
-  session.choices.push({ offerIndex: session.offerIndex, moveIndex: moveIndex, replacementSlot: slot });
-  session.moves[slot] = { index: moveIndex, name: trainingMoveName(moveIndex, offer.name) };
-  session.offerIndex += 1;
-  state.dialog = null;
-  openNextAuthoritativeTrainingChoice();
+  confirmMoveForget(slot, function () {
+    if (activeAuthoritativeTrainingResolution !== session) return;
+    session.choices.push({ offerIndex: session.offerIndex, moveIndex: moveIndex, replacementSlot: slot });
+    session.moves[slot] = progressionMove(offer);
+    session.offerIndex += 1;
+    state.dialog = null;
+    openNextAuthoritativeTrainingChoice();
+  });
 });
 
 registerAction("training-resolution-decline-move", function () {

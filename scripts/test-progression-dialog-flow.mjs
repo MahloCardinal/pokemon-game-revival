@@ -40,8 +40,10 @@ export async function testProgressionDialogFlow(Engine) {
     readAuthoritativeOrdinaryProgression: () => Promise.resolve({ ok: true, projection: { player_state: {} } })
   });
   vm.runInContext([
+    readFileSync(new URL("../app/client/progression-dialog.js", import.meta.url), "utf8")
+      .replace(/^import .*;\r?\n/gm, "").replaceAll("export function", "function"),
     ...["authoritativeExpAwardPokemon", "openNextAuthoritativeExpAward", "openAuthoritativeExpAwards",
-      "authoritativeOrdinaryResolution", "pokemonByInstanceId", "trainingMoveName", "trainingEvolutionTarget",
+      "authoritativeOrdinaryResolution", "pokemonByInstanceId", "trainingEvolutionTarget",
       "submitAuthoritativeTrainingResolution", "resumeAuthoritativeOrdinaryChoices",
       "openAuthoritativeOrdinaryProgression", "resumeAuthoritativeOrdinaryProgression",
       "openNextAuthoritativeTrainingChoice"].map(functionSource),
@@ -104,6 +106,7 @@ export async function testProgressionDialogFlow(Engine) {
   assert.equal(state.dialog.type, "message");
   assert.equal(state.dialog.lines[0].key, "messages.progression.learned");
   assert.equal(state.dialog.lines[0].params.move, 245);
+  assert.equal(state.dialog.pokemon, learnedFirst, "Free-slot learning shows the canonical updated card");
   close();
   assert.equal(state.dialog.resultLines[0].params.experience, 40);
   assert.equal(state.dialog.beforePokemon.expCurrent, 2);
@@ -164,11 +167,25 @@ export async function testProgressionDialogFlow(Engine) {
     [{ move_index: 55, power: 12, stats: 2 }])];
   context.openAuthoritativeExpAwards({ authoritativeExpAwards: [award("full", 50)] }, () => { complete++; });
   actions["authoritative-progression-level-continue"]();
+  assert.equal(state.dialog.move.power, 12);
+  assert.equal(state.dialog.move.stats, 2);
+  assert.equal(state.dialog.pokemon.moves.length, 4);
+  const selection = state.dialog;
   actions["training-resolution-replace-move"]({ dataset: { index: "1" } });
+  assert.ok(state.dialog.forgetConfirmation);
+  assert.equal(requests.length, 0, "Selecting a move must not submit until Yes");
+  actions["move-forget-cancel"]();
+  assert.equal(state.dialog, selection, "No preserves the same selection dialog");
+  assert.equal(full.moves[1].index, 245, "No must not mutate the actual Pokemon");
+  actions["training-resolution-replace-move"]({ dataset: { index: "1" } });
+  actions["move-forget-confirm"]();
+  actions["move-forget-confirm"]();
+  assert.equal(requests.length, 1, "Double confirmation must submit only once");
   const replaced = pokemon("full", 7, 0, [[25, 10, 2], [55, 12, 2], [53, 10, 2], [54, 10, 2]]);
   const replacementRequest = await settle({ team: [replaced], pendingResolutions: [], ordinaryProgression: null });
   assert.equal(replacementRequest.choices.moves[0].replacementSlot, 1);
   assert.equal(state.dialog.lines[0].params.move, 55);
+  assert.equal(state.dialog.pokemon, replaced);
   close();
   assert.equal(complete, 5);
 

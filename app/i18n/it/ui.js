@@ -381,7 +381,6 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     emptyTeam: "La squadra è vuota.",
     removeHeldItem: "Togli strumento",
     chooseTutorMove: "Scegli la mossa da insegnare",
-    chooseMoveToForget: "Seleziona la mossa da dimenticare",
     modes: Object.freeze({ assignHeld: "Assegna strumento", useItem: "Usa strumento", useTm: "Usa MT" }),
     pokemonTitles: Object.freeze({ assignHeld: "Pokémon a cui assegnare lo strumento", useItem: "Pokémon su cui usare lo strumento", useTm: "Pokémon a cui insegnare la MT" }),
     emptyItems: Object.freeze({ assignHeld: "Nessuno strumento assegnabile disponibile.", useItem: "Nessuno strumento utilizzabile disponibile.", useTm: "Nessuna MT disponibile." }),
@@ -425,6 +424,8 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
   dialogs: Object.freeze({
     choose: "Scegli",
     close: "Chiudi",
+    yes: "Sì",
+    no: "No",
     confirm: "Conferma",
     cancel: "Annulla",
     ok: "Ok",

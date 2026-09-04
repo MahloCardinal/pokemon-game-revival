@@ -15,13 +15,11 @@ Il progetto è esclusivamente Revival. Non reintrodurre codice legacy, modalità
 ## Regole di lavoro
 
 - Controllare `git status` prima e dopo ogni intervento.
-- Preservare modifiche locali dell'utente non pertinenti al compito.
-- Prima di ogni push, verificare e committare anche le modifiche locali già presenti dell'utente. Possono essere incluse nello stesso commit dell'intervento corrente, anche se non pertinenti al compito; non è richiesto un commit separato. Restano esclusi segreti, dump e gli altri file che queste regole vietano di committare.
+- Preservare modifiche locali dell'utente non pertinenti al compito. Vanno incluse nello stesso commit dell'intervento corrente, anche se non pertinenti al compito; non è richiesto un commit separato.
 - `tools/` fa parte del repository e le sue modifiche devono essere incluse nei commit. Non modificarne autonomamente il contenuto se il compito non lo richiede.
 - Non creare o committare dump SQL generati, segreti, token, password, service-role key o webhook.
 - Non usare comandi `npm`: il repository non contiene `package.json`, lockfile o pipeline npm.
 - Il progetto non usa Docker. Non installarlo, avviarlo o verificarlo per i flussi ordinari: usare Supabase collegato e Vercel. Un avviso della CLI relativo alla sola cache o all'ambiente locale Docker non annulla un'operazione remota conclusa con successo.
-- Preferire modifiche piccole e additive. Non riscrivere migrazioni già applicate.
 - Non aumentare limiti PostgreSQL per nascondere ricorsioni, query difettose o altri errori logici.
 - Non eliminare account o dati reali durante i test. Gli account temporanei devono essere rimossi al termine anche in caso di errore.
 
@@ -80,12 +78,10 @@ Il browser non è fonte autoritativa e non deve concedere ricompense. Le battagl
 - Se un'azione sincrona o asincrona cambia soltanto un pannello, una lista o un indicatore della schermata corrente, aggiornare una regione DOM nominata con `data-render-region` e `renderRegions()`. Usare `render()` completo soltanto quando cambia la scena o la sua struttura generale. I popup usano `renderDialogLayer()` e non devono ricostruire la pagina sottostante.
 - Le regole di progressione restano centralizzate in `app/data/progression.js`.
 - Importare l'API pubblica del motore tramite `import * as Engine from "../engine/index.js"` quando possibile.
-- Revival supporta soltanto missioni avventura, cattura e giornaliere. Non reintrodurre categorie o reset per missioni ripetibili.
 - Nel Centro Commerciale `price: null` significa sempre “non acquistabile”; non mantenere elenchi separati di disponibilità che possano divergere dal prezzo.
 - Per le MT, il Tier `0` significa premio non acquistabile e produce sempre `price: null`; Club Pokéfan, Centro Commerciale e Negozio Lotta devono filtrare tramite questa regola canonica, senza elenchi paralleli delle MT escluse.
 - I Titoli Allenatore sono definiti tecnicamente in `app/data/titles.js`; nomi e requisiti visibili appartengono soltanto a i18n. Gli sblocchi sono automatici, permanenti e autoritativi: non aggiungere polling o controlli frontend che concedano titoli.
 - `Nuovo arrivato` appartiene alla collezione onboarding ed è concesso quando viene scelto lo starter; non fa parte della collezione stabile `trainer_titles_initial`. Il Titolo preferito è marcato su `player_title`, può essere scelto soltanto tra quelli posseduti tramite RPC autoritativo e non incrementa la revisione di gioco.
-- Le Schede giocatori espongono soltanto il Titolo preferito. Non reintrodurre l'ultimo Titolo ottenuto né l'elenco completo dei Titoli nella proiezione pubblica.
 - I Titoli basati sui tipi usano le registrazioni del Pokédex da qualsiasi fonte. Considerano tutte le specie del catalogo e ogni tipo di una specie doppio tipo, escludendo soltanto le rarità `fossil` e `legendary`; la rarità tecnica `ultra_rare` resta valida.
 - La missione della prima collezione resta legata alla collezione stabile `trainer_titles_initial`, non a ogni eventuale Titolo aggiunto in futuro.
 
@@ -114,15 +110,14 @@ La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` son
 
 - Gli incontri selvatici applicano un tiro autoritativo con probabilità canonica `1/2000`; il frontend non decide mai se un Pokémon è Shiny.
 - Lo stato compatto usa soltanto `sh: 1`. Il bonus ricevuto all'ottenimento resta incorporato nei valori persistiti del Pokémon, che da quel momento crescono normalmente; non conservare il livello di ottenimento o duplicare i bonus nello stato.
-- `PP` nelle specifiche Shiny indica la potenza della mossa (`power`), non i punti utilizzo delle mosse.
 - I cap Shiny dipendono dal livello corrente, non dal livello di ottenimento. Tabelle, cap e bonus canonici sono in `app/data/stat-tables.js`; la probabilità è in `app/data/progression.js`.
 - Gli sprite Shiny restano in `app/assets/img_pokemon/` con suffisso finale `_shiny` (`25_shiny.webp`, `25_f_shiny.webp`) e devono ereditare scala e allineamento dallo sprite normale corrispondente.
 - Lo strumento debug di `aaa` può creare uno Shiny, ma il relativo comando deve continuare a essere validato dalla Edge Function e dal database.
 
 ### Pokémon Legendary
 
-- La rarità tecnica `legendary` concede all'ottenimento un bonus massimo di `+80 PV`, `+65 Power` e `+65 Stats`; sotto il livello 60 il bonus scala linearmente, dal livello 60 in poi resta pieno.
-- I valori ricevuti restano incorporati nel Pokémon e crescono normalmente. I cap aggiungono gli stessi bonus Legendary in base al livello corrente: al livello 100 sono `480 PV`, `385 Power` e `235 Stats` per un Legendary non Shiny.
+- La rarità tecnica `legendary` concede all'ottenimento un bonus massimo di `+80 HP`, `+65 Power` e `+65 Stats`; sotto il livello 60 il bonus scala linearmente, dal livello 60 in poi resta pieno.
+- I valori ricevuti restano incorporati nel Pokémon e crescono normalmente. I cap aggiungono gli stessi bonus Legendary in base al livello corrente: al livello 100 sono `480 HP`, `385 Power` e `235 Stats` per un Legendary non Shiny.
 - Shiny e Legendary sono proprietà indipendenti e i relativi bonus e cap si sommano.
 
 ## Battaglie autoritative

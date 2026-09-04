@@ -243,7 +243,7 @@ function renderLevelUpDialog(dialog) {
   return [
     '<div class="dialog-backdrop">',
     '  <section class="dialog progression-dialog level-up-dialog">',
-    '    <h2 class="dialog-title">' + escapeHtml(t("ui.dialogs.levelUp")) + '</h2>',
+    '    <h2 class="dialog-title">' + escapeHtml(dialog.title ? resolveText(dialog.title) : t("ui.dialogs.levelUp")) + '</h2>',
     resultLines ? '    <div class="dialog-copy">' : "",
     resultLines,
     resultLines ? "    </div>" : "",
@@ -257,25 +257,6 @@ function renderLevelUpDialog(dialog) {
     "    </div>",
     "  </section>",
     "</div>"
-  ].join("");
-}
-
-function renderExperienceDialog(dialog) {
-  return [
-    '<div class="dialog-backdrop">',
-    '  <section class="dialog progression-dialog experience-dialog">',
-    '    <h2 class="dialog-title">' + escapeHtml(t("ui.dialogs.experienceGained")) + '</h2>',
-    '    <div class="dialog-copy experience-copy">',
-    '      <p>' + escapeHtml(t("ui.dialogs.experienceSentence", { pokemon: pokemonDisplayName(dialog.pokemon), experience: dialog.exp })) + '</p>',
-    '    </div>',
-    '    <div class="experience-card-slot">',
-    renderPokemonCard(dialog.pokemon, { className: "mini-card" }),
-    '    </div>',
-    '    <div class="dialog-actions progression-actions">',
-    button(t("ui.dialogs.continue"), "dialog-close", "", "button-primary"),
-    '    </div>',
-    '  </section>',
-    '</div>'
   ].join("");
 }
 
@@ -466,9 +447,6 @@ export function renderDialog(dialog) {
   }
   if (dialog.type === "level-up") {
     return renderLevelUpDialog(dialog);
-  }
-  if (dialog.type === "experience") {
-    return renderExperienceDialog(dialog);
   }
   if (dialog.type === "training-level-assignment") {
     return renderTrainingLevelAssignmentDialog(dialog);

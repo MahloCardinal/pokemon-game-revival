@@ -289,24 +289,6 @@
   object-position: center;
   transform-origin: center;
 }
-.experience-dialog {
-  width: min(320px, calc(var(--app-viewport-width) - 32px));
-}
-.experience-copy {
-  text-align: center;
-}
-.experience-points {
-  font: inherit;
-  font-weight: 900;
-}
-.experience-card-slot {
-  display: flex;
-  justify-content: center;
-  margin: 12px 0 4px;
-}
-.experience-card-slot .pokemon-card {
-  width: min(269px, 100%);
-}
 .level-up-arrow-slot {
   align-self: center;
 }

@@ -3,7 +3,7 @@ import { pendingOwnedBattleEntryChoice, sceneAllowsBallUse } from "./battle-scen
 import { createCaptureScene } from "./router.js";
 import { backgroundKeyForScene } from "../data/scene-backgrounds.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
-import { markDirty, render, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
+import { markDirty, render, renderDialogLayer, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
 import { applyPlayerSave, state, root } from "./game-state.js";
 import { getInventoryItemByIndex, getItemByIndex, updateInventoryQuantity, ItemCategory, ItemSubcategory, revive, max_revive } from "../data/items.js";
 import * as Engine from "../engine/index.js";
@@ -33,7 +33,7 @@ import { button, moneyText } from "./render-utils.js";
 import { getTrainerImage } from "./asset-helpers.js";
 import { KANTO_GYM_BADGES, kantoGymCityByKey, kantoEliteFourMemberByIndex, KANTO_CHAMPION } from "../data/gyms.js";
 import { resolveText, t, textDescriptor } from "./i18n.js";
-import { itemDisplayName, itemNameDescriptor, moveDisplayName, pokemonDisplayName, pokemonNameDescriptor, speciesNameDescriptor, typeDisplayName } from "./entity-text.js";
+import { itemDisplayName, itemNameDescriptor, moveDisplayName, moveNameDescriptor, pokemonDisplayName, pokemonNameDescriptor, speciesNameDescriptor, typeDisplayName } from "./entity-text.js";
 import { resolveBattleEvent } from "./battle-text.js";
 import { adjustInventoryItemQuantity, adjustTrainerMoney, broadcastAuthoritativeRevision, broadcastCaptureEncounterRuntimeInvalidation, replaceInventoryRuntimeState, replaceTeamRuntimeState, updateTrainerProfile } from "./runtime-state.js";
 import { ADMIN_BATTLE_ITEMS, isAdminControlledBattleType } from "../data/admin-battles.js";
@@ -52,6 +52,7 @@ var activeAuthoritativeTrainingResolution = null;
 var authoritativeTrainingProgressionPending = false;
 var authoritativeTrainingRecoveryPromise = null;
 var authoritativeOrdinaryProgressionComplete = null;
+var authoritativeExpPresentation = null;
 
 function battleText(key, params) {
   return textDescriptor("battleText.dialog." + key, params);
@@ -352,27 +353,49 @@ function authoritativeExpAwardPokemon(scene, award) {
 
 function openNextAuthoritativeExpAward(scene, onComplete) {
   var awards = scene.authoritativeExpAwards || [];
-  var award = awards[scene.authoritativeExpAwardIndex || 0];
+  var presentation = authoritativeExpPresentation;
+  var resolution = authoritativeOrdinaryResolution();
+  var award;
   var pokemon;
+  var beforePokemon;
+  // Resolve each Pokemon's canonical level/move/evolution sequence before
+  // presenting another award. The server advances the next Pokemon on commit.
+  if (resolution) {
+    award = awards.find(function (entry) {
+      return entry.pokemonInstanceId === String(resolution.pokemon_instance_id)
+        && !presentation.shown[entry.pokemonInstanceId];
+    });
+    if (award) { presentation.shown[award.pokemonInstanceId] = true; }
+    resumeAuthoritativeOrdinaryChoices(award);
+    return;
+  }
+  award = awards.find(function (entry) { return !presentation.shown[entry.pokemonInstanceId]; });
   if (!award) {
+    authoritativeExpPresentation = null;
     onComplete();
     return;
   }
-  scene.authoritativeExpAwardIndex = (scene.authoritativeExpAwardIndex || 0) + 1;
+  presentation.shown[award.pokemonInstanceId] = true;
   pokemon = authoritativeExpAwardPokemon(scene, award);
   if (!pokemon) {
     openNextAuthoritativeExpAward(scene, onComplete);
     return;
   }
+  beforePokemon = scene.authoritativeExpBefore && scene.authoritativeExpBefore[award.pokemonInstanceId];
+  if (!beforePokemon) {
+    beforePokemon = Engine.Pokemon.fromJSON(pokemon.toJSON());
+    beforePokemon.expCurrent = Math.max(0, beforePokemon.expCurrent - award.exp);
+  }
   state.dialog = {
-    type: "experience",
-    pokemon: pokemon,
-    exp: award.exp,
+    type: "level-up", title: textDescriptor("ui.dialogs.experienceGained"),
+    resultLines: [textDescriptor("ui.dialogs.experienceSentence", { pokemon: pokemonNameDescriptor(pokemon), experience: award.exp })],
+    beforePokemon: beforePokemon, afterPokemon: Engine.Pokemon.fromJSON(pokemon.toJSON()),
+    continueAction: "dialog-close",
     onClose: function () {
       openNextAuthoritativeExpAward(scene, onComplete);
     }
   };
-  render({ scrollBattleLogToBottom: true });
+  renderDialogLayer({ scrollBattleLogToBottom: true });
 }
 
 function openAuthoritativeExpAwards(scene, onComplete) {
@@ -380,7 +403,7 @@ function openAuthoritativeExpAwards(scene, onComplete) {
     return false;
   }
   scene.authoritativeExpAwardsShown = true;
-  scene.authoritativeExpAwardIndex = 0;
+  authoritativeExpPresentation = { scene: scene, onComplete: onComplete, shown: {} };
   openNextAuthoritativeExpAward(scene, onComplete);
   return true;
 }
@@ -535,6 +558,12 @@ function applyAuthoritativeBattleCommandResult(scene, result) {
   state.authoritativeRevision = result.playerRevision;
   broadcastAuthoritativeRevision(state.authoritativeRevision);
   if (result.projection && result.projection.player_state) {
+    if (!scene.authoritativeExpBefore) {
+      scene.authoritativeExpBefore = {};
+      (state.team || []).forEach(function (pokemon) {
+        scene.authoritativeExpBefore[pokemon.instanceId] = Engine.Pokemon.fromJSON(pokemon.toJSON());
+      });
+    }
     applyAuthoritativeBattlePlayerState(result.projection.player_state);
   }
   if (result.projection && result.projection.league_state) {
@@ -839,7 +868,7 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
   if (!session || authoritativeTrainingProgressionPending) { return; }
   authoritativeTrainingProgressionPending = true;
   state.dialog = null;
-  render();
+  renderDialogLayer();
   (session.source === "ordinary" ? resolveAuthoritativeOrdinaryProgression : resolveAuthoritativeTrainingPokemon)({
     commandId: session.commandId,
     expectedPlayerRevision: state.authoritativeRevision,
@@ -851,7 +880,10 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
       if (!result.uncertain) { session.commandId = globalThis.crypto.randomUUID(); }
       openMessage([battleFailure("trainingResolutionFailed")], {
         title: battleTitle("training"), onClose: function () {
-          if (result.uncertain) { resumeAuthoritativeTrainingProgression(); }
+          if (result.uncertain) {
+            if (session.source === "ordinary") { resumeAuthoritativeOrdinaryProgression(); }
+            else { resumeAuthoritativeTrainingProgression(); }
+          }
           else { openNextAuthoritativeTrainingChoice(); }
         }
       });
@@ -860,12 +892,30 @@ function submitAuthoritativeTrainingResolution(evolutionTargetSpeciesKey) {
     applyAuthoritativeBattlePlayerState(result.projection.player_state);
     activeAuthoritativeTrainingResolution = null;
     authoritativeTrainingProgressionPending = false;
-    if (session.source === "ordinary") { openAuthoritativeOrdinaryProgression(); }
-    else { openAuthoritativeTrainingProgression(); }
+    var pokemon = pokemonByInstanceId(session.resolution.pokemon_instance_id);
+    var learned = (pokemon && pokemon.moves || []).filter(function (move) {
+      return session.choices.some(function (choice) { return choice.moveIndex === Number(move.index); })
+        && !(session.pokemon.moves || []).some(function (oldMove) { return Number(oldMove.index) === Number(move.index); });
+    });
+    var continueProgression = function () {
+      if (session.source === "ordinary") { openAuthoritativeOrdinaryProgression(); }
+      else { openAuthoritativeTrainingProgression(); }
+    };
+    if (learned.length) {
+      openMessage(learned.map(function (move) {
+        return textDescriptor("messages.progression.learned", {
+          pokemon: pokemonNameDescriptor(session.pokemon), move: moveNameDescriptor(move)
+        });
+      }), { title: battleTitle(session.source === "ordinary" ? "experience" : "training"),
+        requireButtonClose: true, onClose: continueProgression });
+    } else { continueProgression(); }
   }).catch(function (error) {
     authoritativeTrainingProgressionPending = false;
     openMessage([battleFailure("trainingResolutionFailed")], {
-      title: battleTitle("training"), onClose: function () { resumeAuthoritativeTrainingProgression(); }
+      title: battleTitle("training"), onClose: function () {
+        if (session.source === "ordinary") { resumeAuthoritativeOrdinaryProgression(); }
+        else { resumeAuthoritativeTrainingProgression(); }
+      }
     });
   });
 }
@@ -880,7 +930,7 @@ function finishAuthoritativeOrdinaryProgression() {
   openMessage([battleText("progressionComplete")], { title: battleTitle("experience") });
 }
 
-function resumeAuthoritativeOrdinaryChoices() {
+function resumeAuthoritativeOrdinaryChoices(experienceAward) {
   var resolution = authoritativeOrdinaryResolution();
   var pokemon;
   var options;
@@ -888,6 +938,14 @@ function resumeAuthoritativeOrdinaryChoices() {
   pokemon = pokemonByInstanceId(resolution.pokemon_instance_id);
   if (!pokemon) { openMessage([battleText("progressionPokemonMissing")], { title: battleTitle("experience") }); return; }
   options = resolution.options || {};
+  // Recovery can start outside the battle screen. The first level's frozen
+  // before_state includes the awarded EXP; subtract it only for presentation.
+  if (!authoritativeExpPresentation && !experienceAward && options.before_state) {
+    var entry = (state.ordinaryProgression.pokemon || []).find(function (candidate) {
+      return candidate.pokemon_instance_id === resolution.pokemon_instance_id;
+    });
+    if (entry && Number(entry.levels_gained) === 1) { experienceAward = { exp: Number(entry.exp_awarded) || 0 }; }
+  }
   activeAuthoritativeTrainingResolution = {
     source: "ordinary", resolution: resolution, pokemon: pokemon,
     offers: Array.isArray(options.level_moves) ? options.level_moves : [],
@@ -897,10 +955,19 @@ function resumeAuthoritativeOrdinaryChoices() {
     afterPokemon: options.after_state ? Engine.Pokemon.fromJSON(options.after_state) : null,
     moves: (pokemon.moves || []).map(function (move) { return { index: Number(move.index) }; })
   };
+  if (experienceAward && activeAuthoritativeTrainingResolution.beforePokemon) {
+    activeAuthoritativeTrainingResolution.gainedExp = experienceAward.exp;
+    activeAuthoritativeTrainingResolution.beforePokemon.expCurrent = Math.max(0,
+      activeAuthoritativeTrainingResolution.beforePokemon.expCurrent - experienceAward.exp);
+  }
   openNextAuthoritativeTrainingChoice();
 }
 
 export function openAuthoritativeOrdinaryProgression() {
+  if (authoritativeExpPresentation) {
+    openNextAuthoritativeExpAward(authoritativeExpPresentation.scene, authoritativeExpPresentation.onComplete);
+    return;
+  }
   if (!state.ordinaryProgression) { finishAuthoritativeOrdinaryProgression(); return; }
   resumeAuthoritativeOrdinaryChoices();
 }
@@ -922,11 +989,16 @@ function openNextAuthoritativeTrainingChoice() {
   var knownSlot;
   if (!session) { return; }
   if (!session.levelShown && session.beforePokemon && session.afterPokemon) {
+    var lines = [textDescriptor("messages.progression.levelReached", { pokemon: pokemonNameDescriptor(session.pokemon), level: session.afterPokemon.level })];
+    if (session.gainedExp) {
+      lines.unshift(textDescriptor("ui.dialogs.experienceSentence", { pokemon: pokemonNameDescriptor(session.pokemon), experience: session.gainedExp }));
+    }
     state.dialog = { type: "level-up", pokemonName: session.pokemon.name,
-      resultLines: [textDescriptor("messages.progression.levelReached", { pokemon: pokemonNameDescriptor(session.pokemon), level: session.afterPokemon.level })],
+      title: session.gainedExp ? textDescriptor("ui.dialogs.experienceGained") : null,
+      resultLines: lines,
       beforePokemon: session.beforePokemon, afterPokemon: session.afterPokemon,
       continueAction: "authoritative-progression-level-continue" };
-    render();
+    renderDialogLayer();
     return;
   }
   while (session.offerIndex < session.offers.length) {
@@ -946,13 +1018,13 @@ function openNextAuthoritativeTrainingChoice() {
     }
     state.dialog = { type: "training-move-resolution", pokemonName: session.pokemon.name,
       moveName: trainingMoveName(moveIndex, offer.name), moves: session.moves.slice() };
-    render();
+    renderDialogLayer();
     return;
   }
   if (session.evolutions.length) {
     state.dialog = { type: "training-evolution-resolution", pokemonName: session.pokemon.name,
       targets: session.evolutions.map(function (entry) { return trainingEvolutionTarget(entry.target_species_key, session.pokemon); }) };
-    render();
+    renderDialogLayer();
     return;
   }
   submitAuthoritativeTrainingResolution(null);

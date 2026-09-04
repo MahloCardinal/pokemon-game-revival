@@ -3,6 +3,7 @@ import "./audit-css-ownership.mjs";
 import "./test-battle-dome-navigation.mjs";
 import "./test-team-composition.mjs";
 import { testBattleHistory, testBattleHistoryClient } from "./test-battle-history.mjs";
+import { testProgressionDialogFlow } from "./test-progression-dialog-flow.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -747,6 +748,7 @@ async function loadEsModule(path) {
 const engineIndexModule = await loadEsModule(fileURLToPath(new URL("../app/engine/index.js", import.meta.url)));
 await engineIndexModule.evaluate();
 const engineExports = engineIndexModule.namespace;
+await testProgressionDialogFlow(engineExports);
 const battleDomeDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../app/data/battle-dome.js", import.meta.url)));
 if (battleDomeDefinitionsModule.status !== "evaluated") await battleDomeDefinitionsModule.evaluate();
 const BattleDomeDefinitions = battleDomeDefinitionsModule.namespace;

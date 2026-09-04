@@ -1,4 +1,4 @@
-import { claimPlayerMission, recordPlayerMissionProgress, syncPlayerMissions } from "../api/pokefan-missions.js";
+import { claimPlayerMission, syncPlayerMissions } from "../api/pokefan-missions.js";
 import {
   MISSION_CATEGORY_ADVENTURE,
   MISSION_CATEGORY_CAPTURE,

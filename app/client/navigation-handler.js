@@ -2,13 +2,11 @@ import { registerAction } from "./action-registry.js";
 import { battleReturnScene } from "./battle-handler.js";
 import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
 import {
-  markDirty,
   render,
   setScene,
   setHtml,
   syncRulesHeadingButtonWidths
 } from "./renderer.js";
-import { saveAfterStateChange } from "./save-runtime.js";
 import { applyTrainingDailyLimits, root, state } from "./game-state.js";
 import { createCaptureScene } from "./router.js";
 import { renderRulesContent, rulesSectionByKey } from "../view/rules.js";

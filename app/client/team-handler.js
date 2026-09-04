@@ -1,13 +1,10 @@
 import { registerAction } from "./action-registry.js";
 import { blockActionDuringBattle } from "./battle-handler.js";
 import { openInlineMessage } from "./dialog-handler.js";
-import { reindexActionButtons } from "./action-dom.js";
-import { markDirty, render, renderDialogLayer, renderRegions } from "./renderer.js";
-import { saveAfterStateChange } from "./save-runtime.js";
+import { render, renderDialogLayer, renderRegions } from "./renderer.js";
 import { applyPlayerSave, state } from "./game-state.js";
 import { broadcastAuthoritativeRevision, broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { updateCaptureTeamRuntimeInline } from "./capture-handler.js";
-import { assignNextBoxIndex, queueBoxUpsert, removePokemonCardInline } from "./box-handler.js";
 import { getCurrentPlayerState, moveTeamPokemonToBoxAuthoritative, setPreferredTrainerTitle, swapTeamPokemonSlotsAuthoritative } from "../api/player-command.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { messageDescriptor } from "./i18n.js";

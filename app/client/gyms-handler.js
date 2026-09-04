@@ -1,5 +1,5 @@
 import { registerAction } from "./action-registry.js";
-import { openAuthoritativeBattleProjection, openBattleStartTargetPanel, battleTypeForGym, startKantoLeagueNextBattle } from "./battle-handler.js";
+import { openAuthoritativeBattleProjection, openBattleStartTargetPanel, battleTypeForGym } from "./battle-handler.js";
 import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
 import { openMessage } from "./dialog-handler.js";
 import { render } from "./renderer.js";

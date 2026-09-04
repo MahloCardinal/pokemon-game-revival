@@ -1,9 +1,8 @@
-import { applyPlayerSave, registerPokedexPokemon, root, state } from "./game-state.js";
+import { applyPlayerSave, root, state } from "./game-state.js";
 import { registerAction } from "./action-registry.js";
-import { markDirty, render } from "./renderer.js";
-import { saveAfterStateChange } from "./save-runtime.js";
+import { render } from "./renderer.js";
 import { openInlineMessage } from "./dialog-handler.js";
-import { adjustInventoryItemQuantity, broadcastTeamBoxRuntimeState } from "./runtime-state.js";
+import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import * as Engine from "../engine/index.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;

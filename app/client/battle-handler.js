@@ -5,16 +5,14 @@ import { backgroundKeyForScene } from "../data/scene-backgrounds.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
 import { markDirty, render, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
 import { applyPlayerSave, state, root } from "./game-state.js";
-import { getInventoryItemByIndex, getItemByIndex, resolveInventoryItems, updateInventoryQuantity, ItemCategory, ItemSubcategory, isPlayerBattleInventoryItem, revive, max_revive } from "../data/items.js";
+import { getInventoryItemByIndex, getItemByIndex, updateInventoryQuantity, ItemCategory, ItemSubcategory, revive, max_revive } from "../data/items.js";
 import * as Engine from "../engine/index.js";
 import {
   activateBattleRuntimeOwnership,
   battleRuntimeOwnerId,
-  claimBattleRuntimeLock,
   clearBattleRuntimeOwnership,
   forceClaimBattleRuntimeLock,
   isBattleRuntimeActive,
-  ownsBattleRuntimeLock,
   setBattleRuntimeActive,
   setBattleRuntimeObserved,
   setPendingActivityRuntime,
@@ -25,14 +23,14 @@ import {
 import { activeProgressionScene, resumeActiveProgressionDialog } from "./level-up.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
-import { setHtml, removeElement } from "./renderer.js";
+import { setHtml } from "./renderer.js";
 import { serializePokemonList, revivePokemonList, saveAfterStateChange } from "./save-runtime.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { normalizeTrainingOpponentProfile, trainingAssignableLevelsForTeam, trainingDifficultyConfig } from "./training-data.js";
-import { abandonAuthoritativeBattle, allocateAuthoritativeTrainingLevels, appendPlayerBattleEvent, authoritativeBattleRuntimeOwnerId, claimAuthoritativeBattleRuntime, clearPendingAuthoritativeBattleCommand, createActivePlayerBattle, deleteActivePlayerBattle, finalizeAdminControlledBattleReward, getAuthoritativeBattle, inspectPendingAuthoritativeBattleCommand, loadActivePlayerBattle, readAuthoritativeOrdinaryProgression, readAuthoritativeTrainingProgression, resolveAuthoritativeBattleEntryChoice, resolveAuthoritativeOrdinaryProgression, resolveAuthoritativeTrainingPokemon, retryPendingAuthoritativeBattleCommand, retryPendingAuthoritativeTrainingProgressionCommand, startAuthoritativeBattleTower, startAuthoritativeLeagueBattle, startPostBattleExpEvents, submitAuthoritativeBattleMove, switchAuthoritativeBattlePokemon, useAuthoritativeBattleBall, useAuthoritativeBattleItem } from "../api/battle.js";
+import { abandonAuthoritativeBattle, allocateAuthoritativeTrainingLevels, authoritativeBattleRuntimeOwnerId, claimAuthoritativeBattleRuntime, clearPendingAuthoritativeBattleCommand, createActivePlayerBattle, deleteActivePlayerBattle, getAuthoritativeBattle, inspectPendingAuthoritativeBattleCommand, readAuthoritativeOrdinaryProgression, readAuthoritativeTrainingProgression, resolveAuthoritativeBattleEntryChoice, resolveAuthoritativeOrdinaryProgression, resolveAuthoritativeTrainingPokemon, retryPendingAuthoritativeBattleCommand, retryPendingAuthoritativeTrainingProgressionCommand, startAuthoritativeBattleTower, startAuthoritativeLeagueBattle, startPostBattleExpEvents, submitAuthoritativeBattleMove, switchAuthoritativeBattlePokemon, useAuthoritativeBattleBall, useAuthoritativeBattleItem } from "../api/battle.js";
 import { startPostBattleExpProgression } from "./level-up.js";
-import { button, formatInteger, moneyText } from "./render-utils.js";
-import { escapeHtml, getTrainerImage } from "./asset-helpers.js";
+import { button, moneyText } from "./render-utils.js";
+import { getTrainerImage } from "./asset-helpers.js";
 import { KANTO_GYM_BADGES, kantoGymCityByKey, kantoEliteFourMemberByIndex, KANTO_CHAMPION } from "../data/gyms.js";
 import { resolveText, t, textDescriptor } from "./i18n.js";
 import { itemDisplayName, itemNameDescriptor, moveDisplayName, pokemonDisplayName, pokemonNameDescriptor, speciesNameDescriptor, typeDisplayName } from "./entity-text.js";
@@ -42,7 +40,6 @@ import { ADMIN_BATTLE_ITEMS, isAdminControlledBattleType } from "../data/admin-b
 import { getSupabaseClient } from "../api/supabase.js";
 import { GYM_REWARDS, KANTO_LEAGUE_REWARDS, MAX_TRAINING_LEVELS_PER_POKEMON, expMultiplierForWinnerLevel, levelLimitForBadges, trainingRewardForBadges } from "../data/progression.js";
 import { claimTrainingZoneReward } from "../api/training-zone.js";
-import { computeBallCaptureResult } from "../engine/capture-calc.js";
 import { createMissionEventKey, recordMissionEvent } from "./mission-runtime.js";
 
 var activeBattleRealtimeChannel = null;

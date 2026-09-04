@@ -3,11 +3,9 @@ import { blockActionDuringBattle } from "./battle-handler.js";
 import * as Engine from "../engine/index.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
-import { openInlineConfirm, openInlineMessage, openMessage } from "./dialog-handler.js";
-import { reindexActionButtons } from "./action-dom.js";
+import { openInlineConfirm, openInlineMessage } from "./dialog-handler.js";
 import { removeElement } from "./renderer.js";
-import { markDirty, renderRegions } from "./renderer.js";
-import { saveAfterStateChange } from "./save-runtime.js";
+import { renderRegions } from "./renderer.js";
 import { applyPlayerSave, resetBoxFilter, root, state } from "./game-state.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { moveBoxPokemonToTeamAuthoritative, releaseBoxPokemonAuthoritative } from "../api/player-command.js";

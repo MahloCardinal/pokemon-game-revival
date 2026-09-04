@@ -3,16 +3,15 @@ import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
 import { openMessage } from "./dialog-handler.js";
 import { render } from "./renderer.js";
 import { saveAfterStateChange } from "./save-runtime.js";
-import { applyPlayerSave, root, state, registerPokedexPokemon } from "./game-state.js";
+import { applyPlayerSave, root, state } from "./game-state.js";
 import * as Engine from "../engine/index.js";
 import { getItemByIndex, getResolvedInventoryItem, resolveInventoryItems, ItemCategory, ItemSubcategory, itemCanTriggerEvolution, pokemonCanHoldItem } from "../data/items.js";
 import { clampToLimits, maxHpForPokemon, maxPowerForPokemon, maxStatsForPokemon } from "../data/index.js";
-import { adjustInventoryItemQuantity, markTeamRuntimeStateChanged } from "./runtime-state.js";
+import { markTeamRuntimeStateChanged } from "./runtime-state.js";
 import { renderPokemonCenterItemPanelContent, renderPokemonCenterMoveButton } from "../view/pokemon-center.js";
 import { getLocale, messageDescriptor, t, textDescriptor } from "./i18n.js";
 import { itemNameDescriptor, moveDisplayName, moveNameDescriptor, pokemonNameDescriptor, speciesNameDescriptor } from "./entity-text.js";
 
-import { createMissionEventKey, recordMissionEvent } from "./mission-runtime.js";
 import { executePokemonCenterCommandAuthoritative, executePokemonCenterMoveTutorAuthoritative } from "../api/player-command.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import {

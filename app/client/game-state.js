@@ -4,7 +4,7 @@ import { defaultTrainerIndex } from "../data/trainers.js";
 import { defaultPokefanMissionRows } from "../data/pokefan-missions.js";
 import { revivePokemonList, reviveBoxList, reviveDaycareRows } from "./save-runtime.js";
 import { applyLocalDailyReset, missionRowsHaveClaimable } from "./mission-reset.js";
-import { dateKeyInRome, isTodayInRome } from "./rome-date.js";
+import { isTodayInRome } from "./rome-date.js";
 
 export var STARTING_POKEDOLLARS = 5000;
 export var STARTING_BADGES = 0;

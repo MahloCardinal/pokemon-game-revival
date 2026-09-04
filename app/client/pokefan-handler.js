@@ -12,7 +12,7 @@ import { completeAuthoritativeDebugMission } from "../api/debug.js";
 import { authoritativeDebugPlayerState } from "../api/debug-contract.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { isDebugUser } from "./debug-tools.js";
-import { MISSION_CATEGORY_ADVENTURE, MISSION_CATEGORY_DAILY } from "../data/pokefan-missions.js";
+import { MISSION_CATEGORY_DAILY } from "../data/pokefan-missions.js";
 import { getCurrentPlayerState } from "../api/player-command.js";
 import { broadcastTeamBoxRuntimeState } from "./runtime-state.js";
 import { itemDisplayName, speciesDisplayName } from "./entity-text.js";

@@ -2,37 +2,27 @@ import { registerAction } from "./action-registry.js";
 import { pokemonDisplayName, teamViolationFromBattleResult, teamViolationLines } from "./entity-text.js";
 import { messageDescriptor, t, textDescriptor } from "./i18n.js";
 import {
-  battleTypeForCapture,
-  ensureFinalBattleDisplaySnapshot,
-  appendBattleEvents,
-  closePersistedBattleRuntime,
   openActiveProgressionScene,
-  openBattleStartTargetPanel,
-  consumePlayerBattleInventoryItem,
-  syncBattleInventoryToState
+  openBattleStartTargetPanel
 } from "./battle-handler.js";
-import { assignNextBoxIndex, queueBoxUpsert } from "./box-handler.js";
-import { enforceBattleRuntimeSceneLock, ensureBattleBindings } from "./battle-scene-lock.js";
+import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
 var findTeamCompositionViolation = Engine.findTeamCompositionViolation;
 import { FLUTE_DAILY_USE_LIMIT, SEARCH_TOOL_ITEMS, captureLevelIsUnlocked, captureLevelLimitForBadges, captureLevelRangesForBadges } from "../data/progression.js";
 import { openMessage } from "./dialog-handler.js";
-import { markDirty, setScene } from "./renderer.js";
-import { saveAfterStateChange } from "./save-runtime.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { currentUserId, getSupabaseClient } from "../api/supabase.js";
-import { applyPlayerSave, root, state, registerPokedexPokemon, consumeFluteDailyUseLocally } from "./game-state.js";
-import { createCaptureScene, rememberCaptureSearchPreferences } from "./router.js";
+import { applyPlayerSave, root, state } from "./game-state.js";
+import { rememberCaptureSearchPreferences } from "./router.js";
 import * as Engine from "../engine/index.js";
 import { button } from "./render-utils.js";
 import { setHtml } from "./renderer.js";
 import { renderPokemonCard } from "./pokemon-card.js";
-import { broadcastCaptureEncounterRuntimeInvalidation, broadcastTeamBoxRuntimeState } from "./runtime-state.js";
-import { recordMissionEvent } from "./mission-runtime.js";
+import { broadcastCaptureEncounterRuntimeInvalidation } from "./runtime-state.js";
 import { renderCaptureTeamSectionInner } from "../view/capture.js";
 import { getResolvedInventoryItem } from "../data/items.js";
-import { claimFluteDailyUse, startAuthoritativeWildEncounter } from "../api/search-tools.js";
+import { startAuthoritativeWildEncounter } from "../api/search-tools.js";
 import { authoritativeBattleRuntimeOwnerId, clearPendingAuthoritativeCaptureFlee, fleeAuthoritativeCaptureEncounter, getAuthoritativeBattle, startAuthoritativeCaptureBattle } from "../api/battle.js";
 import { openAuthoritativeBattleProjection } from "./battle-handler.js";
 import { getCurrentPlayerState } from "../api/player-command.js";

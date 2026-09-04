@@ -1,15 +1,13 @@
-import { completeDaycareWithdraw, depositDaycarePokemon, depositDaycarePokemonCommand, loadPlayerDaycare, resolveDaycareWithdrawalCommand, startDaycareWithdraw, withdrawDaycarePokemonCommand } from "../api/daycare.js";
-import { DAYCARE_MAX_PENDING_LEVELS, DAYCARE_WITHDRAW_BASE_COST, DAYCARE_WITHDRAW_LEVEL_COST, levelLimitForBadges } from "../data/progression.js";
+import { completeDaycareWithdraw, depositDaycarePokemonCommand, loadPlayerDaycare, resolveDaycareWithdrawalCommand, withdrawDaycarePokemonCommand } from "../api/daycare.js";
+import { DAYCARE_WITHDRAW_BASE_COST, DAYCARE_WITHDRAW_LEVEL_COST, levelLimitForBadges } from "../data/progression.js";
 import { GDR_DATA as DATA } from "../data/index.js";
 import { openConfirm, openMessage } from "./dialog-handler.js";
 import { applyPlayerSave, root, state } from "./game-state.js";
-import { clearHiddenProgression, startDirectLevelProgression } from "./level-up.js";
 import * as Engine from "../engine/index.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
-import { markDirty, render, setScene } from "./renderer.js";
+import { render, setScene } from "./renderer.js";
 import { moneyText } from "./render-utils.js";
-import { saveAfterStateChange } from "./save-runtime.js";
 import { registerAction } from "./action-registry.js";
 import { replaceTeamRuntimeState } from "./runtime-state.js";
 import { recordMissionEvent } from "./mission-runtime.js";

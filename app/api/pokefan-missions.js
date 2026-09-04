@@ -1,5 +1,5 @@
 import { claimPlayerMissionAuthoritative, syncPlayerMissionsAuthoritative } from "./player-command.js";
-import { currentUserId, getSupabaseClient } from "./supabase.js";
+import { getSupabaseClient } from "./supabase.js";
 
 function normalizeMissionRow(row) {
   if (!row) {

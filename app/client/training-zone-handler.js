@@ -1,9 +1,9 @@
 import { registerAction } from "./action-registry.js";
 import { authoritativeTrainingPreview, openBattleStartTargetPanel } from "./battle-handler.js";
 import { enforceBattleRuntimeSceneLock } from "./battle-scene-lock.js";
-import { openConfirm, openInlineMessage, openMessage } from "./dialog-handler.js";
+import { openInlineMessage, openMessage } from "./dialog-handler.js";
 import { createDebugPokemonFromPanel, isDebugUser } from "./debug-tools.js";
-import { markDirty, render, setScene } from "./renderer.js";
+import { render, setScene } from "./renderer.js";
 import { root, state } from "./game-state.js";
 import { createTrainingOpponentProfile, createTrainingOpponentTeam, normalizeTrainingOpponentProfile, TRAINING_ZONE_DEBUG_DIFFICULTY, trainingDifficultyConfig } from "./training-data.js";
 

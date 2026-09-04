@@ -5,7 +5,6 @@ import {
   escapeHtml,
   renderImage,
   renderPokemonSprite,
-  getPokemonImage,
   getPokemonStaticImage,
   getGenderImage,
   getItemImage,

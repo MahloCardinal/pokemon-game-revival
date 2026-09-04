@@ -1,5 +1,4 @@
 import { state } from "./game-state.js";
-import { ADMIN_USERNAME } from "../data/admin-battles.js";
 
 export function currentUsername() {
   if (!state) {

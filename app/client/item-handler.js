@@ -4,7 +4,6 @@ import { escapeHtml, getItemDisplayImage, renderImage } from "./asset-helpers.js
 import { setHtml } from "./renderer.js";
 import { getResolvedInventoryItem, ItemCategory } from "../data/items.js";
 import { itemDisplayDescription, itemDisplayName } from "./entity-text.js";
-import { adjustInventoryItemQuantity } from "./runtime-state.js";
 
 registerAction("inventory-toggle-item", function(element) {
     var toggledItemIndex = String(element.dataset.itemIndex || "");

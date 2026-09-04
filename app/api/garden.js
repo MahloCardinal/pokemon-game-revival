@@ -1,4 +1,4 @@
-import { getSupabaseClient, runQuery, currentUserId, dailyLimitTableIsMissing } from "./supabase.js";
+import { getSupabaseClient, currentUserId, dailyLimitTableIsMissing } from "./supabase.js";
 
 function gardenPlotFromRow(row, plantKey, seedTimeKey) {
   if (!row || row[plantKey] === null || row[plantKey] === undefined) {

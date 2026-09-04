@@ -1,6 +1,6 @@
 import * as Engine from "../engine/index.js";
 import { TRAINER_SPRITES } from "../data/trainers.js";
-import { MAX_TRAINING_LEVELS_PER_POKEMON, TRAINING_DIFFICULTIES, authoritativeTrainingReward, levelLimitForBadges, trainingRewardForBadges } from "../data/progression.js";
+import { MAX_TRAINING_LEVELS_PER_POKEMON, TRAINING_DIFFICULTIES, authoritativeTrainingReward, levelLimitForBadges } from "../data/progression.js";
 import { state } from "./game-state.js";
 
 export var TRAINING_ZONE_DIFFICULTIES = TRAINING_DIFFICULTIES;

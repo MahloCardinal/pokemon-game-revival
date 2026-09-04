@@ -5,7 +5,7 @@ import * as Engine from "../engine/index.js";
 
 var TEAM_MAX = Engine.TEAM_MAX;
 import { escapeHtml, getTrainerImage, renderImage, withTrainerSpriteAttrs, withTrainerSpriteClass } from "../client/asset-helpers.js";
-import { battlePointsMarkup, button, moneyMarkup, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
+import { battlePointsMarkup, button, renderScenePresentationPanel, sceneShell } from "../client/render-utils.js";
 import { renderPokemonCard, renderPokemonCardFrame } from "../client/pokemon-card.js";
 import { t } from "../client/i18n.js";
 

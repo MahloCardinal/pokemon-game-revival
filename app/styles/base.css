@@ -69,12 +69,17 @@ body {
 body::before {
   content: "";
   position: fixed;
-  inset: -200px 0;
+  inset: 0 0 auto;
+  height: 100vh;
+  /* Keep the image size stable as mobile browser bars expand or collapse. */
+  height: 100lvh;
   z-index: -1;
   background:
     radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.52), transparent 34%),
     linear-gradient(180deg, var(--bg-1), var(--bg-2));
-  background-attachment: fixed;
+  background-attachment: scroll;
+  /* Composite the single fixed backdrop independently of scrolling content. */
+  transform: translateZ(0);
   pointer-events: none;
 }
 html::-webkit-scrollbar {

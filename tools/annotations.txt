@@ -1,9 +1,12 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- aggiornare pokemon shiny
-- aggiornare sfide pvp in modo che chi inizia abbia un rev in più a disposizione
-- aggiornare regolamento con pokemob shiny e precisazione sul rev nelle pvp
+- aggiornare regolamento con pokemon shiny
+- aggiornare 'stai osservando questa sfida in sola lettura'
+- bug missione zona allenamento facile con poke ball non ritirabile
+- capire come fare grassetto nelle comunicazioni admin
+- invertire lobby e squadra nella cupola lotta
+- concedere cupola lotta solo a chi ha 5 medaglie o più
 
 
 

@@ -940,6 +940,56 @@ const { BattleManager, buildBattleSummary, createMove, Pokemon, projectBattle, T
   assert.ok(second.projection.participants.find(entry => entry.side === "npc").type_keys.includes(chosenType.key || chosenType.typeName));
 }
 
+// Every switch path must accept a pending incense choice, including both PvP
+// sides after KO. No deployed engine change is needed for the UI regression.
+for (const contract of ["capture", "training", "battle_dome"]) {
+  for (const actor of contract === "battle_dome" ? ["player", "npc"] : ["player"]) {
+    for (const forced of [false, true]) {
+      for (const item of [ItemDefinitions.full_incense, ItemDefinitions.odd_incense]) {
+        const makePokemon = (slot, heldItem) => {
+          const psychic = heldItem === ItemDefinitions.odd_incense;
+          const result = new Pokemon({ name: psychic ? "Abra" : "Aipom", speciesKey: psychic ? "63" : "190", ndex: psychic ? 63 : 190,
+            level: 100, type: [psychic ? "psychic" : "normal"], maxHp: 400,
+            heldItemIndex: heldItem ? heldItem.index : 0,
+            moves: [createMove(MoveDefinitions.tackle, { power: 10, stats: 10 })] });
+          result.authoritativeSlot = slot;
+          return result;
+        };
+        const manager = new BattleManager(new Team("Player", [makePokemon(0), makePokemon(1, item)]),
+          new Team("Opponent", [makePokemon(0), makePokemon(1, item)]));
+        manager.battleType = contract;
+        manager.opponentControl = contract === "battle_dome" ? "player" : "automatic";
+        manager.startInitialEntry();
+        const team = actor === "player" ? manager.playerTeam : manager.enemyTeam;
+        manager.waitingFor = actor === "player" ? "player" : "admin";
+        if (forced) {
+          team.getActive().hp = 0;
+          if (actor === "player") manager.playerNeedsSwitch = true;
+          else manager.npcNeedsSwitch = true;
+        }
+        const incoming = team.combatantList[1];
+        const kind = manager.entryHeldItemChoiceKind(incoming);
+        const entry = manager.entryHeldItemChoiceEntries(incoming)[0];
+        assert.ok(entry, "The incoming incense must offer a choice");
+        const snapshot = engineExports.serializeBattleManager(manager, engineExports.createRngState(123), { playerItems: [] });
+        const execute = actor === "player" ? engineExports.executeBattleCommand : engineExports.executeOpponentBattleCommand;
+        const result = execute(snapshot, { type: "switch", teamSlot: 1, entryChoice: { kind, index: entry.index } });
+        const restored = engineExports.restoreBattleManager(result.snapshot).manager;
+        const own = actor === "player" ? restored.playerTeam : restored.enemyTeam;
+        const opponent = actor === "player" ? restored.enemyTeam : restored.playerTeam;
+        assert.equal(own.activeIndex, 1, contract + ": incense switch must complete");
+        assert.equal(own.getActive().entryHeldItemResolved, true);
+        assert.equal(actor === "player" ? restored.playerNeedsSwitch : restored.npcNeedsSwitch, false);
+        if (kind === "type") {
+          assert.ok(own.getActive().type.includes(entry.typeName));
+        } else {
+          assert.ok(opponent.getActive().disabledMoves.includes(entry.key));
+        }
+      }
+    }
+  }
+}
+
 assert.match(adminBattleAutomationMigration, /admin_battle_automation/i);
 assert.match(adminBattleAutomationMigration, /contract_key in \('admin_gym', 'league', 'debug_training'\)/i);
 assert.match(adminBattleAutomationMigration, /commit_edge_automatic_admin_command/i);

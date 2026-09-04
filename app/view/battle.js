@@ -283,13 +283,15 @@ export function renderBattleScene(scene) {
     && renderScene.enemyTeam.isAllFainted()
     && isAdminRewardBattleType(battleType)
     && !scene.rewardFinalized;
-  var ownSlotOptions = !readonlyHistory && ownNeedsSwitch ? {
-    className: "has-fainted-overlay has-forced-switch",
-    overlayContent: renderForcedSwitchOverlay(ownTeam, ownSwitchAction),
-    moveAction: ownMoveAction
-  } : !readonlyHistory && scene.battleEntryChoicePanel && (!adminPerspective || scene.battleDome) ? {
+  // The incoming Pokemon's item choice precedes replacement selection; the
+  // outgoing Pokemon stays KO until the server confirms the complete switch.
+  var ownSlotOptions = !readonlyHistory && scene.battleEntryChoicePanel && (!adminPerspective || scene.battleDome) ? {
     className: "has-fainted-overlay has-entry-choice-overlay",
     overlayContent: renderEntryChoiceOverlay(scene.battleEntryChoicePanel),
+    moveAction: ownMoveAction
+  } : !readonlyHistory && ownNeedsSwitch ? {
+    className: "has-fainted-overlay has-forced-switch",
+    overlayContent: renderForcedSwitchOverlay(ownTeam, ownSwitchAction),
     moveAction: ownMoveAction
   } : { moveAction: ownMoveAction };
   var opponentSlotOptions = opponentNeedsSwitch ? { className: "has-fainted-overlay" } : {};

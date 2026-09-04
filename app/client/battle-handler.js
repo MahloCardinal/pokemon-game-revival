@@ -3685,7 +3685,7 @@ function cancelUncertainAuthoritativeBattle(scene) {
 function setBattleBottomPanel(mode) {
   var nextMode;
   var layout;
-  if (!state.scene || (state.scene.name !== "battle" && state.scene.name !== "admin-battle")) {
+  if (!state.scene || ["battle", "admin-battle", "battle-dome-battle"].indexOf(state.scene.name) === -1) {
     return;
   }
   nextMode = mode === "teams" ? "teams" : mode === "items" && !state.scene.battleTower ? "items" : "info";

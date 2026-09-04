@@ -93,4 +93,51 @@ for (const outcome of ["success", "unavailable", "navigated-away"]) {
   }
 }
 
-console.log("Battle Dome reload and lobby navigation checks passed.");
+const battleHandler = read("app/client/battle-handler.js");
+const bottomPanelSource = battleHandler.slice(battleHandler.indexOf("function setBattleBottomPanel("), battleHandler.indexOf("function openPostMoveSwitchDialog("));
+for (const name of ["battle", "admin-battle", "battle-dome-battle", "home"]) {
+  for (const panel of ["teams", "items", "info"]) {
+    const state = { scene: { name } };
+    let visiblePanel;
+    const buttons = ["info", "teams", "items"].map(mode => ({ dataset: { panel: mode }, classes: {} }));
+    buttons.forEach(button => { button.classList = { toggle: (key, enabled) => { button.classes[key] = enabled; } }; });
+    const context = vm.createContext({ state, root: {
+      querySelector: () => ({ setAttribute: (_name, value) => { visiblePanel = value; } }),
+      querySelectorAll: () => buttons
+    } });
+    vm.runInContext(bottomPanelSource + '\nsetBattleBottomPanel("' + panel + '");', context);
+    assert.equal(state.scene.battleBottomPanel, name === "home" ? undefined : panel,
+      name + ": mobile tabs must select the requested battle section");
+    assert.equal(visiblePanel, name === "home" ? undefined : panel);
+    if (name !== "home") {
+      assert.equal(buttons.filter(button => button.classes["button-primary"]).length, 1);
+    }
+    state.scene.battleTower = true;
+    vm.runInContext('setBattleBottomPanel("items");', context);
+    assert.equal(state.scene.battleBottomPanel, name === "home" ? undefined : "info");
+  }
+}
+
+const battleView = read("app/view/battle.js");
+const ownSlotSource = battleView.slice(battleView.indexOf("  var ownSlotOptions ="), battleView.indexOf("  var opponentSlotOptions ="));
+for (const [adminPerspective, battleDome] of [[false, false], [false, true], [true, true]]) {
+  for (const ownNeedsSwitch of [false, true]) {
+    const scene = { battleDome, battleEntryChoicePanel: { kind: "type" } };
+    const context = vm.createContext({ scene, adminPerspective, ownNeedsSwitch, readonlyHistory: false,
+      ownTeam: {}, ownSwitchAction: "switch", ownMoveAction: "move",
+      renderForcedSwitchOverlay: () => "replacement", renderEntryChoiceOverlay: () => "incense" });
+    vm.runInContext(ownSlotSource, context);
+    assert.equal(context.ownSlotOptions.overlayContent, "incense",
+      "An incense choice must remain visible even while the active Pokemon is KO");
+    scene.battleEntryChoicePanel = null;
+    vm.runInContext(ownSlotSource, context);
+    assert.equal(context.ownSlotOptions.overlayContent, ownNeedsSwitch ? "replacement" : undefined,
+      "Canceling the incense choice must restore the appropriate battle controls");
+    context.readonlyHistory = true;
+    scene.battleEntryChoicePanel = { kind: "type" };
+    vm.runInContext(ownSlotSource, context);
+    assert.equal(context.ownSlotOptions.overlayContent, undefined);
+  }
+}
+
+console.log("Battle Dome reload, mobile tabs, incense replacement panels and lobby navigation checks passed.");

@@ -513,8 +513,9 @@ assert.match(shinyMigration, /rule_key = 'shiny_odds_denominator'[\s\S]*v_is_shi
 assert.match(read("app/data/progression.js"), /SHINY_ODDS_DENOMINATOR = 8000;/);
 assert.match(shinyOddsMigration, /jsonb_set\(rules, '\{value\}', '8000'::jsonb\)/);
 assert.match(shinyOddsMigration, /rule_family = 'constant'[\s\S]*rule_key = 'shiny_odds_denominator'/);
-assert.match(shinyOddsMigration, /p_requires_battle_idle => true/);
-assert.match(shinyOddsMigration, /exists \(select 1 from public\.battle_dome_battle\)/);
+assert.match(shinyOddsMigration, /p_requires_battle_idle => false/);
+assert.doesNotMatch(shinyOddsMigration, /lock table|public\.battle_dome_battle|public\.authoritative_battle|catalog_engine_runtime_binding/,
+  "New-encounter Shiny odds must not lock battles or replace their runtime bindings");
 assert.doesNotMatch(shinyOddsMigration, /insert into public\.catalog_release/);
 assert.match(shinyMigration, /p_requires_battle_idle => true/i);
 assert.match(rarityStatsMigration, /state = state - 'shl'/i);

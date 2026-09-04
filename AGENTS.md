@@ -237,6 +237,8 @@ Usare `p_requires_battle_idle => true` per dati che possono influenzare una batt
 
 Una modifica ai dati non richiede automaticamente un nuovo runtime. Controllare il grafo degli import: se il file canonico è raggiunto da `app/engine/battle-runtime.js`, cambia il contenuto eseguibile Edge e servono sync, binding additivo e deploy di `battle-command`. I dati consumati soltanto da una nuova azione frontend, come prezzi o alcune ricompense, richiedono normalmente la migrazione del catalogo ma non un nuovo mirror runtime; verificare sempre le dipendenze effettive.
 
+Distinguere l'inclusione nel pacchetto dall'uso effettivo in combattimento. `shiny_odds_denominator` è letto solo da PostgreSQL alla creazione di un nuovo incontro; `is_shiny` viene poi persistito. Un aggiornamento della sola probabilità usa un change set `progression` con `p_requires_battle_idle => false`, senza toccare incontri, battaglie o binding e senza distribuire Edge. Il mirror locale resta generato dalle sorgenti, ma un checksum diverso per questa costante inutilizzata nel motore non obbliga a distribuire subito il pacchetto. Prima del prossimo vero deploy del runtime predisporre il binding del checksum allora corrente e rispettare i vincoli delle battaglie attive.
+
 Se serve compatibilità durante un deploy del runtime, aggiungere il nuovo binding senza rimuovere quello precedente. Disabilitare il binding di transizione soltanto dopo il deploy della Edge Function e dopo aver verificato che non esistano battaglie o snapshot che lo usano. Preservare sempre l'utente `aaa` e il ruolo `debug`; la baseline stabile evita migrazioni dei profili.
 
 Verifica deterministica della baseline corrente:

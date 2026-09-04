@@ -15,7 +15,7 @@ Il progetto è esclusivamente Revival. Non introdurre compatibilità con progett
 ## Regole di lavoro
 
 - Controllare `git status` prima e dopo ogni modifica.
-- Preservare le modifiche locali dell'utente, comprese quelle non pertinenti. Non sovrascriverle e non includerle nel commit corrente se l'utente non lo chiede esplicitamente.
+- Preservare le modifiche locali dell'utente, comprese quelle non pertinenti. Quando l'utente autorizza commit/push, verificare e includere anche tutte le modifiche già presenti, salvo sue esclusioni esplicite e i file vietati da queste regole. Non sovrascriverle né separarle obbligatoriamente in un altro commit.
 - `tools/` fa parte del repository. Preservarne le modifiche e non modificarne autonomamente il contenuto se il compito non lo richiede.
 - Non creare o committare dump SQL generati, segreti, token, password, service-role key o webhook.
 - Non usare comandi `npm`: il repository non contiene `package.json`, lockfile o pipeline npm.
@@ -104,10 +104,13 @@ La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` son
 
 - `advance_ordinary_progression` e `advance_training_progression` devono congelare un confronto prima/dopo fino alla prossima mossa non conosciuta, evoluzione proponibile o livello finale. Non creare popup per livelli intermedi privi di eventi. Conservare il calcolo canonico di EXP, crescita, cap e rifiuti di evoluzione; nella progressione ordinaria i cap si applicano a ogni livello, anche all'interno di un segmento.
 - Dopo un'evoluzione ricalcolare le tappe successive sulla nuova specie. Le mosse proposte allo stesso livello restano ordinate e non devono produrre un nuovo confronto di livello identico.
+- La presentazione EXP combina quantità ottenuta e confronto prima/dopo in un solo popup. Anche l'apprendimento senza sostituzione richiede la card aggiornata dopo conferma server. Con quattro mosse, la nuova mossa mostra l'effetto completo come bottone inattivo; la scelta di quella da dimenticare passa da `confirmMoveForget()` con conferma sovrapposta Sì/No. L'anteprima di evoluzione ha un contenitore statico e i pulsanti evolvi/blocca affiancati.
 - La risoluzione server può già avanzare al segmento seguente: per la card di apprendimento/evoluzione usare `progressionResultPokemon()`, che legge il `before_state` canonico della prossima risoluzione, senza mostrare anticipatamente i suoi livelli.
 - `showEvolutionResult()` apre la conferma con nome precedente, nome evoluto e card completa; la continuazione della progressione passa dal callback del popup. Non ricostruire né salvare un'evoluzione dal browser.
 - La Pensione conserva il ciclo pagato in `player_daycare_state.progression`: `daycare_segment_options()` determina la prossima tappa e `continue_daycare_progression()` congela la risoluzione successiva, ricalcolandola dopo un'evoluzione. Costo e livello finale vengono congelati una sola volta; il ritorno in squadra e la ricevuta `completed` avvengono soltanto alla fine. La preview mostra il segmento corrente, non l'intero ritiro.
+- Nei segmenti intermedi della Pensione il Pokémon canonico è ancora in `state.daycare`, non in `state.team`. `withdrawal_status = 'resolution_required'` richiede di riprendere la risoluzione pendente; non mostrare il ritorno in squadra né completare il ciclo a ogni segmento. `declined_species` e `include_current_moves` appartengono a `progression`; non aggiungere campi di presentazione alle `options`, che il resolver confronta esattamente con il catalogo. Conservare ownership, revisioni e ricevute idempotenti; gli helper privati non devono essere eseguibili dal browser.
 - `dialog-layer.js` mantiene montati backdrop e contenitore anche durante `render()`; non rimuoverli per passare alla schermata successiva. Prima di una continuazione asincrona usare `holdDialogContent()`: conserva il contenuto precedente, lo rende `inert` e lo sostituisce soltanto quando arriva il nuovo dialogo. Le uscite definitive impostano `state.dialog = null`; non cambiare testi o pulsanti per gestire il contenitore.
+- I backdrop gestiti devono restare figli diretti di `root`, con il contenitore del dialogo come primo elemento. Non ripristinare `root.innerHTML` per un render completo: usare `replaceSceneContent()` e sincronizzare il dialogo dallo stato corrente dopo il caricamento asincrono della scena. Una nuova schermata usa un nuovo oggetto `state.dialog`; se si riusa quello precedente dopo un errore, rimuoverne `pending`. Conservare il controllo `[inert]` nel dispatcher delle azioni, oltre alla disattivazione visiva.
 - Verificare la Pensione con `test-daycare-progression-segments.sql` (copie temporanee, rollback) e il ciclo DOM con `scripts/test-dialog-layer.html` servito localmente; quest'ultimo controlla identità dei nodi, attese disattivate, conferma sovrapposta e chiusura finale.
 - I test pertinenti sono `test-progression-dialog-flow.mjs`, `test-uniform-progression-dialogs.mjs`, `test-ordinary-progression-segments.sql` e `test-existing-move-caps.sql`; i test SQL usano soltanto tabelle temporanee e rollback.
 
@@ -132,7 +135,7 @@ La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` son
 
 ### Pokémon Shiny
 
-- Gli incontri selvatici applicano un tiro autoritativo con probabilità canonica `1/2000`; il frontend non decide mai se un Pokémon è Shiny.
+- Gli incontri selvatici applicano un tiro autoritativo con probabilità canonica `1/8000`; il frontend non decide mai se un Pokémon è Shiny.
 - Lo stato compatto usa soltanto `sh: 1`. Il bonus ricevuto all'ottenimento resta incorporato nei valori persistiti del Pokémon, che da quel momento crescono normalmente; non conservare il livello di ottenimento o duplicare i bonus nello stato.
 - I cap Shiny dipendono dal livello corrente, non dal livello di ottenimento. Tabelle, cap e bonus canonici sono in `app/data/stat-tables.js`; la probabilità è in `app/data/progression.js`.
 - Gli sprite Shiny restano in `app/assets/img_pokemon/` con suffisso finale `_shiny` (`25_shiny.webp`, `25_f_shiny.webp`) e devono ereditare scala e allineamento dallo sprite normale corrispondente.
@@ -353,7 +356,7 @@ Controllo generale del diff:
 git diff --check
 ```
 
-I test SQL collegati (`test-battle-history.sql`, `test-capture-activity-feed.sql`, `test-daycare-progression-preview.sql`, `test-debug-mission-completion.sql`, `test-existing-move-caps.sql`) vanno eseguiti soltanto quando pertinenti, verificando prima il progetto collegato. Devono usare copie isolate o transazioni con rollback e non eliminare account o dati reali.
+I test SQL collegati sotto `scripts/` (tra cui `test-battle-history.sql`, `test-capture-activity-feed.sql`, `test-daycare-progression-preview.sql`, `test-daycare-progression-segments.sql`, `test-ordinary-progression-segments.sql`, `test-debug-mission-completion.sql` e `test-existing-move-caps.sql`) vanno eseguiti soltanto quando pertinenti, verificando prima il progetto collegato. Devono usare copie isolate o transazioni con rollback e non eliminare account o dati reali.
 
 Per ogni file JavaScript modificato, verificarne il parsing come modulo ES:
 
@@ -368,14 +371,15 @@ Per testare localmente route e refresh della SPA, usare `vercel.cmd dev` dalla r
 ## Git e deploy
 
 - Non eseguire `pull`, `commit` o `push` se l'utente non lo richiede o se il compito non lo rende esplicitamente necessario.
-- Quando serve un commit, aggiungere soltanto i file pertinenti e lasciare intatte le modifiche preesistenti non pertinenti.
+- Quando il commit è autorizzato, includere anche le modifiche preesistenti secondo le regole di lavoro, comprese quelle in `tools/`. Controllare il diff e aggiungere file espliciti; non includere segreti o artefatti rigenerabili.
 - Il push su `main` attiva il deploy frontend Vercel; le migrazioni Supabase e le Edge Function richiedono invece distribuzione esplicita.
+- Se una modifica backend richiede un nuovo consumer frontend, pianificare l'ordine di pubblicazione in base alla compatibilità: non attivare un contratto che il frontend online non sa gestire. Quando il frontend nuovo funziona anche con il backend precedente, pubblicarlo prima e verificare il commit tramite `/api/deployment-version`, poi applicare la migrazione. È un controllo mirato per aggiornamenti coordinati, non un'attesa Vercel obbligatoria dopo ogni push. Rispettare i blocchi della migrazione sulle operazioni pendenti senza cancellare dati per aggirarli.
 
 ## File locali e rigenerabili
 
 - `.env.local`: configurazione locale; non committare.
 - `.vercel/`, `supabase/.temp/` e `.build/` sono dati locali o artefatti rigenerabili: non usarli come fonte dell'app e non committarli.
-- `tools/` contiene strumenti versionati del progetto: non modificarli senza necessità e non includere automaticamente modifiche preesistenti non pertinenti.
+- `tools/` contiene strumenti versionati del progetto: non modificarli senza necessità; includerne le modifiche già presenti quando viene autorizzato il commit, salvo esclusioni esplicite dell'utente.
 
 ## Orientamento rapido
 

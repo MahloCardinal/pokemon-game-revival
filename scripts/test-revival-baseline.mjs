@@ -75,6 +75,7 @@ const globalTeamCompositionMigration = read("supabase/migrations/20260901120000_
 const specificBattleLimitCleanupMigration = read("supabase/migrations/20260901130000_remove_legacy_specific_battle_limit_queries.sql");
 const variableBattleDomeTeamMigration = read("supabase/migrations/20260901140000_restore_variable_battle_dome_team_size.sql");
 const shinyMigration = read("supabase/migrations/20260827120000_authoritative_shiny_pokemon.sql");
+const shinyOddsMigration = read("supabase/migrations/20260904141709_shiny_encounter_odds.sql");
 const rarityStatsMigration = read("supabase/migrations/20260827150000_current_level_shiny_and_legendary_stats.sql");
 const statTables = read("app/data/stat-tables.js");
 const pokemonEngine = read("app/engine/pokemon.js");
@@ -509,6 +510,12 @@ assert.match(playerDirectoryPokedexMigration, /from public\.catalog_species[\s\S
 assert.match(playerDirectoryDebugVisibilityMigration, /not exists\s*\(\s*select 1\s*from public\.user_server_role role/i);
 assert.match(playerDirectoryDebugVisibilityMigration, /role\.auth_user_id = profile\.auth_user_id[\s\S]*role\.role_key = 'debug'/i);
 assert.match(shinyMigration, /rule_key = 'shiny_odds_denominator'[\s\S]*v_is_shiny := floor\(random\(\) \* v_shiny_odds\)::integer = 0/i);
+assert.match(read("app/data/progression.js"), /SHINY_ODDS_DENOMINATOR = 8000;/);
+assert.match(shinyOddsMigration, /jsonb_set\(rules, '\{value\}', '8000'::jsonb\)/);
+assert.match(shinyOddsMigration, /rule_family = 'constant'[\s\S]*rule_key = 'shiny_odds_denominator'/);
+assert.match(shinyOddsMigration, /p_requires_battle_idle => true/);
+assert.match(shinyOddsMigration, /exists \(select 1 from public\.battle_dome_battle\)/);
+assert.doesNotMatch(shinyOddsMigration, /insert into public\.catalog_release/);
 assert.match(shinyMigration, /p_requires_battle_idle => true/i);
 assert.match(rarityStatsMigration, /state = state - 'shl'/i);
 assert.match(rarityStatsMigration, /drop column shiny_origin_level/i);

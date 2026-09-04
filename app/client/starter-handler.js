@@ -191,7 +191,7 @@ function selectedStarterSetup() {
 function isAllowedStarterSpecies(speciesName) {
   var species = starterSpeciesEntry(speciesName);
   var stage = species && species.evolution && species.evolution.stage;
-  return !!species && stage === "base" && ["fossil", "mythic", "legendary"].indexOf(species.rarity) === -1;
+  return !!species && stage === "base" && ["fossil", "ultra_rare", "legendary"].indexOf(species.rarity) === -1;
 }
 
 

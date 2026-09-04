@@ -14,7 +14,7 @@ export var RARITY_WEIGHTS = {
   uncommon: 600,
   rare: 200,
   super_rare: 30,
-  mythic: 5,
+  ultra_rare: 5,
   fossil: 0,
   legendary: 0
 };
@@ -25,7 +25,7 @@ export var CATCH_RARITY_MULTIPLIERS = {
   uncommon: 75,
   rare: 35,
   super_rare: 20,
-  mythic: 10,
+  ultra_rare: 10,
   fossil: 25,
   legendary: 3
 };

@@ -62,6 +62,7 @@ const adminBattleAutomationRuntimeMigration = read("supabase/migrations/20260902
 const currentServerRolesMigration = read("supabase/migrations/20260903130000_read_current_server_roles.sql");
 const internalHelperHardeningMigration = read("supabase/migrations/20260903140000_harden_internal_helper_functions.sql");
 const authoritativeActivityFeedMigration = read("supabase/migrations/20260903150000_authoritative_global_activity_feed.sql");
+const ultraRareCaptureFeedMigration = read("supabase/migrations/20260904081240_ultra_rare_capture_feed.sql");
 const debugOfficialBattleItemMigration = read("supabase/migrations/20260902130000_allow_debug_catalog_items_in_official_battles.sql");
 const adminGymWaitingKeyMigration = read("supabase/migrations/20260902131000_fix_admin_gym_waiting_catalog_keys.sql");
 const authoritativeGymKeyConstraintMigration = read("supabase/migrations/20260902132000_fix_authoritative_gym_key_constraint.sql");
@@ -431,6 +432,11 @@ assert.match(authoritativeActivityFeedMigration,
   /drop function public\.append_global_activity_feed_event\(text, text, text\)/i);
 assert.doesNotMatch(activityFeedApi, /append_global_activity_feed_event|appendGlobalActivityFeedEvent/,
   "The browser API must not expose player activity writes");
+assert.match(ultraRareCaptureFeedMigration,
+  /new\.rarity_key in \('rare', 'super_rare', 'ultra_rare', 'fossil', 'legendary'\)/,
+  "Only rare or higher successful captures may enter the authoritative feed");
+assert.match(ultraRareCaptureFeedMigration, /p_requires_battle_idle => true/);
+assert.match(ultraRareCaptureFeedMigration, /insert into public\.catalog_engine_runtime_binding/);
 assert.doesNotMatch(activityFeedRuntime, /pendingGlobalActivities|queueGlobalActivityEvent|recordGlobalActivityEvent|flushPendingGlobalActivityEvents/,
   "The frontend must not queue authoritative activity events");
 assert.match(session, /event === "PASSWORD_RECOVERY"/);
@@ -786,6 +792,24 @@ assert.equal(JSON.stringify(ProgressionDefinitions.captureLevelRangesForBadges(1
 const captureCalcModule = await loadEsModule(fileURLToPath(new URL("../app/engine/capture-calc.js", import.meta.url)));
 if (captureCalcModule.status !== "evaluated") await captureCalcModule.evaluate();
 const CaptureCalc = captureCalcModule.namespace;
+const rarityDataModule = await loadEsModule(fileURLToPath(new URL("../app/data/index.js", import.meta.url)));
+if (rarityDataModule.status !== "evaluated") await rarityDataModule.evaluate();
+const rarityData = rarityDataModule.namespace;
+assert.equal(rarityData.RARITY_WEIGHTS.ultra_rare, 5);
+assert.equal(rarityData.CATCH_RARITY_MULTIPLIERS.ultra_rare, 10);
+assert.deepEqual(Object.keys(rarityData.RARITY_WEIGHTS).sort(),
+  ["test", "common", "uncommon", "rare", "super_rare", "ultra_rare", "fossil", "legendary"].sort());
+for (const [speciesKey, species] of Object.entries(rarityData.SPECIES_LIBRARY)) {
+  assert.ok(Object.hasOwn(rarityData.RARITY_WEIGHTS, species.encounter.rarity),
+    `Species ${speciesKey} must use a canonical rarity key`);
+  assert.ok(Object.hasOwn(rarityData.CATCH_RARITY_MULTIPLIERS, species.encounter.rarity));
+}
+assert.equal(CaptureCalc.computeBallCaptureRate({ value: 1 }, {
+  pokemon: { speciesKey: "149", maxHp: 100 }, hp: 100, status: null
+}), Math.min(rarityData.CATCH_FORMULA.maximumRate,
+  Math.pow(10 * rarityData.CATCH_HP_THRESHOLDS.at(-1).multiplier / rarityData.CATCH_FORMULA.denominator,
+    rarityData.CATCH_FORMULA.exponent) * 100),
+"Ultra rare species retain their original capture multiplier");
 const assetHelpersModule = await loadEsModule(fileURLToPath(new URL("../app/client/asset-helpers.js", import.meta.url)));
 if (assetHelpersModule.status !== "evaluated") await assetHelpersModule.evaluate();
 const AssetHelpers = assetHelpersModule.namespace;
@@ -1057,7 +1081,7 @@ assert.ok(TitleDefinitions.TRAINER_TITLES.filter(function (title) {
 }).every(function (title) {
   return title.excludedRarities.includes("fossil")
     && title.excludedRarities.includes("legendary")
-    && !title.excludedRarities.includes("mythic");
+    && !title.excludedRarities.includes("ultra_rare");
 }));
 assert.equal(MoveDefinitions.doom_desire.key, "doom_desire");
 assert.equal(ItemDefinitions.leek.name, "leek");

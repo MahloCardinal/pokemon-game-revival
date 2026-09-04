@@ -131,7 +131,7 @@ export function itemDisplayDescription(item) {
   }
   if (item.effect && t("entityDescriptions.items.effects." + item.effect) !== "entityDescriptions.items.effects." + item.effect) {
     return t("entityDescriptions.items.effects." + item.effect, {
-      species: (item.allowedSpeciesKeys || []).map(speciesDisplayName).join(" / ")
+      species: (item.allowedSpeciesKeys || []).map(speciesDisplayName).join(t("common.conjunctions.or"))
     });
   }
   if (item.category === ItemCategory.Vitamin) {

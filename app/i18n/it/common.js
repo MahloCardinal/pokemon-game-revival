@@ -27,6 +27,9 @@ export var IT_COMMON_TRANSLATIONS = Object.freeze({
       experienceShort: "Esp",
       battlePointsShort: "PL"
     }),
+    conjunctions: Object.freeze({
+      or: " o "
+    }),
     emptyPocket: "Tasca vuota",
     opponent: "Avversario"
   }),

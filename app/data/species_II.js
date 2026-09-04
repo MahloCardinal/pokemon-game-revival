@@ -3210,7 +3210,7 @@ export var SPECIES_LIBRARY = {
     type: ["rock", "ground"],
     gender: ["male", "female"],
     encounter: {
-      rarity: "mythic",
+      rarity: "ultra_rare",
       minLevel: 30,
       maxLevel: 60
     },
@@ -3244,7 +3244,7 @@ export var SPECIES_LIBRARY = {
     type: ["rock", "dark"],
     gender: ["male", "female"],
     encounter: {
-      rarity: "mythic",
+      rarity: "ultra_rare",
       minLevel: 55,
       maxLevel: 60
     },

@@ -4193,7 +4193,7 @@ export var SPECIES_LIBRARY = {
     type: ["dragon"],
     gender: ["male", "female"],
     encounter: {
-      rarity: "mythic",
+      rarity: "ultra_rare",
       minLevel: 30,
       maxLevel: 60
     },
@@ -4230,7 +4230,7 @@ export var SPECIES_LIBRARY = {
     type: ["dragon", "flying"],
     gender: ["male", "female"],
     encounter: {
-      rarity: "mythic",
+      rarity: "ultra_rare",
       minLevel: 50,
       maxLevel: 60
     },
@@ -4286,7 +4286,7 @@ export var SPECIES_LIBRARY = {
     type: ["steel", "psychic"],
     gender: [],
     encounter: {
-      rarity: "mythic",
+      rarity: "ultra_rare",
       minLevel: 20,
       maxLevel: 55
     },
@@ -4322,7 +4322,7 @@ export var SPECIES_LIBRARY = {
     type: ["steel", "psychic"],
     gender: [],
     encounter: {
-      rarity: "mythic",
+      rarity: "ultra_rare",
       minLevel: 45,
       maxLevel: 60
     },

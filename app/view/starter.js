@@ -12,7 +12,7 @@ function baseStarterSpecies() {
   if (!starterSpeciesCache) {
     starterSpeciesCache = Engine.getAllSpecies().filter(function (species) {
       var stage = species.evolution && species.evolution.stage;
-      return stage === "base" && ["super_rare", "fossil", "mythic", "legendary"].indexOf(species.rarity) === -1;
+      return stage === "base" && ["super_rare", "fossil", "ultra_rare", "legendary"].indexOf(species.rarity) === -1;
     }).sort(function (a, b) {
       return a.dexNumber - b.dexNumber;
     });

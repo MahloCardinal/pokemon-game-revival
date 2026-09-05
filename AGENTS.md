@@ -154,6 +154,7 @@ La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` son
 - Gli RPC mutanti autoritativi non devono essere eseguibili direttamente dai ruoli browser.
 - I comandi mantengono command ID, revisioni attese e ricevute idempotenti.
 - Non considerare un timeout di trasporto come prova che un comando non sia stato eseguito.
+- Per i conflitti applicativi di revisione, versione o snapshot usare `server_authority_private.raise_revision_conflict(message)`. Non sollevare manualmente SQLSTATE `40001`: PostgREST può ritentare indefinitamente la stessa transazione. L'helper usa SQLSTATE `PGRST` e conserva HTTP 409 e il codice JSON `40001` già gestito dai client. Verificare con `scripts/test-application-conflicts.sql` su fixture temporanee e rollback.
 - Applicare lo stato canonico restituito dal server prima di ricostruire la proiezione o mostrare ricompense.
 - La catena SQL di preparazione deve rimanere aciclica:
 
@@ -168,6 +169,7 @@ prepare_edge_battle_command
 - Il `core` è il lettore terminale e non deve richiamare uno degli altri livelli della catena.
 - Gli aggregati terminali e gli altri dati transitori devono conservare le retention configurate.
 - Il Battle Dome consente un roster compreso tra uno e sei Pokémon, con regole, lobby, eventi, versioni e ricevute gestiti dal backend. Non usare la squadra persistente del giocatore come fonte del roster PvP congelato.
+- Le sfide Cupola concluse vengono eliminate quando entrambi escono oppure alla mezzanotte successiva in `Europe/Rome`, indipendentemente dalle uscite. Il job `revival-battle-dome-midnight` richiama un helper privato ogni ora GMT, che opera soltanto nell'ora della mezzanotte italiana e cancella le sfide concluse prima di quella mezzanotte. Le sfide ancora attive restano conservate; eventi, ricevute e storico vengono eliminati dalle FK in cascata. Test: `scripts/test-battle-dome-midnight-cleanup.sql` su fixture temporanee e rollback.
 - Lo storico dei turni è read-only e deve rispettare i confini del contratto di battaglia, le pagine e i limiti restituiti dal server.
 - Un incontro selvatico non ancora legato a una battaglia appartiene alla revisione giocatore che lo ha creato: qualsiasi successiva mutazione autoritativa lo annulla atomicamente. Le battaglie di cattura già inizializzate restano protette; le altre schede si aggiornano tramite la normale invalidazione della revisione.
 - La versione snapshot accettata da PostgreSQL deve corrispondere a `BATTLE_SNAPSHOT_VERSION` in `app/engine/battle-runtime.js`; il test Revival deve fallire se le due versioni divergono.

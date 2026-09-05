@@ -32,14 +32,16 @@ for (const role of [undefined, "creator", "challenger", "spectator"]) {
 const router = read("app/client/router.js").replace(/^import .*;\r?\n/gm, "").replace(/^export /gm, "");
 const routes = vm.runInNewContext(router + "\n({ sceneFromRoute, routeForScene });");
 for (const [path, name, tab] of [
-  ["/battle-area/battle-dome", "battle-dome", "team"],
+  ["/battle-area/battle-dome", "battle-dome", "lobby"],
   ["/battle-area/battle-dome/lobby", "battle-dome", "lobby"],
+  ["/battle-area/battle-dome/team", "battle-dome", "team"],
   ["/battle-area/battle-dome/battle/00000000-0000-4000-8000-000000000001", "battle-dome-battle", undefined]
 ]) {
   const scene = routes.sceneFromRoute(path);
   assert.equal(scene.name, name);
   assert.equal(scene.battleDomeTab, tab);
-  assert.equal(routes.routeForScene(scene), path, "Direct links and reloads must preserve the destination");
+  assert.equal(routes.routeForScene(scene), path === "/battle-area/battle-dome/lobby" ? "/battle-area/battle-dome" : path,
+    "Direct links and reloads must preserve the destination");
 }
 assert.equal(routes.sceneFromRoute("/battle-area/battle-dome/unknown").invalidRoute, true);
 
@@ -55,6 +57,9 @@ for (const previousTab of ["team", "lobby"]) {
 assert.match(read("app/client/render-utils.js"), /label: t\("navigation\.pvp"\), action: "open-battle-dome-lobby", href: "\/battle-area\/battle-dome\/lobby"/);
 
 const handler = read("app/client/battle-dome-handler.js");
+const domeView = read("app/view/battle-dome.js");
+assert.ok(domeView.indexOf('t("ui.battleDome.lobbyTab")') < domeView.indexOf('t("ui.battleDome.teamTab")'),
+  "The Lobby tab must be displayed before the Team tab");
 const tabAction = handler.slice(handler.indexOf('registerAction("battle-dome-tab"'), handler.indexOf('registerAction("battle-dome-add-pokemon"'));
 for (const tab of ["team", "lobby"]) {
   const state = { scene: { name: "battle-dome", battleDomeTab: "lobby" }, battleDome: { tab: "lobby" } };
@@ -63,7 +68,7 @@ for (const tab of ["team", "lobby"]) {
     render() {}, refreshBattleDomeState() {},
     writeSceneHistory: (scene, mode) => {
       assert.equal(mode, "replace");
-      assert.equal(routes.routeForScene(scene), "/battle-area/battle-dome" + (tab === "lobby" ? "/lobby" : ""));
+      assert.equal(routes.routeForScene(scene), "/battle-area/battle-dome" + (tab === "team" ? "/team" : ""));
     }
   });
   assert.equal(state.battleDome.tab, tab);

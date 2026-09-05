@@ -596,7 +596,7 @@ export var EN_UI_TRANSLATIONS = Object.freeze({
     saved: "Team saved.", lobbyCreated: "Lobby created.", copied: "Code copied",
     invalidCode: "The lobby code is invalid.", commandFailed: "The operation failed.",
     invalidPokemon: "Select a Pokémon and one to four valid moves.",
-    readOnly: "You are watching this challenge in read-only mode.", exit: "Leave challenge",
+    readOnly: "Spectator mode", exit: "Leave challenge",
     leadSelectionTitle: "Choose the opening Pokémon", chooseLead: "Send out", selectedLead: "Selected",
     chooseYourLead: "Choose the Pokémon you will send out first.",
     waitingForCreatorLead: "Waiting for {name} to choose the opening Pokémon.",

@@ -15,6 +15,8 @@ export var EN_RULES_TRANSLATIONS = Object.freeze({
     "<h3>Capture Zones</h3>",
     "<p>In the Capture Zones section, you can find the habitats where you can catch new Pokémon to add to your collection. The basic search lets you choose a zone and level range, but with the right items you can perform more precise searches. The table below shows the maximum levels that can be searched based on the number of Badges you own.</p>",
     "{captureTable}",
+    "<h3>Shiny Pokémon</h3>",
+    "<p>In the Capture Zones you can find particularly rare types of Pokémon known as 'Shiny'. They can be identified by a color that differs from the species' standard appearance and a small star next to their name. In addition to being extremely rare (with odds of about 1 in 8.000), they possess slightly better stats than ordinary Pokémon. If you encounter one, make sure not to let it get away!</p>",
     "<h3>Obedience levels</h3>",
     "<p>The number of Badges you own affects not only the maximum level of wild Pokémon, but also the maximum level of Pokémon you can keep with you.</p>",
     "<p>If a Pokémon has already reached the maximum level allowed by your number of Badges, it no longer gains experience until you obtain the next Badge.</p>",

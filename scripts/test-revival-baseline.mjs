@@ -331,7 +331,7 @@ for (const roles of [["spectator", "challenger", "spectator", "creator"], ["spec
 }
 assert.deepEqual(
   Array.from(read("app/view/battle-area.js").matchAll(/renderBattleAreaCard\("([a-z_]+)"/g), (match) => match[1]),
-  ["battle_tower", "training_zone", "battle_shop", "battle_dome"]
+  ["training_zone", "battle_tower", "battle_shop", "battle_dome"]
 );
 assert.match(read("app/view/battle-dome.js"), /renderScenePresentationPanel\("battle_dome", "battle-dome-info-panel"\)/);
 assert.doesNotMatch(i18nItalian + i18nEnglish, /finishBattleBeforeExit/);

@@ -548,7 +548,7 @@ export function setScene(scene, options) {
   var previousSceneName = state.scene && state.scene.name;
   scene = normalizeRenderableScene(scene);
   if (scene.name === "battle-dome") {
-    scene.battleDomeTab = scene.battleDomeTab || state.battleDome.tab;
+    scene.battleDomeTab = scene.battleDomeTab || "lobby";
     state.battleDome.tab = scene.battleDomeTab === "lobby" ? "lobby" : "team";
   }
   var historyMode = options.history === "replace" ? "replace" : "push";

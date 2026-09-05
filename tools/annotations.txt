@@ -1,12 +1,7 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- aggiornare regolamento con pokemon shiny
-- aggiornare 'stai osservando questa sfida in sola lettura'
-- bug missione zona allenamento facile con poke ball non ritirabile
-- capire come fare grassetto nelle comunicazioni admin
-- invertire lobby e squadra nella cupola lotta
-- concedere cupola lotta solo a chi ha 5 medaglie o più
+- /
 
 
 

@@ -15,6 +15,8 @@ export var IT_RULES_TRANSLATIONS = Object.freeze({
     "<h3>Zone cattura</h3>",
     "<p>Nella sezione delle Zone cattura potrete trovare gli habitat dove andare a catturare nuovi Pokémon da aggiungere alla vostra collezione. La ricerca base permette di scegliere zona e fascia di livello, ma con gli strumenti adatti potrete ottenere ricerche anche più precise. Di seguito la tabella dei livelli massimi che è possibile cercare in base al numero di Medaglie possedute.</p>",
     "{captureTable}",
+    "<h3>Pokémon Shiny</h3>",
+    "<p>Nelle Zone cattura è possibile trovare dei tipi di Pokémon particolarmente rari, indicati come 'Shiny'. È possibile riconoscerli dal colore diverso rispetto a quello solito della propria specie, e una stellina di fianco al nome. Oltre a essere veramente rari (circa 1 possibilità su 8.000), hanno delle statistiche leggermente migliori rispetto ai Pokémon normali. Se ne incontrate uno, non fatevelo assolutamente scappare!</p>",
     "<h3>Livelli di obbedienza</h3>",
     "<p>Il numero di Medaglie che possedete influenzerà non solo il livello massimo dei Pokémon selvatici, ma anche il Livello massimo dei Pokémon che potrete tenere con voi.</p>",
     "<p>Se un Pokémon ha già raggiunto il massimo Livello in base al vostro numero di Medaglie, non acquisisce più esperienza finché non otterrete la Medaglia successiva.</p>",

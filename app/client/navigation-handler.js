@@ -85,7 +85,7 @@ registerAction("open-battle-shop", function(element) {
 });
 
 registerAction("open-battle-dome", function() {
-    setScene({ name: "battle-dome" });
+    setScene({ name: "battle-dome", battleDomeTab: "lobby" });
 });
 
 registerAction("open-battle-dome-lobby", function() {

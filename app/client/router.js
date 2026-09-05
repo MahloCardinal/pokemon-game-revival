@@ -230,8 +230,8 @@ function routeForScene(scene) {
   if (scene.name === "battle-dome-battle") {
     return "/battle-area/battle-dome/battle/" + encodeURIComponent(scene.battleDomeBattleId || "");
   }
-  if (scene.name === "battle-dome" && scene.battleDomeTab === "lobby") {
-    return "/battle-area/battle-dome/lobby";
+  if (scene.name === "battle-dome" && scene.battleDomeTab === "team") {
+    return "/battle-area/battle-dome/team";
   }
   if (scene.name === "login" && scene.authMode === "reset-password") {
     return "/auth/recovery";
@@ -349,6 +349,9 @@ export function sceneFromRoute(route) {
       routeValue = decodeRoutePart(parts[3]);
       return isRouteIdentifier(routeValue) ? { name: "battle-dome-battle", battleDomeBattleId: routeValue } : invalidRouteScene();
     }
+    if (parts[1] === "battle-dome" && parts.length === 3 && parts[2] === "team") {
+      return { name: "battle-dome", battleDomeTab: "team" };
+    }
     if (parts[1] === "battle-dome" && parts.length === 3 && parts[2] === "lobby") {
       return { name: "battle-dome", battleDomeTab: "lobby" };
     }
@@ -365,7 +368,7 @@ export function sceneFromRoute(route) {
       return { name: "battle-shop" };
     }
     if (parts[1] === "battle-dome") {
-      return { name: "battle-dome", battleDomeTab: "team" };
+      return { name: "battle-dome", battleDomeTab: "lobby" };
     }
     return invalidRouteScene();
   }

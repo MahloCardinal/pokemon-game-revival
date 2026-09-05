@@ -596,7 +596,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     saved: "Squadra salvata.", lobbyCreated: "Lobby creata.", copied: "Codice copiato",
     invalidCode: "Il codice della lobby non è valido.", commandFailed: "L’operazione non è riuscita.",
     invalidPokemon: "Seleziona un Pokémon e da una a quattro mosse valide.",
-    readOnly: "Stai osservando questa sfida in sola lettura.", exit: "Esci dalla sfida",
+    readOnly: "Modalità spettatore", exit: "Esci dalla sfida",
     leadSelectionTitle: "Scelta del Pokémon iniziale", chooseLead: "Manda in campo", selectedLead: "Scelto",
     chooseYourLead: "Scegli il Pokémon che manderai in campo per primo.",
     waitingForCreatorLead: "In attesa che {name} scelga il primo Pokémon.",

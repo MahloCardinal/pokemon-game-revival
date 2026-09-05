@@ -140,8 +140,8 @@ function renderLobby() {
 export function renderBattleDomeScene() {
   var dome = state.battleDome;
   var tabs = '<section class="panel battle-dome-sections-panel"><div class="panel-inner"><nav class="battle-dome-section-row section-tabs" aria-label="' + escapeHtml(t("ui.sceneTitles.battleDome")) + '">'
-    + button(t("ui.battleDome.teamTab"), "battle-dome-tab", 'data-tab="team" aria-pressed="' + (dome.tab === "team" ? "true" : "false") + '"', "button-slim" + (dome.tab === "team" ? " button-primary" : " button-ghost"))
     + button(t("ui.battleDome.lobbyTab"), "battle-dome-tab", 'data-tab="lobby" aria-pressed="' + (dome.tab === "lobby" ? "true" : "false") + '"', "button-slim" + (dome.tab === "lobby" ? " button-primary" : " button-ghost"))
+    + button(t("ui.battleDome.teamTab"), "battle-dome-tab", 'data-tab="team" aria-pressed="' + (dome.tab === "team" ? "true" : "false") + '"', "button-slim" + (dome.tab === "team" ? " button-primary" : " button-ghost"))
     + '</nav></div></section>';
   var body = dome.loading && !dome.loaded ? '<p>' + escapeHtml(t("ui.battleDome.loading")) + '</p>' : tabs + (dome.tab === "lobby" ? renderLobby() : renderTeam());
   body = renderScenePresentationPanel("battle_dome", "battle-dome-info-panel") + body;

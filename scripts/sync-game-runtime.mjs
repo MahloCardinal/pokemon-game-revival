@@ -20,6 +20,11 @@ function inside(root, path) {
   return pathFromRoot === "" || (!pathFromRoot.startsWith(".." + sep) && pathFromRoot !== "..");
 }
 
+// Git checkout settings must not change the runtime's identity.
+function normalizeText(content) {
+  return content.replace(/\r\n?/g, "\n");
+}
+
 function visit(path) {
   const normalized = resolve(path);
   if (sources.has(normalized)) return;
@@ -27,7 +32,7 @@ function visit(path) {
   if (!normalized.endsWith(".js") || !existsSync(normalized) || !statSync(normalized).isFile()) {
     throw new Error(`Missing or unsupported runtime import: ${normalized}`);
   }
-  const content = readFileSync(normalized, "utf8");
+  const content = normalizeText(readFileSync(normalized, "utf8"));
   sources.set(normalized, content);
   for (const match of [...content.matchAll(importPattern), ...content.matchAll(dynamicImportPattern)]) {
     const specifier = match[1];
@@ -42,7 +47,7 @@ const files = [...sources.entries()].map(([sourcePath, content]) => {
   const source = relative(repositoryRoot, sourcePath).replaceAll("\\", "/");
   const sha256 = createHash("sha256").update(content).digest("hex");
   return { source, sha256, bytes: Buffer.byteLength(content), content };
-}).sort((left, right) => left.source.localeCompare(right.source));
+}).sort((left, right) => left.source < right.source ? -1 : left.source > right.source ? 1 : 0);
 
 const bundleChecksum = createHash("sha256")
   .update(files.map((file) => `${file.source}\0${file.sha256}\n`).join(""))
@@ -52,6 +57,7 @@ const manifest = {
   generator: "scripts/sync-game-runtime.mjs",
   entrypoints: entries.map((entry) => relative(repositoryRoot, entry).replaceAll("\\", "/")),
   checksumAlgorithm: "sha256",
+  sourceNormalization: "lf",
   bundleChecksum,
   files: files.map(({ source, sha256, bytes }) => ({ source, sha256, bytes }))
 };
@@ -61,6 +67,7 @@ const noticeContent = [
   "",
   "Do not edit this directory manually. Canonical gameplay source is under `app/`.",
   "Regenerate with `node scripts/sync-game-runtime.mjs`.",
+  "Sources, byte counts and hashes use LF line endings on every platform.",
   `Bundle SHA-256: \`${bundleChecksum}\``,
   ""
 ].join("\n");
@@ -81,7 +88,7 @@ if (checkOnly) {
   collect(outputRoot);
   const stale = actualFiles.some((path) => !expected.has(path)) || [...expected].some(([path, content]) => {
     const destination = resolve(outputRoot, path);
-    return !existsSync(destination) || readFileSync(destination, "utf8") !== content;
+    return !existsSync(destination) || normalizeText(readFileSync(destination, "utf8")) !== content;
   });
   if (stale) throw new Error("Generated game runtime is stale. Run node scripts/sync-game-runtime.mjs.");
   console.log(`Game runtime mirror is current (${bundleChecksum}).`);

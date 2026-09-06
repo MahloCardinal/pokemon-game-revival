@@ -48,7 +48,7 @@ function authSessionIdentity(session) {
     + String(payload && payload.session_id || "");
 }
 
-async function authenticatedSessionContext(client) {
+export async function authenticatedSessionContext(client) {
   var result;
   var session;
   if (!client) {
@@ -76,7 +76,7 @@ async function authenticatedSessionContext(client) {
   };
 }
 
-async function authenticatedSessionStillMatches(client, context) {
+export async function authenticatedSessionStillMatches(client, context) {
   var current = await authenticatedSessionContext(client);
   return Boolean(current.ok && context && current.sessionIdentity === context.sessionIdentity);
 }

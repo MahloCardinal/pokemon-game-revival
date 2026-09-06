@@ -83,178 +83,204 @@ export function normalizeItemDefinition(item) {
 }
 
 export const poke_ball = normalizeItemDefinition({
-    index: 100,    image: "poke_ball.webp",
+    index: 100,
+    image: "poke_ball.webp",
     category: ItemCategory.Ball,
     value: 1
   });
 
 export const great_ball = normalizeItemDefinition({
-    index: 101,    image: "mega_ball.webp",
+    index: 101,
+    image: "mega_ball.webp",
     category: ItemCategory.Ball,
     value: 1.5
   });
 
 export const ultra_ball = normalizeItemDefinition({
-    index: 102,    image: "ultra_ball.webp",
+    index: 102,
+    image: "ultra_ball.webp",
     category: ItemCategory.Ball,
     value: 2
   });
 
 export const potion = normalizeItemDefinition({
-    index: 103,    image: "pozione.webp",
+    index: 103,
+    image: "pozione.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 20
   });
 
 export const super_potion = normalizeItemDefinition({
-    index: 104,    image: "superpozione.webp",
+    index: 104,
+    image: "superpozione.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 50
   });
 
 export const hyper_potion = normalizeItemDefinition({
-    index: 105,    image: "iperpozione.webp",
+    index: 105,
+    image: "iperpozione.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 200
   });
 
 export const max_potion = normalizeItemDefinition({
-    index: 106,    image: "pozione_max.webp",
+    index: 106,
+    image: "pozione_max.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: "max"
   });
 
 export const full_restore = normalizeItemDefinition({
-    index: 107,    image: "ricarica_totale.webp",
+    index: 107,
+    image: "ricarica_totale.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealFull,
     value: "max"
   });
 
 export const antidote = normalizeItemDefinition({
-    index: 108,    image: "antidoto.webp",
+    index: 108,
+    image: "antidoto.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["psn"]
   });
 
 export const paralyze_heal = normalizeItemDefinition({
-    index: 109,    image: "antiparalisi.webp",
+    index: 109,
+    image: "antiparalisi.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["par_block", "par_free"]
   });
 
 export const awakening = normalizeItemDefinition({
-    index: 110,    image: "sveglia.webp",
+    index: 110,
+    image: "sveglia.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["slp"]
   });
 
 export const burn_heal = normalizeItemDefinition({
-    index: 111,    image: "antiscottatura.webp",
+    index: 111,
+    image: "antiscottatura.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["brn"]
   });
 
 export const ice_heal = normalizeItemDefinition({
-    index: 112,    image: "antigelo.webp",
+    index: 112,
+    image: "antigelo.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["frz"]
   });
 
 export const full_heal = normalizeItemDefinition({
-    index: 113,    image: "cura_totale.webp",
+    index: 113,
+    image: "cura_totale.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["all"]
   });
 
 export const fresh_water = normalizeItemDefinition({
-    index: 114,    image: "acqua_fresca.webp",
+    index: 114,
+    image: "acqua_fresca.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 50
   });
 
 export const soda_pop = normalizeItemDefinition({
-    index: 115,    image: "gassosa.webp",
+    index: 115,
+    image: "gassosa.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 60
   });
 
 export const lemonade = normalizeItemDefinition({
-    index: 116,    image: "lemonsucco.webp",
+    index: 116,
+    image: "lemonsucco.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 80
   });
 
 export const moomoo_milk = normalizeItemDefinition({
-    index: 117,    image: "latte_mumu.webp",
+    index: 117,
+    image: "latte_mumu.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 100
   });
 
 export const clear_sky_elixir = normalizeItemDefinition({
-    index: 118,    image: "elisir_chiarocielo.webp",
+    index: 118,
+    image: "elisir_chiarocielo.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.Weather
   });
 
 export const revive = normalizeItemDefinition({
-    index: 119,    image: "revitalizzante.webp",
+    index: 119,
+    image: "revitalizzante.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealKo,
     healFraction: 0.5
   });
 
 export const max_revive = normalizeItemDefinition({
-    index: 120,    image: "revitalizzante_max.webp",
+    index: 120,
+    image: "revitalizzante_max.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealKo,
     value: "max"
   });
 
 export const heal_powder = normalizeItemDefinition({
-    index: 121,    image: "polvocura.webp",
+    index: 121,
+    image: "polvocura.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["all"]
   });
 
 export const energy_powder = normalizeItemDefinition({
-    index: 122,    image: "polvenergia.webp",
+    index: 122,
+    image: "polvenergia.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 50
   });
 
 export const energy_root = normalizeItemDefinition({
-    index: 123,    image: "radicenergia.webp",
+    index: 123,
+    image: "radicenergia.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealHp,
     value: 200
   });
 
 export const revival_herb = normalizeItemDefinition({
-    index: 124,    image: "vitalerba.webp",
+    index: 124,
+    image: "vitalerba.webp",
     category: ItemCategory.BattleItem,
     subcategory: ItemSubcategory.HealKo,
     healFraction: 0.5
   });
 
 export const mystic_water = normalizeItemDefinition({
-    index: 200,    image: "acqua_magica.webp",
+    index: 200,
+    image: "acqua_magica.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "water",
@@ -262,7 +288,8 @@ export const mystic_water = normalizeItemDefinition({
   });
 
 export const silver_powder = normalizeItemDefinition({
-    index: 201,    image: "argenpolvere.webp",
+    index: 201,
+    image: "argenpolvere.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "bug",
@@ -270,7 +297,8 @@ export const silver_powder = normalizeItemDefinition({
   });
 
 export const sharp_beak = normalizeItemDefinition({
-    index: 202,    image: "beccaffilato.webp",
+    index: 202,
+    image: "beccaffilato.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "flying",
@@ -278,7 +306,8 @@ export const sharp_beak = normalizeItemDefinition({
   });
 
 export const magnet = normalizeItemDefinition({
-    index: 203,    image: "calamita.webp",
+    index: 203,
+    image: "calamita.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "electric",
@@ -286,7 +315,8 @@ export const magnet = normalizeItemDefinition({
   });
 
 export const charcoal = normalizeItemDefinition({
-    index: 204,    image: "carbonella.webp",
+    index: 204,
+    image: "carbonella.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "fire",
@@ -294,7 +324,8 @@ export const charcoal = normalizeItemDefinition({
   });
 
 export const black_belt = normalizeItemDefinition({
-    index: 205,    image: "cintura_nera.webp",
+    index: 205,
+    image: "cintura_nera.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "fighting",
@@ -302,7 +333,8 @@ export const black_belt = normalizeItemDefinition({
   });
 
 export const twisted_spoon = normalizeItemDefinition({
-    index: 206,    image: "cucchiaio_torto.webp",
+    index: 206,
+    image: "cucchiaio_torto.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "psychic",
@@ -310,7 +342,8 @@ export const twisted_spoon = normalizeItemDefinition({
   });
 
 export const dragon_fang = normalizeItemDefinition({
-    index: 207,    image: "dente_di_drago.webp",
+    index: 207,
+    image: "dente_di_drago.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "dragon",
@@ -318,7 +351,8 @@ export const dragon_fang = normalizeItemDefinition({
   });
 
 export const never_melt_ice = normalizeItemDefinition({
-    index: 208,    image: "gelomai.webp",
+    index: 208,
+    image: "gelomai.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "ice",
@@ -326,7 +360,8 @@ export const never_melt_ice = normalizeItemDefinition({
   });
 
 export const metal_coat = normalizeItemDefinition({
-    index: 209,    image: "metalcopertura.webp",
+    index: 209,
+    image: "metalcopertura.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "steel",
@@ -334,7 +369,8 @@ export const metal_coat = normalizeItemDefinition({
   });
 
 export const miracle_seed = normalizeItemDefinition({
-    index: 210,    image: "miracolseme.webp",
+    index: 210,
+    image: "miracolseme.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "grass",
@@ -342,7 +378,8 @@ export const miracle_seed = normalizeItemDefinition({
   });
 
 export const black_glasses = normalizeItemDefinition({
-    index: 211,    image: "occhialineri.webp",
+    index: 211,
+    image: "occhialineri.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "dark",
@@ -350,7 +387,8 @@ export const black_glasses = normalizeItemDefinition({
   });
 
 export const hard_stone = normalizeItemDefinition({
-    index: 212,    image: "pietradura.webp",
+    index: 212,
+    image: "pietradura.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "rock",
@@ -358,7 +396,8 @@ export const hard_stone = normalizeItemDefinition({
   });
 
 export const fairy_feather = normalizeItemDefinition({
-    index: 213,    image: "piuma_fatata.webp",
+    index: 213,
+    image: "piuma_fatata.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "fairy",
@@ -366,7 +405,8 @@ export const fairy_feather = normalizeItemDefinition({
   });
 
 export const soft_sand = normalizeItemDefinition({
-    index: 214,    image: "sabbia_soffice.webp",
+    index: 214,
+    image: "sabbia_soffice.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "ground",
@@ -374,7 +414,8 @@ export const soft_sand = normalizeItemDefinition({
   });
 
 export const silk_scarf = normalizeItemDefinition({
-    index: 215,    image: "sciarpa_seta.webp",
+    index: 215,
+    image: "sciarpa_seta.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "normal",
@@ -382,7 +423,8 @@ export const silk_scarf = normalizeItemDefinition({
   });
 
 export const spell_tag = normalizeItemDefinition({
-    index: 216,    image: "spettrotarga.webp",
+    index: 216,
+    image: "spettrotarga.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "ghost",
@@ -390,7 +432,8 @@ export const spell_tag = normalizeItemDefinition({
   });
 
 export const poison_barb = normalizeItemDefinition({
-    index: 217,    image: "velenaculeo.webp",
+    index: 217,
+    image: "velenaculeo.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.TypeBoost,
     boostType: "poison",
@@ -398,42 +441,48 @@ export const poison_barb = normalizeItemDefinition({
   });
 
 export const protector = normalizeItemDefinition({
-    index: 218,    image: "copertura.webp",
+    index: 218,
+    image: "copertura.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "status_damage_halve"
   });
 
 export const heavy_duty_boots = normalizeItemDefinition({
-    index: 219,    image: "scarponi_robusti.webp",
+    index: 219,
+    image: "scarponi_robusti.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.Misc,
     effect: "hazard_multiturn_guard"
   });
 
 export const lax_incense = normalizeItemDefinition({
-    index: 220,    image: "distraroma.webp",
+    index: 220,
+    image: "distraroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
     effect: "status_delay"
   });
 
 export const luck_incense = normalizeItemDefinition({
-    index: 221,    image: "fortunaroma.webp",
+    index: 221,
+    image: "fortunaroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
     effect: "status_ignore_delay"
   });
 
 export const pure_incense = normalizeItemDefinition({
-    index: 222,    image: "puroaroma.webp",
+    index: 222,
+    image: "puroaroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatsItem,
     effect: "ignore_stat_mods"
   });
 
 export const odd_incense = normalizeItemDefinition({
-    index: 223,    image: "bizzoaroma.webp",
+    index: 223,
+    image: "bizzoaroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.Misc,
     effect: "entry_disable_move",
@@ -441,7 +490,8 @@ export const odd_incense = normalizeItemDefinition({
   });
 
 export const full_incense = normalizeItemDefinition({
-    index: 224,    image: "gonfioaroma.webp",
+    index: 224,
+    image: "gonfioaroma.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.Misc,
     effect: "entry_add_type",
@@ -450,7 +500,8 @@ export const full_incense = normalizeItemDefinition({
   });
 
 export const light_ball = normalizeItemDefinition({
-    index: 225,    image: "elettropalla.webp",
+    index: 225,
+    image: "elettropalla.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "species_damage_boost",
@@ -459,7 +510,8 @@ export const light_ball = normalizeItemDefinition({
   });
 
 export const leek = normalizeItemDefinition({
-    index: 226,    image: "gambo.webp",
+    index: 226,
+    image: "gambo.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "species_damage_boost",
@@ -468,7 +520,8 @@ export const leek = normalizeItemDefinition({
   });
 
 export const lucky_punch = normalizeItemDefinition({
-    index: 227,    image: "fortunpugno.webp",
+    index: 227,
+    image: "fortunpugno.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "species_damage_boost",
@@ -477,7 +530,8 @@ export const lucky_punch = normalizeItemDefinition({
   });
 
 export const thick_club = normalizeItemDefinition({
-    index: 228,    image: "ossospesso.webp",
+    index: 228,
+    image: "ossospesso.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "species_damage_boost",
@@ -486,14 +540,16 @@ export const thick_club = normalizeItemDefinition({
   });
 
 export const kings_rock = normalizeItemDefinition({
-    index: 229,    image: "roccia_di_re.webp",
+    index: 229,
+    image: "roccia_di_re.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
     effect: "invert_par_cnf"
   });
 
 export const metronome = normalizeItemDefinition({
-    index: 230,    image: "plessimetro.webp",
+    index: 230,
+    image: "plessimetro.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "consecutive_move_boost",
@@ -501,14 +557,16 @@ export const metronome = normalizeItemDefinition({
   });
 
 export const life_orb = normalizeItemDefinition({
-    index: 231,    image: "assorbisfera.webp",
+    index: 231,
+    image: "assorbisfera.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "hp_cost_base_boost"
   });
 
 export const shell_bell = normalizeItemDefinition({
-    index: 232,    image: "conchinella.webp",
+    index: 232,
+    image: "conchinella.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "damage_drain",
@@ -516,28 +574,32 @@ export const shell_bell = normalizeItemDefinition({
   });
 
 export const blunder_policy = normalizeItemDefinition({
-    index: 233,    image: "fiascopolizza.webp",
+    index: 233,
+    image: "fiascopolizza.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatsItem,
     effect: "percentage_move_atk_buff"
   });
 
 export const focus_band = normalizeItemDefinition({
-    index: 234,    image: "bandana.webp",
+    index: 234,
+    image: "bandana.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.Misc,
     effect: "ohko_protect"
   });
 
 export const rocky_helmet = normalizeItemDefinition({
-    index: 235,    image: "bitorzolelmo.webp",
+    index: 235,
+    image: "bitorzolelmo.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "status_retaliate_damage"
   });
 
 export const zoom_lens = normalizeItemDefinition({
-    index: 236,    image: "zoomlente.webp",
+    index: 236,
+    image: "zoomlente.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.DamageItem,
     effect: "type_disadvantage_boost",
@@ -545,196 +607,224 @@ export const zoom_lens = normalizeItemDefinition({
   });
 
 export const bright_powder = normalizeItemDefinition({
-    index: 237,    image: "luminpolvere.webp",
+    index: 237,
+    image: "luminpolvere.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
     effect: "entry_status_immunity"
   });
 
 export const focus_sash = normalizeItemDefinition({
-    index: 238,    image: "focalnastro.webp",
+    index: 238,
+    image: "focalnastro.webp",
     category: ItemCategory.HeldItem,
     subcategory: ItemSubcategory.StatusItem,
     effect: "status_protect_after_ko"
   });
 
 export const cheri_berry = normalizeItemDefinition({
-    index: 300,    image: "baccaliegi.webp",
+    index: 300,
+    image: "baccaliegi.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["par_block", "par_free"]
   });
 
 export const chesto_berry = normalizeItemDefinition({
-    index: 301,    image: "baccastagna.webp",
+    index: 301,
+    image: "baccastagna.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["slp"]
   });
 
 export const pecha_berry = normalizeItemDefinition({
-    index: 302,    image: "baccapesca.webp",
+    index: 302,
+    image: "baccapesca.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["psn"]
   });
 
 export const rawst_berry = normalizeItemDefinition({
-    index: 303,    image: "baccafrago.webp",
+    index: 303,
+    image: "baccafrago.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["brn"]
   });
 
 export const aspear_berry = normalizeItemDefinition({
-    index: 304,    image: "baccaperina.webp",
+    index: 304,
+    image: "baccaperina.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["frz"]
   });
 
 export const oran_berry = normalizeItemDefinition({
-    index: 305,    image: "baccarancia.webp",
+    index: 305,
+    image: "baccarancia.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealHp,
     value: 10
   });
 
 export const sitrus_berry = normalizeItemDefinition({
-    index: 306,    image: "baccacedro.webp",
+    index: 306,
+    image: "baccacedro.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealHp,
     healFraction: 0.25
   });
 
 export const persim_berry = normalizeItemDefinition({
-    index: 307,    image: "baccaki.webp",
+    index: 307,
+    image: "baccaki.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["cnf_block", "cnf_free"]
   });
 
 export const lum_berry = normalizeItemDefinition({
-    index: 308,    image: "baccaprugna.webp",
+    index: 308,
+    image: "baccaprugna.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.HealStatus,
     statuses: ["all"]
   });
 
 export const occa_berry = normalizeItemDefinition({
-    index: 309,    image: "baccacao.webp",
+    index: 309,
+    image: "baccacao.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "fire"
   });
 
 export const passho_berry = normalizeItemDefinition({
-    index: 310,    image: "baccapasflo.webp",
+    index: 310,
+    image: "baccapasflo.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "water"
   });
 
 export const wacan_berry = normalizeItemDefinition({
-    index: 311,    image: "baccaparmen.webp",
+    index: 311,
+    image: "baccaparmen.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "electric"
   });
 
 export const rindo_berry = normalizeItemDefinition({
-    index: 312,    image: "baccarindo.webp",
+    index: 312,
+    image: "baccarindo.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "grass"
   });
 
 export const yache_berry = normalizeItemDefinition({
-    index: 313,    image: "baccamoya.webp",
+    index: 313,
+    image: "baccamoya.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "ice"
   });
 
 export const chople_berry = normalizeItemDefinition({
-    index: 314,    image: "baccarosmel.webp",
+    index: 314,
+    image: "baccarosmel.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "fighting"
   });
 
 export const kebia_berry = normalizeItemDefinition({
-    index: 315,    image: "baccakebia.webp",
+    index: 315,
+    image: "baccakebia.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "poison"
   });
 
 export const shuca_berry = normalizeItemDefinition({
-    index: 316,    image: "baccanaca.webp",
+    index: 316,
+    image: "baccanaca.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "ground"
   });
 
 export const coba_berry = normalizeItemDefinition({
-    index: 317,    image: "baccababa.webp",
+    index: 317,
+    image: "baccababa.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "flying"
   });
 
 export const payapa_berry = normalizeItemDefinition({
-    index: 318,    image: "baccapayapa.webp",
+    index: 318,
+    image: "baccapayapa.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "psychic"
   });
 
 export const tanga_berry = normalizeItemDefinition({
-    index: 319,    image: "baccaitan.webp",
+    index: 319,
+    image: "baccaitan.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "bug"
   });
 
 export const charti_berry = normalizeItemDefinition({
-    index: 320,    image: "baccaciofo.webp",
+    index: 320,
+    image: "baccaciofo.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "rock"
   });
 
 export const kasib_berry = normalizeItemDefinition({
-    index: 321,    image: "baccacitrus.webp",
+    index: 321,
+    image: "baccacitrus.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "ghost"
   });
 
 export const haban_berry = normalizeItemDefinition({
-    index: 322,    image: "baccahaban.webp",
+    index: 322,
+    image: "baccahaban.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "dragon"
   });
 
 export const colbur_berry = normalizeItemDefinition({
-    index: 323,    image: "baccaxan.webp",
+    index: 323,
+    image: "baccaxan.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "dark"
   });
 
 export const babiri_berry = normalizeItemDefinition({
-    index: 324,    image: "baccababiri.webp",
+    index: 324,
+    image: "baccababiri.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "steel"
   });
 
 export const chilan_berry = normalizeItemDefinition({
-    index: 325,    image: "baccacinlan.webp",
+    index: 325,
+    image: "baccacinlan.webp",
     category: ItemCategory.Berry,
     subcategory: ItemSubcategory.TypeProtection,
     protectType: "normal"
@@ -797,135 +887,157 @@ export const tm54 = normalizeItemDefinition(defineTM({index: 454, number: 54, mo
 export const tm55 = normalizeItemDefinition(defineTM({index: 455, number: 55, move: m.waterfall, tier: 2}));
 
 export const hp_up = normalizeItemDefinition({
-    index: 600,    image: "ps_su.webp",
+    index: 600,
+    image: "ps_su.webp",
     category: ItemCategory.Vitamin,
     effect: "max_hp",
     value: 3
   });
 
 export const pp_up = normalizeItemDefinition({
-    index: 601,    image: "pp_su.webp",
+    index: 601,
+    image: "pp_su.webp",
     category: ItemCategory.Vitamin,
     effect: "move_power",
     value: 2
   });
 
 export const pp_max = normalizeItemDefinition({
-    index: 602,    image: "pp_max.webp",
+    index: 602,
+    image: "pp_max.webp",
     category: ItemCategory.Vitamin,
     effect: "move_power",
     value: 4
   });
 
 export const felix_stone = normalizeItemDefinition({
-    index: 603,    image: "felixpietra.webp",
+    index: 603,
+    image: "felixpietra.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const fire_stone = normalizeItemDefinition({
-    index: 604,    image: "pietrafocaia.webp",
+    index: 604,
+    image: "pietrafocaia.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const thunder_stone = normalizeItemDefinition({
-    index: 605,    image: "pietratuono.webp",
+    index: 605,
+    image: "pietratuono.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const water_stone = normalizeItemDefinition({
-    index: 606,    image: "pietraidrica.webp",
+    index: 606,
+    image: "pietraidrica.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const leaf_stone = normalizeItemDefinition({
-    index: 607,    image: "pietrafoglia.webp",
+    index: 607,
+    image: "pietrafoglia.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const moon_stone = normalizeItemDefinition({
-    index: 608,    image: "pietralunare.webp",
+    index: 608,
+    image: "pietralunare.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const sun_stone = normalizeItemDefinition({
-    index: 609,    image: "pietrasolare.webp",
+    index: 609,
+    image: "pietrasolare.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const deep_sea_tooth = normalizeItemDefinition({
-    index: 610,    image: "dente_abissi.webp",
+    index: 610,
+    image: "dente_abissi.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const deep_sea_scale = normalizeItemDefinition({
-    index: 611,    image: "squamabissi.webp",
+    index: 611,
+    image: "squamabissi.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const prism_scale = normalizeItemDefinition({
-    index: 612,    image: "squama_bella.webp",
+    index: 612,
+    image: "squama_bella.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const upgrade = normalizeItemDefinition({
-    index: 613,    image: "upgrade.webp",
+    index: 613,
+    image: "upgrade.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const dragon_scale = normalizeItemDefinition({
-    index: 614,    image: "squama_drago.webp",
+    index: 614,
+    image: "squama_drago.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const linking_cord = normalizeItemDefinition({
-    index: 615,    image: "filo_dell_unione.webp",
+    index: 615,
+    image: "filo_dell_unione.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.EvolutionStone
   });
 
 export const go_goggles = normalizeItemDefinition({
-    index: 616,    image: "occhialoni.webp",
+    index: 616,
+    image: "occhialoni.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.Unknown
   });
 export const silph_scope = normalizeItemDefinition({
-    index: 617,    image: "spettrosonda.webp",
+    index: 617,
+    image: "spettrosonda.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.Unknown
   });
 
 export const white_flute = normalizeItemDefinition({
-    index: 618,    image: "flauto_bianco.webp",
+    index: 618,
+    image: "flauto_bianco.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.Unknown
   });
 
 export const black_flute = normalizeItemDefinition({
-    index: 619,    image: "flauto_nero.webp",
+    index: 619,
+    image: "flauto_nero.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.Unknown
   });
 
 export const master_ball = normalizeItemDefinition({
-    index: 620,    image: "master_ball.webp",
+    index: 620,
+    image: "master_ball.webp",
     category: ItemCategory.Ball,
     value: 100
   });
 
 export const heart_scale = normalizeItemDefinition({
-    index: 621,    image: "squama_cuore.webp",
+    index: 621,
+    image: "squama_cuore.webp",
     category: ItemCategory.Item,
     subcategory: ItemSubcategory.MoveTutor
   });

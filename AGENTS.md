@@ -153,6 +153,7 @@ La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` son
 - `battle-command` è l'unico ingresso Edge per le battaglie del giocatore e le funzioni debug previste.
 - Gli RPC mutanti autoritativi non devono essere eseguibili direttamente dai ruoli browser.
 - I comandi mantengono command ID, revisioni attese e ricevute idempotenti.
+- In Cupola il commit ricontrolla la ricevuta dopo il lock della sfida e prima di turno, versione e snapshot. Un replay non scrive lo storico e la Edge ricostruisce la proiezione dallo stato canonico corrente; non deve riutilizzare la transizione calcolata dalla richiesta duplicata. Test: `scripts/test-battle-dome-replay.mjs` e `scripts/test-application-conflicts.sql`.
 - Non considerare un timeout di trasporto come prova che un comando non sia stato eseguito.
 - Per i conflitti applicativi di revisione, versione o snapshot usare `server_authority_private.raise_revision_conflict(message)`. Non sollevare manualmente SQLSTATE `40001`: PostgREST può ritentare indefinitamente la stessa transazione. L'helper usa SQLSTATE `PGRST` e conserva HTTP 409 e il codice JSON `40001` già gestito dai client. Verificare con `scripts/test-application-conflicts.sql` su fixture temporanee e rollback.
 - Applicare lo stato canonico restituito dal server prima di ricostruire la proiezione o mostrare ricompense.
@@ -184,6 +185,8 @@ node scripts/sync-game-runtime.mjs --check
 ```
 
 Il mirror in `supabase/functions/_shared/game-runtime/` e il relativo checksum devono corrispondere ad `app/`. Non modificare manualmente il manifest generato.
+
+Il generatore normalizza i fine riga a LF prima di copiare i moduli e calcolare byte e hash; l'ordine dei file è indipendente dalla locale. `scripts/test-runtime-portability.mjs` verifica checkout LF, CRLF e misti e rileva modifiche reali. Non sostituire i checksum degli snapshot esistenti per una normalizzazione dei file. Per una correzione del solo coordinamento Edge, quando occorre conservare snapshot legati al pacchetto distribuito, scaricare quel pacchetto con `functions download --use-api` in una cartella temporanea e sostituire soltanto i sorgenti Edge modificati, preservando integralmente il runtime e il suo manifest.
 
 Una nuova coppia catalogo/runtime richiede un binding additivo. Non sostituire un binding mentre esistono battaglie o snapshot attivi con checksum incompatibile.
 

@@ -45,6 +45,7 @@ begin
   v_definition := replace(v_definition, 'update public.battle_dome_battle', 'update pg_temp.battle_dome_battle');
   v_definition := replace(v_definition, 'into public.battle_dome_event', 'into pg_temp.battle_dome_event');
   v_definition := replace(v_definition, 'into public.battle_dome_command_receipt', 'into pg_temp.battle_dome_command_receipt');
+  v_definition := replace(v_definition, 'from public.battle_dome_command_receipt', 'from pg_temp.battle_dome_command_receipt');
   execute v_definition;
 end;
 $fixture$;
@@ -61,7 +62,7 @@ select set_config('request.jwt.claim.role', 'service_role', true);
 select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 
 do $test$
-declare v_case text; v_result jsonb; v_message text; v_hash text;
+declare v_case text; v_result jsonb; v_replay jsonb; v_message text; v_hash text; v_command_id uuid := gen_random_uuid();
 begin
   v_hash := encode(extensions.digest(convert_to('{}'::jsonb::text,'UTF8'),'sha256'),'hex');
   foreach v_case in array array['version','engine','hash','turn','initialized'] loop
@@ -86,7 +87,7 @@ begin
       raise exception 'Rejected command changed battle data';
     end if;
   end loop;
-  v_result := pg_temp.commit_dome('10000000-0000-4000-8000-000000000002', gen_random_uuid(),
+  v_result := pg_temp.commit_dome('10000000-0000-4000-8000-000000000002', v_command_id,
     'move', 'fixture-command', '10000000-0000-4000-8000-000000000001', 5,
     'pokemon-game-revival', repeat('a',64), v_hash, '{"fixture":true}',
     '[{"type":"fixture","data":{}}]', '{"status":"active","waiting_for":"admin","player_active_slot":0,"npc_active_slot":0}');
@@ -95,7 +96,73 @@ begin
     or (select count(*) from pg_temp.battle_dome_event) <> 1 then
     raise exception 'Valid command did not commit atomically';
   end if;
+  -- The lock loser sees this same state: changed turn, version and snapshot.
+  -- Its speculative transition must not replace the first committed result.
+  v_replay := pg_temp.commit_dome('10000000-0000-4000-8000-000000000002', v_command_id,
+    'move', 'fixture-command', '10000000-0000-4000-8000-000000000001', 5,
+    'pokemon-game-revival', repeat('a',64), v_hash, '{"uncommitted":true}',
+    '[{"type":"uncommitted","data":{}}]', '{"status":"active","waiting_for":"player"}');
+  if v_replay <> v_result || '{"replayed":true}'::jsonb
+    or (select battle_version from pg_temp.battle_dome_battle) <> 6
+    or (select engine_snapshot from pg_temp.battle_dome_battle) <> '{"fixture":true}'::jsonb
+    or (select count(*) from pg_temp.battle_dome_command_receipt) <> 1
+    or (select count(*) from pg_temp.battle_dome_event) <> 1 then
+    raise exception 'Duplicate command was not replayed without mutation';
+  end if;
+  foreach v_case in array array['hash', 'type'] loop
+    begin
+      perform pg_temp.commit_dome('10000000-0000-4000-8000-000000000002', v_command_id,
+        case when v_case = 'type' then 'switch' else 'move' end,
+        case when v_case = 'hash' then 'different-command' else 'fixture-command' end,
+        '10000000-0000-4000-8000-000000000001', 5,
+        'pokemon-game-revival', repeat('a',64), v_hash, '{}', '[]', '{}');
+      raise exception 'Command ID reuse with different % was accepted', v_case;
+    exception when sqlstate '22023' then null;
+    end;
+  end loop;
 end;
 $test$;
-select 'Application conflicts: response contract, privileges, stale commands and valid commit passed' as result;
+
+-- Execute the real history wrapper with a spy: a replay must never store the
+-- speculative request's checkpoints, even if its events differ from the receipt.
+create temporary table history_calls (calls integer) on commit drop;
+insert into history_calls values (0);
+create function pg_temp.store_history(uuid, boolean, jsonb, jsonb) returns void language plpgsql as $$
+begin update pg_temp.history_calls set calls = calls + 1; end;
+$$;
+do $fixture$
+declare v_definition text;
+begin
+  select pg_get_functiondef('public.commit_edge_battle_dome_command(uuid,uuid,text,text,uuid,bigint,text,text,text,jsonb,jsonb,jsonb)'::regprocedure)
+    into v_definition;
+  v_definition := replace(v_definition, 'public.commit_edge_battle_dome_command_before_turn_history', 'pg_temp.commit_dome');
+  v_definition := replace(v_definition, 'public.commit_edge_battle_dome_command', 'pg_temp.commit_with_history');
+  v_definition := replace(v_definition, 'server_authority_private.store_battle_turn_history', 'pg_temp.store_history');
+  execute v_definition;
+end;
+$fixture$;
+do $test$
+declare v_receipt record; v_result jsonb;
+begin
+  select * into strict v_receipt from pg_temp.battle_dome_command_receipt;
+  v_result := pg_temp.commit_with_history(v_receipt.auth_user_id, v_receipt.command_id,
+    v_receipt.command_type, v_receipt.command_hash, v_receipt.battle_id, 5,
+    'pokemon-game-revival', repeat('a',64), 'old-snapshot', '{}',
+    '[{"type":"turn_checkpoint","data":{"turn_number":99,"projection":{}}}]', '{}');
+  if v_result->>'replayed' <> 'true' or (select calls from pg_temp.history_calls) <> 0 then
+    raise exception 'Replay attempted to write turn history';
+  end if;
+  -- A genuinely new command still invokes the history writer once.
+  perform pg_temp.commit_with_history('10000000-0000-4000-8000-000000000003', gen_random_uuid(),
+    'move', 'next-command', v_receipt.battle_id, 6, 'pokemon-game-revival', repeat('a',64),
+    encode(extensions.digest(convert_to('{"fixture":true}'::jsonb::text,'UTF8'),'sha256'),'hex'),
+    '{}', '[]', '{"status":"active","waiting_for":"player","player_active_slot":0,"npc_active_slot":0}');
+  if (select calls from pg_temp.history_calls) <> 1 then raise exception 'New commit skipped history'; end if;
+  if has_function_privilege('authenticated', 'public.commit_edge_battle_dome_command(uuid,uuid,text,text,uuid,bigint,text,text,text,jsonb,jsonb,jsonb)', 'execute')
+    or has_function_privilege('anon', 'public.commit_edge_battle_dome_command_before_turn_history(uuid,uuid,text,text,uuid,bigint,text,text,text,jsonb,jsonb,jsonb)', 'execute') then
+    raise exception 'Browser roles can commit Dome commands directly';
+  end if;
+end;
+$test$;
+select 'Application conflicts: response contract, privileges, stale commands, commit, replay and history passed' as result;
 rollback;

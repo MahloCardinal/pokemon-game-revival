@@ -1,0 +1,5 @@
+# Keep executable sources and generated runtime manifests portable across checkouts.
+*.js text eol=lf
+*.mjs text eol=lf
+*.ts text eol=lf
+supabase/functions/_shared/game-runtime/** text eol=lf

@@ -7,6 +7,16 @@ var BATTLE_STORAGE_PREFIX = "pokemon_game_revival:runtime:in_battle:";
 var BATTLE_STALE_AFTER_MS = 120000;
 
 var checkingDeployment = false;
+var loadedDeployment = readStoredDeployment();
+
+function readStoredDeployment() {
+  try { return sessionStorage.getItem(DEPLOYMENT_STORAGE_KEY) || null; } catch (error) { return null; }
+}
+
+function rememberDeployment(deployment) {
+  loadedDeployment = deployment;
+  try { sessionStorage.setItem(DEPLOYMENT_STORAGE_KEY, deployment); } catch (error) {}
+}
 
 function fetchDeploymentId() {
   return fetch(DEPLOYMENT_URL, { cache: "no-store" })
@@ -46,35 +56,26 @@ function shouldDeferReloadForActiveBattle() {
 
 function reloadForDeployment(deployment) {
   if (shouldDeferReloadForActiveBattle()) { return false; }
-  localStorage.setItem(DEPLOYMENT_STORAGE_KEY, deployment);
+  rememberDeployment(deployment);
   location.reload();
   return true;
 }
 
 export function initializeDeploymentWatcher() {
-  return fetchDeploymentId().then(function (deployment) {
-    if (!deployment) { return false; }
-    var stored = localStorage.getItem(DEPLOYMENT_STORAGE_KEY);
-    if (stored && stored !== deployment) {
-      return reloadForDeployment(deployment);
-    }
-    localStorage.setItem(DEPLOYMENT_STORAGE_KEY, deployment);
-    return false;
-  });
+  return checkDeploymentFromServer();
 }
 
 export function checkDeploymentFromServer() {
-  if (checkingDeployment) { return; }
+  if (checkingDeployment) { return Promise.resolve(false); }
   checkingDeployment = true;
-  fetchDeploymentId()
+  return fetchDeploymentId()
     .then(function (deployment) {
-      if (!deployment) { return; }
-      var stored = localStorage.getItem(DEPLOYMENT_STORAGE_KEY);
-      if (stored && stored !== deployment) {
-        reloadForDeployment(deployment);
-        return;
+      if (!deployment) { return false; }
+      if (loadedDeployment && loadedDeployment !== deployment) {
+        return reloadForDeployment(deployment);
       }
-      localStorage.setItem(DEPLOYMENT_STORAGE_KEY, deployment);
+      rememberDeployment(deployment);
+      return false;
     })
     .finally(function () {
       checkingDeployment = false;

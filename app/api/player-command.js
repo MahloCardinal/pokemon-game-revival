@@ -1,13 +1,21 @@
-import { getSupabaseClient } from "./supabase.js";
+import { getSupabaseClient, authenticatedSessionContext, authenticatedSessionStillMatches } from "./supabase.js";
 
 var PENDING_COMMAND_STORAGE_KEY = "pokemon-game-revival:pending-player-commands";
 var PLAYER_REVISION_CONFLICT_COOLDOWN_MS = 1500;
 var PLAYER_REVISION_REFRESH_CACHE_MS = 1000;
-var playerCommandInFlight = {};
-var playerRevisionConflictCooldown = null;
-var playerRevisionRefreshInFlight = null;
-var playerRevisionRefreshCache = null;
-var playerRevisionRefreshCachedAt = 0;
+var playerCommandScope = null;
+
+function scopeForSession(context) {
+  if (!playerCommandScope || playerCommandScope.identity !== context.sessionIdentity) {
+    playerCommandScope = { identity: context.sessionIdentity, inFlight: {}, cooldown: null,
+      refreshInFlight: null, refreshCache: null, refreshCachedAt: 0 };
+  }
+  return playerCommandScope;
+}
+
+function staleSessionResult() {
+  return { ok: false, code: "stale_session", uncertain: true };
+}
 
 export var PLAYER_REVISION_SYNC_EVENT = "pokemon-game-revival:player-revision-sync";
 
@@ -36,17 +44,22 @@ export function previewDaycareWithdrawal(pendingResolutionId) {
   return runRpc("preview_daycare_withdrawal", { p_pending_resolution_id: pendingResolutionId });
 }
 
-async function runRpc(name, params) {
+async function runRpc(name, params, expectedContext) {
   var client = getSupabaseClient();
   var result;
   if (!client) {
     return { ok: false, code: "missing_configuration" };
   }
+  var context = await authenticatedSessionContext(client);
+  if (!context.ok) return context;
+  if (expectedContext && context.sessionIdentity !== expectedContext.sessionIdentity) return staleSessionResult();
   try {
     result = await client.rpc(name, params);
   } catch (error) {
+    if (!await authenticatedSessionStillMatches(client, context)) return staleSessionResult();
     return { ok: false, code: "player_rpc_failed", detail: error && error.message || "" };
   }
+  if (!await authenticatedSessionStillMatches(client, context)) return staleSessionResult();
   if (result.error) {
     return { ok: false, code: result.error.code || "player_rpc_failed", detail: result.error.message || "" };
   }
@@ -75,7 +88,9 @@ function savePendingCommands(commands) {
   } catch (error) {}
 }
 
-function clearPendingCommand(commands, key) {
+function clearPendingCommand(key, commandId) {
+  var commands = pendingCommands();
+  if (commands[key] !== commandId) return;
   delete commands[key];
   savePendingCommands(commands);
 }
@@ -92,27 +107,28 @@ function dispatchPlayerRevisionSync(projection, revision, conflict) {
   }));
 }
 
-function refreshPlayerStateAfterRevisionConflict() {
+function refreshPlayerStateAfterRevisionConflict(context, scope) {
   var now = Date.now();
-  if (playerRevisionRefreshInFlight) return playerRevisionRefreshInFlight;
-  if (playerRevisionRefreshCache && now - playerRevisionRefreshCachedAt < PLAYER_REVISION_REFRESH_CACHE_MS) {
-    return Promise.resolve(playerRevisionRefreshCache);
+  if (scope.refreshInFlight) return scope.refreshInFlight;
+  if (scope.refreshCache && now - scope.refreshCachedAt < PLAYER_REVISION_REFRESH_CACHE_MS) {
+    return Promise.resolve(scope.refreshCache);
   }
-  playerRevisionRefreshInFlight = runRpc("get_current_player_state").then(function (result) {
-    playerRevisionRefreshInFlight = null;
+  scope.refreshInFlight = runRpc("get_current_player_state", undefined, context).then(function (result) {
+    scope.refreshInFlight = null;
     if (!result.ok || !result.projection || !result.projection.has_player) return null;
-    playerRevisionRefreshCache = result.projection;
-    playerRevisionRefreshCachedAt = Date.now();
-    return playerRevisionRefreshCache;
+    scope.refreshCache = result.projection;
+    scope.refreshCachedAt = Date.now();
+    return scope.refreshCache;
   }).catch(function () {
-    playerRevisionRefreshInFlight = null;
+    scope.refreshInFlight = null;
     return null;
   });
-  return playerRevisionRefreshInFlight;
+  return scope.refreshInFlight;
 }
 
-async function revisionConflictResult(expectedRevision, message, currentRevision) {
-  var projection = await refreshPlayerStateAfterRevisionConflict();
+async function revisionConflictResult(expectedRevision, currentRevision, context, scope) {
+  var projection = await refreshPlayerStateAfterRevisionConflict(context, scope);
+  if (!await authenticatedSessionStillMatches(getSupabaseClient(), context)) return staleSessionResult();
   var revision = Number(projection && projection.revision) || Number(currentRevision) || 0;
   var response = {
     ok: false,
@@ -122,7 +138,7 @@ async function revisionConflictResult(expectedRevision, message, currentRevision
     projection: projection,
     playerRevision: revision
   };
-  playerRevisionConflictCooldown = {
+  scope.cooldown = {
     expectedRevision: Math.max(0, Number(expectedRevision) || 0),
     until: Date.now() + PLAYER_REVISION_CONFLICT_COOLDOWN_MS,
     response: response
@@ -131,7 +147,7 @@ async function revisionConflictResult(expectedRevision, message, currentRevision
   return response;
 }
 
-async function executePlayerCommand(name, params, key) {
+async function executePlayerCommand(name, params, key, context, scope) {
   var client = getSupabaseClient();
   var commands;
   var commandId;
@@ -143,17 +159,18 @@ async function executePlayerCommand(name, params, key) {
   try {
     result = await client.rpc(name, Object.assign({ p_command_id: commandId }, params));
   } catch (error) {
+    if (!await authenticatedSessionStillMatches(client, context)) return staleSessionResult();
     return { ok: false, code: "player_command_transport_failed", detail: error && error.message || "", uncertain: true };
   }
+  if (!await authenticatedSessionStillMatches(client, context)) return staleSessionResult();
   if (result.error) {
     if (result.error.code) {
-      clearPendingCommand(commands, key);
+      clearPendingCommand(key, commandId);
     }
     if (String(result.error.code || "") === "40001") {
       return revisionConflictResult(
         params.p_expected_revision,
-        "player revision conflict",
-        0
+        0, context, scope
       );
     }
     return {
@@ -163,12 +180,11 @@ async function executePlayerCommand(name, params, key) {
       uncertain: !result.error.code
     };
   }
-  clearPendingCommand(commands, key);
+  clearPendingCommand(key, commandId);
   if (result.data && result.data.ok === false && result.data.conflict === "player_revision") {
     return revisionConflictResult(
       params.p_expected_revision,
-      "player revision conflict",
-      result.data.player_revision
+      result.data.player_revision, context, scope
     );
   }
   dispatchPlayerRevisionSync(null, result.data && result.data.revision, false);
@@ -183,18 +199,21 @@ export async function runPlayerCommand(name, params) {
   if (!client) {
     return { ok: false, code: "missing_configuration" };
   }
-  if (playerRevisionConflictCooldown && playerRevisionConflictCooldown.expectedRevision === expectedRevision
-    && Date.now() < playerRevisionConflictCooldown.until) {
-    return playerRevisionConflictCooldown.response;
+  var context = await authenticatedSessionContext(client);
+  if (!context.ok) return context;
+  var scope = scopeForSession(context);
+  if (scope.cooldown && scope.cooldown.expectedRevision === expectedRevision
+    && Date.now() < scope.cooldown.until) {
+    return scope.cooldown.response;
   }
-  key = canonicalPayload(name, params);
-  if (playerCommandInFlight[key]) return playerCommandInFlight[key];
-  operation = executePlayerCommand(name, params, key);
-  playerCommandInFlight[key] = operation;
+  key = JSON.stringify([context.userId, canonicalPayload(name, params)]);
+  if (scope.inFlight[key]) return scope.inFlight[key];
+  operation = executePlayerCommand(name, params, key, context, scope);
+  scope.inFlight[key] = operation;
   try {
     return await operation;
   } finally {
-    if (playerCommandInFlight[key] === operation) delete playerCommandInFlight[key];
+    if (scope.inFlight[key] === operation) delete scope.inFlight[key];
   }
 }
 

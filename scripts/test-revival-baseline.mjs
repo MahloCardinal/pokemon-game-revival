@@ -1980,4 +1980,7 @@ for (const buffLossDefinition of [MoveDefinitions.superpower, MoveDefinitions.ov
 
 await import("./test-reward-claims.mjs");
 await import("./test-uniform-progression-dialogs.mjs");
+await import("./test-client-request-consistency.mjs");
+await import("./test-runtime-portability.mjs");
+await import("./test-battle-dome-replay.mjs");
 console.log("Revival baseline contract checks passed.");

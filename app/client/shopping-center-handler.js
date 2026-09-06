@@ -153,6 +153,7 @@ async function runAuthoritativeCart(entries, command, cartKey) {
   var result;
   var completed = 0;
   var revision = state.authoritativeRevision;
+  var requestUserId = state.auth.user && state.auth.user.id;
   if (authoritativeShopCommandPending) return false;
   authoritativeShopCommandPending = true;
   try {
@@ -162,9 +163,12 @@ async function runAuthoritativeCart(entries, command, cartKey) {
         itemIndex: entries[completed].item.index,
         quantity: entries[completed].quantity
       });
+      if (!state.auth.user || state.auth.user.id !== requestUserId || result.code === "stale_session") return false;
       if (!result.ok) {
-        if (projection) {
-          applyPlayerSave(saveFromAuthoritativeProjection(projection));
+        if (result.projection && Number(result.projection.revision) >= Number(state.authoritativeRevision)) {
+          applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
+        }
+        if (completed > 0) {
           state[cartKey] = entries.slice(completed).reduce(function (cart, entry) {
             cart[String(entry.item.index)] = entry.quantity;
             return cart;
@@ -176,8 +180,10 @@ async function runAuthoritativeCart(entries, command, cartKey) {
       }
       projection = result.projection;
       revision = Number(projection && projection.revision);
+      if (projection && revision >= Number(state.authoritativeRevision)) {
+        applyPlayerSave(saveFromAuthoritativeProjection(projection));
+      }
     }
-    applyPlayerSave(saveFromAuthoritativeProjection(projection));
     state[cartKey] = {};
     state.dialog = null;
     state.saveStatus = { state: "saved", message: "" };

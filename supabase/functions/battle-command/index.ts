@@ -507,7 +507,51 @@ async function commitDome(
   });
   if (committed.error) throw databaseError(committed.error);
   const data = committed.data as Record<string, unknown>;
+  if (data.replayed === true) {
+    // The other request committed first. This transition was never persisted.
+    const replayPrepared = await prepareDome(serviceClient, userId, String(battle.battle_id));
+    return { ok: true, replayed: true, viewer_role: replayPrepared.viewer_role,
+      battle: domeProjectionFromPrepared(replayPrepared), events: [] };
+  }
   return { ...data, battle: { ...((data.battle || {}) as Record<string, unknown>), ...projection } };
+}
+
+async function replayDomeCommand(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  userId: string,
+  body: Record<string, unknown>,
+  commandType: string
+) {
+  const replay = await serviceClient.rpc("replay_edge_battle_dome_command", {
+    p_auth_user_id: userId,
+    p_command_id: String(body.commandId),
+    p_command_type: commandType,
+    p_command_hash: await sha256({ commandType, envelope: body })
+  });
+  if (replay.error) throw databaseError(replay.error);
+  if (!replay.data) return null;
+  const prepared = await prepareDome(serviceClient, userId, String(body.battleId));
+  return { ok: true, viewer_role: prepared.viewer_role,
+    battle: domeProjectionFromPrepared(prepared), events: [] };
+}
+
+async function prepareDomeCommand(
+  serviceClient: Awaited<ReturnType<typeof clientsForRequest>>["serviceClient"],
+  userId: string,
+  body: Record<string, unknown>,
+  commandType: string
+) {
+  const replay = await replayDomeCommand(serviceClient, userId, body, commandType);
+  if (replay) return { replay, prepared: null };
+  const prepared = await prepareDome(serviceClient, userId, String(body.battleId));
+  const battle = prepared.battle as Record<string, unknown> | null;
+  if (battle && Number(battle.battle_version) !== Number(body.expectedBattleVersion)) {
+    // Another copy may commit between the preflight lookup and preparation.
+    const concurrentReplay = await replayDomeCommand(serviceClient, userId, body, commandType);
+    if (concurrentReplay) return { replay: concurrentReplay, prepared: null };
+    throw databaseError({ code: "40001", message: "battle dome challenge changed" });
+  }
+  return { replay: null, prepared };
 }
 
 async function initializeDomeIfNeeded(
@@ -847,20 +891,9 @@ Deno.serve(async (request) => {
         semantic.itemIndex = integer(body.itemIndex, "itemIndex", 1, 100000);
         semantic.targetSlot = body.targetSlot === null ? null : integer(body.targetSlot, "targetSlot", 0, 5);
       }
-      const commandHash = await sha256({ commandType: semanticAction, envelope: body });
-      const replay = await clients.serviceClient.rpc("replay_edge_battle_dome_command", {
-        p_auth_user_id: clients.userId,
-        p_command_id: String(body.commandId),
-        p_command_type: semanticAction,
-        p_command_hash: commandHash
-      });
-      if (replay.error) throw databaseError(replay.error);
-      if (replay.data) {
-        const replayPrepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
-        return jsonResponse({ ok: true, viewer_role: replayPrepared.viewer_role,
-          battle: domeProjectionFromPrepared(replayPrepared), events: [] });
-      }
-      const prepared = await prepareDome(clients.serviceClient, clients.userId, battleId);
+      const command = await prepareDomeCommand(clients.serviceClient, clients.userId, body, semanticAction);
+      if (command.replay) return jsonResponse(command.replay);
+      const prepared = command.prepared!;
       const battle = prepared.battle as Record<string, unknown> | null;
       const role = String(prepared.viewer_role || "spectator");
       if (!battle || !battle.engine_snapshot) throw new BattleEdgeError("engine_not_initialized", "La sfida PvP non è pronta.", 409);

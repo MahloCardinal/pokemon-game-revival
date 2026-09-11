@@ -383,6 +383,17 @@ function openNextAuthoritativeExpAward(scene, onComplete) {
     return;
   }
   beforePokemon = scene.authoritativeExpBefore && scene.authoritativeExpBefore[award.pokemonInstanceId];
+  if ((beforePokemon || pokemon).level >= levelLimitForBadges(state.trainerInfo[2])
+    && (!beforePokemon || beforePokemon.level === pokemon.level) && pokemon.expCurrent === 0) {
+    openMessage([textDescriptor(pokemon.level >= 100 ? "messages.progression.level100NoExperience"
+      : "messages.progression.badgeLevelAlreadyReached", { pokemon: pokemonNameDescriptor(pokemon) })], {
+      title: textDescriptor("ui.dialogs.experienceGained"), pokemon: pokemon,
+      closeLabel: textDescriptor("ui.dialogs.ok"), requireButtonClose: true,
+      scrollBattleLogToBottom: true,
+      onClose: function () { openNextAuthoritativeExpAward(scene, onComplete); }
+    });
+    return;
+  }
   if (!beforePokemon) {
     beforePokemon = Engine.Pokemon.fromJSON(pokemon.toJSON());
     beforePokemon.expCurrent = Math.max(0, beforePokemon.expCurrent - award.exp);

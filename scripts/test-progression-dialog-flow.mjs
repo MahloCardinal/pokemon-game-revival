@@ -18,9 +18,10 @@ export async function testProgressionDialogFlow(Engine) {
   const actions = {};
   const requests = [];
   let trainingCompleted = 0;
-  const state = { team: [], pendingResolutions: [], authoritativeRevision: 1 };
+  const state = { team: [], pendingResolutions: [], authoritativeRevision: 1, trainerInfo: ["trainer", 0, 0] };
   const context = vm.createContext({
     Engine, state, console, crypto: { randomUUID: () => "command-id" },
+    levelLimitForBadges: () => 14,
     activeAuthoritativeTrainingResolution: null, authoritativeTrainingProgressionPending: false,
     authoritativeOrdinaryProgressionComplete: null, authoritativeExpPresentation: null,
     registerAction: (name, callback) => { actions[name] = callback; },
@@ -123,9 +124,10 @@ export async function testProgressionDialogFlow(Engine) {
   actions["authoritative-progression-level-continue"]();
   await settle({ pendingResolutions: [], ordinaryProgression: null });
   assert.equal(state.dialog.title.key, "ui.dialogs.experienceGained");
-  assert.equal(state.dialog.beforePokemon.expCurrent, 3, "Preserve actual EXP before a cap reset");
-  assert.equal(state.dialog.afterPokemon.expCurrent, 0);
-  assert.equal(state.dialog.beforePokemon.level, state.dialog.afterPokemon.level);
+  assert.equal(state.dialog.type, "message");
+  assert.equal(state.dialog.lines[0].key, "messages.progression.level100NoExperience");
+  assert.equal(state.dialog.pokemon, cappedAfter);
+  assert.equal(state.dialog.beforePokemon, undefined);
   close();
   assert.equal(complete, 1);
   assert.equal(context.authoritativeExpPresentation, null);
@@ -182,6 +184,31 @@ export async function testProgressionDialogFlow(Engine) {
   assert.equal(state.dialog.resultLines.length, 1);
   close();
   assert.equal(complete, 4);
+
+  // Already capped: show a single canonical card, also after scene recovery.
+  for (const previousXp of [0, 3, null]) {
+    const capped = pokemon("badge-capped", 14, 0);
+    state.team = [capped];
+    let closed = 0;
+    context.openAuthoritativeExpAwards({ authoritativeExpAwards: [award("badge-capped", 25)],
+      authoritativeExpBefore: previousXp === null ? {} : { "badge-capped": pokemon("badge-capped", 14, previousXp) }
+    }, () => { closed++; });
+    assert.equal(state.dialog.type, "message");
+    assert.equal(state.dialog.lines.length, 1);
+    assert.equal(state.dialog.lines[0].key, "messages.progression.badgeLevelAlreadyReached");
+    assert.equal(state.dialog.pokemon, capped);
+    assert.equal(state.dialog.beforePokemon, undefined);
+    close();
+    assert.equal(closed, 1);
+  }
+  // Reaching the cap with this reward still shows the actual level gain.
+  state.team = [pokemon("reaching-cap", 14, 0)];
+  context.openAuthoritativeExpAwards({ authoritativeExpAwards: [award("reaching-cap", 25)],
+    authoritativeExpBefore: { "reaching-cap": pokemon("reaching-cap", 13, 10) } }, () => {});
+  assert.equal(state.dialog.type, "level-up");
+  assert.equal(state.dialog.beforePokemon.level, 13);
+  assert.equal(state.dialog.afterPokemon.level, 14);
+  close();
 
   state.team = [full]; state.ordinaryProgression = { pokemon: [] };
   state.pendingResolutions = [resolution("full", pokemon("full", 6, 50, full.toJSON().m), full,

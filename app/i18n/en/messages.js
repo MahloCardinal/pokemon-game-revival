@@ -228,6 +228,7 @@ export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
     gainedLevel: "{pokemon} gained {levels} level.", gainedLevelPlural: "{pokemon} gained {levels} levels.",
     noMoreLevels: "{pokemon} gains no more levels.", level100NoLevels: "{pokemon} is already Level 100 and gains no more levels.",
     levelLimit: "{pokemon} reached the maximum level allowed by the current Badges: Lv. {level}.",
+    badgeLevelAlreadyReached: "{pokemon} has already reached the maximum level trainable with your current Badges.",
     confirmForget: "Do you really want to forget {move}?"
   })
 });

@@ -228,6 +228,7 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
     gainedLevel: "{pokemon} ha guadagnato {levels} livello.", gainedLevelPlural: "{pokemon} ha guadagnato {levels} livelli.",
     noMoreLevels: "{pokemon} non ottiene altri livelli.", level100NoLevels: "{pokemon} è già al Livello 100 e non ottiene altri livelli.",
     levelLimit: "{pokemon} ha raggiunto il livello massimo gestibile con le Medaglie attuali: Lv {level}.",
+    badgeLevelAlreadyReached: "{pokemon} ha già raggiunto il livello massimo allenabile con le attuali Medaglie.",
     confirmForget: "Vuoi davvero dimenticare {move}?"
   })
 });

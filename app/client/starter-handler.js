@@ -5,12 +5,11 @@ import { applyPlayerSave, root, state } from "./game-state.js";
 import * as Engine from "../engine/index.js";
 import { isTrainerIndex } from "../data/trainers.js";
 import { createInitialPlayerSave } from "../api/player.js";
-import { escapeHtml, getGenderImage, renderImage } from "./asset-helpers.js";
 import { setHtml } from "./renderer.js";
 import { renderDialog } from "../view/dialogs.js";
-import { renderStarterPokemonGrid } from "../view/starter.js";
+import { renderStarterGenderPicker, renderStarterPokemonGrid } from "../view/starter.js";
 import { refreshMissionState } from "./mission-runtime.js";
-import { messageDescriptor, t } from "./i18n.js";
+import { messageDescriptor } from "./i18n.js";
 
 registerAction("starter-pick", function(element) {
     var pickedSpeciesName = String(element.dataset.species || "");
@@ -198,17 +197,6 @@ function isAllowedStarterSpecies(speciesName) {
 
 function starterSpeciesEntry(speciesName) {
   return Engine.findSpecies(speciesName);
-}
-
-function renderStarterGenderPicker(species, selectedGender) {
-  if (!species || !species.gender || species.gender.length <= 1) {
-    return "";
-  }
-  return '<span class="starter-gender-picker" aria-label="' + escapeHtml(t("ui.starter.pokemonGender")) + '">' + species.gender.map(function (gender) {
-    var selectedClass = gender === selectedGender ? " is-selected" : "";
-    var genderLabel = t("ui.starter.genders." + gender);
-    return '<span role="button" tabindex="0" class="starter-gender-option' + selectedClass + '" data-action="starter-gender-pick" data-gender="' + escapeHtml(gender) + '" aria-label="' + escapeHtml(genderLabel) + '">' + renderImage(getGenderImage(gender), genderLabel, "starter-gender-icon") + "</span>";
-  }).join("") + "</span>";
 }
 
 function syncStarterCardPicker(card, speciesName) {

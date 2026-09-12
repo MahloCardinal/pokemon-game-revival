@@ -258,7 +258,7 @@ export var IT_UI_TRANSLATIONS = Object.freeze({
     pokemonGender: "Sesso Pokémon",
     choosePokemonGender: "Scegli il genere del Pokémon",
     characterAlt: "Personaggio",
-    generation: "Generazione {generation}",
+    generation: "{generation}° generazione",
     nameFilter: "Nome",
     nameSearch: "Almeno 2 lettere",
     character: "Personaggio",

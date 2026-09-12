@@ -31,8 +31,8 @@ function starterGenerationFilter(setup) {
   return generation >= 1 && generation <= 3 ? generation : 1;
 }
 
-function renderStarterGenderPicker(species, selectedGender) {
-  if (!species.gender || species.gender.length <= 1) {
+export function renderStarterGenderPicker(species, selectedGender) {
+  if (!species || !species.gender || species.gender.length <= 1) {
     return "";
   }
   return '<span class="starter-gender-picker" aria-label="' + escapeHtml(t("ui.starter.pokemonGender")) + '">'

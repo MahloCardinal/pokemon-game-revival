@@ -228,6 +228,8 @@
 
 .starter-gender-picker {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 8px;
   min-height: 28px;
@@ -239,10 +241,24 @@
   left: 50%;
   z-index: 3;
   min-height: 0;
-  padding: 8px;
-  border-radius: 999px;
+  width: calc(100% - 16px);
+  box-sizing: border-box;
+  padding: 10px 8px;
+  border-radius: 14px;
   background: var(--surface-raised);
   transform: translate(-50%, -50%);
+}
+
+.starter-gender-label {
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.starter-gender-options {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
 
 .starter-gender-option {

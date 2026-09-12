@@ -35,11 +35,13 @@ function renderStarterGenderPicker(species, selectedGender) {
   if (!species.gender || species.gender.length <= 1) {
     return "";
   }
-  return '<span class="starter-gender-picker" aria-label="' + escapeHtml(t("ui.starter.pokemonGender")) + '">' + species.gender.map(function (gender) {
+  return '<span class="starter-gender-picker" aria-label="' + escapeHtml(t("ui.starter.pokemonGender")) + '">'
+    + '<span class="starter-gender-label">' + escapeHtml(t("ui.starter.choosePokemonGender")) + '</span>'
+    + '<span class="starter-gender-options">' + species.gender.map(function (gender) {
     var selectedClass = gender === selectedGender ? " is-selected" : "";
     var genderLabel = t("ui.starter.genders." + gender);
     return '<span role="button" tabindex="0" class="starter-gender-option' + selectedClass + '" data-action="starter-gender-pick" data-gender="' + escapeHtml(gender) + '" aria-label="' + escapeHtml(genderLabel) + '">' + renderImage(getGenderImage(gender), genderLabel, "starter-gender-icon") + "</span>";
-  }).join("") + "</span>";
+  }).join("") + "</span></span>";
 }
 
 export function renderStarterPokemonGrid(setup, nameQuery) {

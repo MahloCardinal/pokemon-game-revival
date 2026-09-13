@@ -59,16 +59,22 @@ function moveSlot(combatant, move) {
 function serializeMove(move) {
   return {
     data: move.toJSON(),
-    state: ownState(move, ["_before", "_after", "copiedMove"]),
+    state: ownState(move, moveDefinitionFields.concat(["_before", "_after", "copiedMove"])),
     copiedMove: move.copiedMove && typeof move.copiedMove.toJSON === "function"
       ? serializeMove(move.copiedMove)
       : null
   };
 }
 
+// Definition metadata comes from the deployed catalog; transient action state
+// and earned power/stats remain in the snapshot, including charged/copied moves.
+var moveDefinitionFields = ["key", "index", "damagingMove", "logKey", "requestsBattleSwitch", "setWeather", "weatherLabel", "bindTurns"];
+
 function restoreMove(snapshot) {
   var move = moveFromJSON(snapshot.data);
-  Object.assign(move, jsonValue(snapshot.state || {}, 0));
+  var state = jsonValue(snapshot.state || {}, 0);
+  moveDefinitionFields.forEach(function (key) { delete state[key]; });
+  Object.assign(move, state);
   move.copiedMove = snapshot.copiedMove ? restoreMove(snapshot.copiedMove) : null;
   return move;
 }

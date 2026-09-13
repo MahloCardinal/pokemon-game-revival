@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildRuntimeComponents } from "./runtime-components.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const sourceRoot = resolve(repositoryRoot, "app");
@@ -52,6 +53,21 @@ const files = [...sources.entries()].map(([sourcePath, content]) => {
 const bundleChecksum = createHash("sha256")
   .update(files.map((file) => `${file.source}\0${file.sha256}\n`).join(""))
   .digest("hex");
+const componentFiles = files.slice();
+function collectPresentation(path) {
+  if (!existsSync(path)) return;
+  for (const entry of readdirSync(path, { withFileTypes: true })) {
+    const child = resolve(path, entry.name);
+    if (entry.isDirectory()) collectPresentation(child);
+    else if (/\.(js|css)$/.test(child)) componentFiles.push({
+      source: relative(repositoryRoot, child).replaceAll("\\", "/"),
+      content: normalizeText(readFileSync(child, "utf8"))
+    });
+  }
+}
+for (const directory of ["view", "styles", "i18n"]) collectPresentation(resolve(sourceRoot, directory));
+const components = buildRuntimeComponents(componentFiles);
+const snapshotVersion = Number(sources.get(entries[0]).match(/BATTLE_SNAPSHOT_VERSION\s*=\s*(\d+)/)?.[1] || 0);
 const manifest = {
   generated: true,
   generator: "scripts/sync-game-runtime.mjs",
@@ -59,6 +75,8 @@ const manifest = {
   checksumAlgorithm: "sha256",
   sourceNormalization: "lf",
   bundleChecksum,
+  snapshotVersion,
+  components,
   files: files.map(({ source, sha256, bytes }) => ({ source, sha256, bytes }))
 };
 const manifestContent = JSON.stringify(manifest, null, 2) + "\n";

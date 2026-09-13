@@ -3,6 +3,7 @@ import "./audit-css-ownership.mjs";
 import "./test-battle-dome-navigation.mjs";
 import "./test-team-composition.mjs";
 import "./test-capture-release-projection.mjs";
+import "./test-runtime-components.mjs";
 import { testBattleHistory, testBattleHistoryClient } from "./test-battle-history.mjs";
 import { testProgressionDialogFlow } from "./test-progression-dialog-flow.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -164,7 +165,7 @@ const adminCommandCommit = edge.slice(
   edge.indexOf("if (adminAction) {", edge.indexOf("const transition = adminAction")),
   edge.indexOf("} else {", edge.indexOf("if (adminAction) {", edge.indexOf("const transition = adminAction")))
 );
-assert.match(adminCommandCommit, /p_projection:\s*projectionForDatabase\(projection\)/);
+assert.match(adminCommandCommit, /p_projection:\s*projectionForDatabase\(projection, undefined, battle\.runtime_generation\)/);
 assert.doesNotMatch(adminCommandCommit, /disabled_edge_first_slice/,
   "Admin battle commands must preserve the canonical reward status produced by the engine");
 assert.match(edge, /notifyAdminTurnBestEffort\(clients\.serviceClient, result/);

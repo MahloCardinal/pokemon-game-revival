@@ -21,6 +21,7 @@ function success(result) { assert.equal(result.status, 0, result.stderr); }
 try {
   mkdirSync(join(fixture, "scripts"));
   writeFileSync(join(fixture, "scripts/sync-game-runtime.mjs"), readFileSync(join(root, "scripts/sync-game-runtime.mjs")));
+  writeFileSync(join(fixture, "scripts/runtime-components.mjs"), readFileSync(join(root, "scripts/runtime-components.mjs")));
   let expectedManifest;
   for (const endings of ["lf", "crlf", "cr", "mixed"]) {
     for (const [path, content] of Object.entries(sources)) {

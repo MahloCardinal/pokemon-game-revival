@@ -8,7 +8,7 @@ const manifest = JSON.parse(readFileSync(new URL("../supabase/functions/_shared/
 const previous = "3ddd1a5af3bd3137b05d5c9b9bf4a0977e9f63a09204819ecf66f1f1cfc97774";
 let restores = 0;
 const context = vm.createContext({
-  manifest, BATTLE_ENGINE_VERSION: "pokemon-game-revival",
+  manifest, BATTLE_SNAPSHOT_VERSION: 3, BATTLE_ENGINE_VERSION: "pokemon-game-revival",
   BattleEdgeError: Error,
   restoreBattleManager: () => { restores++; return { manager: {}, playerItems: [] }; },
   projectBattle: (_manager, state) => state
@@ -19,21 +19,15 @@ vm.runInContext(stripTypeScriptTypes(source.slice(source.indexOf("function domeP
 for (const project of [context.projectionFromPrepared, context.domeProjectionFromPrepared]) {
   for (const status of ["active", "needs_player_switch", "concluded", "abandoned"]) {
     for (const checksum of [manifest.bundleChecksum, previous, "unknown"]) {
-      const battle = { status, engine_version: "pokemon-game-revival", engine_checksum: checksum, engine_snapshot: {} };
-      const allowed = checksum === manifest.bundleChecksum || checksum === previous && ["concluded", "abandoned"].includes(status);
+      const battle = { status, engine_version: "pokemon-game-revival", engine_checksum: checksum, engine_snapshot: { snapshotVersion: 3, engineVersion: "pokemon-game-revival" } };
       const before = restores;
-      if (allowed) {
-        assert.equal(project({ battle }).status, status);
-        assert.equal(restores, before + 1);
-      } else {
-        assert.throws(() => project({ battle }), /incompatible_active_battle/);
-        assert.equal(restores, before, "Incompatible snapshots must not be restored");
-      }
+      assert.equal(project({ battle }).status, status);
+      assert.equal(restores, before + 1);
       assert.throws(() => project({ battle: { ...battle, engine_version: "unknown" } }));
     }
   }
 }
-// An unrelated future runtime must not inherit this exception automatically.
+// A changed state contract requires an explicit migration.
 manifest.bundleChecksum = "future-runtime";
-assert.equal(context.canProjectBattleRuntime({ status: "concluded", engine_version: "pokemon-game-revival", engine_checksum: previous }), false);
-console.log("Capture release: terminal projections allowed; active and unknown runtimes rejected.");
+assert.equal(context.canProjectBattleRuntime({ status: "active", engine_version: "pokemon-game-revival", engine_snapshot: { engineVersion: "pokemon-game-revival", snapshotVersion: 4 } }), false);
+console.log("Runtime projection: code changes accepted; incompatible snapshot schemas rejected.");

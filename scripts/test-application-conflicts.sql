@@ -32,14 +32,22 @@ $test$;
 create temporary table battle_dome_battle (like public.battle_dome_battle including defaults) on commit drop;
 create temporary table battle_dome_event (like public.battle_dome_event including defaults) on commit drop;
 create temporary table battle_dome_command_receipt (like public.battle_dome_command_receipt including defaults) on commit drop;
+create temporary table catalog_engine_runtime_binding (like public.catalog_engine_runtime_binding including defaults) on commit drop;
+insert into catalog_engine_runtime_binding(catalog_release_id,engine_version,engine_checksum,enabled)
+values('10000000-0000-4000-8000-000000000004','pokemon-game-revival',repeat('a',64),true);
 
 -- Clone the real commit implementation, redirecting only the writable tables.
 do $fixture$
 declare v_definition text;
 begin
+  v_definition := pg_get_functiondef('server_authority_private.runtime_transition_allowed(uuid,text,text,jsonb,bigint)'::regprocedure);
+  v_definition := replace(v_definition,'server_authority_private.runtime_transition_allowed','pg_temp.runtime_transition_allowed');
+  v_definition := replace(v_definition,'public.catalog_engine_runtime_binding','pg_temp.catalog_engine_runtime_binding');
+  execute v_definition;
   select pg_get_functiondef('public.commit_edge_battle_dome_command_before_turn_history(uuid,uuid,text,text,uuid,bigint,text,text,text,jsonb,jsonb,jsonb)'::regprocedure)
     into v_definition;
   v_definition := replace(v_definition, 'public.commit_edge_battle_dome_command_before_turn_history', 'pg_temp.commit_dome');
+  v_definition := replace(v_definition, 'server_authority_private.runtime_transition_allowed', 'pg_temp.runtime_transition_allowed');
   -- Keep the public composite type for the existing read-only payload helper.
   v_definition := replace(v_definition, 'from public.battle_dome_battle', 'from pg_temp.battle_dome_battle');
   v_definition := replace(v_definition, 'update public.battle_dome_battle', 'update pg_temp.battle_dome_battle');

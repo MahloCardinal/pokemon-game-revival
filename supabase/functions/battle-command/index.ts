@@ -1,6 +1,7 @@
 import manifest from "../_shared/game-runtime/manifest.json" with { type: "json" };
 import {
   BATTLE_ENGINE_VERSION,
+  BATTLE_SNAPSHOT_VERSION,
   executeAutomaticAdminBattleCommand,
   executeAdminBattleCommand,
   executeBattleCommand,
@@ -46,15 +47,13 @@ function seedFromHash(hash: string) {
   return Number.parseInt(hash.slice(0, 8), 16) >>> 0;
 }
 
-// Capture coefficients do not affect a completed battle's projection. This one
-// predecessor was audited against the same engine modules; active commands still
-// require the exact deployed checksum. Remove after its terminal retention ends.
+// A package update is compatible while the persisted state contract is unchanged.
+// SQL validates the registered active package again under the commit lock.
 function canProjectBattleRuntime(battle: Record<string, unknown>) {
-  return battle.engine_version === BATTLE_ENGINE_VERSION
-    && (battle.engine_checksum === manifest.bundleChecksum
-      || (manifest.bundleChecksum === "b16989bce9dc53c0d155f486e5d0e030ac6fe624b6ea82bc40fc60cd11e04d18"
-        && ["concluded", "abandoned"].includes(String(battle.status))
-        && battle.engine_checksum === "3ddd1a5af3bd3137b05d5c9b9bf4a0977e9f63a09204819ecf66f1f1cfc97774"));
+  const snapshot = battle.engine_snapshot as Record<string, unknown> | null;
+  return battle.engine_version === BATTLE_ENGINE_VERSION && !!snapshot
+    && snapshot.engineVersion === BATTLE_ENGINE_VERSION
+    && snapshot.snapshotVersion === BATTLE_SNAPSHOT_VERSION;
 }
 
 function projectionFromPrepared(prepared: Record<string, unknown>) {
@@ -98,9 +97,10 @@ function projectionFromPrepared(prepared: Record<string, unknown>) {
 
 function projectionForDatabase(
   projection: Record<string, unknown>,
-  rewardStatus?: string
+  rewardStatus?: string,
+  runtimeGeneration?: unknown
 ) {
-  const databaseProjection: Record<string, unknown> = { ...projection };
+  const databaseProjection: Record<string, unknown> = { ...projection, runtime_generation: runtimeGeneration ?? null };
   if (rewardStatus) databaseProjection.reward_status = rewardStatus;
   delete databaseProjection.battle_state;
   delete databaseProjection.entry_choice;
@@ -174,7 +174,7 @@ async function advanceAutomaticAdminBattle(
       || !["active", "needs_player_switch"].includes(String(battle.status))) {
       break;
     }
-    if (battle.engine_version !== BATTLE_ENGINE_VERSION || battle.engine_checksum !== manifest.bundleChecksum) {
+    if (!canProjectBattleRuntime(battle)) {
       throw new BattleEdgeError("engine_version_conflict", "La battaglia salvata usa un pacchetto motore diverso.", 409);
     }
     const transition = executeAutomaticAdminBattleCommand(battle.engine_snapshot as Record<string, unknown>);
@@ -198,7 +198,7 @@ async function advanceAutomaticAdminBattle(
       p_input_snapshot_hash: prepared.input_snapshot_hash,
       p_next_snapshot: transition.snapshot,
       p_events: transition.events,
-      p_projection: projectionForDatabase(projection)
+      p_projection: projectionForDatabase(projection, undefined, battle.runtime_generation)
     });
     if (committed.error) throw databaseError(committed.error);
     const committedData = committed.data as Record<string, unknown> | null;
@@ -295,7 +295,7 @@ async function commit(
   // Keep its payload narrow; the Edge response restores the presentation block.
   // The database commit uses an internal discriminator; the response restores
   // the contract-specific presentation value.
-  const databaseProjection = projectionForDatabase(projection, "disabled_edge_first_slice");
+  const databaseProjection = projectionForDatabase(projection, "disabled_edge_first_slice", battle.runtime_generation);
   const commandHash = await sha256({
     commandType,
     envelope: body
@@ -514,7 +514,7 @@ async function commitDome(
     p_input_snapshot_hash: prepared.input_snapshot_hash,
     p_next_snapshot: transition.snapshot,
     p_events: transition.events,
-    p_projection: projectionForDatabase(projection, "none")
+    p_projection: projectionForDatabase(projection, "none", battle.runtime_generation)
   });
   if (committed.error) throw databaseError(committed.error);
   const data = committed.data as Record<string, unknown>;
@@ -580,7 +580,7 @@ async function initializeDomeIfNeeded(
   if (String(prepared.viewer_role) === "spectator") {
     throw new BattleEdgeError("battle_initializing", "La sfida PvP è ancora in preparazione.", 409);
   }
-  if (battle.bound_engine_version !== BATTLE_ENGINE_VERSION || battle.bound_engine_checksum !== manifest.bundleChecksum) {
+  if (battle.bound_engine_version !== BATTLE_ENGINE_VERSION) {
     throw new BattleEdgeError("incompatible_active_battle", "La sfida PvP richiede un runtime non disponibile.", 409);
   }
   const snapshot = initializeBattleRuntime({
@@ -1459,7 +1459,7 @@ Deno.serve(async (request) => {
     if (!battle || battle.engine_runtime_state !== "ready" || !battle.engine_snapshot) {
       throw new BattleEdgeError("engine_not_initialized", "Ripristina il runtime della battaglia in preparazione prima di inviare un comando.", 409);
     }
-    if (battle.engine_version !== BATTLE_ENGINE_VERSION || battle.engine_checksum !== manifest.bundleChecksum) {
+    if (!canProjectBattleRuntime(battle)) {
       throw new BattleEdgeError("engine_version_conflict", "La battaglia salvata usa un pacchetto motore diverso.", 409);
     }
     if (!adminAction && action === "ball" && battle.contract_key !== "capture") {
@@ -1489,7 +1489,7 @@ Deno.serve(async (request) => {
         p_input_snapshot_hash: prepared.input_snapshot_hash,
         p_next_snapshot: transition.snapshot,
         p_events: transition.events,
-        p_projection: projectionForDatabase(projection)
+        p_projection: projectionForDatabase(projection, undefined, battle.runtime_generation)
       });
       if (committed.error) throw databaseError(committed.error);
       if ((committed.data as Record<string, unknown> | null)?.ok === false

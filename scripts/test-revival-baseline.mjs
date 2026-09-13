@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import "./audit-css-ownership.mjs";
 import "./test-battle-dome-navigation.mjs";
 import "./test-team-composition.mjs";
+import "./test-capture-release-projection.mjs";
 import { testBattleHistory, testBattleHistoryClient } from "./test-battle-history.mjs";
 import { testProgressionDialogFlow } from "./test-progression-dialog-flow.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -806,7 +807,10 @@ const rarityDataModule = await loadEsModule(fileURLToPath(new URL("../app/data/i
 if (rarityDataModule.status !== "evaluated") await rarityDataModule.evaluate();
 const rarityData = rarityDataModule.namespace;
 assert.equal(rarityData.RARITY_WEIGHTS.ultra_rare, 5);
-assert.equal(rarityData.CATCH_RARITY_MULTIPLIERS.ultra_rare, 10);
+assert.equal(rarityData.CATCH_RARITY_MULTIPLIERS.ultra_rare, 20);
+assert.equal(JSON.stringify(rarityData.CATCH_RARITY_MULTIPLIERS), JSON.stringify({
+  test: 100, common: 190, uncommon: 140, rare: 90, super_rare: 45, ultra_rare: 20, fossil: 20, legendary: 7
+}));
 assert.deepEqual(Object.keys(rarityData.RARITY_WEIGHTS).sort(),
   ["test", "common", "uncommon", "rare", "super_rare", "ultra_rare", "fossil", "legendary"].sort());
 for (const [speciesKey, species] of Object.entries(rarityData.SPECIES_LIBRARY)) {
@@ -817,9 +821,9 @@ for (const [speciesKey, species] of Object.entries(rarityData.SPECIES_LIBRARY)) 
 assert.equal(CaptureCalc.computeBallCaptureRate({ value: 1 }, {
   pokemon: { speciesKey: "149", maxHp: 100 }, hp: 100, status: null
 }), Math.min(rarityData.CATCH_FORMULA.maximumRate,
-  Math.pow(10 * rarityData.CATCH_HP_THRESHOLDS.at(-1).multiplier / rarityData.CATCH_FORMULA.denominator,
+  Math.pow(20 * rarityData.CATCH_HP_THRESHOLDS.at(-1).multiplier / rarityData.CATCH_FORMULA.denominator,
     rarityData.CATCH_FORMULA.exponent) * 100),
-"Ultra rare species retain their original capture multiplier");
+"Ultra rare species use their configured capture multiplier");
 const assetHelpersModule = await loadEsModule(fileURLToPath(new URL("../app/client/asset-helpers.js", import.meta.url)));
 if (assetHelpersModule.status !== "evaluated") await assetHelpersModule.evaluate();
 const AssetHelpers = assetHelpersModule.namespace;
@@ -1301,8 +1305,16 @@ function captureTarget(hpFraction, status) {
   const paralyzedBlocked = CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05, "par_block"));
   const paralyzedFree = CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05, "par_free"));
   const frozen = CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05, "frz"));
-  assert.ok(Math.abs(fullHealth - 21.7234120411) < 0.000001, "Poké Ball against a common Pokémon at full HP must use the new formula");
-  assert.ok(Math.abs(poisoned - 81.2713019248) < 0.000001, "Non-favourable statuses must not increase the catch rate");
+  assert.ok(Math.abs(fullHealth - 35.155496878559624) < 0.000001, "Poké Ball against a common Pokémon at full HP must use the rebalanced formula");
+  for (const status of ["slp", "par_block", "par_free", "frz"]) {
+    assert.ok(Math.abs(CaptureCalc.computeBallCaptureRate(ItemDefinitions.poke_ball, captureTarget(1, status))
+      / fullHealth - Math.pow(1.5, 0.75)) < 0.000001, "Favourable status uses 1.5 before the exponent, without hitting the cap");
+  }
+  assert.ok(Math.abs(CaptureCalc.computeBallCaptureRate(ItemDefinitions.great_ball, captureTarget(1))
+    / fullHealth - Math.pow(1.3, 0.75)) < 0.000001);
+  assert.ok(Math.abs(CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(1))
+    / fullHealth - Math.pow(1.7, 0.75)) < 0.000001);
+  assert.equal(poisoned, CaptureCalc.computeBallCaptureRate(ItemDefinitions.ultra_ball, captureTarget(0.05)), "Non-favourable statuses must not increase the catch rate");
   assert.equal(asleep, 95, "Ultra Ball, common Pokémon, 5% HP and Sonno must reach the artificial cap");
   assert.equal(paralyzedBlocked, 95, "Paralisi bloccante must use the capture multiplier");
   assert.equal(paralyzedFree, 95, "Paralisi non bloccante must use the capture multiplier");

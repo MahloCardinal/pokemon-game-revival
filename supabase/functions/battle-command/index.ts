@@ -46,13 +46,24 @@ function seedFromHash(hash: string) {
   return Number.parseInt(hash.slice(0, 8), 16) >>> 0;
 }
 
+// Capture coefficients do not affect a completed battle's projection. This one
+// predecessor was audited against the same engine modules; active commands still
+// require the exact deployed checksum. Remove after its terminal retention ends.
+function canProjectBattleRuntime(battle: Record<string, unknown>) {
+  return battle.engine_version === BATTLE_ENGINE_VERSION
+    && (battle.engine_checksum === manifest.bundleChecksum
+      || (manifest.bundleChecksum === "b16989bce9dc53c0d155f486e5d0e030ac6fe624b6ea82bc40fc60cd11e04d18"
+        && ["concluded", "abandoned"].includes(String(battle.status))
+        && battle.engine_checksum === "3ddd1a5af3bd3137b05d5c9b9bf4a0977e9f63a09204819ecf66f1f1cfc97774"));
+}
+
 function projectionFromPrepared(prepared: Record<string, unknown>) {
   const battle = prepared.battle as Record<string, unknown> | null;
   if (!battle) return null;
   const snapshot = battle.engine_snapshot as Record<string, unknown> | null;
   if (!snapshot) return { ...battle, mode: ["concluded", "abandoned"].includes(String(battle.status))
     ? "authoritative_edge_terminal_without_snapshot" : "authoritative_edge_pending_initialization" };
-  if (battle.engine_version !== BATTLE_ENGINE_VERSION || battle.engine_checksum !== manifest.bundleChecksum) {
+  if (!canProjectBattleRuntime(battle)) {
     throw new BattleEdgeError(
       "incompatible_active_battle",
       "La battaglia attiva richiede un pacchetto motore esatto non disponibile in questa distribuzione.",
@@ -419,7 +430,7 @@ function domeProjectionFromPrepared(prepared: Record<string, unknown>) {
       viewer_role: String(prepared.viewer_role || "spectator")
     };
   }
-  if (battle.engine_version !== BATTLE_ENGINE_VERSION || battle.engine_checksum !== manifest.bundleChecksum) {
+  if (!canProjectBattleRuntime(battle)) {
     throw new BattleEdgeError("incompatible_active_battle", "La sfida PvP usa un runtime non disponibile.", 409);
   }
   const restored = restoreBattleManager(battle.engine_snapshot as Record<string, unknown>);

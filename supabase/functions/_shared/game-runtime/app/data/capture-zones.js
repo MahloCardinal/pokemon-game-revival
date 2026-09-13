@@ -21,13 +21,13 @@ export var RARITY_WEIGHTS = {
 
 export var CATCH_RARITY_MULTIPLIERS = {
   test: 100,
-  common: 100,
-  uncommon: 75,
-  rare: 35,
-  super_rare: 20,
-  ultra_rare: 10,
-  fossil: 25,
-  legendary: 3
+  common: 190,
+  uncommon: 140,
+  rare: 90,
+  super_rare: 45,
+  ultra_rare: 20,
+  fossil: 20,
+  legendary: 7
 };
 
 export var CATCH_HP_THRESHOLDS = [
@@ -38,10 +38,10 @@ export var CATCH_HP_THRESHOLDS = [
 ];
 
 export var CATCH_STATUS_MULTIPLIERS = {
-  slp: 2,
-  par_block: 2,
-  par_free: 2,
-  frz: 2
+  slp: 1.5,
+  par_block: 1.5,
+  par_free: 1.5,
+  frz: 1.5
 };
 
 export var CATCH_FORMULA = {

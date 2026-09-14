@@ -621,7 +621,9 @@ function assertAcyclic(functionName) {
 for (const functionName of canonicalPrepareFunctions) assertAcyclic(functionName);
 
 const gymRewardCore = finalFunctionBody("server_authority_private", "award_terminal_gym_victory_core");
-assert.match(gymRewardCore, /reward_kind\s*=\s*'item'\s+and quantity\s*>\s*0\s+and item_index is not null\)\s*<>\s*1/i);
+// Item cardinality belongs to the catalog (TMs and other stacks). The SQL
+// regression executes every canonical gym reward and checks exact grants/replays.
+assert.doesNotMatch(gymRewardCore, /reward_kind\s*=\s*'item'\s+and quantity\s*>\s*0\s+and item_index is not null\)\s*<>\s*1/i);
 assert.match(migrationSql, /revival-gym-rewards-20260812/);
 assert.match(migrationSql, /51ebd82cd1373b029f5b7e54aa8c3e5ee08732c7e05ce11b5ce3db12e048367f/);
 assert.match(migrationSql, /lower\(account\.email\) = 'aaa@pokemon-game-revival\.local'/);

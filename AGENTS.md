@@ -157,6 +157,7 @@ La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` son
 - Non considerare un timeout di trasporto come prova che un comando non sia stato eseguito.
 - Per i conflitti applicativi di revisione, versione o snapshot usare `server_authority_private.raise_revision_conflict(message)`. Non sollevare manualmente SQLSTATE `40001`: PostgREST può ritentare indefinitamente la stessa transazione. L'helper usa SQLSTATE `PGRST` e conserva HTTP 409 e il codice JSON `40001` già gestito dai client. Verificare con `scripts/test-application-conflicts.sql` su fixture temporanee e rollback.
 - Applicare lo stato canonico restituito dal server prima di ricostruire la proiezione o mostrare ricompense.
+- I premi delle palestre normali e admin condividono `award_terminal_gym_victory_core`: un premio in denaro, una medaglia coerente e tutti gli strumenti del catalogo, incluse le MT. Non imporre un numero fisso di righe o strumenti. Verificare premi esatti, retry e rifiuti atomici con `scripts/test-terminal-battle-rewards.sql` (copie temporanee del catalogo corrente e rollback); il test copre anche i cinque premi della Lega.
 - La catena SQL di preparazione deve rimanere aciclica:
 
 ```text

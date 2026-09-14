@@ -5,7 +5,8 @@ import { backgroundKeyForScene } from "../data/scene-backgrounds.js";
 import { openMessage, openConfirm, openTeamChoiceDialog } from "./dialog-handler.js";
 import { holdDialogContent, markDirty, render, renderDialogLayer, setScene, syncBattleLayoutMeasurements } from "./renderer.js";
 import { applyPlayerSave, state, root } from "./game-state.js";
-import { getInventoryItemByIndex, getItemByIndex, updateInventoryQuantity, ItemCategory, ItemSubcategory, revive, max_revive } from "../data/items.js";
+import { getInventoryItemByIndex, getItemByIndex, updateInventoryQuantity, ItemCategory, ItemSubcategory } from "../data/items.js";
+import { authoritativeNpcItemsForBattle } from "../data/authoritative-npc-items.js";
 import * as Engine from "../engine/index.js";
 import {
   activateBattleRuntimeOwnership,
@@ -1887,58 +1888,15 @@ function createAdminBattleItems() {
   });
 }
 
-function createBattleItemsWithReviveCounts(normalCount, maxCount) {
-  return ADMIN_BATTLE_ITEMS.map(function (entry) {
-    var itemIndex = Number(entry[0]);
-    if (itemIndex === revive.index) {
-      return [itemIndex, Number(normalCount) || 0];
-    }
-    if (itemIndex === max_revive.index) {
-      return [itemIndex, Number(maxCount) || 0];
-    }
-    return [itemIndex, Number(entry[1])];
-  }).filter(function (entry) {
-    return Number(entry[1]) > 0;
-  });
-}
-
-function npcReviveCountsForBattleType(battleType) {
+function createNpcBattleItems(battleType) {
   var type = String(battleType || "");
-  var gymCityKey;
-  var gymCity;
-  var badgeIndex;
-  if (type === "training_easy" || type === "training_medium") {
-    return [1, 1];
-  }
-  if (type === "training_hard") {
-    return [3, 3];
+  if (type.indexOf("training_") === 0) {
+    return authoritativeNpcItemsForBattle({ contractKey: "training", trainingDifficulty: type.slice("training_".length) });
   }
   if (type.indexOf("gym_") === 0) {
-    gymCityKey = type.slice("gym_".length);
-    gymCity = kantoGymCityByKey(gymCityKey);
-    if (!gymCity || gymCity.key !== gymCityKey) {
-      return null;
-    }
-    badgeIndex = Number(gymCity.badgeIndex);
-    if (badgeIndex < 2) {
-      return [1, 2];
-    }
-    if (badgeIndex < 4) {
-      return [2, 2];
-    }
-    if (badgeIndex < 6) {
-      return [3, 3];
-    }
+    return authoritativeNpcItemsForBattle({ contractKey: "gym", gymKey: type.slice("gym_".length) });
   }
-  return null;
-}
-
-function createNpcBattleItems(battleType) {
-  var reviveCounts = npcReviveCountsForBattleType(battleType);
-  if (!reviveCounts) {
-    return createAdminBattleItems();
-  }
-  return createBattleItemsWithReviveCounts(reviveCounts[0], reviveCounts[1]);
+  return [];
 }
 
 function notifyAdminIfWaiting(scene) {

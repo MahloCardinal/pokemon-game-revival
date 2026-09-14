@@ -514,6 +514,47 @@ const MoveDefinitions = moveDefinitionsModule.namespace;
 const itemDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../../app/data/items.js", import.meta.url)));
 if (itemDefinitionsModule.status !== "evaluated") await itemDefinitionsModule.evaluate();
 const ItemDefinitions = itemDefinitionsModule.namespace;
+const npcItemsModule = await loadEsModule(fileURLToPath(new URL("../../app/data/authoritative-npc-items.js", import.meta.url)));
+if (npcItemsModule.status !== "evaluated") await npcItemsModule.evaluate();
+const { authoritativeNpcItemsForBattle } = npcItemsModule.namespace;
+const npcItemsClient = vm.createContext({ authoritativeNpcItemsForBattle });
+vm.runInContext(battleHandler.slice(battleHandler.indexOf("function createNpcBattleItems("),
+  battleHandler.indexOf("function notifyAdminIfWaiting(")), npcItemsClient);
+const baseNpcItems = [103, 104, 108, 109, 110, 111, 112, 113].map(index => [index, 3]);
+const npcItemCases = [
+  ...["pewter_city", "cerulean_city", "vermilion_city", "celadon_city", "saffron_city", "fuchsia_city"].map((gymKey, index) => ({
+    input: { contractKey: "gym", gymKey }, type: "gym_" + gymKey,
+    expected: [...baseNpcItems, ...(index >= 4 ? [[105, 3], [106, 3], [107, 3]] : []), [119, index < 2 ? 1 : 2], [120, 2]]
+  })),
+  ...["easy", "medium", "hard"].map(trainingDifficulty => ({
+    input: { contractKey: "training", trainingDifficulty }, type: "training_" + trainingDifficulty,
+    expected: trainingDifficulty === "easy" ? [] : [...baseNpcItems, [119, trainingDifficulty === "medium" ? 1 : 2], [120, 2]]
+  })),
+  ...["capture", "battle_tower", "tackle_test"].map(contractKey => ({ input: { contractKey }, type: contractKey, expected: [] }))
+];
+const sortedNpcItems = entries => Array.from(entries, entry => Array.from(entry)).sort((a, b) => a[0] - b[0]);
+for (const { input, type, expected } of npcItemCases) {
+  assert.deepEqual(sortedNpcItems(authoritativeNpcItemsForBattle(input)), sortedNpcItems(expected), type);
+  assert.deepEqual(sortedNpcItems(npcItemsClient.createNpcBattleItems(type)), sortedNpcItems(expected), type + " client inventory");
+  const snapshot = engineExports.initializeBattleRuntime({
+    ...input, seed: 123, playerActiveSlot: 0, npcActiveSlot: 0, playerItems: [],
+    participants: ["player", "npc"].map(side => ({
+      side, slot_index: 0, species_key: "25", ndex: 25, level: 30, type_keys: ["electric"],
+      max_hp: 100, current_hp: 100, moves: [{ move_index: 1, power: 20, stats: 10 }]
+    }))
+  });
+  const manager = engineExports.restoreBattleManager(snapshot).manager;
+  assert.deepEqual(sortedNpcItems(manager.npcItems), sortedNpcItems(expected), type + " runtime inventory");
+  if (expected.length) {
+    manager.npcItems[0][1]--;
+    const saved = engineExports.serializeBattleManager(manager, engineExports.createRngState(123), { playerItems: [] });
+    assert.deepEqual(sortedNpcItems(engineExports.restoreBattleManager(saved).manager.npcItems),
+      sortedNpcItems(manager.npcItems), type + " must preserve consumed items when restoring");
+    assert.deepEqual(sortedNpcItems(authoritativeNpcItemsForBattle(input)), sortedNpcItems(expected), type + " fresh inventory");
+  }
+}
+assert.deepEqual(Array.from(authoritativeNpcItemsForBattle({ contractKey: "gym", gymKey: "unknown" })), []);
+assert.deepEqual(Array.from(authoritativeNpcItemsForBattle({ contractKey: "training", trainingDifficulty: "unknown" })), []);
 testBattleHistory(engineExports, MoveDefinitions, ItemDefinitions);
 await testBattleHistoryClient();
 const titleDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../../app/data/titles.js", import.meta.url)));

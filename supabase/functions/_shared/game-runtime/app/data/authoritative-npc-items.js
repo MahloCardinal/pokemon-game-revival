@@ -32,32 +32,39 @@ var AUTOMATIC_NPC_ITEMS = [
   max_revive
 ];
 
-function reviveCounts(contractKey, gymKey) {
+function npcItemProfile(input) {
   var gym;
   var badgeIndex;
-  if (contractKey !== "gym") {
+  if (input.contractKey === "training") {
+    if (input.trainingDifficulty === "medium") { return { revives: [1, 2], advancedHealing: false }; }
+    if (input.trainingDifficulty === "hard") { return { revives: [2, 2], advancedHealing: false }; }
     return null;
   }
-  gym = kantoGymCityByKey(gymKey);
+  if (input.contractKey !== "gym") {
+    return null;
+  }
+  gym = kantoGymCityByKey(String(input.gymKey || ""));
   badgeIndex = Number(gym && gym.badgeIndex);
-  if (!gym || !Number.isInteger(badgeIndex)) { return null; }
-  if (badgeIndex < 2) { return [1, 2]; }
-  if (badgeIndex < 4) { return [2, 2]; }
-  if (badgeIndex < 6) { return [2, 2]; }
+  if (!gym || gym.key !== input.gymKey || !Number.isInteger(badgeIndex)) { return null; }
+  if (badgeIndex < 2) { return { revives: [1, 2], advancedHealing: false }; }
+  if (badgeIndex < 4) { return { revives: [2, 2], advancedHealing: false }; }
+  if (badgeIndex < 6) { return { revives: [2, 2], advancedHealing: true }; }
   return null;
 }
 
 export function authoritativeNpcItemsForBattle(input) {
   input = input || {};
-  var contractKey = String(input.contractKey || "");
-  var counts = reviveCounts(contractKey, String(input.gymKey || ""));
-  if (!counts) {
+  var profile = npcItemProfile(input);
+  if (!profile) {
     return [];
   }
-  return AUTOMATIC_NPC_ITEMS.map(function (item) {
+  return AUTOMATIC_NPC_ITEMS.filter(function (item) {
+    return profile.advancedHealing
+      || (item.index !== hyper_potion.index && item.index !== max_potion.index && item.index !== full_restore.index);
+  }).map(function (item) {
     var quantity = NPC_ITEM_QUANTITY;
-    if (item.index === revive.index) { quantity = counts[0]; }
-    if (item.index === max_revive.index) { quantity = counts[1]; }
+    if (item.index === revive.index) { quantity = profile.revives[0]; }
+    if (item.index === max_revive.index) { quantity = profile.revives[1]; }
     return [item.index, quantity];
   });
 }

@@ -6,7 +6,7 @@
   ],
   "checksumAlgorithm": "sha256",
   "sourceNormalization": "lf",
-  "bundleChecksum": "7d09ae057435bf335ed009fadc8b34b1c2afbf47bd45087cd1eb5d48fa23c3b3",
+  "bundleChecksum": "c8a18372e1dc580e1211dde1e20e242aff8c9fe57d56688b3c192589b1034ed8",
   "snapshotVersion": 3,
   "components": {
     "encounters": {
@@ -147,7 +147,7 @@
     },
     "initialization": {
       "policy": "next_snapshot",
-      "checksum": "4bae7332109b6506c8a1620bddce10dcabecda076bf0063990a1b6d8e9d28e31",
+      "checksum": "61a3a102a74c1ac5a7540edb61f293c9fd0df651190ae9ec3f2fdacba30d1435",
       "sources": [
         {
           "source": "app/data/species_I.js",
@@ -412,7 +412,7 @@
         {
           "source": "app/engine/battle-runtime.js",
           "declaration": "initializeBattleRuntime",
-          "sha256": "ddc94c62d134e88ce1ff823a7ee7635bcba0ce3d4ab061355c47d104f6bc2651"
+          "sha256": "007213507cbbd905f62688c666dbc6aea4e6db4e57604dca5c0fbab721d0ce44"
         },
         {
           "source": "app/engine/level-calc.js",
@@ -6104,7 +6104,7 @@
     },
     "opponents_rewards": {
       "policy": "next_activity",
-      "checksum": "6f7cbc476b616c3774c5cf8f4c34a9f63d7bf2d2ad4cda7eb0f4004ea7189ac3",
+      "checksum": "1960d2d6718f312e8f672a9c91e378a131099d44a6b82c93a8c67e104fb37d2c",
       "sources": [
         {
           "source": "app/data/authoritative-npc-items.js",
@@ -6119,17 +6119,17 @@
         {
           "source": "app/data/authoritative-npc-items.js",
           "declaration": "authoritativeNpcItemsForBattle",
-          "sha256": "3f8398b5b32c7263aca2260e2dd393d1d0eab4e51cc3be7be57c8c40779ceb9a"
+          "sha256": "baa8d85db2a7fcaa2f7fe4082f11d04ce2fd58f0df2f9a251be20ce87f6c79f0"
+        },
+        {
+          "source": "app/data/authoritative-npc-items.js",
+          "declaration": "npcItemProfile",
+          "sha256": "ea620df969f6dca386cf75c5e3003fe130137c592f05f626cffb20cce2666cd6"
         },
         {
           "source": "app/data/authoritative-npc-items.js",
           "declaration": "preamble",
           "sha256": "66bc45f4c7a145634e34adc096ade28e206325eaf2f96dc0fab93069ad344157"
-        },
-        {
-          "source": "app/data/authoritative-npc-items.js",
-          "declaration": "reviveCounts",
-          "sha256": "0acfed5d08e7c280d2537eb8ea755d4689a8b7faf78fc396d910b6a8312cd47a"
         },
         {
           "source": "app/data/battle-tower.js",
@@ -8133,8 +8133,8 @@
   "files": [
     {
       "source": "app/data/authoritative-npc-items.js",
-      "sha256": "3c975aaf381242354ab5543974e88485738672b0f9f78fc65d85b9adaf7f020e",
-      "bytes": 1397
+      "sha256": "d3e0cb1a4c5fe57081691fffff7327cabe1845d3a48af18a793ed177941126df",
+      "bytes": 1934
     },
     {
       "source": "app/data/battle-tower.js",
@@ -8228,8 +8228,8 @@
     },
     {
       "source": "app/engine/battle-runtime.js",
-      "sha256": "d8c162ee6a5d42d23988a118200cd1b98c7431aecacab270a5eff239385cc1ad",
-      "bytes": 47327
+      "sha256": "63b462504d780103bea8019e1face2fdce028fea76d18bdc35906d5a7b95deb7",
+      "bytes": 47375
     },
     {
       "source": "app/engine/battle-summary.js",

@@ -11,6 +11,7 @@ import { messageDescriptor } from "./i18n.js";
 
 var authoritativeTeamCommandPending = false;
 var authoritativeRuntimeRefreshInFlight = null;
+var authoritativeRuntimeRefreshQueued = false;
 var preferredTrainerTitlePending = false;
 
 registerAction("trainer-titles-info", function() {
@@ -146,10 +147,17 @@ registerAction("pokedex-set-filter", function(element) {
 
 export function handleTeamBoxRuntimeChange(domains) {
   var domainList = Array.isArray(domains) ? domains : ["team", "box"];
-  if (domainList.indexOf("canonicalStateInvalidation") !== -1 && true) {
+  if (domainList.indexOf("canonicalStateInvalidation") !== -1) {
+    authoritativeRuntimeRefreshQueued = true;
     if (!authoritativeRuntimeRefreshInFlight) {
+      authoritativeRuntimeRefreshQueued = false;
+      var team = state.team;
+      var scene = state.scene;
       authoritativeRuntimeRefreshInFlight = getCurrentPlayerState().then(function (result) {
-        if (result.ok && result.projection && result.projection.has_player) {
+        if (result.ok && result.projection && result.projection.has_player
+          && !authoritativeRuntimeRefreshQueued && state.team === team && state.scene === scene
+          && !state.inBattle && !state.battleStartPending
+          && Number(result.projection.revision) >= Number(state.authoritativeRevision)) {
           applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
           if (state.scene && state.scene.name === "team") {
             renderRegions(["trainer-profile", "trainer-team", "trainer-inventory", "trainer-pokedex"]);
@@ -161,8 +169,11 @@ export function handleTeamBoxRuntimeChange(domains) {
             render();
           }
         }
+      }).catch(function () {
+        // A later invalidation can retry a failed read.
       }).finally(function () {
         authoritativeRuntimeRefreshInFlight = null;
+        if (authoritativeRuntimeRefreshQueued) handleTeamBoxRuntimeChange(["canonicalStateInvalidation"]);
       });
     }
     return;

@@ -56,6 +56,7 @@ export var IT_MESSAGE_TRANSLATIONS = Object.freeze({
     resolutionUnavailable: "La risoluzione del ritiro non è disponibile. Ricarica la Pensione.",
     teamFullToComplete: "La squadra è piena. Libera uno slot per completare il ritiro.",
     withdrawFailed: "Ritiro non riuscito.",
+    costChanged: "Il costo del ritiro è cambiato. Nessun importo è stato addebitato. Premi di nuovo Ritira per confermare il preventivo aggiornato.",
     loadFailed: "Errore durante il caricamento della Pensione.",
     occupiedSlot: "Questo slot della Pensione è già occupato.",
     cannotDeposit: "Questo Pokémon non può essere depositato in Pensione.",

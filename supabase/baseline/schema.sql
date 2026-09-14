@@ -8829,6 +8829,34 @@ $$;
 ALTER FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid") OWNER TO "postgres";
 
 --
+-- Name: withdraw_daycare_pokemon_authoritative("uuid", bigint, "uuid", bigint); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid", "p_expected_cost" bigint) RETURNS "jsonb"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public', 'server_authority_private', 'pg_temp'
+    AS $$
+declare
+  v_result jsonb;
+begin
+  if p_expected_cost is null or p_expected_cost < 0 then
+    raise exception 'confirmed withdrawal cost is required' using errcode = '22023';
+  end if;
+  v_result := public.withdraw_daycare_pokemon_authoritative(
+    p_command_id, p_expected_revision, p_pokemon_instance_id);
+  -- Revision conflicts have no charge and must retain their existing contract.
+  if v_result ->> 'conflict' = 'player_revision' then return v_result; end if;
+  if (v_result ->> 'charged_cost')::bigint is distinct from p_expected_cost then
+    raise exception 'daycare withdrawal cost changed' using errcode = 'DC001';
+  end if;
+  return v_result;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid", "p_expected_cost" bigint) OWNER TO "postgres";
+
+--
 -- Name: withdraw_daycare_pokemon_before_revision_guard("uuid", bigint, "uuid"); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -25201,6 +25229,15 @@ GRANT ALL ON FUNCTION "public"."validate_extended_catalog_on_publish"() TO "serv
 REVOKE ALL ON FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid") FROM PUBLIC;
 GRANT ALL ON FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid") TO "service_role";
 GRANT ALL ON FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid") TO "authenticated";
+
+
+--
+-- Name: FUNCTION "withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid", "p_expected_cost" bigint); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid", "p_expected_cost" bigint) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid", "p_expected_cost" bigint) TO "service_role";
+GRANT ALL ON FUNCTION "public"."withdraw_daycare_pokemon_authoritative"("p_command_id" "uuid", "p_expected_revision" bigint, "p_pokemon_instance_id" "uuid", "p_expected_cost" bigint) TO "authenticated";
 
 
 --

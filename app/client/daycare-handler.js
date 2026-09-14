@@ -21,6 +21,7 @@ var DAYCARE_LEVEL_INTERVAL_MS = 3600000;
 var daycareDepositPending = false;
 var authoritativeDaycareCommandPending = false;
 var activeDaycareResolution = null;
+var daycareRefreshId = 0;
 
 function setDaycareDepositTargetsDisabled(disabled) {
   root.querySelectorAll('[data-action="daycare-deposit-pokemon"]').forEach(function (target) {
@@ -350,7 +351,16 @@ export function resumePendingDaycareWithdraw() {
 }
 
 export function refreshDaycare() {
+  var refreshId = ++daycareRefreshId;
+  var daycare = state.daycare;
+  var scene = state.scene;
   return loadPlayerDaycare().then(function (result) {
+    if (refreshId !== daycareRefreshId || state.daycare !== daycare || state.scene !== scene
+      || result.code === "stale_session" || state.inBattle || state.battleStartPending
+      || authoritativeDaycareCommandPending
+      || result.projection && Number(result.projection.revision) < Number(state.authoritativeRevision)) {
+      return Object.assign({}, result, { applied: false });
+    }
     if (!result.ok) {
       state.saveStatus = { state: "error", message: messageDescriptor("daycare.loadFailed") };
       render();
@@ -480,10 +490,18 @@ registerAction("daycare-withdraw", function (element) {
     holdDialogContent();
     withdrawDaycarePokemonCommand({
       expectedRevision: state.authoritativeRevision,
-      pokemonInstanceId: pokemon.instanceId
+      pokemonInstanceId: pokemon.instanceId,
+      expectedCost: cost
     }).then(function (result) {
       authoritativeDaycareCommandPending = false;
       if (!result.ok) {
+        if (result.code === "DC001" || result.code === "22023") {
+          return refreshDaycare().then(function (refreshResult) {
+            openMessage([messageDescriptor(refreshResult.ok && refreshResult.applied !== false
+              ? (result.code === "DC001" ? "daycare.costChanged" : "daycare.withdrawFailed")
+              : "daycare.loadFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
+          });
+        }
         openMessage([messageDescriptor("daycare.withdrawFailed")], { title: textDescriptor("ui.daycare.sceneTitle") });
         return;
       }

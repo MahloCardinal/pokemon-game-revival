@@ -332,10 +332,17 @@ export function applyFluteDailyLimits(rows) {
 
 export function consumeFluteDailyUseLocally(fluteKey) {
   var entry = state.fluteDaily && state.fluteDaily[fluteKey];
-  if (entry && entry.remaining > 0) {
-    entry.remaining -= 1;
+  var remaining = fluteDailyRemaining(fluteKey);
+  if (entry && remaining > 0) {
+    entry.remaining = remaining - 1;
     entry.lastClaimedAt = new Date().toISOString();
   }
+}
+
+export function fluteDailyRemaining(fluteKey) {
+  var entry = state.fluteDaily && state.fluteDaily[fluteKey];
+  if (!entry || !isTodayInRome(entry.lastClaimedAt)) return FLUTE_DAILY_USE_LIMIT;
+  return Math.max(0, Math.min(FLUTE_DAILY_USE_LIMIT, Number(entry.remaining) || 0));
 }
 
 export function applyPlayerSave(save) {

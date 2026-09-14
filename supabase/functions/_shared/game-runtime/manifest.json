@@ -6465,7 +6465,7 @@
     },
     "presentation": {
       "policy": "read_only",
-      "checksum": "4cb5dc3256ba64a2df03922abe5250f06aca49c6b62e41d957070c807402a6bf",
+      "checksum": "a70adab4e8c0da055c461a30493b536bd92e138995a84671dcf5c8c5a3b32cb9",
       "sources": [
         {
           "source": "app/engine/battle-events.js",
@@ -6600,7 +6600,7 @@
         {
           "source": "app/i18n/en/messages.js",
           "declaration": "EN_MESSAGE_TRANSLATIONS",
-          "sha256": "cf3c02e211986f316880d02efa2cc1421415c46edace584ccae6035204276c33"
+          "sha256": "14a4f8a241a41127383b588ca1f990e9dd210ae01208baab0fecf0ec14a3b97f"
         },
         {
           "source": "app/i18n/en/move-descriptions.js",
@@ -6710,7 +6710,7 @@
         {
           "source": "app/i18n/it/messages.js",
           "declaration": "IT_MESSAGE_TRANSLATIONS",
-          "sha256": "d8c48eb6a4ec878a82239e1545fce4af721b3c422e3ac7c1a4d04f3b076c5b2b"
+          "sha256": "2a48957c824e953ebc6e4fd4bcd60b29e22f3d69e6153800fb77cd258f1b8ed2"
         },
         {
           "source": "app/i18n/it/move-descriptions.js",
@@ -7220,12 +7220,12 @@
         {
           "source": "app/view/capture.js",
           "declaration": "preamble",
-          "sha256": "759ea6f2e8a8b166440214eb74ffb1037f029bdac9731bdc03be2855a2038cb6"
+          "sha256": "c655924bec86776725b6b1914683f4a0e3f5816394045fc9865035164e5f7cdc"
         },
         {
           "source": "app/view/capture.js",
           "declaration": "renderCaptureScene",
-          "sha256": "21f9230eb4d9d5c62026fee01ae0f52e4a5ec6fa8b7d63fc5dca194fc517be1c"
+          "sha256": "c2320d5c94cd39a98e4fbe18e22bfd3f861bab50553d243a2d4a0d61c43aa272"
         },
         {
           "source": "app/view/capture.js",

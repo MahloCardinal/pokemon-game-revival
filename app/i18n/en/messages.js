@@ -56,6 +56,7 @@ export var EN_MESSAGE_TRANSLATIONS = Object.freeze({
     resolutionUnavailable: "The withdrawal resolution is unavailable. Reload the Day Care.",
     teamFullToComplete: "Your team is full. Free a slot to complete the withdrawal.",
     withdrawFailed: "The Pokémon could not be withdrawn.",
+    costChanged: "The withdrawal cost has changed. You have not been charged. Select Withdraw again to confirm the updated quote.",
     loadFailed: "The Day Care could not be loaded.",
     occupiedSlot: "This Day Care slot is already occupied.",
     cannotDeposit: "This Pokémon cannot be deposited at the Day Care.",

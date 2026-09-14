@@ -1,5 +1,5 @@
 import * as Engine from "../engine/index.js";
-import { state } from "../client/game-state.js";
+import { fluteDailyRemaining, state } from "../client/game-state.js";
 import { getResolvedInventoryItem } from "../data/items.js";
 import { FLUTE_DAILY_USE_LIMIT, SEARCH_TOOL_ITEMS, captureLevelLimitForBadges, captureLevelRangesForBadges } from "../data/progression.js";
 import { escapeHtml, getItemDisplayImage, getTypeImage, renderImage } from "../client/asset-helpers.js";
@@ -62,8 +62,8 @@ export function renderCaptureScene(scene) {
   var selectedRange = searchRanges[selectedRangeIndex] || searchRanges[0];
   var hasWhiteFlute = Number((getResolvedInventoryItem(state.inventory, SEARCH_TOOL_ITEMS.whiteFlute.index) || {}).quantity) > 0;
   var hasBlackFlute = Number((getResolvedInventoryItem(state.inventory, SEARCH_TOOL_ITEMS.blackFlute.index) || {}).quantity) > 0;
-  var whiteFluteRemaining = state.fluteDaily && state.fluteDaily.whiteFlute && state.fluteDaily.whiteFlute.remaining || 0;
-  var blackFluteRemaining = state.fluteDaily && state.fluteDaily.blackFlute && state.fluteDaily.blackFlute.remaining || 0;
+  var whiteFluteRemaining = fluteDailyRemaining("whiteFlute");
+  var blackFluteRemaining = fluteDailyRemaining("blackFlute");
   var useWhiteFlute = hasWhiteFlute && whiteFluteRemaining > 0 && scene.useWhiteFlute === true;
   var useBlackFlute = hasBlackFlute && blackFluteRemaining > 0 && scene.useBlackFlute === true;
   var zoneThemeClass = CAPTURE_ZONE_THEME_CLASS[scene.zoneName] || "capture-search-wrap-default";

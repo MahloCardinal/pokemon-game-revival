@@ -13,11 +13,11 @@ import { FLUTE_DAILY_USE_LIMIT, SEARCH_TOOL_ITEMS, captureLevelIsUnlocked, captu
 import { openMessage } from "./dialog-handler.js";
 import { saveFromAuthoritativeProjection } from "../api/player.js";
 import { currentUserId, getSupabaseClient } from "../api/supabase.js";
-import { applyPlayerSave, root, state } from "./game-state.js";
+import { applyPlayerSave, fluteDailyRemaining, root, state } from "./game-state.js";
 import { rememberCaptureSearchPreferences } from "./router.js";
 import * as Engine from "../engine/index.js";
 import { button } from "./render-utils.js";
-import { setHtml } from "./renderer.js";
+import { render, setHtml } from "./renderer.js";
 import { renderPokemonCard } from "./pokemon-card.js";
 import { broadcastCaptureEncounterRuntimeInvalidation } from "./runtime-state.js";
 import { renderCaptureTeamSectionInner } from "../view/capture.js";
@@ -26,6 +26,8 @@ import { startAuthoritativeWildEncounter } from "../api/search-tools.js";
 import { authoritativeBattleRuntimeOwnerId, clearPendingAuthoritativeCaptureFlee, fleeAuthoritativeCaptureEncounter, getAuthoritativeBattle, startAuthoritativeCaptureBattle } from "../api/battle.js";
 import { openAuthoritativeBattleProjection } from "./battle-handler.js";
 import { getCurrentPlayerState } from "../api/player-command.js";
+
+import { dateKeyInRome } from "./rome-date.js";
 
 var authoritativeCaptureCommandPending = false;
 var CAPTURE_START_STORAGE_KEY = "pokemon-game-revival:pending-capture-battle-start";
@@ -115,8 +117,8 @@ registerAction("capture-search", async function(element) {
   var zoneTypes = Engine.getZoneTypes(scene.zoneName);
   var hasWhiteFlute = Number((getResolvedInventoryItem(state.inventory, SEARCH_TOOL_ITEMS.whiteFlute.index) || {}).quantity) > 0;
   var hasBlackFlute = Number((getResolvedInventoryItem(state.inventory, SEARCH_TOOL_ITEMS.blackFlute.index) || {}).quantity) > 0;
-  var whiteFluteRemaining = state.fluteDaily && state.fluteDaily.whiteFlute && state.fluteDaily.whiteFlute.remaining || 0;
-  var blackFluteRemaining = state.fluteDaily && state.fluteDaily.blackFlute && state.fluteDaily.blackFlute.remaining || 0;
+  var whiteFluteRemaining = fluteDailyRemaining("whiteFlute");
+  var blackFluteRemaining = fluteDailyRemaining("blackFlute");
   var useWhiteFlute = hasWhiteFlute && whiteFluteRemaining > 0 && Boolean(root.querySelector('[name="capture-use-white-flute"]:checked'));
   var useBlackFlute = hasBlackFlute && blackFluteRemaining > 0 && Boolean(root.querySelector('[name="capture-use-black-flute"]:checked'));
   var levelText = levelInput ? levelInput.value.replace(/\D/g, "").slice(0, 2) : "";
@@ -363,16 +365,30 @@ export function handleCaptureEncounterRuntimeInvalidation() {
   }
 }
 
+var captureDailyTimer = null;
+var captureDailyDate = "";
+function refreshCaptureDailyDate() {
+  var today = dateKeyInRome(new Date());
+  if (today === captureDailyDate) return;
+  captureDailyDate = today;
+  if (state.scene && state.scene.name === "capture" && canRefreshCaptureRuntime()) render();
+}
+
 export function initializeCaptureEncounterRuntime() {
   if (typeof window === "undefined" || typeof document === "undefined") {
     return;
   }
+  if (captureDailyTimer) return;
+  captureDailyDate = dateKeyInRome(new Date());
+  captureDailyTimer = window.setInterval(refreshCaptureDailyDate, 1000);
   window.addEventListener("focus", function () {
+    refreshCaptureDailyDate();
     if (state.scene && state.scene.name === "capture") {
       refreshCaptureEncounterRuntime();
     }
   });
   document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) refreshCaptureDailyDate();
     if (!document.hidden && state.scene && state.scene.name === "capture") {
       refreshCaptureEncounterRuntime();
     }
@@ -380,9 +396,8 @@ export function initializeCaptureEncounterRuntime() {
 }
 
 function updateCaptureToolUsageInline(fluteKey) {
-  var entry = state.fluteDaily && state.fluteDaily[fluteKey];
   var limit = FLUTE_DAILY_USE_LIMIT;
-  var remaining = entry ? Math.max(0, Number(entry.remaining) || 0) : 0;
+  var remaining = fluteDailyRemaining(fluteKey);
   var used = Math.max(0, limit - remaining);
   var count = root.querySelector('[data-capture-tool-count="' + fluteKey + '"]');
   var inputName = fluteKey === "whiteFlute" ? "capture-use-white-flute" : "capture-use-black-flute";

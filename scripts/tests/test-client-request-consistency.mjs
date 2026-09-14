@@ -200,7 +200,7 @@ async function deploymentTab(sharedStorage, sessionStore = storage()) {
   shared.setItem("pokemon_game_revival:runtime:in_battle:fixture", JSON.stringify({ active: false }));
   await tab.api.checkDeploymentFromServer(); assert.equal(tab.reloads(), 1);
 }
-async function boxHarness() {
+async function boxHarness(isToday = () => false) {
   const actions = new Map(), calls = [], renders = [], messages = [];
   let confirmation;
   const context = vm.createContext({ document: { getElementById: () => ({}) } });
@@ -209,7 +209,7 @@ async function boxHarness() {
     poke_ball: { index: 100 }, potion: { index: 103 }, FLUTE_DAILY_USE_LIMIT: 3,
     defaultTrainerIndex: () => 0, defaultPokefanMissionRows: () => [],
     revivePokemonList: list => list || [], reviveBoxList: list => list || [], reviveDaycareRows: () => [null, null],
-    applyLocalDailyReset: () => [], missionRowsHaveClaimable: () => false, isTodayInRome: () => false
+    applyLocalDailyReset: () => [], missionRowsHaveClaimable: () => false, isTodayInRome: isToday
   }));
   await gameState.evaluate();
   const state = gameState.namespace.state;
@@ -346,3 +346,143 @@ for (const ok of [true, false]) {
   assert.equal(h.state.garden.dailyBerry.error, "garden.actionFailed");
 }
 console.log("Client consistency: session isolation, retries, cart revisions, Box identity/filters, garden refresh ordering and deployment updates passed.");
+
+async function refreshHarness(domain) {
+  const h = await boxHarness(), reads = [];
+  let confirm;
+  const module = new vm.SourceTextModule(read("app/client/" + domain + "-handler.js"), { context: h.context });
+  await module.link(specifier => specifier === "./game-state.js" ? h.gameState : synthetic(h.context, {
+    registerAction: (key, action) => h.actions.set(key, action),
+    getCurrentPlayerState: () => new Promise(resolve => reads.push(resolve)),
+    loadPlayerDaycare: () => new Promise(resolve => reads.push(resolve)),
+    withdrawDaycarePokemonCommand: input => new Promise(resolve => h.calls.push({ input, resolve })),
+    completeDaycareWithdraw() {}, depositDaycarePokemonCommand() {}, resolveDaycareWithdrawalCommand() {},
+    DAYCARE_WITHDRAW_BASE_COST: 1000, DAYCARE_WITHDRAW_LEVEL_COST: 500, levelLimitForBadges: () => 10,
+    openConfirm: (_title, _lines, callback) => { confirm = callback; }, openMessage: lines => h.messages.push(lines),
+    openInlineMessage() {}, TEAM_MAX: 6, holdDialogContent() {}, render: () => h.renders.push([domain]),
+    renderRegions: regions => h.renders.push(Array.from(regions)), renderDialogLayer() {}, setScene() {},
+    moneyText: String, replaceTeamRuntimeState() {}, recordMissionEvent() {}, clearPendingActivityRuntime() {},
+    requireNotInBattle: () => true, setPendingActivityRuntime() {}, saveFromAuthoritativeProjection: value => value,
+    confirmMoveForget() {}, progressionMove() {}, progressionPokemon() {}, showEvolutionResult() {}, previewDaycareWithdrawal() {},
+    moveNameDescriptor() {}, pokemonNameDescriptor() {}, pokemonDisplayName: pokemon => pokemon.name,
+    messageDescriptor: key => key, textDescriptor: key => key, t: key => key,
+    blockActionDuringBattle: () => false, broadcastAuthoritativeRevision() {}, broadcastTeamBoxRuntimeState() {},
+    updateCaptureTeamRuntimeInline() {}, moveTeamPokemonToBoxAuthoritative() {}, setPreferredTrainerTitle() {}, swapTeamPokemonSlotsAuthoritative() {}
+  }));
+  await module.evaluate();
+  h.state.scene = { name: domain === "daycare" ? "city-daycare" : "team" };
+  return { ...h, reads, api: module.namespace, confirm: () => confirm(),
+    refresh: () => domain === "daycare" ? module.namespace.refreshDaycare() : module.namespace.handleTeamBoxRuntimeChange(["canonicalStateInvalidation"]) };
+}
+const refreshedSave = revision => ({ ...boxCommandSave, has_player: true, revision, authoritativeRevision: revision });
+for (const domain of ["daycare", "team"]) {
+  for (const change of ["revision", "identity", "scene", "battle", "starting", "session"]) {
+    const h = await refreshHarness(domain);
+    const pending = h.refresh();
+    if (change === "revision") h.state.authoritativeRevision = 5;
+    if (change === "identity") { h.state.team = []; h.state.daycare = []; }
+    if (change === "scene") h.state.scene = { name: "capture" };
+    if (change === "battle") h.state.inBattle = true;
+    if (change === "starting") h.state.battleStartPending = true;
+    h.reads[0](change === "session" ? { ok: false, code: "stale_session" } : { ok: true, projection: refreshedSave(3) });
+    await pending; await tick();
+    assert.equal(h.state.authoritativeRevision, change === "revision" ? 5 : 1, domain + ": reject obsolete " + change);
+    assert.equal(h.renders.length, 0);
+  }
+  const h = await refreshHarness(domain);
+  const pending = h.refresh();
+  h.reads[0]({ ok: true, projection: refreshedSave(3) });
+  await pending; await tick();
+  assert.equal(h.state.authoritativeRevision, 3, domain + ": apply current read");
+}
+{
+  const h = await refreshHarness("team");
+  h.refresh(); h.refresh(); h.refresh();
+  assert.equal(h.reads.length, 1);
+  h.reads[0]({ ok: true, projection: refreshedSave(2) });
+  await tick();
+  assert.equal(h.state.authoritativeRevision, 1, "An invalidated in-flight read must not be rendered");
+  assert.equal(h.reads.length, 2, "Coalesce invalidations into one follow-up read");
+  h.reads[1]({ ok: true, projection: refreshedSave(4) });
+  await tick();
+  assert.equal(h.state.authoritativeRevision, 4);
+}
+{
+  const h = await refreshHarness("daycare");
+  h.state.daycare = [{ pokemon: boxPokemonA, cost: 1000, elapsedIntervals: 0 }];
+  h.actions.get("daycare-withdraw")({ dataset: { slotIndex: "0" } });
+  h.state.daycare[0].cost = 1500;
+  h.confirm();
+  assert.equal(h.calls[0].input.expectedCost, 1000, "Send the price actually confirmed, even if the displayed state changes");
+  h.calls[0].resolve({ ok: false, code: "DC001" });
+  await tick();
+  assert.equal(h.reads.length, 1, "Refresh the quote after an atomic cost rejection");
+  h.reads[0]({ ok: true, projection: refreshedSave(3) });
+  await tick();
+  assert.equal(h.messages.at(-1)[0], "daycare.costChanged");
+}
+{
+  const h = await playerHarness();
+  const pending = h.api.withdrawDaycarePokemonAuthoritative({ expectedRevision: 1, pokemonInstanceId: boxPokemonA.instanceId, expectedCost: 1500 });
+  await tick();
+  assert.equal(h.calls[0].params.p_expected_cost, 1500);
+  h.calls[0].resolve({ data: { revision: 2, charged_cost: 1500 }, error: null });
+  assert.equal((await pending).ok, true);
+}
+{
+  const dateSource = read("app/client/rome-date.js");
+  for (const [before, after] of [["2026-09-14T21:59:59Z", "2026-09-14T22:00:00Z"], ["2026-12-14T22:59:59Z", "2026-12-14T23:00:00Z"]]) {
+    let now = before;
+    const context = vm.createContext({ Date: class extends Date { constructor(...args) { super(...(args.length ? args : [now])); } } });
+    const dates = new vm.SourceTextModule(dateSource, { context });
+    await dates.link(() => {}); await dates.evaluate();
+    const h = await boxHarness(value => dates.namespace.isTodayInRome(value));
+    h.state.fluteDaily.whiteFlute = { remaining: 0, lastClaimedAt: before };
+    assert.equal(h.gameState.namespace.fluteDailyRemaining("whiteFlute"), 0);
+    now = after;
+    assert.equal(h.gameState.namespace.fluteDailyRemaining("whiteFlute"), 3, "Rome midnight resets an exhausted flute in summer and winter");
+    h.state.fluteDaily.blackFlute = { remaining: 1, lastClaimedAt: after };
+    assert.equal(h.gameState.namespace.fluteDailyRemaining("blackFlute"), 1, "Today's uses remain consumed");
+  }
+}
+console.log("Daycare quotes, stale reads, coalesced invalidations and Rome flute rollover passed.");
+
+{
+  const h = await refreshHarness("daycare");
+  const first = h.refresh(), second = h.refresh();
+  h.reads[0]({ ok: true, projection: refreshedSave(2) }); await first;
+  assert.equal(h.state.authoritativeRevision, 1);
+  h.reads[1]({ ok: true, projection: refreshedSave(3) }); await second;
+  assert.equal(h.state.authoritativeRevision, 3);
+}
+{
+  let day = "2026-09-14", timer, renderCount = 0, intervalCount = 0;
+  const state = { scene: { name: "capture" } };
+  const events = {};
+  const context = vm.createContext({ window: { addEventListener: (name, fn) => { events[name] = fn; },
+    setInterval: fn => { timer = fn; intervalCount++; return 1; } },
+    document: { addEventListener() {} } });
+  const module = new vm.SourceTextModule(read("app/client/capture-handler.js"), { context });
+  await module.link(() => synthetic(context, {
+    registerAction() {}, pokemonDisplayName() {}, teamViolationFromBattleResult() {}, teamViolationLines() {},
+    messageDescriptor() {}, t() {}, textDescriptor() {}, openActiveProgressionScene() {}, openBattleStartTargetPanel() {},
+    enforceBattleRuntimeSceneLock() {}, TEAM_MAX: 6, findTeamCompositionViolation() {}, FLUTE_DAILY_USE_LIMIT: 15,
+    SEARCH_TOOL_ITEMS: {}, captureLevelIsUnlocked() {}, captureLevelLimitForBadges() {}, captureLevelRangesForBadges() {},
+    openMessage() {}, saveFromAuthoritativeProjection() {}, currentUserId() {}, getSupabaseClient() {},
+    applyPlayerSave() {}, fluteDailyRemaining() {}, root: {}, state, rememberCaptureSearchPreferences() {}, button() {},
+    render: () => renderCount++, setHtml() {}, renderPokemonCard() {}, broadcastCaptureEncounterRuntimeInvalidation() {},
+    renderCaptureTeamSectionInner() {}, getResolvedInventoryItem() {}, startAuthoritativeWildEncounter() {},
+    authoritativeBattleRuntimeOwnerId() {}, clearPendingAuthoritativeCaptureFlee() {}, fleeAuthoritativeCaptureEncounter() {},
+    getAuthoritativeBattle() {}, startAuthoritativeCaptureBattle() {}, openAuthoritativeBattleProjection() {},
+    getCurrentPlayerState: async () => ({ ok: false }), dateKeyInRome: () => day
+  }));
+  await module.evaluate();
+  module.namespace.initializeCaptureEncounterRuntime(); module.namespace.initializeCaptureEncounterRuntime();
+  assert.equal(intervalCount, 1, "Initialize one daily watcher");
+  timer(); assert.equal(renderCount, 0);
+  day = "2026-09-15"; timer(); assert.equal(renderCount, 1, "Update the visible form when Rome's date changes");
+  timer(); assert.equal(renderCount, 1);
+  day = "2026-09-16"; state.inBattle = true; timer(); assert.equal(renderCount, 1, "Do not interrupt a battle");
+  day = "2026-09-17"; state.inBattle = false; events.focus(); assert.equal(renderCount, 2, "A throttled background tab catches up on focus");
+  await tick();
+}

@@ -325,7 +325,8 @@ export function depositDaycarePokemonAuthoritative(input) {
 export function withdrawDaycarePokemonAuthoritative(input) {
   return runPlayerCommand("withdraw_daycare_pokemon_authoritative", {
     p_expected_revision: Number(input.expectedRevision) || 0,
-    p_pokemon_instance_id: String(input.pokemonInstanceId || "")
+    p_pokemon_instance_id: String(input.pokemonInstanceId || ""),
+    p_expected_cost: Number(input.expectedCost)
   });
 }
 

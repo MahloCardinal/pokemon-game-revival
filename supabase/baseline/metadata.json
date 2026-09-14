@@ -48,5 +48,5 @@
       "schedule": "17 * * * *"
     }
   ],
-  "through_migration": "20260914192455"
+  "through_migration": "20260914220000"
 }

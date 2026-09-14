@@ -36,7 +36,21 @@ const { renderDialog } = await load("app/view/dialogs.js");
 const { formatPokedollarNumber, setLocale, t } = await load("app/client/i18n.js");
 const { getItemDisplayImage, getPokemonImage } = await load("app/client/asset-helpers.js");
 const { itemDisplayName } = await load("app/client/entity-text.js");
-const { potion, ultra_ball, tm01 } = await load("app/data/items.js");
+const { potion, ultra_ball, tm01, getItemByIndex } = await load("app/data/items.js");
+const missionView = read("app/view/pokefan.js");
+const rewardPreview = vm.createContext({
+  state: { trainerInfo: [0, 0, 8] }, getItemByIndex, itemDisplayName, t,
+  escapeHtml: String, formatInteger: String, moneyMarkup: String,
+  getItemImage: image => image, renderImage: () => ""
+});
+vm.runInContext(missionView.slice(missionView.indexOf("function renderMoneyReward("), missionView.indexOf("function renderMissionStatus(")), rewardPreview);
+for (let badges = 0; badges <= 8; badges++) {
+  const html = rewardPreview.renderReward({ kind: "dynamic_item", itemIndex: ultra_ball.index, baseQuantity: 3, perBadge: 1 },
+    { trackedKeys: ["reward_badges:" + badges] });
+  assert.ok(html.includes((3 + badges) + "x " + itemDisplayName(ultra_ball)), "Daily login previews must use the frozen server badge count");
+}
+assert.ok(rewardPreview.renderReward({ kind: "dynamic_money", baseQuantity: 2000, perBadge: 500 }, { trackedKeys: [] }).includes("6000"),
+  "Rewards without a frozen badge count must still use current badges");
 const femaleShiny = { instanceId: "received-pokemon", speciesKey: "25", name: "Pikachu", gender: "female", isShiny: true };
 for (const locale of ["it", "en"]) {
   setLocale(locale);

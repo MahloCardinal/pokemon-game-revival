@@ -32,7 +32,7 @@ function renderItemReward(reward) {
 }
 
 function rewardBadgeCount(mission) {
-  var frozen = (mission && mission.trackedKeys || []).find(function (key) { return /^reward-badges:[0-8]$/.test(String(key)); });
+  var frozen = (mission && mission.trackedKeys || []).find(function (key) { return /^reward_badges:[0-8]$/.test(String(key)); });
   return frozen ? Number(String(frozen).split(":")[1]) : Math.max(0, Math.min(8, Number(state.trainerInfo && state.trainerInfo[2]) || 0));
 }
 

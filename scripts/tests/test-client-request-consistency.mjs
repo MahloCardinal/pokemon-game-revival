@@ -200,4 +200,149 @@ async function deploymentTab(sharedStorage, sessionStore = storage()) {
   shared.setItem("pokemon_game_revival:runtime:in_battle:fixture", JSON.stringify({ active: false }));
   await tab.api.checkDeploymentFromServer(); assert.equal(tab.reloads(), 1);
 }
-console.log("Client consistency: session isolation, retries, cart revisions and per-tab deployment updates passed.");
+async function boxHarness() {
+  const actions = new Map(), calls = [], renders = [], messages = [];
+  let confirmation;
+  const context = vm.createContext({ document: { getElementById: () => ({}) } });
+  const gameState = new vm.SourceTextModule(read("app/client/game-state.js"), { context });
+  await gameState.link(() => synthetic(context, {
+    poke_ball: { index: 100 }, potion: { index: 103 }, FLUTE_DAILY_USE_LIMIT: 3,
+    defaultTrainerIndex: () => 0, defaultPokefanMissionRows: () => [],
+    revivePokemonList: list => list || [], reviveBoxList: list => list || [], reviveDaycareRows: () => [null, null],
+    applyLocalDailyReset: () => [], missionRowsHaveClaimable: () => false, isTodayInRome: () => false
+  }));
+  await gameState.evaluate();
+  const state = gameState.namespace.state;
+  const module = new vm.SourceTextModule(read("app/client/box-handler.js"), { context });
+  const command = input => new Promise(resolve => calls.push({ input, resolve }));
+  await module.link(specifier => specifier === "./game-state.js" ? gameState : synthetic(context, {
+    registerAction: (key, action) => actions.set(key, action), blockActionDuringBattle: () => false,
+    TEAM_MAX: 6, openInlineConfirm: (_title, lines, callback) => { confirmation = { lines, callback }; },
+    openInlineMessage: lines => messages.push(lines), removeElement() {}, renderRegions: regions => renders.push(Array.from(regions)),
+    broadcastTeamBoxRuntimeState() {}, moveBoxPokemonToTeamAuthoritative: command, releaseBoxPokemonAuthoritative: command,
+    saveFromAuthoritativeProjection: projection => projection, pokemonDisplayName: pokemon => pokemon.name,
+    messageDescriptor: (key, params) => ({ key, params }), textDescriptor: key => key
+  }));
+  await module.evaluate();
+  state.scene = { name: "box" };
+  state.authoritativeRevision = 1;
+  return { state, actions, calls, renders, messages, context, gameState, confirmation: () => confirmation };
+}
+const boxPokemonA = { instanceId: "10000000-0000-4000-8000-000000000001", name: "Pikachu" };
+const boxPokemonB = { instanceId: "10000000-0000-4000-8000-000000000002", name: "Eevee" };
+const boxCommandSave = { authoritativeRevision: 3, profile: { trainer_index: 0, pokedollars: 5000, badges: 0, battle_points: 0 },
+  team: [boxPokemonA], box: [boxPokemonB], items: [], missions: [] };
+{
+  const h = await boxHarness();
+  h.state.box = [boxPokemonA, boxPokemonB];
+  h.actions.get("box-release")({ dataset: { index: "0" } });
+  assert.equal(h.confirmation().lines[0].params.pokemon, "Pikachu");
+  h.state.box = [boxPokemonB, boxPokemonA];
+  h.state.authoritativeRevision = 2;
+  const pending = h.confirmation().callback();
+  assert.equal(h.calls[0].input.pokemonInstanceId, boxPokemonA.instanceId, "Release the confirmed Pokemon after a reorder");
+  assert.equal(h.calls[0].input.expectedRevision, 2);
+  h.calls[0].resolve({ ok: true, projection: boxCommandSave });
+  await pending;
+}
+{
+  const h = await boxHarness();
+  h.state.box = [boxPokemonA, boxPokemonB];
+  h.actions.get("box-release")({ dataset: { index: "0" } });
+  h.state.box = [boxPokemonB];
+  h.state.authoritativeRevision = 2;
+  await h.confirmation().callback();
+  assert.equal(h.calls.length, 0, "Never substitute another Pokemon when the confirmed one leaves the Box");
+  assert.equal(h.messages[0][0].key, "box.releaseFailed");
+}
+for (const action of ["box-to-team", "box-release"]) {
+  const h = await boxHarness();
+  h.state.box = [boxPokemonA, boxPokemonB];
+  h.state.boxFilter = { type: "fire", minLevel: "20", maxLevel: "60", name: "cha", heldItemOnly: true };
+  const filter = { ...h.state.boxFilter };
+  let pending = h.actions.get(action)({ dataset: { index: "0" } });
+  if (action === "box-release") pending = h.confirmation().callback();
+  h.calls[0].resolve({ ok: true, projection: boxCommandSave });
+  await pending;
+  assert.deepEqual({ ...h.state.boxFilter }, filter, action + " must preserve every filter when applying the canonical save");
+  assert.equal(h.state.authoritativeRevision, 3);
+  assert.deepEqual(Array.from(h.state.box), [boxPokemonB]);
+  assert.deepEqual(h.renders.at(-1), ["box-filter", "box-storage"], "Refresh controls and results together");
+}
+async function gardenHarness() {
+  const h = await boxHarness(), reads = [];
+  const module = new vm.SourceTextModule(read("app/client/garden-handler.js"), { context: h.context });
+  await module.link(specifier => specifier === "./game-state.js" ? h.gameState : synthetic(h.context, {
+    registerAction: (key, action) => h.actions.set(key, action), openMessage() {}, render: () => h.renders.push(["garden"]),
+    getCurrentPlayerState: () => new Promise(resolve => reads.push(resolve)),
+    plantGardenBerryAuthoritative: input => new Promise(resolve => h.calls.push({ input, resolve })),
+    harvestGardenPlotAuthoritative() {}, claimDailyBerryAuthoritative() {}, saveFromAuthoritativeProjection: value => value,
+    BERRY_NORMAL_CYCLE_ITEMS: [], BERRY_LONG_CYCLE_ITEMS: [], getBerryGrowthCycle: () => 3,
+    getItemByIndex: index => ({ index, category: "berry" }), ItemCategory: { Berry: "berry" },
+    requireNotInBattle: () => true, messageDescriptor: key => key, textDescriptor: key => key
+  }));
+  await module.evaluate();
+  h.state.scene = { name: "city-garden" };
+  h.gameState.namespace.applyPlayerSave(gardenSave(10));
+  return { ...h, reads, refresh: module.namespace.refreshDailyBerryLimit };
+}
+function gardenSave(revision, planted = false) {
+  return { ...boxCommandSave, has_player: true, revision, authoritativeRevision: revision,
+    items: [[501, planted ? 4 : 5]], garden: planted
+      ? { plant_1: 501, seed_time_1: "2026-09-14T20:00:00Z", ready_at_1: "2026-09-14T23:00:00Z" } : {} };
+}
+for (const ok of [true, false]) {
+  const h = await gardenHarness();
+  const refresh = h.refresh();
+  const planting = h.actions.get("garden-plant-select")({ dataset: { itemIndex: "501", plotIndex: "0" } });
+  h.calls[0].resolve({ ok: true, projection: gardenSave(11, true) });
+  await planting;
+  const garden = h.state.garden;
+  h.reads[0]({ ok, projection: ok ? gardenSave(10) : undefined });
+  await refresh;
+  assert.equal(h.state.authoritativeRevision, 11, "A delayed garden read must not undo a completed command");
+  assert.equal(h.state.garden, garden);
+  assert.equal(h.state.garden.plots[0].berryIndex, 501);
+  assert.equal(h.state.inventory[0][1], 4);
+  assert.equal(h.state.garden.dailyBerry.error, "", "An obsolete error must not affect the new garden state");
+}
+{
+  const h = await gardenHarness();
+  const pending = h.refresh();
+  h.state.authoritativeRevision = 12;
+  h.reads[0]({ ok: true, projection: gardenSave(11) });
+  await pending;
+  assert.equal(h.state.authoritativeRevision, 12, "Reject older revisions even when the garden object has not changed");
+  assert.equal(h.state.garden.dailyBerry.loading, false);
+  assert.equal(h.renders.length, 2, "Clear the loading indicator in the rendered garden after an obsolete revision");
+}
+{
+  const h = await gardenHarness();
+  const old = h.refresh(), current = h.refresh();
+  h.reads[0]({ ok: true, projection: gardenSave(10) });
+  await old;
+  assert.equal(h.state.garden.dailyBerry.loading, true, "The latest refresh still owns the loading indicator");
+  h.reads[1]({ ok: true, projection: gardenSave(11, true) });
+  await current;
+  assert.equal(h.state.authoritativeRevision, 11);
+  assert.equal(h.state.garden.plots[0].berryIndex, 501);
+  assert.equal(h.state.garden.dailyBerry.loading, false);
+}
+{
+  const h = await gardenHarness();
+  const pending = h.refresh();
+  h.state.scene = { name: "team" };
+  h.reads[0]({ ok: true, projection: gardenSave(11, true) });
+  await pending;
+  assert.equal(h.state.authoritativeRevision, 10, "A garden read must not replace unrelated state after navigation");
+  assert.equal(h.state.garden.dailyBerry.loading, false);
+}
+{
+  const h = await gardenHarness();
+  const pending = h.refresh();
+  h.reads[0]({ ok: false });
+  await pending;
+  assert.equal(h.state.garden.dailyBerry.loading, false);
+  assert.equal(h.state.garden.dailyBerry.error, "garden.actionFailed");
+}
+console.log("Client consistency: session isolation, retries, cart revisions, Box identity/filters, garden refresh ordering and deployment updates passed.");

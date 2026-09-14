@@ -10,6 +10,7 @@ import { messageDescriptor, textDescriptor } from "./i18n.js";
 
 var DAILY_BERRY_LONG_CHANCE = 0.1;
 var authoritativeGardenCommandPending = false;
+var dailyBerryRefreshId = 0;
 
 function inventoryQuantity(itemIndex) {
     return (state.inventory || []).reduce(function(total, entry) {
@@ -38,6 +39,9 @@ function rollDailyBerryIndex() {
 }
 
 export async function refreshDailyBerryLimit() {
+    var refreshId = ++dailyBerryRefreshId;
+    var garden = state.garden;
+    var scene = state.scene;
     if (!state.garden.dailyBerry) {
         state.garden.dailyBerry = {};
     }
@@ -49,6 +53,17 @@ export async function refreshDailyBerryLimit() {
 
     var result;
     result = await getCurrentPlayerState();
+    if (refreshId !== dailyBerryRefreshId || state.garden !== garden || result.code === "stale_session") {
+        return result;
+    }
+    garden.dailyBerry.loading = false;
+    if (state.scene !== scene || state.inBattle || state.battleStartPending) {
+        return result;
+    }
+    if (result.projection && Number(result.projection.revision) < Number(state.authoritativeRevision)) {
+        render();
+        return result;
+    }
     if (result.ok && result.projection && result.projection.has_player) {
         applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
         render();

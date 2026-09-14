@@ -6465,7 +6465,7 @@
     },
     "presentation": {
       "policy": "read_only",
-      "checksum": "66dd93e9d8dfb3a26f8172b89eecfeb262d134d2681c41fc86c962fdc0264506",
+      "checksum": "4cb5dc3256ba64a2df03922abe5250f06aca49c6b62e41d957070c807402a6bf",
       "sources": [
         {
           "source": "app/engine/battle-events.js",
@@ -7715,7 +7715,7 @@
         {
           "source": "app/view/pokefan.js",
           "declaration": "rewardBadgeCount",
-          "sha256": "35508447dade61c1ce9d48dd4e2b640eee2287766226dbc670617ba2eb9f6c8c"
+          "sha256": "def3f7d82ef73d137c88dc0a066aa9abfec874af470e4e7020a7908c6bcc8cf8"
         },
         {
           "source": "app/view/pokemon-center.js",

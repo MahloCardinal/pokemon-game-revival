@@ -14,6 +14,12 @@ import { pokemonDisplayName } from "./entity-text.js";
 import { messageDescriptor, textDescriptor } from "./i18n.js";
 var authoritativeBoxCommandPending = false;
 
+function applyBoxCommandProjection(projection) {
+  var filter = state.boxFilter;
+  applyPlayerSave(saveFromAuthoritativeProjection(projection));
+  state.boxFilter = filter;
+}
+
 registerAction("box-to-team", async function(element) {
   var boxIndex = Number(element.dataset.index);
   var pokemonToTeam;
@@ -39,9 +45,9 @@ registerAction("box-to-team", async function(element) {
       openInlineMessage([messageDescriptor("box.withdrawFailed")], { title: textDescriptor("ui.box.sceneTitle") });
       return;
     }
-    applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
+    applyBoxCommandProjection(result.projection);
     broadcastTeamBoxRuntimeState();
-    renderRegions(["box-storage"]);
+    renderRegions(["box-filter", "box-storage"]);
   } finally {
     authoritativeBoxCommandPending = false;
   }
@@ -50,25 +56,30 @@ registerAction("box-to-team", async function(element) {
 
 registerAction("box-release", function(element) {
     var releaseIndex = Number(element.dataset.index);
-    openInlineConfirm(messageDescriptor("box.releaseTitle"), [messageDescriptor("box.releaseConfirm", { pokemon: pokemonDisplayName(state.box[releaseIndex]) })], async function () {
+    var releasePokemon = state.box[releaseIndex];
+    if (!releasePokemon || !releasePokemon.instanceId) return;
+    var releasePokemonId = releasePokemon.instanceId;
+    openInlineConfirm(messageDescriptor("box.releaseTitle"), [messageDescriptor("box.releaseConfirm", { pokemon: pokemonDisplayName(releasePokemon) })], async function () {
       var result;
-      if (authoritativeBoxCommandPending || !state.box[releaseIndex] || !state.box[releaseIndex].instanceId) {
+      if (authoritativeBoxCommandPending) return;
+      if (!state.box.some(function (pokemon) { return pokemon && pokemon.instanceId === releasePokemonId; })) {
+        openInlineMessage([messageDescriptor("box.releaseFailed")], { title: textDescriptor("ui.box.sceneTitle") });
         return;
       }
       authoritativeBoxCommandPending = true;
       try {
         result = await releaseBoxPokemonAuthoritative({
           expectedRevision: state.authoritativeRevision,
-          pokemonInstanceId: state.box[releaseIndex].instanceId
+          pokemonInstanceId: releasePokemonId
         });
         if (!result.ok) {
           openInlineMessage([messageDescriptor("box.releaseFailed")], { title: textDescriptor("ui.box.sceneTitle") });
           return;
         }
-        applyPlayerSave(saveFromAuthoritativeProjection(result.projection));
+        applyBoxCommandProjection(result.projection);
         state.dialog = null;
         broadcastTeamBoxRuntimeState();
-        renderRegions(["box-storage"]);
+        renderRegions(["box-filter", "box-storage"]);
       } finally {
         authoritativeBoxCommandPending = false;
       }

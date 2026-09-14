@@ -1,1 +1,8 @@
 supabase/.temp/
+.vercel/
+.build/
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db

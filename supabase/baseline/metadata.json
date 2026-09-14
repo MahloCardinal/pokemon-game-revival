@@ -1,0 +1,52 @@
+{
+  "projectRef": "etotvaneppzkxunezqrl",
+  "extensions": [
+    {
+      "name": "pg_cron",
+      "schema": "pg_catalog"
+    },
+    {
+      "name": "pg_stat_statements",
+      "schema": "extensions"
+    },
+    {
+      "name": "pgcrypto",
+      "schema": "extensions"
+    },
+    {
+      "name": "plpgsql",
+      "schema": "pg_catalog"
+    },
+    {
+      "name": "supabase_vault",
+      "schema": "vault"
+    },
+    {
+      "name": "uuid-ossp",
+      "schema": "extensions"
+    }
+  ],
+  "publications": [
+    {
+      "name": "supabase_realtime",
+      "tables": [
+        "public.authoritative_battle"
+      ]
+    }
+  ],
+  "scheduled_jobs": [
+    {
+      "active": true,
+      "command": "select server_authority_private.cleanup_battle_dome_at_midnight();",
+      "name": "revival-battle-dome-midnight",
+      "schedule": "0 * * * *"
+    },
+    {
+      "active": true,
+      "command": "select server_authority_private.cleanup_authoritative_terminal_battles(500);",
+      "name": "revival-terminal-retention-hourly",
+      "schedule": "17 * * * *"
+    }
+  ],
+  "through_migration": "20260914070000"
+}

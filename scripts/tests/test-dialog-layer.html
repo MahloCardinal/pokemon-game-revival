@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Persistent dialog lifecycle test</title>
+<style>body {font:16px system-ui; margin:2rem} #fixture {border:1px solid #aaa; padding:1rem} button {padding:.5rem} [aria-busy] {opacity:.6}</style>
+<button id="run">Run lifecycle tests</button>
+<pre id="results">Ready</pre><div id="fixture"></div>
+<script type="module">
+import {replaceSceneContent, updateDialogContent} from "../../app/client/dialog-layer.js";
+import {registerAction, handleAction} from "../../app/client/action-registry.js";
+const root = document.querySelector("#fixture"), results = document.querySelector("#results");
+let clicks = 0;
+registerAction("test-next", () => clicks++);
+const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
+const markup = (text, extra = "") => `<div class="dialog-backdrop" ${extra}><section class="dialog"><p>${text}</p><button data-action="test-next">Continue</button></section></div>`;
+document.querySelector("#run").onclick = async () => {
+  const checks = [];
+  const assert = (condition, name) => {if (!condition) throw new Error(name); checks.push(name);};
+  try {
+    updateDialogContent(root, "", false);
+    replaceSceneContent(root, '<main id="scene">Scene</main>');
+    updateDialogContent(root, markup("Level 5 → 8"), false);
+    const backdrop = root.querySelector(".dialog-backdrop"), box = backdrop.firstElementChild, scene = root.querySelector("main");
+    const button = box.querySelector("button");
+    updateDialogContent(root, "", true);
+    await frame();
+    assert(box.textContent.includes("Level 5 → 8") && box.querySelector("button") === button, "Waiting retains the exact previous content");
+    assert(backdrop.inert && backdrop.getAttribute("aria-busy") === "true", "Waiting is inert and busy");
+    const before = clicks;
+    handleAction("test-next", button);
+    assert(clicks === before, "Pending actions are blocked by the dispatcher too");
+    replaceSceneContent(root, '<main id="scene">Updated scene</main>');
+    assert(backdrop.isConnected && root.querySelector(".dialog-backdrop") === backdrop, "Full scene updates preserve the backdrop");
+    updateDialogContent(root, markup("Choose a move"), false);
+    assert(root.querySelector(".dialog-backdrop") === backdrop && backdrop.firstElementChild === box && !backdrop.inert, "Next step reuses and enables the same container");
+    const selection = box.innerHTML;
+    updateDialogContent(root, markup("Choose a move", 'inert aria-hidden="true"') + '<div class="dialog-backdrop move-forget-backdrop"><section class="dialog">Forget move? <button>No</button></section></div>', false);
+    assert(root.querySelectorAll(".dialog-backdrop").length === 2 && backdrop.inert, "Confirmation disables the underlying selection");
+    updateDialogContent(root, markup("Choose a move"), false);
+    assert(root.querySelectorAll(".dialog-backdrop").length === 1 && box.innerHTML === selection && !backdrop.inert, "No returns to the existing selection container");
+    for (const text of ["Move learned", "Evolution", "Evolution completed", "Level 8 → 15", "Completed — Exit"]) {
+      updateDialogContent(root, markup(text), false);
+      await frame();
+      assert(root.querySelector(".dialog-backdrop") === backdrop && backdrop.firstElementChild === box && box.textContent.includes(text), text + ": same non-empty container");
+    }
+    const currentScene = root.querySelector("main");
+    updateDialogContent(root, "", false);
+    assert(!root.querySelector(".dialog-backdrop") && root.querySelector("main") === currentScene, "Final exit removes only the dialog");
+    results.textContent = "PASS\n" + checks.join("\n");
+  } catch (error) {results.textContent = "FAIL: " + error.stack;}
+};
+</script>
+</html>

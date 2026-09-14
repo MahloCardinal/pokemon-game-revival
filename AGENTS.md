@@ -1,415 +1,160 @@
-# AGENTS.md — Pokemon Game Revival
+# AGENTS.md — Guida operativa Pokemon Game Revival
 
-## Scopo
+## Ambiente e regole di lavoro
 
-Questo repository contiene Pokemon Game Revival. È una SPA statica a moduli ES con backend autoritativo Supabase.
+- SPA statica a moduli ES; backend autoritativo Supabase. Produzione: `main`, repository `MahloCardinal/pokemon-game-revival`, sito `https://pokemon-game-revival.vercel.app`, Supabase `etotvaneppzkxunezqrl`, Vercel `pokemon-game-revival`.
+- Lavorare esclusivamente su Revival: niente modalità staging, compatibilità con progetti precedenti o nuovi identificatori versionati `_v1`.
+- Leggere `git status` prima e dopo gli interventi. Preservare tutte le modifiche dell'utente, anche in `tools/`; non modificare strumenti o annotazioni senza necessità per il compito.
+- Quando si committa, usare **`git add .`** e includere tutto il lavoro presente. Verificare prima il diff e le esclusioni: il repository deve contenere l'ambiente condivisibile tra PC. Commit/push devono essere richiesti dall'utente o necessari al compito autorizzato.
+- `.gitignore` esclude configurazione locale riservata, collegamenti CLI e artefatti temporanei. Non ignorare sorgenti, strumenti, test o baseline. Non committare credenziali, webhook, dati personali dei giocatori o esportazioni diagnostiche. `.gitattributes` mantiene i fine riga del codice a LF: conservarlo.
+- Non creare `.agents`. Non usare `npm`: non ci sono package.json o dipendenze npm del progetto. Non installare né avviare Docker; usare CLI remote e, per lo schema, `pg_dump` nativo. Gli avvisi CLI sulla sola cache Docker non annullano un deploy remoto riuscito.
+- Non cancellare dati o attività reali per test o per sbloccare un deploy. Usare fixture temporanee con rollback. Non aumentare limiti PostgreSQL per nascondere errori logici.
 
-- Sito: `https://pokemon-game-revival.vercel.app`
-- Repository: `https://github.com/MahloCardinal/pokemon-game-revival`
-- Branch di produzione: `main`
-- Progetto Supabase: `etotvaneppzkxunezqrl`
-- Progetto Vercel: `pokemon-game-revival`
-
-Il progetto è esclusivamente Revival. Non introdurre compatibilità con progetti precedenti, modalità staging, nomi versionati come `_v1` o riferimenti a vecchi progetti. Gli identificatori tecnici correnti sono la fonte di verità.
-
-## Regole di lavoro
-
-- Controllare `git status` prima e dopo ogni modifica.
-- Preservare le modifiche locali dell'utente, comprese quelle non pertinenti. Quando l'utente autorizza commit/push, verificare e includere anche tutte le modifiche già presenti, salvo sue esclusioni esplicite e i file vietati da queste regole. Non sovrascriverle né separarle obbligatoriamente in un altro commit.
-- `tools/` fa parte del repository. Preservarne le modifiche e non modificarne autonomamente il contenuto se il compito non lo richiede.
-- Non creare o committare dump SQL generati, segreti, token, password, service-role key o webhook.
-- Non usare comandi `npm`: il repository non contiene `package.json`, lockfile o pipeline npm.
-- Il progetto non usa Docker. Non installarlo, avviarlo o verificarlo per i flussi ordinari: usare Supabase collegato e Vercel. Un avviso della CLI relativo alla sola cache o all'ambiente locale Docker non annulla un'operazione remota conclusa con successo.
-- Non aumentare limiti PostgreSQL per nascondere ricorsioni, query difettose o altri errori logici.
-- Non eliminare account o dati reali durante i test. Gli account temporanei devono essere rimossi al termine anche in caso di errore.
-
-## Architettura
-
-### Frontend
-
-- `index.html`: ingresso della SPA; carica esplicitamente tutti i CSS e `app/client/main.js`.
-- `app/client/`: stato, sessione, routing, eventi, persistenza e coordinamento UI.
-- `app/view/`: markup delle schermate. Effetti, callback e stato restano nel client.
-- `app/api/`: adattatori verso Supabase; restituiscono dati di trasporto e non devono importare lo stato client.
-- `app/i18n/`: cataloghi dei testi visibili, separati dai dati tecnici di gioco.
-- `app/styles/`: CSS suddiviso per schermata o funzionalità.
-- `app/assets/`: immagini, sprite, icone, sfondi e musica.
-
-### Regole del gioco
-
-- `app/data/`: cataloghi e regole statiche, incluse progressione, strumenti, zone, palestre e missioni.
-- `app/engine/`: motore di battaglia, Pokémon, squadre, cattura, strumenti tenuti e costruzione degli avversari.
-
-`app/` è la sorgente canonica del gameplay. Non modificare manualmente la copia del runtime dentro le Edge Function.
-
-### Backend
-
-- `supabase/migrations/`: baseline e migrazioni additive del database.
-- `supabase/functions/`: sorgente delle Edge Function.
-- `supabase/functions/_shared/`: helper condivisi e mirror generato del motore.
-- `supabase/config.toml`: configurazione Supabase e verifica JWT delle funzioni.
-
-La cartella `supabase/` è codice sorgente essenziale, non semplice documentazione. Il push GitHub/Vercel non distribuisce automaticamente migrazioni o Edge Function.
-
-## Mappa funzionale corrente
-
-- Il routing e la cronologia delle scene sono in `app/client/router.js`; il renderer centrale è `app/client/renderer.js`.
-- Le schermate principali comprendono città, Centro Pokémon, Negozio, Pensione, Giardino, Club Pokéfan, palestre/Lega, Zona Allenamento, Torre Lotta, Negozio Lotta, Battle Dome, Box, squadra, directory giocatori, battaglie e pannello admin.
-- Battle Dome usa `app/data/battle-dome.js`, `app/api/battle-dome.js`, `app/client/battle-dome-handler.js`, `app/view/battle-dome.js` e `app/view/battle-dome-lead-selection.js`. Le lobby, il roster salvato, la scelta del Pokémon iniziale e i comandi PvP sono autoritativi.
-- Lo storico dei turni usa `app/api/battle-history.js` e `app/client/battle-history-handler.js`; è una lettura autoritativa tramite `battle-command` e non deve modificare la battaglia corrente.
-- L'activity feed globale usa `app/api/activity-feed.js`, `app/client/activity-feed-runtime.js` e `app/client/activity-feed-handler.js`. Gli eventi di gioco sono generati dal database; i messaggi admin passano da RPC autorizzato.
-- La presentazione condivisa della progressione usa `app/client/progression-dialog.js` e `app/view/dialogs.js`. I flussi autoritativi sono coordinati da `battle-handler.js`, `daycare-handler.js` e `pokemon-center-handler.js`; `level-up.js` contiene il coordinatore locale e non deve sostituire i comandi server.
-- La directory di `app/client/`, `app/api/`, `app/view/` e `app/styles/` è la mappa concreta dei consumer: prima di aggiungere una funzionalità cercare il dominio esistente e seguirne handler, API, view e stile.
-
-## Flusso delle richieste
-
-```text
-azione dell'utente
-→ handler in app/client
-→ adattatore in app/api
-→ RPC PostgreSQL oppure Edge Function
-→ autenticazione, revisione e validazione server
-→ modifica atomica e ricevuta idempotente
-→ risposta canonica
-→ aggiornamento dello stato e rendering
-```
-
-Il browser non è fonte autoritativa e non deve concedere ricompense. Le battaglie passano da `battle-command`: JavaScript esegue il motore attendibile, mentre PostgreSQL conserva lock, revisioni, ricevute, snapshot, proiezioni ed eventi.
-
-## Convenzioni frontend
-
-- Le azioni UI usano `data-action` e vengono registrate con `registerAction()`.
-- `app/client/action-bootstrap.js` importa gli handler per i loro effetti una sola volta.
-- Non aggiungere dispatch specifici delle funzionalità direttamente a `main.js`.
-- Una nuova schermata deve essere aggiunta coerentemente al parsing delle route, alla generazione delle route e al renderer.
-- Usare `escapeHtml()` per i valori dinamici inseriti nel markup.
-- Usare gli helper di `app/client/asset-helpers.js` e il catalogo esplicito `app/data/asset-paths.js`; non costruire percorsi a partire da etichette tradotte o chiavi tecniche.
-- Le modifiche che richiedono persistenza devono attraversare i comandi autoritativi o il flusso di salvataggio già previsto.
-- Se un'azione sincrona o asincrona cambia soltanto un pannello, una lista o un indicatore della schermata corrente, aggiornare una regione DOM nominata con `data-render-region` e `renderRegions()`. Usare `render()` completo soltanto quando cambia la scena o la sua struttura generale. I popup usano `renderDialogLayer()` e non devono ricostruire la pagina sottostante.
-- Le regole di progressione restano centralizzate in `app/data/progression.js`.
-- Importare l'API pubblica del motore tramite `import * as Engine from "../engine/index.js"` quando possibile.
-- Le scelte di progressione vengono confermate dal server; i popup di apprendimento ed evoluzione mostrano la card completa dello stato canonico ricevuto, non un risultato applicato anticipatamente dal browser.
-- Il ritiro dalla Pensione con livelli, mosse o evoluzione pendenti usa la preview autoritativa `preview_daycare_withdrawal` e poi il comando di risoluzione. La preview è solo presentazione: non incrementa la progressione e non assegna mosse.
-- Le mosse già oltre il cap possono rimanere persistite fino alla successiva risoluzione autoritativa del level-up; non bloccare retroattivamente il caricamento o la gestione della squadra per questo caso.
-- Nel Centro Commerciale `price: null` significa sempre “non acquistabile”; non mantenere elenchi separati di disponibilità che possano divergere dal prezzo.
-- Per le MT, il Tier `0` significa premio non acquistabile e produce sempre `price: null`; Club Pokéfan, Centro Commerciale e Negozio Lotta devono filtrare tramite questa regola canonica, senza elenchi paralleli delle MT escluse.
-- I Titoli Allenatore sono definiti tecnicamente in `app/data/titles.js`; nomi e requisiti visibili appartengono soltanto a i18n. Gli sblocchi sono automatici, permanenti e autoritativi: non aggiungere polling o controlli frontend che concedano titoli.
-- `Nuovo arrivato` appartiene alla collezione onboarding ed è concesso quando viene scelto lo starter; non fa parte della collezione stabile `trainer_titles_initial`. Il Titolo preferito è marcato su `player_title`, può essere scelto soltanto tra quelli posseduti tramite RPC autoritativo e non incrementa la revisione di gioco.
-- I Titoli basati sui tipi usano le registrazioni del Pokédex da qualsiasi fonte. Considerano tutte le specie del catalogo e ogni tipo di una specie doppio tipo, escludendo soltanto le rarità `fossil` e `legendary`; la rarità tecnica `ultra_rare` resta valida.
-- La missione della prima collezione resta legata alla collezione stabile `trainer_titles_initial`, non a ogni eventuale Titolo aggiunto in futuro.
-
-La pagina `/styles`, `app/view/styles.js` e `app/styles/style-proposals.css` sono strumenti intenzionali dell'utente debug; non eliminarli come presunto codice di sviluppo inutilizzato.
-
-### Progressione e confini dei popup
-
-- `advance_ordinary_progression` e `advance_training_progression` devono congelare un confronto prima/dopo fino alla prossima mossa non conosciuta, evoluzione proponibile o livello finale. Non creare popup per livelli intermedi privi di eventi. Conservare il calcolo canonico di EXP, crescita, cap e rifiuti di evoluzione; nella progressione ordinaria i cap si applicano a ogni livello, anche all'interno di un segmento.
-- Dopo un'evoluzione ricalcolare le tappe successive sulla nuova specie. Le mosse proposte allo stesso livello restano ordinate e non devono produrre un nuovo confronto di livello identico.
-- La presentazione EXP combina quantità ottenuta e confronto prima/dopo in un solo popup. Anche l'apprendimento senza sostituzione richiede la card aggiornata dopo conferma server. Con quattro mosse, la nuova mossa mostra l'effetto completo come bottone inattivo; la scelta di quella da dimenticare passa da `confirmMoveForget()` con conferma sovrapposta Sì/No. L'anteprima di evoluzione ha un contenitore statico e i pulsanti evolvi/blocca affiancati.
-- La risoluzione server può già avanzare al segmento seguente: per la card di apprendimento/evoluzione usare `progressionResultPokemon()`, che legge il `before_state` canonico della prossima risoluzione, senza mostrare anticipatamente i suoi livelli.
-- `showEvolutionResult()` apre la conferma con nome precedente, nome evoluto e card completa; la continuazione della progressione passa dal callback del popup. Non ricostruire né salvare un'evoluzione dal browser.
-- La Pensione conserva il ciclo pagato in `player_daycare_state.progression`: `daycare_segment_options()` determina la prossima tappa e `continue_daycare_progression()` congela la risoluzione successiva, ricalcolandola dopo un'evoluzione. Costo e livello finale vengono congelati una sola volta; il ritorno in squadra e la ricevuta `completed` avvengono soltanto alla fine. La preview mostra il segmento corrente, non l'intero ritiro.
-- Nei segmenti intermedi della Pensione il Pokémon canonico è ancora in `state.daycare`, non in `state.team`. `withdrawal_status = 'resolution_required'` richiede di riprendere la risoluzione pendente; non mostrare il ritorno in squadra né completare il ciclo a ogni segmento. `declined_species` e `include_current_moves` appartengono a `progression`; non aggiungere campi di presentazione alle `options`, che il resolver confronta esattamente con il catalogo. Conservare ownership, revisioni e ricevute idempotenti; gli helper privati non devono essere eseguibili dal browser.
-- `dialog-layer.js` mantiene montati backdrop e contenitore anche durante `render()`; non rimuoverli per passare alla schermata successiva. Prima di una continuazione asincrona usare `holdDialogContent()`: conserva il contenuto precedente, lo rende `inert` e lo sostituisce soltanto quando arriva il nuovo dialogo. Le uscite definitive impostano `state.dialog = null`; non cambiare testi o pulsanti per gestire il contenitore.
-- I backdrop gestiti devono restare figli diretti di `root`, con il contenitore del dialogo come primo elemento. Non ripristinare `root.innerHTML` per un render completo: usare `replaceSceneContent()` e sincronizzare il dialogo dallo stato corrente dopo il caricamento asincrono della scena. Una nuova schermata usa un nuovo oggetto `state.dialog`; se si riusa quello precedente dopo un errore, rimuoverne `pending`. Conservare il controllo `[inert]` nel dispatcher delle azioni, oltre alla disattivazione visiva.
-- Nell'Allenamento, assegnazione e scelte successive condividono lo stesso `progressionId`: lo stato autoritativo `awaiting_choices` deve sostituire il popup di assegnazione trattenuto da `holdDialogContent()`. Non deduplicare i popup soltanto per ID; preservare soltanto un'assegnazione ancora interattiva. Alla conclusione svuotare `state.dialog` anche quando la progressione viene ripresa fuori dalla battaglia. Coprire assegnazione, avanzamento, errore/riprova e recupero in `test-progression-dialog-flow.mjs`.
-- Verificare la Pensione con `test-daycare-progression-segments.sql` (copie temporanee, rollback) e il ciclo DOM con `scripts/test-dialog-layer.html` servito localmente; quest'ultimo controlla identità dei nodi, attese disattivate, conferma sovrapposta e chiusura finale.
-- I test pertinenti sono `test-progression-dialog-flow.mjs`, `test-uniform-progression-dialogs.mjs`, `test-ordinary-progression-segments.sql` e `test-existing-move-caps.sql`; i test SQL usano soltanto tabelle temporanee e rollback.
-
-### Testi e internazionalizzazione
-
-- Identificatori, chiavi persistite e valori usati dalla logica devono essere in inglese e indipendenti dalla lingua visualizzata. Non confrontare né salvare etichette tradotte.
-- Ogni testo visibile appartiene ai cataloghi sotto `app/i18n/`; italiano e inglese devono mantenere lo stesso schema. Non inserire stringhe UI direttamente in view, handler o motore.
-- I cataloghi di gioco conservano chiavi tecniche, indici e regole, non copie inglesi dei nomi a schermo. In particolare il nome di una MT si compone via i18n dal suo numero e dalla chiave tecnica della mossa; i consumer non devono leggere `.name` come etichetta visibile.
-- Usare `t()` per testo risolto immediatamente e `textDescriptor()` o `messageDescriptor()` per testo conservato nello stato o risolto più tardi. Nel renderer passare i descrittori a `resolveText()` prima di `escapeHtml()`.
-- Dopo modifiche i18n eseguire `node --experimental-vm-modules scripts/audit-i18n.mjs` oltre ai test ordinari.
-
-## Regole particolari del motore
-
-- Il danno non applica STAB.
-- La logica usa il tipo del Pokémon attaccante, non il tipo della mossa, dove previsto dal motore attuale.
-- `BattleManager.emit()` aggiunge soltanto eventi al log.
-- La UI di livello, mosse ed evoluzione appartiene al client, mentre l'esito canonico appartiene al backend.
-- Conservare le regole di composizione della squadra nel motore e non duplicarle nei renderer.
-- Catture, evoluzioni, apprendimento mosse, assegnazione strumenti e trasferimenti da Box o Pensione possono rendere temporaneamente la squadra non conforme. Non bloccare queste mutazioni per i limiti competitivi.
-- Ogni nuova battaglia valida la composizione tramite `findTeamCompositionViolation()` nel browser e `server_authority_private.assert_player_team_composition()` sul backend: massimo due Pokémon della stessa specie, due copie dello stesso strumento tenuto, due Strumenti del Porto tra loro diversi e due Pokémon che conoscano almeno una mossa OHKO.
-- La Lega controlla la composizione soltanto quando crea la scalata dal primo Superquattro; gli incontri successivi usano il roster congelato e non devono ricontrollare la squadra persistente. La Torre Lotta non assegna esperienza e controlla la composizione soltanto quando crea una nuova run.
-
-### Pokémon Shiny
-
-- Gli incontri selvatici applicano un tiro autoritativo con probabilità canonica `1/8000`; il frontend non decide mai se un Pokémon è Shiny.
-- Lo stato compatto usa soltanto `sh: 1`. Il bonus ricevuto all'ottenimento resta incorporato nei valori persistiti del Pokémon, che da quel momento crescono normalmente; non conservare il livello di ottenimento o duplicare i bonus nello stato.
-- I cap Shiny dipendono dal livello corrente, non dal livello di ottenimento. Tabelle, cap e bonus canonici sono in `app/data/stat-tables.js`; la probabilità è in `app/data/progression.js`.
-- Gli sprite Shiny restano in `app/assets/img_pokemon/` con suffisso finale `_shiny` (`25_shiny.webp`, `25_f_shiny.webp`) e devono ereditare scala e allineamento dallo sprite normale corrispondente.
-- Lo strumento debug di `aaa` può creare uno Shiny, ma il relativo comando deve continuare a essere validato dalla Edge Function e dal database.
-
-### Pokémon Legendary
-
-- La rarità tecnica `legendary` concede all'ottenimento un bonus massimo di `+80 HP`, `+65 Power` e `+65 Stats`; sotto il livello 60 il bonus scala linearmente, dal livello 60 in poi resta pieno.
-- I valori ricevuti restano incorporati nel Pokémon e crescono normalmente. I cap aggiungono gli stessi bonus Legendary in base al livello corrente: al livello 100 sono `480 HP`, `385 Power` e `235 Stats` per un Legendary non Shiny.
-- Shiny e Legendary sono proprietà indipendenti e i relativi bonus e cap si sommano.
-
-## Battaglie autoritative
-
-- `battle-command` è l'unico ingresso Edge per le battaglie del giocatore e le funzioni debug previste.
-- Gli RPC mutanti autoritativi non devono essere eseguibili direttamente dai ruoli browser.
-- I comandi mantengono command ID, revisioni attese e ricevute idempotenti.
-- In Cupola il commit ricontrolla la ricevuta dopo il lock della sfida e prima di turno, versione e snapshot. Un replay non scrive lo storico e la Edge ricostruisce la proiezione dallo stato canonico corrente; non deve riutilizzare la transizione calcolata dalla richiesta duplicata. Test: `scripts/test-battle-dome-replay.mjs` e `scripts/test-application-conflicts.sql`.
-- Non considerare un timeout di trasporto come prova che un comando non sia stato eseguito.
-- Per i conflitti applicativi di revisione, versione o snapshot usare `server_authority_private.raise_revision_conflict(message)`. Non sollevare manualmente SQLSTATE `40001`: PostgREST può ritentare indefinitamente la stessa transazione. L'helper usa SQLSTATE `PGRST` e conserva HTTP 409 e il codice JSON `40001` già gestito dai client. Verificare con `scripts/test-application-conflicts.sql` su fixture temporanee e rollback.
-- Applicare lo stato canonico restituito dal server prima di ricostruire la proiezione o mostrare ricompense.
-- I premi delle palestre normali e admin condividono `award_terminal_gym_victory_core`: un premio in denaro, una medaglia coerente e tutti gli strumenti del catalogo, incluse le MT. Non imporre un numero fisso di righe o strumenti. Verificare premi esatti, retry e rifiuti atomici con `scripts/test-terminal-battle-rewards.sql` (copie temporanee del catalogo corrente e rollback); il test copre anche i cinque premi della Lega.
-- Alla vittoria in palestra normale o admin, il backend assegna la medaglia prima di creare la progressione EXP: usare il conteggio medaglie aggiornato per congelare il nuovo limite, senza sottrarre la medaglia appena ottenuta. Il frontend può mostrare prima i popup EXP e poi il premio medaglia. Le progressioni già create conservano il proprio limite; un retry non ricalcola né riassegna EXP. Il test dei premi verifica anche accumulo EXP, superamento del vecchio limite e card prima/dopo per tutte le otto palestre.
-- La catena SQL di preparazione deve rimanere aciclica:
-
-```text
-prepare_edge_battle_command
-→ prepare_edge_battle_command_with_inventory
-→ prepare_edge_battle_command_with_contract_items
-→ prepare_edge_battle_command_with_roster
-→ prepare_edge_battle_command_core
-```
-
-- Il `core` è il lettore terminale e non deve richiamare uno degli altri livelli della catena.
-- Gli aggregati terminali e gli altri dati transitori devono conservare le retention configurate.
-- Il Battle Dome consente un roster compreso tra uno e sei Pokémon, con regole, lobby, eventi, versioni e ricevute gestiti dal backend. Non usare la squadra persistente del giocatore come fonte del roster PvP congelato.
-- Le sfide Cupola concluse vengono eliminate quando entrambi escono oppure alla mezzanotte successiva in `Europe/Rome`, indipendentemente dalle uscite. Il job `revival-battle-dome-midnight` richiama un helper privato ogni ora GMT, che opera soltanto nell'ora della mezzanotte italiana e cancella le sfide concluse prima di quella mezzanotte. Le sfide ancora attive restano conservate; eventi, ricevute e storico vengono eliminati dalle FK in cascata. Test: `scripts/test-battle-dome-midnight-cleanup.sql` su fixture temporanee e rollback.
-- Lo storico dei turni è read-only e deve rispettare i confini del contratto di battaglia, le pagine e i limiti restituiti dal server.
-- Un incontro selvatico non ancora legato a una battaglia appartiene alla revisione giocatore che lo ha creato: qualsiasi successiva mutazione autoritativa lo annulla atomicamente. Le battaglie di cattura già inizializzate restano protette; le altre schede si aggiornano tramite la normale invalidazione della revisione.
-- La versione snapshot accettata da PostgreSQL deve corrispondere a `BATTLE_SNAPSHOT_VERSION` in `app/engine/battle-runtime.js`; il test Revival deve fallire se le due versioni divergono.
-
-## Runtime Edge e cataloghi
-
-Quando cambia codice canonico usato dalle battaglie:
+Su un altro PC servono Git, Node.js 24 o compatibile con gli script, Supabase CLI e, per aggiornare la baseline, `pg_dump` compatibile con il server (disponibile con PostgreSQL 18; override `PG_DUMP`). Le credenziali CLI si configurano sul PC, non in Git:
 
 ```powershell
-node scripts/sync-game-runtime.mjs
-node scripts/sync-game-runtime.mjs --check
+supabase login
+supabase link --project-ref etotvaneppzkxunezqrl
+node scripts/check.mjs
 ```
 
-Il mirror in `supabase/functions/_shared/game-runtime/` e il relativo checksum devono corrispondere ad `app/`. Non modificare manualmente il manifest generato.
+Per una preview con route SPA usare `vercel.cmd dev`, se disponibile. Per ogni operazione remota controllare `supabase/.temp/project-ref`. `supabase/config.toml` contiene la configurazione condivisa e opzioni CLI locali: non presumere che ogni impostazione Auth sia già applicata al servizio remoto.
 
-Il generatore normalizza i fine riga a LF prima di copiare i moduli e calcolare byte e hash; l'ordine dei file è indipendente dalla locale. `scripts/test-runtime-portability.mjs` verifica checkout LF, CRLF e misti e rileva modifiche reali. Non sostituire i checksum degli snapshot esistenti per una normalizzazione dei file. Per una correzione del solo coordinamento Edge, quando occorre conservare snapshot legati al pacchetto distribuito, scaricare quel pacchetto con `functions download --use-api` in una cartella temporanea e sostituire soltanto i sorgenti Edge modificati, preservando integralmente il runtime e il suo manifest.
+## Dove intervenire
 
-Il runtime ha dieci componenti con checksum e politiche distinte; seguire docs/runtime-releases.md. Il bundle identifica il pacchetto, mentre BATTLE_SNAPSHOT_VERSION identifica il contratto dello stato. Modifiche compatibili a motore, mosse, strumenti e cattura entrano dal prossimo comando anche nelle battaglie attive, in ogni ambiente. La creazione dello snapshot, prima delle scelte degli strumenti tenuti, è il confine della battaglia iniziata. Gli incontri già trovati conservano i dati generati.
+| Obiettivo | Sorgente e percorso da seguire |
+|---|---|
+| Testi e markup | `app/i18n/`, `app/view/`; nessuno stato applicativo nelle view |
+| Click e coordinamento UI | handler in `app/client/`, registrati da `action-bootstrap.js` |
+| Route, scene, DOM | `router.js`, `renderer.js`, `dialog-layer.js` in `app/client/` |
+| Trasporto verso Supabase | `app/api/`; non importare stato client negli adattatori |
+| Regole, cataloghi e progressione | `app/data/`, soprattutto `progression.js` e `stat-tables.js` |
+| Battaglie, Pokémon, cattura | `app/engine/`; API pubblica `app/engine/index.js` |
+| Comandi server e debug | `supabase/functions/battle-command/` e funzioni SQL nella baseline |
+| Schema SQL corrente | `supabase/baseline/schema.sql`; cercare la definizione effettiva prima di creare una migrazione |
+| Deploy e verifiche | strumenti in `scripts/`; test e fixture in `scripts/tests/` |
+| Asset e CSS | `app/styles/`, `app/assets/`, `asset-helpers.js`, `app/data/asset-paths.js` |
 
-Ogni nuova coppia catalogo/runtime richiede registrazione additiva, deploy e attivazione esplicita tramite scripts/create-runtime-release.mjs. Non riscrivere gli hash degli snapshot precedenti. Conservare binding referenziati dagli snapshot. runtime_generation deve passare dalla preparazione al commit: non eliminare questo controllo né aggiungere eccezioni a checksum hard-coded.
+Per una funzionalità cercare il dominio esistente in API → handler → view → stile. Cupola usa `battle-dome*`, storico `battle-history*`, feed `activity-feed*`, progressione `progression-dialog.js` e gli handler battaglia/Pensione/Centro Pokémon. Non aggiungere dispatch specifici a `main.js` né ricreare percorsi paralleli.
 
-Prima di considerare conclusa una modifica a dati canonici usati dal backend, controllare sempre l'intera catena, non soltanto i file frontend:
+## Frontend e stato autoritativo
 
-1. sorgente canonica in `app/data/` o `app/engine/`;
-2. tutti i consumer frontend e gli eventuali percorsi client-side residui;
-3. generatore del catalogo in `scripts/`;
-4. validazioni e funzioni autoritative SQL che leggono quei dati;
-5. mirror Edge generato e nuovo checksum del runtime;
-6. binding catalogo/runtime richiesto dalla Edge Function;
-7. stato realmente applicato sul progetto Supabase collegato.
+- Flusso: azione → handler → API → autenticazione/validazione server → mutazione atomica/ricevuta → stato canonico → render. Il browser non concede ricompense e non decide catture o Shiny.
+- Usare `data-action` e `registerAction()`. Aggiornamenti parziali usano `data-render-region` e `renderRegions()`; `render()` completo serve per cambi di scena/struttura. I popup usano `renderDialogLayer()`.
+- Inserire valori dinamici nel markup tramite `escapeHtml()`. Testi visibili soltanto in i18n, con schema italiano/inglese identico; `t()` per testo immediato, descrittori per testo conservato nello stato e `resolveText()` prima del render.
+- Chiavi persistite e logica restano in inglese, indipendenti dalle etichette. Nomi di mosse/specie/strumenti/MT vanno risolti via i18n, non duplicati nei cataloghi. I percorsi asset vengono dal catalogo esplicito, mai dai nomi tradotti.
+- Applicare la risposta canonica prima di ricostruire proiezioni o mostrare premi. `level-up.js` coordina anche flussi locali: non sostituire con questi i comandi autoritativi.
+- I messaggi admin del feed sono separati dal limite dei dieci eventi utente. Mantenere la retention e la generazione autoritativa degli eventi.
+- Il deployment frontend è identificato automaticamente da `/api/deployment-version`. Non reintrodurre versioni manuali. La SPA aggiorna le schede aperte rinviando il refresh durante una battaglia; conservare la rivalidazione di HTML/JS/CSS in `vercel.json`.
 
-Il superamento dei test locali dimostra coerenza del repository, ma non dimostra che catalogo, migrazioni, binding ed Edge Function siano già distribuiti.
+## Progressione e popup
 
-I cataloghi SQL vengono generati dalle sorgenti in `app/data/` e `app/engine/`. Non committare i dump risultanti.
+- `advance_ordinary_progression` e `advance_training_progression` congelano un confronto fino alla prossima mossa sconosciuta, evoluzione o livello finale; evitare popup di livelli intermedi senza eventi. Applicare crescita, EXP e cap a ogni livello. Dopo un'evoluzione ricalcolare le tappe sulla nuova specie.
+- EXP e confronto prima/dopo condividono il popup. Apprendimento/evoluzione mostrano il risultato server; `progressionResultPokemon()` usa il `before_state` della prossima risoluzione per non anticipare livelli successivi.
+- Con quattro mosse mostrare l'effetto completo della nuova mossa e confermare quella da dimenticare con `confirmMoveForget()`. `showEvolutionResult()` continua solo dal callback del popup.
+- I nodi del dialogo restano montati durante il render. Prima di attendere una risposta usare `holdDialogContent()`; contenuto trattenuto `inert`, dispatcher bloccato, sostituzione all'arrivo della risposta. Uscita definitiva: `state.dialog = null`. Conservare `replaceSceneContent()` e la sincronizzazione della dialog layer, non usare `root.innerHTML`.
+- Nell'Allenamento lo stesso `progressionId` attraversa assegnazione e scelte: non deduplicare il nuovo popup soltanto per ID. I flussi errore/riprova e ripresa fuori dalla battaglia devono chiudere il dialogo correttamente.
+- In Pensione `preview_daycare_withdrawal` è sola presentazione. Costo e livello finale si congelano una volta; `daycare_segment_options()`/`continue_daycare_progression()` avanzano i segmenti. Fino alla ricevuta `completed` il Pokémon resta in `state.daycare`. Non aggiungere campi UI alle `options` confrontate esattamente dal resolver.
+- Le mosse persistite già oltre cap non bloccano squadra/caricamento; i valori vengono sistemati durante la successiva risoluzione autoritativa prevista.
+- Le vittorie in palestra, normali e admin, assegnano la medaglia **prima** di creare la progressione EXP: usare il nuovo conteggio medaglie. I popup possono mostrare prima EXP e poi medaglia. I retry conservano limite e premi già congelati.
 
-Revival mantiene una sola release stabile chiamata `revival-baseline`, anche quando esistono utenti reali. Non clonare l'intero catalogo per una modifica puntuale e non cambiare `catalog_release_id` dei profili. Ogni aggiornamento dei dati usa una nuova migrazione e il change set atomico tramite `server_authority_private.begin_game_data_change()` e `server_authority_private.finish_game_data_change()`:
+## Invarianti di gameplay da preservare
 
-```sql
-begin;
+- Il danno non applica STAB; dove previsto il motore usa il tipo dell'attaccante. `BattleManager.emit()` aggiunge soltanto eventi. Regole e composizione appartengono al motore/catalogo, non ai renderer.
+- Validare la composizione alla nuova battaglia via `findTeamCompositionViolation()` e `assert_player_team_composition()`: massimo due Pokémon della stessa specie, due copie di uno strumento tenuto, due Strumenti del Porto distinti e due Pokémon con mosse OHKO. Non impedire catture, evoluzioni o trasferimenti perché rendono temporaneamente non conforme la squadra.
+- La Lega controlla la squadra all'inizio della scalata e poi usa il roster congelato. La Torre controlla all'inizio della run e non assegna EXP. Cupola usa il proprio roster salvato da uno a sei Pokémon, non la squadra persistente.
+- Premi palestra: un premio in denaro, una medaglia coerente e tutti gli strumenti del catalogo, incluse le MT; non fissare il numero di righe premio.
+- Disponibilità negozi derivata da `price`: `null` significa non acquistabile; MT Tier 0 sempre non acquistabili. Evitare liste parallele di esclusioni nei negozi/Club Pokéfan.
+- Shiny: tiro server, probabilità in `progression.js`, stato compatto `sh: 1`. Bonus ricevuti incorporati nei valori persistiti; cap basati sul livello corrente. Legendary e Shiny sono indipendenti e i bonus si sommano: leggere `stat-tables.js`, non ricopiare i numeri nei consumer. Sprite Shiny col suffisso `_shiny` e stessa geometria del normale.
+- Titoli: regole in `app/data/titles.js`, testi in i18n, sblocco automatico server e permanente. `Nuovo arrivato` è onboarding; la prima missione collezione usa `trainer_titles_initial`. Titoli per tipo: Pokédex da ogni fonte, entrambi i tipi, escluse solo rarità fossil/legendary. La scelta del preferito non incrementa la revisione di gameplay.
+- Preservare `admin` e `aaa` con ruolo server `debug`, pagina `/styles` e strumenti debug. Privilegi sempre validati anche dal backend. `debug_titles` passa da Edge; `debug_completed` delle missioni è rispettato solo per debug, senza creare Pokémon/Pokédex/Titoli fittizi.
 
-select server_authority_private.begin_game_data_change(
-  p_label => 'Descrizione leggibile',
-  p_affected_families => array['shop']::text[],
-  p_source_checksums => jsonb_build_object(
-    'app/data/shopping-center.js', '<sha256 del file canonico>'
-  ),
-  p_requires_battle_idle => false
-);
+## Contratti di battaglia e concorrenza
 
--- Modificare soltanto le righe necessarie, sempre limitandole alla baseline.
+- `battle-command` è l'ingresso Edge per battaglie, Cupola, storico, progressione, automazione admin e debug. Prima di aggiungere un'azione verificare `ALLOWED_ACTIONS`, payload, autorizzazione, revisione, ricevuta e RPC. I mutatori SQL interni non sono chiamabili dai ruoli browser.
+- Conservare command ID, hash, revisioni attese, ownership, snapshot e ricevute idempotenti. Un timeout non dimostra che il comando non sia riuscito. In Cupola ricontrollare la ricevuta dopo il lock e prima di versione/snapshot; un replay non riscrive eventi o storico e la Edge proietta lo stato canonico corrente.
+- Conflitti applicativi: usare `raise_revision_conflict()`, che produce HTTP 409 e codice JSON `40001` tramite SQLSTATE `PGRST`. Non sollevare SQLSTATE PostgreSQL `40001`, che può innescare retry PostgREST ripetuti.
+- Preparazione aciclica: `prepare_edge_battle_command` → `with_inventory` → `with_contract_items` → `with_roster` → `core` (nomi completi con prefisso `prepare_edge_battle_command_`). Il core è il lettore terminale.
+- Le funzioni `*_before_*` nello schema sono passaggi ancora eseguiti. Seguire la catena di chiamate prima di modificarle; il nome non indica che si possano cancellare. Accorparle richiede test del contratto completo e una migrazione dedicata.
+- `projectionForDatabase()` riduce le proiezioni del commit: non aggiungere stato grafico o copie dello snapshot. Lo storico è read-only e rispetta confini/paginazione del server.
+- Gli incontri non inizializzati si annullano alla successiva mutazione della revisione giocatore; quelli già legati a battaglie sono protetti. Non riscrivere specie/valori di un incontro per distribuire nuove regole.
+- Cupola conclusa: eliminazione dopo entrambe le uscite o alla mezzanotte successiva `Europe/Rome`; mai eliminare automaticamente sfide attive. Cron e retention correnti sono in `supabase/baseline/metadata.json`.
 
-select server_authority_private.finish_game_data_change();
-commit;
-```
+## Baseline SQL e nuove modifiche
 
-Per creare lo scheletro corretto e calcolare automaticamente gli SHA-256 delle sorgenti:
+- `supabase/baseline/schema.sql` contiene le definizioni correnti di `public` e `server_authority_private`, inclusi RLS, permessi, trigger e indici. `metadata.json` registra estensioni, pubblicazioni, cron e ultima migrazione inclusa. Sono la baseline di riferimento per lavorare, non uno script da eseguire sul database collegato né un backup dei dati.
+- La cronologia applicata resta su Supabase e in Git. `supabase/migrations/` contiene solo nuove migrazioni additive non ancora assorbite nella baseline. Non ricostruire lo stato corrente leggendo vecchie migrazioni; interrogare il server se la baseline risulta divergente.
+- Creare `YYYYMMDDHHMMSS_descrizione.sql`, più recente di `through_migration`. Non modificare migrazioni già applicate. Per pubblicare usare **`scripts/database.mjs push`**, non `supabase db push` direttamente dalla root: lo script ricostruisce la cronologia remota in una cartella temporanea senza ripararla o azzerarla.
 
 ```powershell
-node scripts/create-game-data-change.mjs --slug aggiorna_prezzo --label "Aggiorna un prezzo" --families shop --source app/data/shopping-center.js
-```
-
-Il change set:
-
-- porta la baseline in `draft` soltanto all'interno della transazione;
-- impedisce modifiche al catalogo fuori dal change set;
-- registra tabella, operazione e valori precedenti/successivi di ogni riga toccata;
-- aggiorna conteggi, manifest e checksum delle sole famiglie dichiarate;
-- ripubblica lo stesso `catalog_release_id` e incrementa `game_data_revision`;
-- annulla l'intera transazione se non viene completato correttamente.
-
-Usare p_requires_battle_idle => false per aggiornamenti compatibili alle regole correnti, incluse mosse, strumenti e cattura. true è riservato a cambi incompatibili dello stato: considera gli snapshot di battaglie iniziate, inclusa Cupola, non gli incontri semplicemente trovati. finish_game_data_change classifica righe e campi modificati, protegge le progressioni pendenti e i contratti avversari/premi già aperti, e sospende i commit runtime se il catalogo richiede la registrazione/attivazione del pacchetto aggiornato. Non aggirare i controlli cancellando attività. I cambi di formato richiedono una migrazione esplicita dello stato.
-
-Una modifica ai dati non richiede automaticamente un nuovo runtime. Controllare il grafo degli import: se il file canonico è raggiunto da `app/engine/battle-runtime.js`, cambia il contenuto eseguibile Edge e servono sync, registrazione additiva, deploy di `battle-command` e attivazione del pacchetto. I dati consumati soltanto da una nuova azione frontend, come prezzi o alcune ricompense, richiedono normalmente la migrazione del catalogo ma non un nuovo mirror runtime; verificare sempre le dipendenze effettive.
-
-Distinguere l'inclusione nel pacchetto dall'uso effettivo in combattimento. `shiny_odds_denominator` è letto solo da PostgreSQL alla creazione di un nuovo incontro; `is_shiny` viene poi persistito. Un aggiornamento della sola probabilità usa un change set `progression` con `p_requires_battle_idle => false`, senza toccare incontri, battaglie o binding e senza distribuire Edge. Il mirror locale resta generato dalle sorgenti, ma un checksum diverso per questa costante inutilizzata nel motore non obbliga a distribuire subito il pacchetto. Prima del prossimo vero deploy del runtime predisporre il binding del checksum allora corrente e rispettare i vincoli delle battaglie attive.
-
-Se serve compatibilità durante un deploy del runtime, aggiungere il nuovo binding senza rimuovere quello precedente. Disabilitare il binding di transizione soltanto dopo il deploy della Edge Function e dopo aver verificato che non esistano battaglie o snapshot che lo usano. Preservare sempre l'utente `aaa` e il ruolo `debug`; la baseline stabile evita migrazioni dei profili.
-
-Verifica deterministica della baseline corrente:
-
-```powershell
-node scripts/generate-all-catalog-seeds.mjs --release revival-baseline --checksum draft:revival-baseline --species-chunks 4 --check
-```
-
-## Supabase
-
-Le Edge Function applicative sono:
-
-- `register-with-username`
-- `login-with-username`
-- `request-password-recovery`
-- `delete-account`
-- `battle-command`
-
-Tutte devono conservare `verify_jwt = true` in `supabase/config.toml`.
-
-### Recupero password
-
-L'email è facoltativa in registrazione. Quando presente, coincide con l'email dell'utente Supabase Auth ed è indicizzata nella tabella privata tramite RLS `player_auth_recovery`; gli account senza email usano soltanto l'indirizzo tecnico `@pokemon-game-revival.local` e non possono richiedere il recupero.
-
-`request-password-recovery` verifica la coppia username–email senza rivelare se esiste, quindi chiama il recupero nativo Supabase. Il redirect canonico è il dato pubblico e fisso `https://pokemon-game-revival.vercel.app/auth/recovery`: non reintrodurre il segreto `APP_URL`, localhost o URL dei progetti eliminati. Supabase Auth deve mantenere:
-
-- Site URL: `https://pokemon-game-revival.vercel.app`;
-- Redirect URL consentito: `https://pokemon-game-revival.vercel.app/auth/recovery` (oltre all'origine principale se necessaria ad altri flussi).
-
-La SPA usa `detectSessionInUrl`, intercetta `PASSWORD_RECOVERY`, mostra il form di nuova password e aggiorna la credenziale con `auth.updateUser()`. `vercel.json` deve continuare a riscrivere `/auth/recovery` verso `index.html`.
-
-La configurazione remota Auth può essere aggiornata separatamente dal codice Edge. Prima di modificarla controllare il diff proposto, preservare MFA, conferme e rate limit esistenti e verificare il risultato remoto.
-
-### Migrazioni
-
-Creare sempre una nuova migrazione:
-
-```text
-supabase/migrations/YYYYMMDDHHMMSS_descrizione.sql
-```
-
-Non modificare una migrazione già applicata. Prima di ogni operazione remota verificare che il progetto collegato sia `etotvaneppzkxunezqrl`.
-
-Procedura:
-
-```powershell
-supabase db push --linked --dry-run
-supabase db push --linked
+node scripts/database.mjs snapshot --check
+node scripts/database.mjs push --dry-run
+node scripts/database.mjs push
 supabase db lint --linked --level error
-supabase migration list --linked
+node scripts/database.mjs snapshot
+node scripts/database.mjs snapshot --check
 ```
 
-### Edge Function
+Dopo il deploy e i test, rimuovere solo i file di migrazione confermati applicati e inclusi nel nuovo `through_migration`; mantenere `.gitkeep`. Non eliminare migrazioni pendenti. La baseline si aggiorna con `pg_dump` nativo, senza dati giocatore o catalogo. Il codice dello schema è versionato intenzionalmente; dump diagnostici e seed generati restano temporanei. Non eseguire reset remoti. Per ricreare un servizio vuoto servono anche cataloghi generati, binding runtime e configurazione dei servizi Supabase: la baseline non automatizza quel ripristino.
 
-Il push su GitHub non aggiorna le Edge Function. Distribuire esplicitamente soltanto quelle modificate sul progetto Revival. Prima di distribuire `battle-command` eseguire sempre:
+## Cataloghi e runtime granulare
 
-```powershell
-node scripts/sync-game-runtime.mjs --check
-```
+`app/` è la sorgente canonica. Il mirror `supabase/functions/_shared/game-runtime/` e il manifest sono generati: non editarli manualmente. Hash e copie normalizzano LF e usano ordinamento deterministico. I confini dei componenti sono in `scripts/runtime-components.mjs`; i moduli condivisi possono incidere su più componenti, quelli non classificati ricadono nel motore.
 
-`battle-command` è anche l'ingresso autoritativo per storico turni (`turn_history`), Battle Dome (`dome_*`), automazione admin (`admin_automation_*`), debug, progressione ordinaria/Allenamento e comandi di battaglia. Prima di aggiungere un'azione verificare l'elenco `ALLOWED_ACTIONS`, la validazione delle chiavi, la ricevuta idempotente, la revisione attesa e l'RPC server corrispondente.
+| Componente | Politica predefinita |
+|---|---|
+| encounters | Nuova ricerca; risultati degli incontri già generati conservati |
+| initialization | Nuovo snapshot, prima delle scelte degli strumenti tenuti |
+| battle_core | Prossimo comando in ogni ambiente |
+| move_effects | Prossimo comando, incluse mosse caricate/copiate e in corso |
+| consumable_items | Prossimo uso; effetti già applicati e consumi restano nello stato |
+| held_items | Prossimo evento; bonus applicati e cariche consumate restano nello stato |
+| capture | Prossimo lancio, anche nelle battaglie già attive |
+| progression | Nuova progressione; scelte pendenti protette da completamento/migrazione esplicita |
+| opponents_rewards | Nuova attività; contratti avversari/premi aperti protetti |
+| presentation | Nessun vincolo di compatibilità del combattimento |
 
-### Notifiche Discord delle battaglie admin
+- Il checksum del bundle identifica il codice; `BATTLE_SNAPSHOT_VERSION` il formato dello stato. Cambi compatibili entrano nei comandi successivi senza riscrivere hash, turni, RNG o inventari passati. Cambi di significato/formato dello stato richiedono una migrazione esplicita e, se cambia il contratto, la versione snapshot coerente con SQL.
+- `runtime_package` registra i pacchetti; `runtime_deployment` sceglie pacchetto e generazione. Preparazione e commit trasportano `runtime_generation`; SQL controlla pacchetto/generazione sotto lock condiviso, modifiche catalogo/attivazione sotto lock esclusivo. Non aggiungere eccezioni a checksum fissi.
+- Le ricevute conservano checksum, componenti e generazione eseguiti. Mantenere i binding referenziati dagli snapshot conservati. Nessun motore storico parallelo per aggirare incompatibilità.
+- Catalogo stabile unico `revival-baseline`: non clonarlo né cambiare `catalog_release_id` dei profili. Le modifiche ai dati usano `begin_game_data_change()` / `finish_game_data_change()`, aggiornando solo righe e famiglie necessarie nella stessa transazione. Il change set audita le righe e aggiorna checksum/revisione della baseline.
+- Generare lo scheletro con `node scripts/create-game-data-change.mjs --slug descrizione --label "Descrizione" --families shop --source app/data/shopping-center.js`; completare gli UPDATE limitati alla baseline tra begin/finish.
+- `p_requires_battle_idle=false` per cambi compatibili; `true` per incompatibilità dello stato inizializzato. `finish_game_data_change()` protegge progressioni e contratti premi pendenti e sospende i commit se serve un nuovo pacchetto. Non cancellare attività per superare questi controlli.
+- Controllare l'intera catena: sorgente → consumer → generatore catalogo → SQL → mirror → binding/attivazione → stato remoto. Il grafo degli import determina se occorre distribuire Edge; l'inclusione di una costante nel pacchetto non ne prova l'uso nel combattimento.
+- Esempio: la sola probabilità Shiny è letta da SQL alla nuova ricerca; cambiarla non modifica incontri/battaglie e non richiede deploy Edge. Prima del successivo vero deploy sincronizzare il pacchetto allora corrente. La presentazione cambia i propri hash, non il bundle eseguibile.
 
-`battle-command` invia una notifica Discord dopo l'inizializzazione riuscita delle battaglie `admin_gym` e `league` e ogni volta che una mossa del giocatore restituisce il turno all'amministratore, per qualsiasi giocatore incluso `aaa`. La sfida `debug_training` della Zona Allenamento deve restare esclusa.
+### Pubblicazione runtime
 
-Il webhook è il segreto Supabase `DISCORD_ADMIN_BATTLE_WEBHOOK_URL`: non inserirne mai il valore nel repository, nelle migrazioni o nei log. I messaggi devono avere un campo `content` testuale non vuoto e il link diretto al pannello admin. La consegna è best effort e non deve mai impedire l'avvio o l'avanzamento della battaglia. Le ricevute private `server_authority_private.discord_admin_battle_notification` e `server_authority_private.discord_admin_battle_turn_notification` impediscono invii duplicati in caso di retry; non aggirarle con chiamate Discord dal frontend.
+1. Controllare progetto, diff, catalogo e attività correnti; eseguire i test pertinenti.
+2. `node scripts/sync-game-runtime.mjs` e `node scripts/sync-game-runtime.mjs --check`.
+3. Se cambia il bundle: `node scripts/create-runtime-release.mjs --slug register_runtime_change` crea la registrazione additiva senza attivazione. Per dati canonici aggiungere il change set necessario.
+4. Pubblicare SQL con il flusso `database.mjs`. Se il catalogo sospende i commit in attesa del pacchetto, completare prontamente i passi successivi.
+5. Distribuire soltanto le Edge Function modificate; per battaglie: `supabase functions deploy battle-command --project-ref etotvaneppzkxunezqrl --use-api`. Scaricare il pacchetto e verificare il checksum effettivo.
+6. Generare l'attivazione fuori dal repository: `node scripts/create-runtime-release.mjs --activate --output <file-temporaneo.sql>`, quindi eseguirla sul progetto verificato. La registrazione non equivale all'attivazione.
+7. Verificare pacchetto/generazione remoti, test, lint e nuova baseline SQL; poi commit/push autorizzati. Non rimuovere binding ancora referenziati.
 
-Le proiezioni complete restano nella risposta Edge, ma gli RPC di commit ricevono la variante ridotta tramite `projectionForDatabase()`: non reinviare `battle_state`, scelte di presentazione o stato grafico dei partecipanti, perché duplicano lo snapshot e possono superare il limite SQL nelle squadre numerose.
+Correzioni solo SQL non richiedono un nuovo bundle; valutare una nuova generazione dello stesso pacchetto se occorre respingere comandi preparati prima del cambiamento. Se si deve preservare un pacchetto Edge distribuito, scaricarlo con `functions download --use-api` in una cartella temporanea e modificare solo il coordinamento richiesto.
 
-## Utenti speciali
+## Servizi, autenticazione e deploy frontend
 
-- `admin`: amministrazione prevista delle battaglie e delle configurazioni.
-- `aaa`: ruolo server `debug`, strumenti di debug e accesso alla pagina `/styles`.
+- Edge applicative: `register-with-username`, `login-with-username`, `request-password-recovery`, `delete-account`, `battle-command`; tutte mantengono `verify_jwt=true`.
+- Email opzionale; gli account senza email usano `@pokemon-game-revival.local` e non possono recuperare la password. Recupero: coppia username/email senza rivelarne l'esistenza, flusso Auth nativo e redirect fisso `https://pokemon-game-revival.vercel.app/auth/recovery`. Conservare gestione `PASSWORD_RECOVERY`, `auth.updateUser()` e rewrite SPA.
+- Prima di modificare Auth remoto leggere il diff e preservare MFA, conferme e rate limit. Il Site URL remoto è l'origine di produzione; il redirect recovery deve essere consentito. Non introdurre segreti per questo URL pubblico.
+- Discord admin: notifiche best effort all'avvio gym/admin-Lega e al ritorno del turno all'admin, incluso `aaa`, escluso `debug_training`. Webhook solo nel segreto Supabase `DISCORD_ADMIN_BATTLE_WEBHOOK_URL`; ricevute private deduplicano gli invii. Non chiamare Discord dal frontend.
+- Push `main`: deploy frontend automatico Vercel, non deploy SQL/Edge. Nei cambi coordinati pubblicare in ordine compatibile e verificare `/api/deployment-version` quando necessario; non imporre attese Vercel a modifiche che non lo richiedono.
 
-Le funzionalità di `aaa` sono intenzionali e devono essere preservate. Ogni privilegio deve essere validato anche dal backend e non soltanto nascosto o mostrato nel browser.
-I controlli debug `+1`/`-1` dei Titoli usano il comando Edge autoritativo `debug_titles`: aggiungono il primo Titolo non posseduto o rimuovono il primo Titolo posseduto secondo `sortOrder`. Non sostituirli con scritture browser su `player_title`.
-Il completamento debug delle missioni basate su Pokédex o Titoli registra `debug_completed` nei `tracked_keys` della singola missione. La sincronizzazione deve rispettarlo soltanto per il ruolo server `debug`, senza creare registrazioni Pokédex o assegnare Titoli fittizi. Non rendere monotoni i contatori di tutti i giocatori per aggirare questo controllo; i reset giornalieri continuano a svuotare i `tracked_keys`.
-Per verificarlo sul database collegato: `supabase db query --linked --file scripts/test-debug-mission-completion.sql`. Il test esegue le funzioni correnti su copie temporanee isolate delle tabelle e termina con rollback, senza creare account né modificare dati reali.
-
-## Versione frontend e cache
-
-Il progetto non usa un numero di versione frontend manuale e non deve reintrodurre `app-version.json` o contatori da aggiornare a ogni modifica. `api/deployment-version.js` espone automaticamente lo SHA Git o l'URL univoco del deployment Vercel; `app/client/deployment-version.js` lo controlla all'avvio, quando la scheda torna visibile e periodicamente.
-
-Quando cambia il deployment, le schede già aperte vengono ricaricate automaticamente. Durante una battaglia attiva il refresh resta rinviato. Non sostituire questo meccanismo con un file di versione modificato manualmente.
-
-`vercel.json` impone inoltre la rivalidazione di HTML, moduli applicativi e CSS, così un nuovo caricamento o refresh riceve gli asset correnti.
-
-Un push su `main` avvia il deploy automatico Vercel. Nei flussi ordinari non è necessario attendere o verificare lo stato `Ready`/`Production` dopo ogni push; controllarlo soltanto quando il compito riguarda esplicitamente il deploy o quando emergono problemi di pubblicazione.
-
-## Verifiche locali
-
-Eseguire i controlli pertinenti alla modifica. I test JavaScript sono locali e non devono creare account o dati reali:
-
-```powershell
-node --experimental-vm-modules scripts/test-revival-baseline.mjs
-node --experimental-vm-modules scripts/audit-i18n.mjs
-node --experimental-vm-modules scripts/audit-localized-entities.mjs
-node --experimental-vm-modules scripts/audit-css-ownership.mjs
-node --experimental-vm-modules scripts/test-team-composition.mjs
-node --experimental-vm-modules scripts/test-battle-dome-navigation.mjs
-node --experimental-vm-modules scripts/test-battle-history.mjs
-node --experimental-vm-modules scripts/test-reward-claims.mjs
-node --experimental-vm-modules scripts/test-progression-dialog-flow.mjs
-node --experimental-vm-modules scripts/test-uniform-progression-dialogs.mjs
-```
-
-Controllo del runtime Edge:
+## Verifiche da eseguire
 
 ```powershell
-node scripts/sync-game-runtime.mjs --check
-```
-
-Controllo generale del diff:
-
-```powershell
+node scripts/check.mjs                        # gameplay/client, i18n, schema e mirror locali
+node scripts/check.mjs runtime                # hash, portabilità e ripristino snapshot
+node scripts/check.mjs i18n                   # cataloghi e nomi/descrizioni entità
+node scripts/check.mjs database progression   # fixture SQL pertinenti sul progetto collegato
+node scripts/check.mjs database               # tutte le fixture SQL isolate
+node scripts/check.mjs --list                 # elenco test selezionabili anche con filtro nome
+node scripts/database.mjs snapshot --check    # confronto schema/metadata col server
+node scripts/generate-all-catalog-seeds.mjs --release revival-baseline --checksum draft:revival-baseline --species-chunks 4 --check
 git diff --check
 ```
 
-I test SQL collegati sotto `scripts/` (tra cui `test-battle-history.sql`, `test-capture-activity-feed.sql`, `test-daycare-progression-preview.sql`, `test-daycare-progression-segments.sql`, `test-ordinary-progression-segments.sql`, `test-debug-mission-completion.sql` e `test-existing-move-caps.sql`) vanno eseguiti soltanto quando pertinenti, verificando prima il progetto collegato. Devono usare copie isolate o transazioni con rollback e non eliminare account o dati reali.
-
-Per ogni file JavaScript modificato, verificarne il parsing come modulo ES:
-
-```powershell
-node --experimental-vm-modules --input-type=module --eval "import { readFileSync } from 'node:fs'; import vm from 'node:vm'; new vm.SourceTextModule(readFileSync(process.argv[1], 'utf8'), { identifier: process.argv[1] });" "app/client/example.js"
-```
-
-`ExperimentalWarning` è previsto; un errore di parsing no.
-
-Per testare localmente route e refresh della SPA, usare `vercel.cmd dev` dalla radice quando la CLI Vercel è disponibile.
-
-## Git e deploy
-
-- Non eseguire `pull`, `commit` o `push` se l'utente non lo richiede o se il compito non lo rende esplicitamente necessario.
-- Quando il commit è autorizzato, includere anche le modifiche preesistenti secondo le regole di lavoro, comprese quelle in `tools/`. Controllare il diff e aggiungere file espliciti; non includere segreti o artefatti rigenerabili.
-- Il push su `main` attiva il deploy frontend Vercel; le migrazioni Supabase e le Edge Function richiedono invece distribuzione esplicita.
-- Se una modifica backend richiede un nuovo consumer frontend, pianificare l'ordine di pubblicazione in base alla compatibilità: non attivare un contratto che il frontend online non sa gestire. Quando il frontend nuovo funziona anche con il backend precedente, pubblicarlo prima e verificare il commit tramite `/api/deployment-version`, poi applicare la migrazione. È un controllo mirato per aggiornamenti coordinati, non un'attesa Vercel obbligatoria dopo ogni push. Rispettare i blocchi della migrazione sulle operazioni pendenti senza cancellare dati per aggirarli.
-
-## File locali e rigenerabili
-
-- `.env.local`: configurazione locale; non committare.
-- `.vercel/`, `supabase/.temp/` e `.build/` sono dati locali o artefatti rigenerabili: non usarli come fonte dell'app e non committarli.
-- `tools/` contiene strumenti versionati del progetto: non modificarli senza necessità; includerne le modifiche già presenti quando viene autorizzato il commit, salvo esclusioni esplicite dell'utente.
-
-## Orientamento rapido
-
-| Obiettivo | Punto di partenza |
-|---|---|
-| Testo o markup di una schermata | `app/view/` |
-| Click o comportamento UI | `app/client/*-handler.js` |
-| Routing o rendering | `app/client/router.js`, `app/client/renderer.js` |
-| Chiamata Supabase dal browser | `app/api/` |
-| Comandi autoritativi del giocatore | `app/api/player-command.js`, `supabase/functions/battle-command/` |
-| Progressione | `app/data/progression.js` |
-| Dialoghi level-up/mosse/evoluzioni | `app/client/progression-dialog.js`, `app/client/level-up.js` |
-| Combattimento | `app/engine/` |
-| Battle Dome | `app/data/battle-dome.js`, `app/api/battle-dome.js`, `app/client/battle-dome-handler.js` |
-| Storico battaglie | `app/api/battle-history.js`, `app/client/battle-history-handler.js` |
-| Activity feed | `app/api/activity-feed.js`, `app/client/activity-feed-runtime.js` |
-| Admin e automazione | `app/client/admin-battle-handler.js`, `app/view/admin-battles.js` |
-| Stili | `app/styles/` |
-| Asset | `app/assets/` e `app/client/asset-helpers.js` |
-| Tabelle o funzioni SQL | nuova migrazione in `supabase/migrations/` |
-| Autenticazione o battaglie Edge | `supabase/functions/` |
+I test specifici sotto `scripts/tests/` sono regressioni del comportamento corrente, non cronologia degli incidenti. Estenderli nel dominio pertinente; evitare checksum storici e controlli che cercano vecchie patch. Le fixture SQL devono usare soltanto copie temporanee/rollback. Per identità e ciclo dei nodi dialogo aprire `scripts/tests/test-dialog-layer.html` da un server locale. Verificare il parsing dei JS modificati come moduli ES; gli avvisi sperimentali Node previsti non sono errori. I test locali non dimostrano l'avvenuto deploy remoto.

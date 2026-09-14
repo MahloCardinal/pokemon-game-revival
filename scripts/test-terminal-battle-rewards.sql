@@ -12,6 +12,11 @@ create temporary table authoritative_league_run (like public.authoritative_leagu
 create temporary table player_league_victory (like public.player_league_victory including all) on commit drop;
 create temporary table catalog_opponent (like public.catalog_opponent including all) on commit drop;
 create temporary table catalog_opponent_reward (like public.catalog_opponent_reward including all) on commit drop;
+create temporary table player_pokemon_instance (like public.player_pokemon_instance including all) on commit drop;
+create temporary table authoritative_battle_participant (like public.authoritative_battle_participant including all) on commit drop;
+create temporary table player_ordinary_progression (like public.player_ordinary_progression including all) on commit drop;
+create temporary table player_ordinary_progression_pokemon (like public.player_ordinary_progression_pokemon including all) on commit drop;
+create temporary table player_pending_resolution (like public.player_pending_resolution including all) on commit drop;
 insert into catalog_opponent select * from public.catalog_opponent
   where catalog_release_id = (select id from public.catalog_release where version = 'revival-baseline');
 insert into catalog_opponent_reward select * from public.catalog_opponent_reward
@@ -25,19 +30,33 @@ create function pg_temp.player_state_projection(p_user uuid) returns jsonb langu
 $$;
 create function pg_temp.authoritative_battle_append_event(uuid, text, jsonb, uuid, jsonb)
 returns void language sql as $$ insert into pg_temp.test_events values ($1, $2, $3) $$;
+create function pg_temp.emit_ordinary_level_events(uuid, uuid, uuid)
+returns void language sql as $$ select $$;
 do $clone$
-declare target regprocedure; definition text;
+declare target regprocedure; definition text; table_name text;
 begin
   foreach target in array array[
     'server_authority_private.award_terminal_gym_victory_core(uuid,uuid,uuid,text)'::regprocedure,
     'server_authority_private.award_terminal_gym_victory(uuid,uuid,uuid)'::regprocedure,
     'server_authority_private.award_terminal_admin_gym_victory(uuid,uuid,uuid)'::regprocedure,
-    'server_authority_private.finalize_terminal_admin_league(uuid,uuid,uuid,jsonb)'::regprocedure
+    'server_authority_private.finalize_terminal_admin_league(uuid,uuid,uuid,jsonb)'::regprocedure,
+    'server_authority_private.pokemon_max_hp_for_instance(uuid,integer)'::regprocedure,
+    'server_authority_private.pokemon_max_power_for_instance(uuid,integer)'::regprocedure,
+    'server_authority_private.pokemon_max_stats_for_instance(uuid,integer)'::regprocedure,
+    'server_authority_private.advance_ordinary_progression(uuid,uuid,bigint)'::regprocedure,
+    'server_authority_private.create_terminal_ordinary_progression(uuid,uuid,uuid,jsonb)'::regprocedure
   ] loop
     definition := pg_get_functiondef(target);
     definition := replace(definition, 'public.', 'pg_temp.');
     definition := replace(definition, 'server_authority_private.', 'pg_temp.');
     definition := replace(definition, 'pg_temp.raise_revision_conflict', 'server_authority_private.raise_revision_conflict');
+    -- These helpers only read canonical catalog/caps, never player mutations.
+    definition := replace(definition, 'pg_temp.edge_jsonb_bigint', 'server_authority_private.edge_jsonb_bigint');
+    definition := replace(definition, 'pg_temp.pokemon_stat_caps', 'server_authority_private.pokemon_stat_caps');
+    foreach table_name in array array['catalog_species_level_move', 'catalog_species_evolution',
+      'catalog_species', 'catalog_level_rule', 'catalog_move'] loop
+      definition := replace(definition, 'pg_temp.' || table_name, 'public.' || table_name);
+    end loop;
     execute definition;
   end loop;
 end;
@@ -48,6 +67,8 @@ do $gyms$
 <<fixture>>
 declare opponent record; contract text; player_id uuid; battle_id uuid; command_id uuid;
   result jsonb; replay jsonb; expected_items jsonb; expected_money bigint; awarded_items jsonb;
+  old_cap integer; new_cap integer; threshold integer; pokemon_id uuid; exp_awards jsonb;
+  pokemon_ids uuid[]; slot integer; saved_states jsonb; saved_progression jsonb;
 begin
   if (select count(*) from catalog_opponent where opponent_kind = 'gym') <> 8 then
     raise exception 'Expected all eight canonical gyms';
@@ -91,6 +112,46 @@ begin
         or (select count(*) from player_command_receipt where auth_user_id = player_id) <> 1
         or (select count(*) from test_events e where e.battle_id = fixture.battle_id) <> 1 then
         raise exception 'Incorrect reward or duplicate grant for % / %', contract, opponent.opponent_key;
+      end if;
+      old_cap := (array[14,20,30,40,50,60,70,80])[opponent.badge_index + 1];
+      new_cap := (array[20,30,40,50,60,70,80,100])[opponent.badge_index + 1];
+      select experience_reward into strict threshold from public.catalog_species
+        where catalog_release_id = opponent.catalog_release_id and species_key = '4';
+      exp_awards := '[]'; pokemon_ids := '{}';
+      -- Both Pokemon start at the previous cap. One retains a sub-level award;
+      -- the other levels up, retaining the remainder and canonical pending choices.
+      for slot in 0..1 loop
+        insert into player_pokemon_instance(auth_user_id, catalog_release_id, species_key, state)
+          values(player_id, opponent.catalog_release_id, '4', jsonb_build_object('s','4','l',old_cap,
+            'hp',50,'xp',0,'m',jsonb_build_array(jsonb_build_array(25,20,10)))) returning id into pokemon_id;
+        pokemon_ids := array_append(pokemon_ids, pokemon_id);
+        insert into authoritative_battle_participant(battle_id, side, slot_index, pokemon_instance_id,
+            species_key, display_name, level, max_hp, current_hp, type_keys, moves, source_snapshot)
+          values(battle_id, 'player', slot, pokemon_id, '4', 'charmander', old_cap, 50, 50,
+            '["fire"]', '[[25,20,10]]', '{}');
+        exp_awards := exp_awards || jsonb_build_array(jsonb_build_object('pokemon_instance_id',pokemon_id,
+          'team_slot',slot,'exp',case when slot = 0 then 1 else threshold + 7 end,'ko_count',1));
+      end loop;
+      perform pg_temp.create_terminal_ordinary_progression(player_id, battle_id, command_id, exp_awards);
+      if not exists(select 1 from player_ordinary_progression p where p.battle_id = fixture.battle_id
+          and p.badge_count = opponent.badge_index + 1 and p.level_cap = new_cap)
+        or not exists(select 1 from player_pokemon_instance where id = pokemon_ids[1]
+          and (state->>'l')::integer = old_cap and (state->>'xp')::integer = 1)
+        or not exists(select 1 from player_pokemon_instance where id = pokemon_ids[2]
+          and (state->>'l')::integer = old_cap + 1 and (state->>'xp')::integer = 7)
+        or not exists(select 1 from player_pending_resolution where pokemon_instance_id = pokemon_ids[2]
+          and (options #>> '{before_state,l}')::integer = old_cap
+          and (options #>> '{after_state,l}')::integer = old_cap + 1) then
+        raise exception 'New badge cap/EXP/level comparison failed for % / %', contract, opponent.opponent_key;
+      end if;
+      select jsonb_agg(to_jsonb(p) order by id) into saved_states from player_pokemon_instance p where auth_user_id = player_id;
+      select to_jsonb(p) into saved_progression from player_ordinary_progression p where p.battle_id = fixture.battle_id;
+      -- Later badge changes must not recalculate an already frozen progression.
+      update player_profile_state set badges = least(8, badges + 1) where auth_user_id = player_id;
+      perform pg_temp.create_terminal_ordinary_progression(player_id, battle_id, command_id, exp_awards);
+      if saved_states is distinct from (select jsonb_agg(to_jsonb(p) order by id) from player_pokemon_instance p where auth_user_id = player_id)
+        or saved_progression is distinct from (select to_jsonb(p) from player_ordinary_progression p where p.battle_id = fixture.battle_id) then
+        raise exception 'Progression replay changed EXP, level or frozen cap';
       end if;
     end loop;
   end loop;
@@ -170,5 +231,5 @@ begin
   end if;
 end;
 $league$;
-select 'All eight gyms (normal/admin), exact item stacks, idempotency, invalid catalogs and the five League rewards passed' as result;
+select 'All eight gyms (normal/admin): rewards, post-badge EXP/caps, level comparisons and replays; invalid catalogs and five League rewards passed' as result;
 rollback;

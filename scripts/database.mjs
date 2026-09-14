@@ -33,7 +33,9 @@ function query(sql, workdir) {
 }
 function persist(path, value) {
   if (checking) {
-    if (!existsSync(path) || readFileSync(path, "utf8") !== value) throw new Error(`Remote baseline drift: ${path}`);
+    if (!existsSync(path) || readFileSync(path, "utf8").replace(/\r\n?/g, "\n") !== value) {
+      throw new Error(`Remote baseline drift: ${path}`);
+    }
   } else { mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, value); }
 }
 

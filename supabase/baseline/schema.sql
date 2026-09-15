@@ -15642,8 +15642,7 @@ begin
       or (
         p_battle_id is null
         and (
-          battle.status in ('active', 'needs_player_switch')
-          or battle.engine_runtime_state = 'pending'
+          battle.status in ('prepared', 'active', 'needs_player_switch')
         )
       )
     )

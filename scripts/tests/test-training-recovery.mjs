@@ -46,3 +46,39 @@ for (const status of ["prepared", "active", "needs_player_switch", "concluded"])
   }
 }
 console.log("Training recovery: prepared opponent/identity/revision retained, active battles resumed, terminal battles excluded.");
+
+const discardSource = section("export function discardPreparedAuthoritativeTraining(", "function recoverAuthoritativeTrainingStart(").replace("export function", "function");
+for (const outcome of ["success", "conflict", "active", "different", "uncertain", "navigation", "stale-read"]) {
+  const scene = { name: "training-zone", trainingPreparedBattle: { battleId: "preview", battleVersion: 3 }, trainingOpponentTeam: [{}] };
+  const state = { scene, authoritativeRevision: 10 };
+  const calls = [], reads = [], messages = [];
+  const context = vm.createContext({ state, render() {}, authoritativeBattleRuntimeOwnerId: () => "new-tab",
+    discardAuthoritativeTrainingBattle: async input => {
+      calls.push({ ...input });
+      return outcome === "success" || calls.length === 2 ? { ok: true, playerRevision: 12 }
+        : { ok: false, code: "revision_conflict", uncertain: outcome === "uncertain" };
+    },
+    getAuthoritativeBattle: async id => {
+      reads.push(id);
+      if (outcome === "navigation") state.scene = { name: "team" };
+      if (outcome === "stale-read") state.authoritativeRevision = 15;
+      return { ok: true, playerRevision: 11, battle: { battle_id: outcome === "different" ? "other" : "preview",
+        battle_version: 4, contract_key: "training", status: outcome === "active" ? "active" : "prepared" } };
+    },
+    openMessage: lines => messages.push(lines), messageDescriptor: value => value, textDescriptor: value => value
+  });
+  vm.runInContext(discardSource, context);
+  const discarded = await context.discardPreparedAuthoritativeTraining(scene);
+  assert.equal(state.battleStartPending, false);
+  assert.equal(discarded, ["success", "conflict"].includes(outcome), outcome);
+  assert.equal(calls.length, outcome === "conflict" ? 2 : 1, "At most one retry of the same still-prepared battle: " + outcome);
+  if (outcome === "conflict") {
+    assert.equal(calls[1].expectedPlayerRevision, 11);
+    assert.equal(calls[1].expectedBattleVersion, 4);
+    assert.equal(calls[1].battleId, "preview");
+    assert.equal(scene.trainingPreparedBattle, null);
+    assert.equal(messages.length, 0);
+  }
+  if (outcome === "uncertain") assert.equal(reads.length, 0, "Do not retry uncertain mutations with a new command");
+}
+console.log("Training replacement client: success, bounded revision recovery, active/changed battle and navigation protection passed.");

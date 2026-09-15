@@ -112,8 +112,7 @@ begin
   if not found then raise exception 'authoritative battle was not found' using errcode = 'P0002'; end if;
   if v_battle.contract_key <> 'training' or v_battle.status <> 'prepared'
     or v_battle.engine_runtime_state <> 'ready' or v_battle.engine_snapshot is null
-    or v_battle.battle_version <> p_expected_battle_version
-    or v_battle.runtime_owner_id <> p_runtime_owner_id then
+    or v_battle.battle_version <> p_expected_battle_version then
     perform server_authority_private.raise_revision_conflict('prepared training battle changed');
   end if;
   select ordinal - 1 into v_active_index
@@ -133,7 +132,9 @@ begin
   v_snapshot := jsonb_set(v_battle.engine_snapshot, '{playerTeam,state,activeIndex}', to_jsonb(v_active_index), false);
   v_snapshot_hash := encode(digest(convert_to(v_snapshot::text, 'UTF8'), 'sha256'), 'hex');
   update public.authoritative_battle
-  set engine_checksum = v_deployment.checksum, status = 'active', player_active_slot = p_active_slot, engine_snapshot = v_snapshot,
+  set runtime_owner_id = p_runtime_owner_id,
+      runtime_lock_version = runtime_lock_version + case when runtime_owner_id <> p_runtime_owner_id then 1 else 0 end,
+      engine_checksum = v_deployment.checksum, status = 'active', player_active_slot = p_active_slot, engine_snapshot = v_snapshot,
       engine_snapshot_hash = v_snapshot_hash, battle_version = battle_version + 1, updated_at = now()
   where id = p_battle_id;
   perform server_authority_private.authoritative_battle_append_event(p_battle_id, 'training_activated',
@@ -3127,8 +3128,7 @@ begin
   where id = p_battle_id and auth_user_id = p_auth_user_id for update;
   if not found then raise exception 'authoritative battle was not found' using errcode = 'P0002'; end if;
   if v_battle.contract_key <> 'training' or v_battle.status <> 'prepared'
-    or v_battle.battle_version <> p_expected_battle_version
-    or v_battle.runtime_owner_id <> p_runtime_owner_id then
+    or v_battle.battle_version <> p_expected_battle_version then
     perform server_authority_private.raise_revision_conflict('prepared training battle changed');
   end if;
   delete from public.authoritative_battle where id = p_battle_id;

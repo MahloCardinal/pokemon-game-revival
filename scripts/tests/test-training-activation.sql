@@ -39,7 +39,7 @@ select set_config('request.jwt.claim.role','service_role',true);
 do $test$
 declare
   catalog uuid := gen_random_uuid(); player uuid := gen_random_uuid(); owner_id uuid := gen_random_uuid();
-  battle_id uuid := gen_random_uuid(); command_id uuid := gen_random_uuid(); result jsonb; snapshot jsonb;
+  battle_id uuid := gen_random_uuid(); command_id uuid := gen_random_uuid(); new_owner uuid := gen_random_uuid(); result jsonb; snapshot jsonb;
 begin
   snapshot := '{"snapshotVersion":3,"engineVersion":"pokemon-game-revival","rng":{"draws":7},"playerTeam":{"state":{"activeIndex":0},"pokemon":[{"state":{"authoritativeSlot":0}},{"state":{"authoritativeSlot":3}}]}}';
   insert into pg_temp.runtime_package(catalog_release_id,checksum,engine_version,snapshot_version,components)
@@ -59,12 +59,13 @@ begin
   exception when sqlstate 'PGRST' then null;
   end;
   begin
-    perform pg_temp.activate_training(player,gen_random_uuid(),10,battle_id,3,gen_random_uuid(),3);
-    raise exception 'A different runtime owner must be rejected';
+    perform pg_temp.activate_training(player,gen_random_uuid(),10,battle_id,2,owner_id,3);
+    raise exception 'A stale battle version must be rejected';
   exception when sqlstate 'PGRST' then null;
   end;
-  result := pg_temp.activate_training(player,command_id,10,battle_id,3,owner_id,3);
+  result := pg_temp.activate_training(player,command_id,10,battle_id,3,new_owner,3);
   if (select status <> 'active' or battle_version <> 4 or engine_checksum <> repeat('b',64)
+      or runtime_owner_id <> new_owner or runtime_lock_version <> 2
       or engine_snapshot <> jsonb_set(snapshot,'{playerTeam,state,activeIndex}','1')
       from pg_temp.authoritative_battle) then
     raise exception 'Activation must preserve the roster/RNG and adopt the current compatible package';
@@ -74,7 +75,7 @@ begin
     raise exception 'Activation revision or runtime generation is incorrect';
   end if;
   update pg_temp.runtime_deployment set generation=3;
-  if pg_temp.activate_training(player,command_id,10,battle_id,3,owner_id,3) <> result
+  if pg_temp.activate_training(player,command_id,10,battle_id,3,new_owner,3) <> result
     or (select count(*) from pg_temp.activation_events) <> 1 then
     raise exception 'An activation replay must retain the receipt and not append events';
   end if;

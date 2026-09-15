@@ -306,12 +306,27 @@ export function discardPreparedAuthoritativeTraining(trainingScene) {
   if (!prepared || state.battleStartPending) { return Promise.resolve(false); }
   state.battleStartPending = true;
   render();
-  return discardAuthoritativeTrainingBattle({
+  var input = {
     expectedPlayerRevision: state.authoritativeRevision,
     battleId: String(prepared.battleId || ""),
     expectedBattleVersion: Number(prepared.battleVersion) || 0,
     runtimeOwnerId: authoritativeBattleRuntimeOwnerId()
-  }).then(function (result) {
+  };
+  return discardAuthoritativeTrainingBattle(input).then(async function (result) {
+    if (!result.ok && !result.uncertain && result.code === "revision_conflict") {
+      var refreshed = await getAuthoritativeBattle(input.battleId, { afterSeq: 0, limit: 1 });
+      var battle = refreshed.battle;
+      if (refreshed.ok && battle && battle.battle_id === input.battleId
+        && battle.contract_key === "training" && battle.status === "prepared"
+        && state.scene === trainingScene && trainingScene.trainingPreparedBattle === prepared
+        && Number(refreshed.playerRevision) >= Number(state.authoritativeRevision)) {
+        state.authoritativeRevision = refreshed.playerRevision;
+        prepared.battleVersion = Number(battle.battle_version);
+        input.expectedPlayerRevision = refreshed.playerRevision;
+        input.expectedBattleVersion = prepared.battleVersion;
+        result = await discardAuthoritativeTrainingBattle(input);
+      }
+    }
     if (!result.ok) {
       openMessage([messageDescriptor("training.replaceFailed")], { title: textDescriptor("ui.sceneTitles.trainingZone") });
       return false;

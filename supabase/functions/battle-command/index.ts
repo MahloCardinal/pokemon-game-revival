@@ -157,6 +157,10 @@ async function advanceAutomaticAdminBattle(
   battleId: string,
   baseResult?: Record<string, unknown> | null
 ) {
+  const baseBattle = baseResult?.battle as Record<string, unknown> | null | undefined;
+  if (baseResult && !["admin_gym", "league", "debug_training"].includes(String(baseBattle?.contract_key))) {
+    return baseResult;
+  }
   let setting = await readAdminAutomation(serviceClient);
   if (!setting.enabled || !setting.updated_by) return baseResult || null;
   let result = baseResult || null;

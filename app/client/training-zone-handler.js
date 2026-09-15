@@ -343,6 +343,9 @@ function recoverAuthoritativeTrainingStart(startResult, trainingScene, options) 
     runtimeOwnerId: ownerId
   }).then(function (readResult) {
     var battle = readResult.battle;
+    if (restorePreparedTrainingResult(readResult, options)) {
+      return true;
+    }
     if (readResult.ok && battle && ["training", "debug_training"].indexOf(battle.contract_key) !== -1
       && ["active", "needs_player_switch"].indexOf(battle.status) !== -1
       && String(battle.runtime_owner_id || "") === ownerId) {
@@ -406,28 +409,33 @@ export function recoverPreparedAuthoritativeTraining(options) {
     commandId: globalThis.crypto.randomUUID(),
     runtimeOwnerId: authoritativeBattleRuntimeOwnerId()
   }).then(function (result) {
-    var battle = result.battle;
-    var preview;
-    if (!result.ok || !battle || battle.contract_key !== "training" || battle.status !== "prepared") {
-      return false;
-    }
-    preview = authoritativeTrainingPreview(battle);
-    state.authoritativeRevision = result.playerRevision;
-    setScene({
-      name: "training-zone",
-      trainingDifficulty: String(battle.training_difficulty || ""),
-      trainingOpponent: preview.opponent,
-      trainingOpponentTeam: preview.team,
-      trainingPreparedBattle: {
-        battleId: String(battle.battle_id || ""),
-        battleVersion: Number(battle.battle_version) || 0
-      },
-      trainingAuthoritativeReady: true
-    }, { history: options.history || "replace" });
-    return true;
+    return restorePreparedTrainingResult(result, options);
   }).catch(function () {
     return false;
   });
+}
+
+function restorePreparedTrainingResult(result, options) {
+  var battle = result.battle;
+  var preview;
+  if (!result.ok || !battle || battle.contract_key !== "training" || battle.status !== "prepared") {
+    return false;
+  }
+  preview = authoritativeTrainingPreview(battle);
+  state.authoritativeRevision = result.playerRevision;
+  state.battleStartPending = false;
+  setScene({
+    name: "training-zone",
+    trainingDifficulty: String(battle.training_difficulty || ""),
+    trainingOpponent: preview.opponent,
+    trainingOpponentTeam: preview.team,
+    trainingPreparedBattle: {
+      battleId: String(battle.battle_id || ""),
+      battleVersion: Number(battle.battle_version) || 0
+    },
+    trainingAuthoritativeReady: true
+  }, { history: options.history || "replace" });
+  return true;
 }
 
 function trainingSceneFrom(scene) {

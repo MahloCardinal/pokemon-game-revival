@@ -1764,5 +1764,6 @@ await import("./test-client-request-consistency.mjs");
 await import("./test-runtime-portability.mjs");
 await import("./test-battle-dome-replay.mjs");
 await import("./test-admin-battle-automation.mjs");
+await import("./test-training-recovery.mjs");
 await import("./test-starter-gender-selection.mjs");
 console.log("Current gameplay and client contract checks passed.");

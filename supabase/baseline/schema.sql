@@ -80,6 +80,7 @@ declare
   v_snapshot jsonb;
   v_snapshot_hash text;
   v_result jsonb;
+  v_deployment server_authority_private.runtime_deployment%rowtype;
 begin
   if coalesce(auth.role(), '') <> 'service_role' then raise exception 'service role required' using errcode = '42501'; end if;
   if p_auth_user_id is null or p_command_id is null or p_battle_id is null or p_runtime_owner_id is null
@@ -120,10 +121,19 @@ begin
   where server_authority_private.edge_jsonb_bigint(entry.value #> '{state,authoritativeSlot}') = p_active_slot;
   if v_active_index is null then raise exception 'active team slot does not exist' using errcode = '22023'; end if;
   perform server_authority_private.assert_player_team_composition(p_auth_user_id);
+  -- This SQL-only transition has no earlier Edge execution to bind. Select the
+  -- current compatible package under the same shared lock used by commits.
+  if not pg_try_advisory_xact_lock_shared(hashtextextended('pokemon-game-revival:game-data-change',0)) then
+    perform server_authority_private.raise_revision_conflict('runtime deployment is changing');
+  end if;
+  select * into strict v_deployment from server_authority_private.runtime_deployment
+  where catalog_release_id = v_battle.catalog_release_id;
+  perform server_authority_private.runtime_transition_allowed(v_battle.catalog_release_id,
+    v_battle.engine_version,v_deployment.checksum,v_battle.engine_snapshot,v_deployment.generation);
   v_snapshot := jsonb_set(v_battle.engine_snapshot, '{playerTeam,state,activeIndex}', to_jsonb(v_active_index), false);
   v_snapshot_hash := encode(digest(convert_to(v_snapshot::text, 'UTF8'), 'sha256'), 'hex');
   update public.authoritative_battle
-  set status = 'active', player_active_slot = p_active_slot, engine_snapshot = v_snapshot,
+  set engine_checksum = v_deployment.checksum, status = 'active', player_active_slot = p_active_slot, engine_snapshot = v_snapshot,
       engine_snapshot_hash = v_snapshot_hash, battle_version = battle_version + 1, updated_at = now()
   where id = p_battle_id;
   perform server_authority_private.authoritative_battle_append_event(p_battle_id, 'training_activated',
@@ -8214,8 +8224,8 @@ begin
   if not found then raise exception 'player state does not exist' using errcode = 'P0002'; end if;
   if v_revision <> p_expected_player_revision then perform server_authority_private.raise_revision_conflict('player revision conflict'); end if;
   if exists (select 1 from public.authoritative_battle where auth_user_id = p_auth_user_id
-    and status in ('active', 'needs_player_switch')) then
-    raise exception 'an authoritative battle is already active' using errcode = '23505';
+    and status in ('prepared', 'active', 'needs_player_switch')) then
+    perform server_authority_private.raise_revision_conflict('an authoritative battle is already open');
   end if;
   select * into v_profile from public.player_profile_state where auth_user_id = p_auth_user_id;
   if not found then raise exception 'player profile does not exist' using errcode = 'P0002'; end if;

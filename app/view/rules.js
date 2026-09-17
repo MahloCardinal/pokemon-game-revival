@@ -1,4 +1,4 @@
-import { GDR_DATA as DATA, STAT_CAP_LEVELS, maxHpForLevel, maxPowerForLevel, maxStatsForLevel } from "../data/index.js";
+import { GDR_DATA as DATA, maxHpForLevel, maxPowerForLevel, maxStatsForLevel } from "../data/index.js";
 import { BADGE_LEVEL_LIMITS, CAPTURE_LEVEL_LIMITS } from "../data/progression.js";
 import { assetPath, escapeHtml, getItemImage, getPokemonStaticImage, getTypeImage, renderImage } from "../client/asset-helpers.js";
 import { button, sceneShell } from "../client/render-utils.js";
@@ -126,7 +126,7 @@ function renderObedienceLevelLimitTable() {
 }
 
 function renderStatCapsTable() {
-  return renderRulesTable([t("ui.rules.tableHeaders.level"), t("ui.rules.tableHeaders.hp"), t("ui.rules.tableHeaders.powerStats")], STAT_CAP_LEVELS.map(function (level) {
+  return renderRulesTable([t("ui.rules.tableHeaders.level"), t("ui.rules.tableHeaders.hp"), t("ui.rules.tableHeaders.powerStats")], [5, 10, 20, 30, 40, 50, 60, 100].map(function (level) {
     return [level, maxHpForLevel(level), maxPowerForLevel(level) + " - " + maxStatsForLevel(level)];
   }));
 }

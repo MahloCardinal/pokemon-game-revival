@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import "./audit-css-ownership.mjs";
 import "./test-battle-dome-navigation.mjs";
 import "./test-team-composition.mjs";
+import "./test-stat-progression.mjs";
 import "./test-runtime-projection.mjs";
 import "./test-runtime-components.mjs";
 import { testBattleHistory, testBattleHistoryClient } from "./test-battle-history.mjs";
@@ -44,7 +45,6 @@ const teamRuleItems = read("app/data/team-rule-items.js");
 const catalogGenerator = read("scripts/generate-catalog-seed.mjs");
 const gameDataChangeGenerator = read("scripts/create-game-data-change.mjs");
 
-const statTables = read("app/data/stat-tables.js");
 const pokemonEngine = read("app/engine/pokemon.js");
 const assetHelpers = read("app/client/asset-helpers.js");
 const renderUtils = read("app/client/render-utils.js");
@@ -422,7 +422,6 @@ assert.match(playerDirectoryStyles, /@media \(max-width: 700px\)[\s\S]*?\.player
 
 assert.match(read("app/data/progression.js"), /SHINY_ODDS_DENOMINATOR = 8000;/);
 
-assert.match(statTables, /55:\s*51,\s*56:\s*53,\s*57:\s*54/);
 assert.doesNotMatch(pokemonEngine, /shinyOriginLevel|\bshl\b/);
 assert.match(assetHelpers, /replace\(\/_shiny\(\?=\\\.webp\$\)\/, ""\)/);
 assert.match(shoppingCenter, /entry\.price === null/);
@@ -922,20 +921,17 @@ assert.deepEqual(
   [ItemDefinitions.tm53, ItemDefinitions.tm54, ItemDefinitions.tm55].map((item) => [item.index, item.number, item.move.key, item.tier]),
   [[453, 53, "cut", 2], [454, 54, "surf", 0], [455, 55, "waterfall", 2]]
 );
-assert.equal(StatDefinitions.STATS_BY_LEVEL[56], 53);
-for (let level = 5; level < 30; level += 1) {
-  const cap = level < 10 ? 2 : level < 20 ? 5 : level < 25 ? 10 : 20;
-  assert.equal(StatDefinitions.maxStatsForLevel(level), cap, `Stats checkpoint at level ${level}`);
-  assert.equal(StatDefinitions.maxStatsForPokemon({ level, isShiny: true, rarityKey: "legendary" }),
-    cap + StatDefinitions.shinyStatsBonusForLevel(level) + StatDefinitions.legendaryStatsBonusForLevel(level));
-  const pokemon = { level, maxHp: 1, moves: [{ stats: 100 }] };
-  StatDefinitions.clampToLimits(pokemon);
-  assert.equal(pokemon.moves[0].stats, cap);
-}
-for (const [checkpoint, cap] of [[30, 25], [40, 50], [50, 70], [60, 90], [70, 110], [80, 130], [90, 150], [100, 170]]) {
-  for (let level = checkpoint; level <= Math.min(checkpoint + 9, 100); level += 1) {
-    assert.equal(StatDefinitions.maxStatsForLevel(level), cap + (level - checkpoint) * 2);
+assert.equal(StatDefinitions.STATS_BY_LEVEL[56], 51);
+for (let level = 5; level <= 100; level += 1) {
+  for (const [table, cap, gain] of [[StatDefinitions.HP_CAPS, StatDefinitions.maxHpForLevel, 3],
+    [StatDefinitions.POWER_CAPS, StatDefinitions.maxPowerForLevel, 2], [StatDefinitions.STATS_CAPS, StatDefinitions.maxStatsForLevel, 2]]) {
+    assert.equal(cap(level), level <= 60 ? table[level] : table[60] + (level - 60) * gain);
   }
+  const pokemon = { level, maxHp: 999, moves: [{ power: 999, stats: 999 }] };
+  StatDefinitions.clampToLimits(pokemon);
+  assert.equal(pokemon.maxHp, StatDefinitions.maxHpForLevel(level));
+  assert.equal(pokemon.moves[0].power, StatDefinitions.maxPowerForLevel(level));
+  assert.equal(pokemon.moves[0].stats, StatDefinitions.maxStatsForLevel(level));
 }
 assert.deepEqual(
   [5, 10, 20, 30, 40, 60].map((level) => [
@@ -944,7 +940,7 @@ assert.deepEqual(
     StatDefinitions.shinyPowerBonusForLevel(level),
     StatDefinitions.shinyStatsBonusForLevel(level)
   ]),
-  [[5, 4, 1, 1], [10, 6, 2, 1], [20, 12, 5, 2], [30, 17, 9, 5], [40, 20, 15, 15], [60, 20, 15, 15]]
+  [[5, 2, 1, 1], [10, 3, 2, 1], [20, 6, 3, 3], [30, 9, 6, 5], [40, 12, 9, 7], [60, 20, 15, 15]]
 );
 assert.deepEqual(
   [30, 60, 100].map((level) => [
@@ -965,11 +961,11 @@ assert.deepEqual(
   assert.equal(saved.sh, 1);
   assert.equal(saved.shl, undefined);
   shiny.level = 40;
-  assert.equal(StatDefinitions.maxHpForPokemon(shiny), StatDefinitions.maxHpForLevel(40) + 20,
+  assert.equal(StatDefinitions.maxHpForPokemon(shiny), StatDefinitions.maxHpForLevel(40) + 12,
     "A Shiny Pokemon must use the HP cap for its current level");
-  assert.equal(StatDefinitions.maxPowerForPokemon(shiny), StatDefinitions.maxPowerForLevel(40) + 15,
+  assert.equal(StatDefinitions.maxPowerForPokemon(shiny), StatDefinitions.maxPowerForLevel(40) + 9,
     "A Shiny Pokemon must use the move Power cap for its current level");
-  assert.equal(StatDefinitions.maxStatsForPokemon(shiny), StatDefinitions.maxStatsForLevel(40) + 15,
+  assert.equal(StatDefinitions.maxStatsForPokemon(shiny), StatDefinitions.maxStatsForLevel(40) + 7,
     "A Shiny Pokemon must use the Stats cap for its current level");
 }
 

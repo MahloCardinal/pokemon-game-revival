@@ -1,4 +1,5 @@
 import { GDR_DATA as DATA, clampToLimits, isLegendaryPokemon, legendaryPowerBonusForLevel, legendaryStatsBonusForLevel, shinyPowerBonusForLevel, shinyStatsBonusForLevel } from "../data/index.js";
+import { applyEvolutionStatBonus } from "../data/stat-tables.js";
 import * as Engine from "../engine/index.js";
 import { registerPokedexPokemon, root, state } from "./game-state.js";
 import { markDirty, render, setScene } from "./renderer.js";
@@ -124,15 +125,15 @@ export function giveLevelsToPokemon(pokemon, levels, levelLimit) {
   if (actualLevels <= 0) {
     return 0;
   }
-  pokemon.level = targetLevel;
-  pokemon.maxHp += HP_GAIN_PER_LEVEL * actualLevels;
-  if (pokemon.moves && pokemon.moves.length) {
-    pokemon.moves.forEach(function (move) {
-      move.power = (Number(move.power) || 0) + MOVE_GAIN_PER_LEVEL * actualLevels;
-      move.stats = (Number(move.stats) || 0) + MOVE_GAIN_PER_LEVEL * actualLevels;
+  while (pokemon.level < targetLevel) {
+    pokemon.level += 1;
+    pokemon.maxHp += HP_GAIN_PER_LEVEL;
+    (pokemon.moves || []).forEach(function (move) {
+      move.power = (Number(move.power) || 0) + MOVE_GAIN_PER_LEVEL;
+      move.stats = (Number(move.stats) || 0) + MOVE_GAIN_PER_LEVEL;
     });
+    clampToLimits(pokemon);
   }
-  clampToLimits(pokemon);
   return actualLevels;
 }
 
@@ -197,7 +198,7 @@ function applyLevelUp(session) {
   });
   clampToLimits(pokemon);
   if (session.combatant && session.combatant.hp > 0) {
-    session.combatant.hp += HP_GAIN_PER_LEVEL;
+    session.combatant.hp = Math.min(pokemon.maxHp, session.combatant.hp + HP_GAIN_PER_LEVEL);
   }
   if (pokemon.level >= levelLimit) {
     pokemon.level = levelLimit;
@@ -239,6 +240,12 @@ function applyEvolution(session, evolution) {
   pokemon.ndex = targetData.dexNumber;
   pokemon.type = targetData.type.slice();
   pokemon.expCap = targetData.exp;
+  pokemon.rarityKey = targetData.encounter && targetData.encounter.rarity || null;
+  var previousMaxHp = pokemon.maxHp;
+  applyEvolutionStatBonus(pokemon);
+  if (session.combatant && session.combatant.hp > 0) {
+    session.combatant.hp = Math.min(pokemon.maxHp, session.combatant.hp + Math.max(0, pokemon.maxHp - previousMaxHp));
+  }
   registerPokedexPokemon(pokemon);
   session.scene.manager.log.push(Engine.battleEvent("progression.evolved", {
     from: Engine.battleSpeciesRef({ speciesKey: sourceSpeciesKey }),

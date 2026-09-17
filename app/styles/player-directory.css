@@ -34,7 +34,7 @@
   display: grid;
   gap: 24px;
   margin: 0;
-  padding: 0;
+  padding: 0 0 var(--box-scrollbar-safe-space);
   list-style: none;
 }
 

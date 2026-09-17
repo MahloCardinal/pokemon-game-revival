@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
-- aumentare stats dopo evoluzione
+- correggere fondo scrollbar de 'schede giocatori'
 - inserire tutorial
 
 

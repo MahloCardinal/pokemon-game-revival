@@ -94,8 +94,10 @@ begin
       if v_result <> pg_temp.resolve_daycare_withdrawal_before_ordinary_guard(v_command,v_revision,v_id,v_choices) then
         raise exception 'Segment replay must be idempotent'; end if;
       select state into strict v_state from pg_temp.player_pokemon_instance where id=v_pokemon;
-      v_resolved := (v_preview->'pokemon') || jsonb_build_object('s',coalesce(v_evolution,v_preview#>>'{pokemon,s}'));
+      v_resolved := server_authority_private.evolve_pokemon_state(v_release,v_preview->'pokemon',v_evolution);
       if v_state->'hp' <> v_resolved->'hp' or v_state->'l' <> v_resolved->'l' then raise exception 'Preview growth mismatch'; end if;
+      if v_evolution is not null and jsonb_array_length(v_options->'level_moves')=0
+        and v_state->'m'<>v_resolved->'m' then raise exception 'Evolution bonus missing from daycare moves'; end if;
       if v_result->>'withdrawal_status'='completed' then exit; end if;
       if (select placement_type from pg_temp.player_pokemon_placement where pokemon_instance_id=v_pokemon)<>'daycare' then
         raise exception 'Pokemon must stay in daycare between segments'; end if;

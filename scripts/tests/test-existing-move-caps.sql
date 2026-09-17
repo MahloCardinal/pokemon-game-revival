@@ -47,7 +47,7 @@ begin
         v_state := jsonb_build_object('s', v_species, 'l', v_level, 'hp', 1, 'xp', 0);
         if v_shiny = 1 then v_state := v_state || '{"sh":1}'::jsonb; end if;
         select * into strict v_caps from server_authority_private.pokemon_stat_caps(v_release, v_state);
-        v_state := v_state || jsonb_build_object('m', jsonb_build_array(
+        v_state := v_state || jsonb_build_object('hp',v_caps.max_hp+20,'m', jsonb_build_array(
           jsonb_build_array(25, v_caps.max_power + 3, v_caps.max_stats + 3),
           jsonb_build_array(245, 1, 1)));
         insert into pg_temp.player_pokemon_instance(auth_user_id, catalog_release_id, species_key, state)
@@ -91,6 +91,7 @@ begin
   where id = v_pokemon.id;
 
   foreach v_state in array array[
+    jsonb_set(v_pokemon.state,'{hp}',to_jsonb((v_pokemon.state->>'hp')::int+1)),
     jsonb_set(v_pokemon.state, '{m,0,1}', to_jsonb((v_pokemon.state #>> '{m,0,1}')::int + 1)),
     jsonb_set(v_pokemon.state, '{m,0,2}', to_jsonb((v_pokemon.state #>> '{m,0,2}')::int + 1)),
     jsonb_set(v_pokemon.state, '{m,1,2}', v_pokemon.state #> '{m,0,2}'),
@@ -142,7 +143,7 @@ begin
       v_pokemon.species_key,(v_pokemon.state->>'l')::int, v_pokemon.revision,'pending');
     perform pg_temp.advance_ordinary_progression(v_pokemon.auth_user_id,v_progression,1);
     select state into strict v_after from pg_temp.player_pokemon_instance where id=v_pokemon.id;
-    if v_after->'m' is distinct from v_before->'m' or v_after->'l' is distinct from v_before->'l' then
+    if v_after->'hp' is distinct from v_before->'hp' or v_after->'m' is distinct from v_before->'m' or v_after->'l' is distinct from v_before->'l' then
       raise exception 'Insufficient EXP must not prematurely clamp or level up';
     end if;
 
@@ -152,7 +153,8 @@ begin
     perform pg_temp.advance_ordinary_progression(v_pokemon.auth_user_id,v_progression,2);
     select state into strict v_after from pg_temp.player_pokemon_instance where id=v_pokemon.id;
     select * into strict v_caps from server_authority_private.pokemon_stat_caps(v_pokemon.catalog_release_id,v_after);
-    if (v_after->>'l')::int <> (v_before->>'l')::int + 1
+    if (v_after->>'hp')::int <> least((v_before->>'hp')::int+3,v_caps.max_hp)
+       or (v_after->>'l')::int <> (v_before->>'l')::int + 1
        or (v_after #>> '{m,0,1}')::int <> least((v_before #>> '{m,0,1}')::int + 2,v_caps.max_power)
        or (v_after #>> '{m,0,2}')::int <> least((v_before #>> '{m,0,2}')::int + 2,v_caps.max_stats)
        or (v_after #>> '{m,1,2}')::int <> least(3,v_caps.max_stats) then

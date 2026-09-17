@@ -3730,10 +3730,8 @@ begin
   if not found then
     raise exception 'level/stat rule is missing for the Pokemon level' using errcode = 'P0002';
   end if;
-  if (v_instance.state ->> 'hp')::integer > (case when v_instance.debug_created then 999 else server_authority_private.pokemon_max_hp_for_instance(v_instance.id, (v_instance.state->>'l')::integer) end) then
-    raise exception 'canonical Pokemon HP exceeds its catalog cap' using errcode = '22023';
-  end if;
-
+  -- Existing excess survives ordinary operations until level-up; each grant
+  -- below still checks its own current cap and the state trigger rejects increases.
   select coalesce(jsonb_agg(move order by ordinality), '[]'::jsonb), count(*)::integer
   into v_moves, v_move_count
   from jsonb_array_elements(v_instance.state -> 'm') with ordinality as moves(move, ordinality)
@@ -3741,8 +3739,6 @@ begin
     and coalesce(move ->> 0, '') ~ '^[1-9][0-9]*$'
     and coalesce(move ->> 1, '') ~ '^[0-9]+$'
     and coalesce(move ->> 2, '') ~ '^[0-9]+$'
-    and (move ->> 1)::integer <= (case when v_instance.debug_created then 999 else server_authority_private.pokemon_max_power_for_instance(v_instance.id, (v_instance.state->>'l')::integer) end)
-    and (move ->> 2)::integer <= (case when v_instance.debug_created then 999 else server_authority_private.pokemon_max_stats_for_instance(v_instance.id, (v_instance.state->>'l')::integer) end)
     and exists (
       select 1 from public.catalog_move catalog_move
       where catalog_move.catalog_release_id = v_instance.catalog_release_id
@@ -3931,7 +3927,7 @@ begin
       where auth_user_id = v_auth_user_id and item_index = p_item_index;
     end if;
     v_instance.species_key := v_target_species_key;
-    v_instance.state := jsonb_set(v_instance.state, '{s}', to_jsonb(v_target_species_key), true);
+    v_instance.state := server_authority_private.evolve_pokemon_state(v_instance.catalog_release_id,v_instance.state,v_target_species_key);
     insert into public.player_dex_entry(auth_user_id, catalog_release_id, species_key)
     values (v_auth_user_id, v_instance.catalog_release_id, v_target_species_key)
     on conflict do nothing;
@@ -4931,6 +4927,7 @@ declare
   v_levels integer;
   v_moves jsonb;
   v_offers jsonb;
+  v_grown_state jsonb;
 begin
   select resolution.* into v_resolution
   from public.player_pending_resolution resolution
@@ -4957,30 +4954,18 @@ begin
   select * into strict v_rule from public.catalog_level_rule
   where catalog_release_id = v_instance.catalog_release_id and level = v_target;
 
-  -- Same deterministic calculations as resolve_daycare_withdrawal_before_ordinary_guard.
-  select coalesce(jsonb_agg(jsonb_build_array(
-    (move ->> 0)::integer,
-    least((move ->> 1)::integer + 2 * v_levels, v_rule.max_power),
-    least((move ->> 2)::integer + 2 * v_levels, v_rule.max_stats)
-  ) order by ordinal), '[]'::jsonb) into v_moves
-  from jsonb_array_elements(v_instance.state -> 'm') with ordinality as moves(move, ordinal);
-
+  v_grown_state := server_authority_private.grow_pokemon_state(v_instance.catalog_release_id,v_instance.state,v_target);
+  v_moves := v_grown_state->'m';
   select coalesce(jsonb_agg(offer || jsonb_build_object(
-    'power', least(coalesce(offered.base_power, fallback.base_power)
-      + 2 * (v_target - (offer ->> 'level')::integer), v_rule.max_power),
-    'stats', least(coalesce(offered.base_stats, fallback.base_stats)
-      + 2 * (v_target - (offer ->> 'level')::integer), v_rule.max_stats)
-  ) order by ordinal), '[]'::jsonb) into v_offers
-  from jsonb_array_elements(v_resolution.options -> 'level_moves') with ordinality as offers(offer, ordinal)
-  join public.catalog_level_rule fallback
-    on fallback.catalog_release_id = v_instance.catalog_release_id and fallback.level = 60
-  left join public.catalog_level_rule offered
-    on offered.catalog_release_id = fallback.catalog_release_id and offered.level = (offer ->> 'level')::integer;
+    'power',computed.move->1,'stats',computed.move->2
+  ) order by ordinal),'[]'::jsonb) into v_offers
+  from jsonb_array_elements(v_resolution.options->'level_moves') with ordinality as offers(offer,ordinal)
+  cross join lateral (select server_authority_private.daycare_move_stats(v_instance.catalog_release_id,v_instance.state,
+    (offer->>'move_index')::integer,(offer->>'level')::integer,v_target) as move) computed;
   if jsonb_array_length(v_offers) <> jsonb_array_length(v_resolution.options -> 'level_moves') then
     raise exception 'daycare move preview rules are missing' using errcode = 'P0002';
   end if;
-  return jsonb_build_object('pokemon', v_instance.state || jsonb_build_object(
-    'l', v_target, 'hp', least((v_instance.state ->> 'hp')::integer + 3 * v_levels, v_rule.max_hp),
+  return jsonb_build_object('pokemon', v_grown_state || jsonb_build_object(
     'xp', case when v_target = (v_resolution.options ->> 'level_cap')::integer then 0
       else coalesce((v_instance.state ->> 'xp')::integer, 0) end, 'm', v_moves
   ), 'level_moves', v_offers);
@@ -5990,8 +5975,11 @@ begin
   if v_evolution is not null and not exists(select 1 from jsonb_array_elements(v_resolution.options->'evolutions') offered
     where offered->>'target_species_key'=v_evolution) then raise exception 'evolution decision differs from frozen ordinary proposal' using errcode='22023'; end if;
   v_old_species:=v_instance.species_key;
+  v_instance.state:=server_authority_private.evolve_pokemon_state(v_instance.catalog_release_id,
+    jsonb_set(v_instance.state,'{m}',v_moves,true),v_evolution);
+  v_moves:=v_instance.state->'m';
   update public.player_pokemon_instance set species_key=coalesce(v_evolution,species_key),
-    state=jsonb_set(jsonb_set(state,'{m}',v_moves,true),'{s}',to_jsonb(coalesce(v_evolution,species_key)),true),revision=revision+1,updated_at=now()
+    state=v_instance.state,revision=revision+1,updated_at=now()
     where id=v_instance.id;
   if v_evolution is not null then insert into public.player_dex_entry(auth_user_id,catalog_release_id,species_key)
     values(p_auth_user_id,v_progression.catalog_release_id,v_evolution) on conflict do nothing;
@@ -6222,10 +6210,12 @@ begin
 
   v_old_species := v_instance.species_key;
   v_current_level := server_authority_private.edge_jsonb_bigint(v_instance.state -> 'l');
+  v_instance.state := server_authority_private.evolve_pokemon_state(v_instance.catalog_release_id,
+    jsonb_set(v_instance.state,'{m}',v_moves,true),v_evolution);
+  v_moves := v_instance.state->'m';
   update public.player_pokemon_instance
   set species_key = coalesce(v_evolution, species_key),
-    state = jsonb_set(jsonb_set(state, '{m}', v_moves, true),
-      '{s}', to_jsonb(coalesce(v_evolution, species_key)), true),
+    state = v_instance.state,
     revision = revision + 1,
     updated_at = now()
   where id = v_instance.id;
@@ -6679,7 +6669,7 @@ begin
     select * into v_level from public.catalog_level_rule where catalog_release_id = v_catalog
       and level = server_authority_private.edge_jsonb_bigint(v_team.state -> 'l');
     if not found or coalesce(server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp'), 0) <= 0
-      or server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp') > (case when v_team.debug_created then 999 else v_level.max_hp end) then
+      or server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp') > (case when v_team.debug_created then 999 else 2147483647 end) then
       raise exception 'canonical Pokemon HP/level is invalid' using errcode = '0A000';
     end if;
     if v_team.state ? 'i' and coalesce(v_team.state ->> 'i', '') !~ '^[1-9][0-9]*$' then
@@ -6692,8 +6682,8 @@ begin
     for v_move in select value from jsonb_array_elements(v_team.state -> 'm') loop
       if jsonb_typeof(v_move) is distinct from 'array' or jsonb_array_length(v_move) <> 3
         or server_authority_private.edge_jsonb_bigint(v_move -> 0) is null
-        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 1), -1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_power end)
-        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 2), -1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_stats end)
+        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 1), -1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end)
+        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 2), -1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end)
         or not exists (select 1 from public.catalog_move where catalog_release_id = v_catalog
           and move_index = server_authority_private.edge_jsonb_bigint(v_move -> 0)) then
         raise exception 'canonical Pokemon move is outside catalog/level caps' using errcode = '0A000';
@@ -6946,11 +6936,11 @@ begin
       on i.id=p.pokemon_instance_id where p.auth_user_id=p_auth_user_id and p.placement_type='team' order by p.slot_index loop
       select * into v_level from public.catalog_level_rule where catalog_release_id=v_catalog and level=server_authority_private.edge_jsonb_bigint(v_team.state->'l');
       if not found or jsonb_typeof(v_team.state->'m')<>'array' or jsonb_array_length(v_team.state->'m') not between 1 and 4
-        or server_authority_private.edge_jsonb_bigint(v_team.state->'hp') not between 1 and (case when v_team.debug_created then 999 else v_level.max_hp end) then raise exception 'canonical League team is invalid' using errcode='0A000'; end if;
+        or server_authority_private.edge_jsonb_bigint(v_team.state->'hp') not between 1 and (case when v_team.debug_created then 999 else 2147483647 end) then raise exception 'canonical League team is invalid' using errcode='0A000'; end if;
       if v_team.state ? 'i' and coalesce(v_team.state->>'i','0')<>'0' and not server_authority_private.debug_or_compatible_held_item(v_catalog,v_team.species_key,(v_team.state->>'i')::integer, v_team.debug_created) then
         raise exception 'held item compatibility is invalid' using errcode='0A000'; end if;
       for v_move in select value from jsonb_array_elements(v_team.state->'m') loop
-        if jsonb_array_length(v_move)<>3 or coalesce(server_authority_private.edge_jsonb_bigint(v_move->1),-1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_power end) or coalesce(server_authority_private.edge_jsonb_bigint(v_move->2),-1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_stats end) or not exists(select 1 from public.catalog_move where catalog_release_id=v_catalog
+        if jsonb_array_length(v_move)<>3 or coalesce(server_authority_private.edge_jsonb_bigint(v_move->1),-1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end) or coalesce(server_authority_private.edge_jsonb_bigint(v_move->2),-1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end) or not exists(select 1 from public.catalog_move where catalog_release_id=v_catalog
           and move_index=server_authority_private.edge_jsonb_bigint(v_move->0)) then raise exception 'League move is outside the catalog' using errcode='0A000'; end if;
       end loop;
       select jsonb_agg(to_jsonb(type_key) order by type_order) into v_types from public.catalog_species_type
@@ -7191,7 +7181,7 @@ begin
     where catalog_release_id = v_catalog_release_id
       and level = server_authority_private.edge_jsonb_bigint(v_team.state -> 'l');
     if not found or v_team.catalog_release_id <> v_catalog_release_id or v_team.state_version <> 1
-      or server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp') > (case when v_team.debug_created then 999 else v_level_rule.max_hp end) then
+      or server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp') > (case when v_team.debug_created then 999 else 2147483647 end) then
       raise exception 'canonical team Pokemon is unsupported by tackle_test' using errcode = '0A000';
     end if;
     for v_move in select value from jsonb_array_elements(v_team.state -> 'm') loop
@@ -7202,8 +7192,8 @@ begin
         or server_authority_private.edge_jsonb_bigint(v_move -> 0) <> 25
         or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 1), 0) <= 0
         or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 2), -1) < 0
-        or server_authority_private.edge_jsonb_bigint(v_move -> 1) > (case when v_team.debug_created then 999 else v_level_rule.max_power end)
-        or server_authority_private.edge_jsonb_bigint(v_move -> 2) > (case when v_team.debug_created then 999 else v_level_rule.max_stats end) then
+        or server_authority_private.edge_jsonb_bigint(v_move -> 1) > (case when v_team.debug_created then 999 else 2147483647 end)
+        or server_authority_private.edge_jsonb_bigint(v_move -> 2) > (case when v_team.debug_created then 999 else 2147483647 end) then
         raise exception 'unsupported move in canonical team; tackle_test accepts only Azione' using errcode = '0A000';
       end if;
     end loop;
@@ -7591,7 +7581,7 @@ begin
     select * into v_level from public.catalog_level_rule where catalog_release_id=v_profile.catalog_release_id
       and level=server_authority_private.edge_jsonb_bigint(v_team.state->'l');
     if v_team.catalog_release_id<>v_profile.catalog_release_id or v_team.state_version<>1 or v_team.state->>'s'<>v_team.species_key
-      or not found or server_authority_private.edge_jsonb_bigint(v_team.state->'hp') not between 1 and (case when v_team.debug_created then 999 else v_level.max_hp end)
+      or not found or server_authority_private.edge_jsonb_bigint(v_team.state->'hp') not between 1 and (case when v_team.debug_created then 999 else 2147483647 end)
       or jsonb_typeof(v_team.state->'m')<>'array' or jsonb_array_length(v_team.state->'m') not between 1 and 4 then
       raise exception 'canonical team Pokemon is invalid' using errcode='0A000'; end if;
     if coalesce(server_authority_private.edge_jsonb_bigint(v_team.state->'i'),0)>0 and not exists(
@@ -7600,7 +7590,7 @@ begin
       raise exception 'held item is outside the catalog' using errcode='0A000'; end if;
     for v_move in select value from jsonb_array_elements(v_team.state->'m') loop
       if jsonb_typeof(v_move)<>'array' or jsonb_array_length(v_move)<>3
-        or coalesce(server_authority_private.edge_jsonb_bigint(v_move->1),-1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_power end) or coalesce(server_authority_private.edge_jsonb_bigint(v_move->2),-1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_stats end) or not exists(select 1 from public.catalog_move where catalog_release_id=v_profile.catalog_release_id
+        or coalesce(server_authority_private.edge_jsonb_bigint(v_move->1),-1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end) or coalesce(server_authority_private.edge_jsonb_bigint(v_move->2),-1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end) or not exists(select 1 from public.catalog_move where catalog_release_id=v_profile.catalog_release_id
           and move_index=server_authority_private.edge_jsonb_bigint(v_move->0)) then
         raise exception 'team move is outside the catalog' using errcode='0A000'; end if;
     end loop;
@@ -7617,7 +7607,7 @@ begin
   values(v_battle,p_auth_user_id,v_profile.catalog_release_id,'capture','active',v_first,p_active_slot,0,p_runtime_owner_id,
     jsonb_build_object('algorithm','pgcrypto_independent_bytes','entropy_hex',v_entropy,
       'draws',jsonb_build_array(jsonb_build_object('purpose','first_actor','byte',v_draw))),
-    'pending',p_engine_version,p_engine_checksum,jsonb_build_object('name','PokÃ©mon selvatico','zoneKey',v_encounter.zone_key),p_encounter_id);
+    'pending',p_engine_version,p_engine_checksum,jsonb_build_object('name','PokÃƒÂ©mon selvatico','zoneKey',v_encounter.zone_key),p_encounter_id);
   for v_team in select p.slot_index,i.* from public.player_pokemon_placement p join public.player_pokemon_instance i on i.id=p.pokemon_instance_id
     where p.auth_user_id=p_auth_user_id and p.placement_type='team' order by p.slot_index loop
     select jsonb_agg(to_jsonb(type_key) order by type_order) into v_types from public.catalog_species_type
@@ -7960,7 +7950,7 @@ begin
     select * into v_level from public.catalog_level_rule where catalog_release_id = v_catalog
       and level = server_authority_private.edge_jsonb_bigint(v_team.state -> 'l');
     if not found or coalesce(server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp'), 0) <= 0
-      or server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp') > (case when v_team.debug_created then 999 else v_level.max_hp end) then
+      or server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp') > (case when v_team.debug_created then 999 else 2147483647 end) then
       raise exception 'canonical Pokemon HP/level is invalid' using errcode = '0A000';
     end if;
     if v_team.state ? 'i' and coalesce(v_team.state ->> 'i', '') !~ '^[1-9][0-9]*$' then
@@ -7973,8 +7963,8 @@ begin
     for v_move in select value from jsonb_array_elements(v_team.state -> 'm') loop
       if jsonb_typeof(v_move) is distinct from 'array' or jsonb_array_length(v_move) <> 3
         or server_authority_private.edge_jsonb_bigint(v_move -> 0) is null
-        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 1), -1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_power end)
-        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 2), -1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_stats end)
+        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 1), -1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end)
+        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 2), -1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end)
         or not exists (select 1 from public.catalog_move where catalog_release_id = v_catalog
           and move_index = server_authority_private.edge_jsonb_bigint(v_move -> 0)) then
         raise exception 'canonical Pokemon move is outside catalog/level caps' using errcode = '0A000';
@@ -8263,7 +8253,7 @@ begin
       and level = server_authority_private.edge_jsonb_bigint(v_team.state -> 'l');
     if not found
       or coalesce(server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp'), 0) <= 0
-      or server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp') > (case when v_team.debug_created then 999 else v_level.max_hp end) then
+      or server_authority_private.edge_jsonb_bigint(v_team.state -> 'hp') > (case when v_team.debug_created then 999 else 2147483647 end) then
       raise exception 'canonical Pokemon HP/level is invalid' using errcode = '0A000';
     end if;
     if coalesce(server_authority_private.edge_jsonb_bigint(v_team.state -> 'i'), 0) > 0 and not exists (
@@ -8274,8 +8264,8 @@ begin
     for v_move in select value from jsonb_array_elements(v_team.state -> 'm') loop
       if jsonb_typeof(v_move) is distinct from 'array' or jsonb_array_length(v_move) <> 3
         or server_authority_private.edge_jsonb_bigint(v_move -> 0) is null
-        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 1), -1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_power end)
-        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 2), -1) not between 0 and (case when v_team.debug_created then 999 else v_level.max_stats end)
+        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 1), -1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end)
+        or coalesce(server_authority_private.edge_jsonb_bigint(v_move -> 2), -1) not between 0 and (case when v_team.debug_created then 999 else 2147483647 end)
         or not exists (select 1 from public.catalog_move where catalog_release_id = v_catalog
           and move_index = server_authority_private.edge_jsonb_bigint(v_move -> 0)) then
         raise exception 'canonical Pokemon move is outside catalog/level caps' using errcode = '0A000';
@@ -9440,22 +9430,11 @@ begin
     from public.catalog_level_rule
     where catalog_release_id = v_progression.catalog_release_id and level = v_segment_level;
 
-    select coalesce(jsonb_agg(jsonb_build_array(
-      server_authority_private.edge_jsonb_bigint(known.value -> 0),
-      least(server_authority_private.edge_jsonb_bigint(known.value -> 1) + 2 * v_levels_gained, server_authority_private.pokemon_max_power_for_instance(v_instance.id, v_segment_level)),
-      least(server_authority_private.edge_jsonb_bigint(known.value -> 2) + 2 * v_levels_gained, server_authority_private.pokemon_max_stats_for_instance(v_instance.id, v_segment_level))
-    ) order by known.ordinality), '[]'::jsonb)
-    into v_moves
-    from jsonb_array_elements(v_instance.state -> 'm') with ordinality known(value, ordinality);
-
-    update public.player_pokemon_instance
-    set state = jsonb_set(jsonb_set(jsonb_set(state,
-        '{l}', to_jsonb(v_segment_level), true),
-        '{hp}', to_jsonb(least(server_authority_private.edge_jsonb_bigint(state -> 'hp') + 3 * v_levels_gained, server_authority_private.pokemon_max_hp_for_instance(v_instance.id, v_segment_level))), true),
-        '{m}', v_moves, true),
-      revision = revision + 1,
-      updated_at = now()
-    where id = v_instance.id;
+    -- Apply every intermediate cap even when the UI shows one segment.
+    v_after_state := server_authority_private.grow_pokemon_state(v_instance.catalog_release_id,v_instance.state,v_segment_level);
+    v_moves := v_after_state->'m';
+    update public.player_pokemon_instance set state=v_after_state,revision=revision+1,updated_at=now()
+    where id=v_instance.id;
 
     select state into strict v_after_state
     from public.player_pokemon_instance where id = v_instance.id;
@@ -12721,6 +12700,29 @@ $$;
 ALTER FUNCTION "server_authority_private"."create_terminal_ordinary_progression"("p_auth_user_id" "uuid", "p_battle_id" "uuid", "p_command_id" "uuid", "p_awards" "jsonb") OWNER TO "postgres";
 
 --
+-- Name: daycare_move_stats("uuid", "jsonb", integer, integer, integer); Type: FUNCTION; Schema: server_authority_private; Owner: postgres
+--
+
+CREATE FUNCTION "server_authority_private"."daycare_move_stats"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_move_index" integer, "p_learn_level" integer, "p_target_level" integer) RETURNS "jsonb"
+    LANGUAGE "plpgsql" STABLE
+    SET "search_path" TO 'pg_catalog'
+    AS $$
+declare v_rule public.catalog_level_rule%rowtype; v_state jsonb; v_caps record;
+begin
+  select * into strict v_rule from public.catalog_level_rule
+    where catalog_release_id=p_catalog_release_id and level=p_learn_level;
+  v_state := p_state || jsonb_build_object('l',p_learn_level,'hp',1);
+  select * into strict v_caps from server_authority_private.pokemon_stat_caps(p_catalog_release_id,v_state);
+  v_state := v_state || jsonb_build_object('m',jsonb_build_array(jsonb_build_array(p_move_index,
+    least(v_rule.base_power,v_caps.max_power),least(v_rule.base_stats,v_caps.max_stats))));
+  return server_authority_private.grow_pokemon_state(p_catalog_release_id,v_state,p_target_level)#>'{m,0}';
+end;
+$$;
+
+
+ALTER FUNCTION "server_authority_private"."daycare_move_stats"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_move_index" integer, "p_learn_level" integer, "p_target_level" integer) OWNER TO "postgres";
+
+--
 -- Name: daycare_projection("uuid"); Type: FUNCTION; Schema: server_authority_private; Owner: postgres
 --
 
@@ -12977,6 +12979,33 @@ $$;
 
 
 ALTER FUNCTION "server_authority_private"."ensure_game_data_change_completed"() OWNER TO "postgres";
+
+--
+-- Name: evolve_pokemon_state("uuid", "jsonb", "text"); Type: FUNCTION; Schema: server_authority_private; Owner: postgres
+--
+
+CREATE FUNCTION "server_authority_private"."evolve_pokemon_state"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_target_species_key" "text") RETURNS "jsonb"
+    LANGUAGE "plpgsql" STABLE
+    SET "search_path" TO 'pg_catalog'
+    AS $$
+declare v_state jsonb; v_rule public.catalog_level_rule%rowtype; v_caps record; v_moves jsonb;
+begin
+  -- Eligibility, ownership and replay are checked by the calling command.
+  if p_target_species_key is null or p_target_species_key=p_state->>'s' then return p_state; end if;
+  v_state := jsonb_set(p_state,'{s}',to_jsonb(p_target_species_key));
+  select * into strict v_rule from public.catalog_level_rule
+    where catalog_release_id=p_catalog_release_id and level=(v_state->>'l')::integer;
+  select * into strict v_caps from server_authority_private.pokemon_stat_caps(p_catalog_release_id,v_state);
+  select coalesce(jsonb_agg(jsonb_build_array(move->0,
+    least((move->>1)::bigint+v_rule.evolution_power_bonus,v_caps.max_power),
+    least((move->>2)::bigint+v_rule.evolution_stats_bonus,v_caps.max_stats)) order by ordinal),'[]'::jsonb)
+  into v_moves from jsonb_array_elements(v_state->'m') with ordinality as moves(move,ordinal);
+  return v_state || jsonb_build_object('hp',least((v_state->>'hp')::bigint+v_rule.evolution_hp_bonus,v_caps.max_hp),'m',v_moves);
+end;
+$$;
+
+
+ALTER FUNCTION "server_authority_private"."evolve_pokemon_state"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_target_species_key" "text") OWNER TO "postgres";
 
 --
 -- Name: execute_daycare_command("text", "uuid", bigint, "uuid", integer); Type: FUNCTION; Schema: server_authority_private; Owner: postgres
@@ -13249,24 +13278,9 @@ begin
       if not found then
         raise exception 'level/stat rule is missing for target level %', v_target_level using errcode = 'P0002';
       end if;
-      select coalesce(jsonb_agg(jsonb_build_array(
-        (move ->> 0)::integer,
-        least(coalesce((move ->> 1)::integer, 0) + 2 * v_levels, v_level_rule.max_power),
-        least(coalesce((move ->> 2)::integer, 0) + 2 * v_levels, v_level_rule.max_stats)
-      ) order by ordinality), '[]'::jsonb) into v_moves
-      from jsonb_array_elements(coalesce(v_instance.state -> 'm', '[]'::jsonb)) with ordinality as moves(move, ordinality);
-
       update public.player_pokemon_instance set
-        state = jsonb_set(
-          jsonb_set(
-            jsonb_set(
-              jsonb_set(state, '{l}', to_jsonb(v_target_level), true),
-              '{hp}', to_jsonb(least(coalesce((state ->> 'hp')::integer, 1) + 3 * v_levels, v_level_rule.max_hp)), true
-            ),
-            '{m}', v_moves, true
-          ),
-          '{xp}', to_jsonb(case when v_target_level = v_level_cap then 0 else coalesce((state ->> 'xp')::integer, 0) end), true
-        ),
+        state = server_authority_private.grow_pokemon_state(v_instance.catalog_release_id,state,v_target_level)
+          || jsonb_build_object('xp',case when v_target_level=v_level_cap then 0 else coalesce((state->>'xp')::integer,0) end),
         revision = revision + 1,
         updated_at = now()
       where id = p_pokemon_instance_id and auth_user_id = v_auth_user_id;
@@ -14508,6 +14522,35 @@ $$;
 
 
 ALTER FUNCTION "server_authority_private"."grant_player_title"("p_auth_user_id" "uuid", "p_title_key" "text", "p_unlocked_at" timestamp with time zone) OWNER TO "postgres";
+
+--
+-- Name: grow_pokemon_state("uuid", "jsonb", integer); Type: FUNCTION; Schema: server_authority_private; Owner: postgres
+--
+
+CREATE FUNCTION "server_authority_private"."grow_pokemon_state"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_target_level" integer) RETURNS "jsonb"
+    LANGUAGE "plpgsql" STABLE
+    SET "search_path" TO 'pg_catalog'
+    AS $$
+declare v_state jsonb := p_state; v_level integer; v_caps record; v_moves jsonb;
+begin
+  if p_target_level < (p_state->>'l')::integer or p_target_level > 100 then
+    raise exception 'Invalid Pokemon growth target' using errcode='22023';
+  end if;
+  for v_level in (p_state->>'l')::integer + 1..p_target_level loop
+    v_state := jsonb_set(v_state,'{l}',to_jsonb(v_level));
+    select * into strict v_caps from server_authority_private.pokemon_stat_caps(p_catalog_release_id,v_state);
+    select coalesce(jsonb_agg(jsonb_build_array(move->0,
+      least((move->>1)::bigint+2,v_caps.max_power),
+      least((move->>2)::bigint+2,v_caps.max_stats)) order by ordinal),'[]'::jsonb)
+    into v_moves from jsonb_array_elements(v_state->'m') with ordinality as moves(move,ordinal);
+    v_state := v_state || jsonb_build_object('hp',least((v_state->>'hp')::bigint+3,v_caps.max_hp),'m',v_moves);
+  end loop;
+  return v_state;
+end;
+$$;
+
+
+ALTER FUNCTION "server_authority_private"."grow_pokemon_state"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_target_level" integer) OWNER TO "postgres";
 
 --
 -- Name: guard_bound_encounter_mutation(); Type: FUNCTION; Schema: server_authority_private; Owner: postgres
@@ -16706,6 +16749,8 @@ declare
   v_instance public.player_pokemon_instance%rowtype;
   v_placement public.player_pokemon_placement%rowtype;
   v_level_rule public.catalog_level_rule%rowtype;
+  v_grown_state jsonb;
+  v_learned_move jsonb;
   v_starting_level integer;
   v_target_level integer;
   v_levels_gained integer;
@@ -16893,13 +16938,14 @@ begin
     raise exception 'level/stat rule is missing for target level %', v_target_level using errcode = 'P0002';
   end if;
 
+  v_grown_state := server_authority_private.grow_pokemon_state(v_instance.catalog_release_id,v_instance.state,v_target_level);
   select coalesce(jsonb_agg(jsonb_build_array(
     (move ->> 0)::integer,
-    least((move ->> 1)::integer + 2 * v_levels_gained, v_level_rule.max_power),
-    least((move ->> 2)::integer + 2 * v_levels_gained, v_level_rule.max_stats)
+    (move ->> 1)::integer,
+    (move ->> 2)::integer
   ) order by ordinality), '[]'::jsonb)
   into v_moves
-  from jsonb_array_elements(v_instance.state -> 'm') with ordinality as moves(move, ordinality)
+  from jsonb_array_elements(v_grown_state -> 'm') with ordinality as moves(move, ordinality)
   where jsonb_typeof(move) = 'array' and jsonb_array_length(move) = 3
     and coalesce(move ->> 0, '') ~ '^[1-9][0-9]*$'
     and coalesce(move ->> 1, '') ~ '^[0-9]+$'
@@ -16946,36 +16992,19 @@ begin
         continue;
       end if;
 
-      select coalesce(offered.base_power, fallback.base_power),
-        coalesce(offered.base_stats, fallback.base_stats)
-      into v_new_move_power, v_new_move_stats
-      from public.catalog_level_rule fallback
-      left join public.catalog_level_rule offered
-        on offered.catalog_release_id = fallback.catalog_release_id
-       and offered.level = (v_offer ->> 'level')::integer
-      where fallback.catalog_release_id = v_instance.catalog_release_id and fallback.level = 60;
-      if not found or v_new_move_power is null or v_new_move_stats is null then
-        raise exception 'base move fallback rule is missing for the catalog release' using errcode = 'P0002';
-      end if;
+      v_learned_move := server_authority_private.daycare_move_stats(v_instance.catalog_release_id,v_instance.state,
+        v_move_index,(v_offer->>'level')::integer,v_target_level);
       if v_move_count < 4 then
         if jsonb_typeof(v_choice -> 'replacement_slot') <> 'null' then
           raise exception 'move learning is automatic while fewer than four moves are known' using errcode = '22023';
         end if;
-        v_moves := v_moves || jsonb_build_array(jsonb_build_array(
-          v_move_index,
-          least(v_new_move_power + 2 * (v_target_level - (v_offer ->> 'level')::integer), v_level_rule.max_power),
-          least(v_new_move_stats + 2 * (v_target_level - (v_offer ->> 'level')::integer), v_level_rule.max_stats)
-        ));
+        v_moves := v_moves || jsonb_build_array(v_learned_move);
       elsif jsonb_typeof(v_choice -> 'replacement_slot') = 'number' then
         v_replacement_slot := (v_choice ->> 'replacement_slot')::integer;
         if v_replacement_slot not between 0 and 3 then
           raise exception 'replacement slot must be between 0 and 3' using errcode = '22023';
         end if;
-        v_moves := jsonb_set(v_moves, array[v_replacement_slot::text], jsonb_build_array(
-          v_move_index,
-          least(v_new_move_power + 2 * (v_target_level - (v_offer ->> 'level')::integer), v_level_rule.max_power),
-          least(v_new_move_stats + 2 * (v_target_level - (v_offer ->> 'level')::integer), v_level_rule.max_stats)
-        ), false);
+        v_moves := jsonb_set(v_moves, array[v_replacement_slot::text], v_learned_move, false);
       end if;
     end loop;
   end if;
@@ -17011,19 +17040,9 @@ begin
 
   update public.player_pokemon_instance set
     species_key = v_result_species_key,
-    state = jsonb_set(
-      jsonb_set(
-        jsonb_set(
-          jsonb_set(
-            jsonb_set(state, '{s}', to_jsonb(v_result_species_key), true),
-            '{l}', to_jsonb(v_target_level), true
-          ),
-          '{hp}', to_jsonb(least((state ->> 'hp')::integer + 3 * v_levels_gained, v_level_rule.max_hp)), true
-        ),
-        '{m}', v_moves, true
-      ),
-      '{xp}', to_jsonb(case when v_target_level = v_level_cap then 0 else coalesce((state ->> 'xp')::integer, 0) end), true
-    ),
+    state = server_authority_private.evolve_pokemon_state(v_instance.catalog_release_id,
+      v_grown_state || jsonb_build_object('m',v_moves,'xp',case when v_target_level=v_level_cap then 0
+        else coalesce((v_instance.state->>'xp')::integer,0) end),v_evolution_target),
     revision = revision + 1,
     updated_at = now()
   where id = v_instance.id and auth_user_id = v_auth_user_id;
@@ -17186,17 +17205,12 @@ ALTER FUNCTION "server_authority_private"."runtime_transition_allowed"("p_catalo
 --
 
 CREATE FUNCTION "server_authority_private"."shiny_hp_bonus_for_level"("p_level" integer) RETURNS integer
-    LANGUAGE "sql" IMMUTABLE
+    LANGUAGE "sql" STABLE
     SET "search_path" TO 'pg_temp'
     AS $$
-  select case
-    when p_level <= 6 then 4 when p_level <= 8 then 5 when p_level <= 10 then 6
-    when p_level <= 12 then 7 when p_level <= 14 then 8 when p_level <= 16 then 9
-    when p_level <= 18 then 10 when p_level = 19 then 11 when p_level <= 21 then 12
-    when p_level <= 23 then 13 when p_level <= 25 then 14 when p_level <= 27 then 15
-    when p_level <= 29 then 16 when p_level <= 32 then 17 when p_level <= 35 then 18
-    when p_level <= 38 then 19 else 20
-  end
+  select rule.shiny_hp_bonus from public.catalog_level_rule rule
+  join public.catalog_release release on release.id=rule.catalog_release_id
+  where release.version='revival-baseline' and rule.level=greatest(5,least(100,p_level));
 $$;
 
 
@@ -17207,16 +17221,12 @@ ALTER FUNCTION "server_authority_private"."shiny_hp_bonus_for_level"("p_level" i
 --
 
 CREATE FUNCTION "server_authority_private"."shiny_power_bonus_for_level"("p_level" integer) RETURNS integer
-    LANGUAGE "sql" IMMUTABLE
+    LANGUAGE "sql" STABLE
     SET "search_path" TO 'pg_temp'
     AS $$
-  select case
-    when p_level <= 7 then 1 when p_level <= 11 then 2 when p_level <= 14 then 3
-    when p_level <= 17 then 4 when p_level <= 20 then 5 when p_level <= 23 then 6
-    when p_level <= 25 then 7 when p_level <= 28 then 8 when p_level <= 30 then 9
-    when p_level <= 32 then 10 when p_level <= 34 then 11 when p_level <= 36 then 12
-    when p_level <= 38 then 13 when p_level = 39 then 14 else 15
-  end
+  select rule.shiny_power_bonus from public.catalog_level_rule rule
+  join public.catalog_release release on release.id=rule.catalog_release_id
+  where release.version='revival-baseline' and rule.level=greatest(5,least(100,p_level));
 $$;
 
 
@@ -17227,15 +17237,12 @@ ALTER FUNCTION "server_authority_private"."shiny_power_bonus_for_level"("p_level
 --
 
 CREATE FUNCTION "server_authority_private"."shiny_stats_bonus_for_level"("p_level" integer) RETURNS integer
-    LANGUAGE "sql" IMMUTABLE
+    LANGUAGE "sql" STABLE
     SET "search_path" TO 'pg_temp'
     AS $$
-  select case
-    when p_level <= 15 then 1 when p_level <= 20 then 2 when p_level <= 24 then 3
-    when p_level <= 27 then 4 when p_level <= 30 then 5 when p_level <= 32 then 6
-    when p_level <= 34 then 7 when p_level = 35 then 8 when p_level = 36 then 9
-    when p_level = 37 then 10 when p_level = 38 then 12 when p_level = 39 then 13 else 15
-  end
+  select rule.shiny_stats_bonus from public.catalog_level_rule rule
+  join public.catalog_release release on release.id=rule.catalog_release_id
+  where release.version='revival-baseline' and rule.level=greatest(5,least(100,p_level));
 $$;
 
 
@@ -18085,6 +18092,7 @@ declare
   v_move jsonb;
   v_previous_move jsonb;
   v_preserve_existing boolean := false;
+  v_hp_limit bigint;
   v_power_limit bigint;
   v_stats_limit bigint;
 begin
@@ -18113,7 +18121,11 @@ begin
 
   select * into strict v_caps
   from server_authority_private.pokemon_stat_caps(new.catalog_release_id, new.state);
-  if server_authority_private.edge_jsonb_bigint(new.state -> 'hp') not between 1 and v_caps.max_hp then
+  v_hp_limit := v_caps.max_hp;
+  if v_preserve_existing then
+    v_hp_limit := greatest(v_hp_limit,server_authority_private.edge_jsonb_bigint(old.state -> 'hp'));
+  end if;
+  if server_authority_private.edge_jsonb_bigint(new.state -> 'hp') not between 1 and v_hp_limit then
     raise exception 'Pokemon HP exceeds its rarity-adjusted cap' using errcode = '22023';
   end if;
   for v_move in select value from jsonb_array_elements(new.state -> 'm') loop
@@ -18694,10 +18706,16 @@ CREATE TABLE "public"."catalog_level_rule" (
     "legendary_hp_bonus" integer NOT NULL,
     "legendary_power_bonus" integer NOT NULL,
     "legendary_stats_bonus" integer NOT NULL,
+    "evolution_hp_bonus" integer DEFAULT 0 NOT NULL,
+    "evolution_power_bonus" integer DEFAULT 0 NOT NULL,
+    "evolution_stats_bonus" integer DEFAULT 0 NOT NULL,
     CONSTRAINT "catalog_level_rule_absolute_caps_check" CHECK ((("max_hp" = (("normal_max_hp" + "shiny_hp_bonus") + "legendary_hp_bonus")) AND ("max_power" = (("normal_max_power" + "shiny_power_bonus") + "legendary_power_bonus")) AND ("max_stats" = (("normal_max_stats" + "shiny_stats_bonus") + "legendary_stats_bonus")))),
     CONSTRAINT "catalog_level_rule_base_hp_check" CHECK ((("base_hp" IS NULL) OR ("base_hp" > 0))),
     CONSTRAINT "catalog_level_rule_base_power_check" CHECK ((("base_power" IS NULL) OR ("base_power" >= 0))),
     CONSTRAINT "catalog_level_rule_base_stats_check" CHECK ((("base_stats" IS NULL) OR ("base_stats" >= 0))),
+    CONSTRAINT "catalog_level_rule_evolution_hp_bonus_check" CHECK (("evolution_hp_bonus" >= 0)),
+    CONSTRAINT "catalog_level_rule_evolution_power_bonus_check" CHECK (("evolution_power_bonus" >= 0)),
+    CONSTRAINT "catalog_level_rule_evolution_stats_bonus_check" CHECK (("evolution_stats_bonus" >= 0)),
     CONSTRAINT "catalog_level_rule_legendary_hp_bonus_check" CHECK ((("legendary_hp_bonus" >= 0) AND ("legendary_hp_bonus" <= 80))),
     CONSTRAINT "catalog_level_rule_legendary_power_bonus_check" CHECK ((("legendary_power_bonus" >= 0) AND ("legendary_power_bonus" <= 65))),
     CONSTRAINT "catalog_level_rule_legendary_stats_bonus_check" CHECK ((("legendary_stats_bonus" >= 0) AND ("legendary_stats_bonus" <= 65))),
@@ -25672,6 +25690,13 @@ REVOKE ALL ON FUNCTION "server_authority_private"."create_terminal_ordinary_prog
 
 
 --
+-- Name: FUNCTION "daycare_move_stats"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_move_index" integer, "p_learn_level" integer, "p_target_level" integer); Type: ACL; Schema: server_authority_private; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION "server_authority_private"."daycare_move_stats"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_move_index" integer, "p_learn_level" integer, "p_target_level" integer) FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION "daycare_projection"("p_auth_user_id" "uuid"); Type: ACL; Schema: server_authority_private; Owner: postgres
 --
 
@@ -25725,6 +25750,13 @@ REVOKE ALL ON FUNCTION "server_authority_private"."enforce_username_server_role"
 --
 
 REVOKE ALL ON FUNCTION "server_authority_private"."ensure_game_data_change_completed"() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION "evolve_pokemon_state"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_target_species_key" "text"); Type: ACL; Schema: server_authority_private; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION "server_authority_private"."evolve_pokemon_state"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_target_species_key" "text") FROM PUBLIC;
 
 
 --
@@ -25802,6 +25834,13 @@ REVOKE ALL ON FUNCTION "server_authority_private"."force_active_encounter_no_exp
 --
 
 REVOKE ALL ON FUNCTION "server_authority_private"."grant_player_title"("p_auth_user_id" "uuid", "p_title_key" "text", "p_unlocked_at" timestamp with time zone) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION "grow_pokemon_state"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_target_level" integer); Type: ACL; Schema: server_authority_private; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION "server_authority_private"."grow_pokemon_state"("p_catalog_release_id" "uuid", "p_state" "jsonb", "p_target_level" integer) FROM PUBLIC;
 
 
 --

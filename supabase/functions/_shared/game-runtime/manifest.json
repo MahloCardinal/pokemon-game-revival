@@ -6,7 +6,7 @@
   ],
   "checksumAlgorithm": "sha256",
   "sourceNormalization": "lf",
-  "bundleChecksum": "c8a18372e1dc580e1211dde1e20e242aff8c9fe57d56688b3c192589b1034ed8",
+  "bundleChecksum": "d1aa37c2c9e4867a72bf55b2198df39583dbd0aaadec0076981150e88a3a2d0e",
   "snapshotVersion": 3,
   "components": {
     "encounters": {
@@ -147,7 +147,7 @@
     },
     "initialization": {
       "policy": "next_snapshot",
-      "checksum": "61a3a102a74c1ac5a7540edb61f293c9fd0df651190ae9ec3f2fdacba30d1435",
+      "checksum": "96fb7b55e0bee65f55e95a998f081b44c76786ae1f9a2508916571d44a1fefe3",
       "sources": [
         {
           "source": "app/data/species_I.js",
@@ -181,13 +181,28 @@
         },
         {
           "source": "app/data/stat-tables.js",
+          "declaration": "EVOLUTION_HP_BONUS_BY_LEVEL",
+          "sha256": "7f4f0b43b3ab099ac7971b58e8932598fecab09cf1747a2fd577979fed13862e"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "EVOLUTION_POWER_BONUS_BY_LEVEL",
+          "sha256": "ccc513631b7fa08a51bb4379018fd84ade9dcd3e4e53696b93f20f56b4e3274f"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "EVOLUTION_STATS_BONUS_BY_LEVEL",
+          "sha256": "493391fd284be67c79665c5dfe56c61034a42b7fe549341d49a999df4d2a742c"
+        },
+        {
+          "source": "app/data/stat-tables.js",
           "declaration": "HP_BY_LEVEL",
-          "sha256": "aabab284dc09903225a8e899a5c992391c88f15462190d60b09dacd3d0e2c60f"
+          "sha256": "b61f89a134086bec41731915f8c033ab03ddf06d35c03e4d27dcdb384618c487"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "HP_CAPS",
-          "sha256": "8f407433f43487863601eec05e0c03a88e95e0f8f5d1825755412622bf13bf93"
+          "sha256": "edf2aa3272336eaa257270d94d8fd0c6d98ac13dc789033e0c0246298e399212"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -207,47 +222,77 @@
         {
           "source": "app/data/stat-tables.js",
           "declaration": "POWER_CAPS",
-          "sha256": "ac3261913aa61a644a0700c4324f6184bad95c6178ba4641d3ed3e1fddddd7d7"
+          "sha256": "8d6f1265fbce9f9c708beb1e5414b4eab79615fa0901724e77def04da9bbdcf3"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "PW_BY_LEVEL",
-          "sha256": "c8126b29f9cc614d76e6c0c0cac2d9da5cb018016a0464f1d5955d7fc3cc0ba4"
+          "sha256": "dc3a439f602ab097c7a2e89b733535d25b143f589937886b7483f17930d72408"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "SHINY_HP_BONUS_BY_LEVEL",
-          "sha256": "c2ee54059717e8208763d13c408bcc796e05916e80ddab8b09328984ccd315da"
+          "sha256": "91afecdb633bbcc2040650cca551ffe0fe8cbd873b9b8b482dde615a5c21ecc9"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "SHINY_POWER_BONUS_BY_LEVEL",
-          "sha256": "474d7e47029334728624e35ad1844f955092af597574a01aeb00bb672469cd17"
+          "sha256": "2bf2929c2eba981cf35b84c56c03829c1587b346bf9b6c1502c8f5c007535e94"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "SHINY_STATS_BONUS_BY_LEVEL",
-          "sha256": "b7cd91af5380cc35ba40e3f660dddd618950b19e4effbdcded08af10c69ab8a4"
+          "sha256": "801c8997ccf50c2f375a51f0c47b1811939ef6e503c3991c53d50f0d1e97aa15"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "STATS_BY_LEVEL",
-          "sha256": "337fd130cc7cd332e8138d4b6592e48c828287d6b7c71bbe053d9cdbbca5ee77"
+          "sha256": "84cb131c6aad9a1725df4cb431eda138fe526eb2df609bf4c4c9561a848e2591"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "STATS_CAPS",
-          "sha256": "a375f3e8c15d6576320d2fa6244cb4e2b131f129e9327095c5631d677fb9ddcf"
+          "sha256": "a612895b54d5fa9e44b59e2b670e54f6016cf752db441e30e187a31d80b63226"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "STAT_CAP_LEVELS",
-          "sha256": "47f5b27ff1d4604c154a21421369f1b72bb7b7351d7e4bca2c3705155e31b266"
+          "sha256": "c58a5b09c6e89dcbdaaf9c2d197a98a49099a416ea85ff18efe18f08ab47558d"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "applyEvolutionStatBonus",
+          "sha256": "e656b1e053fe594bc741b2bb4fee4f16232d9742c9b909dcfe21fba7cfc6a788"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "bonusForLevel",
+          "sha256": "f0346d516fa483661f79e08108beff103ab754eca56b8bbe9bb248c0dd7007ad"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "capForLevel",
+          "sha256": "323c6f50f107c9a9487e7a8075b97d0c762093aae6593fceb2558b7ac2d3dc4f"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "clampToLimits",
-          "sha256": "b723fea7fa1bbab66ec39838659709e84943cc303c87f125f47ab6ab8e99d2ea"
+          "sha256": "de2736313f7985116785d83270cf1c68416167918e7b095811e0c09e40a67280"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "evolutionHpBonusForLevel",
+          "sha256": "a4afe53871b10965131ad384b1ce767dea3d2807a89e702c8ae219fa9ebc7912"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "evolutionPowerBonusForLevel",
+          "sha256": "e774ab810f7626171c58d8dfce92bb9d7178a42c3c0b57bd8c431a0ff7039a7f"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "evolutionStatsBonusForLevel",
+          "sha256": "ba99b092285b3963bf9220f7ce466417ebc7f35368a3c5ad3f659c6238ec5403"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -277,7 +322,7 @@
         {
           "source": "app/data/stat-tables.js",
           "declaration": "maxHpForLevel",
-          "sha256": "a969d5dbf9bacc52eaa931c09fcbabc9eed158425e525d6037a09e0473ca9936"
+          "sha256": "47cf1d46da5618e7a26b753106482ac7175381640c0988ec6e6681604465e0a0"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -287,7 +332,7 @@
         {
           "source": "app/data/stat-tables.js",
           "declaration": "maxPowerForLevel",
-          "sha256": "2e25a6c3af2d45543517c74e823292c83127502a30ba02f6a41bab6f42390994"
+          "sha256": "bbc12774537b579bd8c4501cce4ce0231fcea317157e43de5ddd28515ed26651"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -297,7 +342,7 @@
         {
           "source": "app/data/stat-tables.js",
           "declaration": "maxStatsForLevel",
-          "sha256": "f49d9c6885de541df7ffd7dad4634a3b0c1d8e617bb463e168d0e8146fd4149b"
+          "sha256": "9ce09e98ef5c568dbf5bc8b888e3933150832863f62ce5c4ec77ecd0330af96b"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -306,28 +351,18 @@
         },
         {
           "source": "app/data/stat-tables.js",
-          "declaration": "nearestTableLevel",
-          "sha256": "9350873ab6c0e20e4ae02e25c955718ec2444a83b196eab9e0a621844f3b1e71"
-        },
-        {
-          "source": "app/data/stat-tables.js",
-          "declaration": "shinyBonusForLevel",
-          "sha256": "c1e237f1c7a72ed252cf6420c5537968be3a8390f8358069fce6545fee63498b"
-        },
-        {
-          "source": "app/data/stat-tables.js",
           "declaration": "shinyHpBonusForLevel",
-          "sha256": "2ec05467661d94372f0fcea5a4d35b2b4e738ab01e59fc561b1692727f6a9897"
+          "sha256": "e7fdeff781d418017b6ec65079515335355ec021bfd4035a889b689344462bd5"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "shinyPowerBonusForLevel",
-          "sha256": "3a78840639f233ae094ee9e16f23954711983266b382ae32dc372fb92749685a"
+          "sha256": "407c7219bbf008e8c92c1607b9af5ed670291226b39c44e4a11db19aead64f0d"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "shinyStatsBonusForLevel",
-          "sha256": "5bcbb9ee3c5c80646053fec3c5a3a15b1332987e827b5475b06115ff53ca6071"
+          "sha256": "027d38b17de9af639da2048d42009657896c128773b693fbb69d96cec2a655a5"
         },
         {
           "source": "app/data/team-composition.js",
@@ -5703,7 +5738,7 @@
     },
     "progression": {
       "policy": "next_progression",
-      "checksum": "a31628262826a4f06977b8700052aba23889a6cca5ea01f7b35a624e22f84640",
+      "checksum": "35cdb440a8ad00c4bfb31ccabfcb3eaccb7d6f420fdf2d0c1ff7d3d1a9e56410",
       "sources": [
         {
           "source": "app/data/progression.js",
@@ -5852,13 +5887,28 @@
         },
         {
           "source": "app/data/stat-tables.js",
+          "declaration": "EVOLUTION_HP_BONUS_BY_LEVEL",
+          "sha256": "7f4f0b43b3ab099ac7971b58e8932598fecab09cf1747a2fd577979fed13862e"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "EVOLUTION_POWER_BONUS_BY_LEVEL",
+          "sha256": "ccc513631b7fa08a51bb4379018fd84ade9dcd3e4e53696b93f20f56b4e3274f"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "EVOLUTION_STATS_BONUS_BY_LEVEL",
+          "sha256": "493391fd284be67c79665c5dfe56c61034a42b7fe549341d49a999df4d2a742c"
+        },
+        {
+          "source": "app/data/stat-tables.js",
           "declaration": "HP_BY_LEVEL",
-          "sha256": "aabab284dc09903225a8e899a5c992391c88f15462190d60b09dacd3d0e2c60f"
+          "sha256": "b61f89a134086bec41731915f8c033ab03ddf06d35c03e4d27dcdb384618c487"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "HP_CAPS",
-          "sha256": "8f407433f43487863601eec05e0c03a88e95e0f8f5d1825755412622bf13bf93"
+          "sha256": "edf2aa3272336eaa257270d94d8fd0c6d98ac13dc789033e0c0246298e399212"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -5878,47 +5928,77 @@
         {
           "source": "app/data/stat-tables.js",
           "declaration": "POWER_CAPS",
-          "sha256": "ac3261913aa61a644a0700c4324f6184bad95c6178ba4641d3ed3e1fddddd7d7"
+          "sha256": "8d6f1265fbce9f9c708beb1e5414b4eab79615fa0901724e77def04da9bbdcf3"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "PW_BY_LEVEL",
-          "sha256": "c8126b29f9cc614d76e6c0c0cac2d9da5cb018016a0464f1d5955d7fc3cc0ba4"
+          "sha256": "dc3a439f602ab097c7a2e89b733535d25b143f589937886b7483f17930d72408"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "SHINY_HP_BONUS_BY_LEVEL",
-          "sha256": "c2ee54059717e8208763d13c408bcc796e05916e80ddab8b09328984ccd315da"
+          "sha256": "91afecdb633bbcc2040650cca551ffe0fe8cbd873b9b8b482dde615a5c21ecc9"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "SHINY_POWER_BONUS_BY_LEVEL",
-          "sha256": "474d7e47029334728624e35ad1844f955092af597574a01aeb00bb672469cd17"
+          "sha256": "2bf2929c2eba981cf35b84c56c03829c1587b346bf9b6c1502c8f5c007535e94"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "SHINY_STATS_BONUS_BY_LEVEL",
-          "sha256": "b7cd91af5380cc35ba40e3f660dddd618950b19e4effbdcded08af10c69ab8a4"
+          "sha256": "801c8997ccf50c2f375a51f0c47b1811939ef6e503c3991c53d50f0d1e97aa15"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "STATS_BY_LEVEL",
-          "sha256": "337fd130cc7cd332e8138d4b6592e48c828287d6b7c71bbe053d9cdbbca5ee77"
+          "sha256": "84cb131c6aad9a1725df4cb431eda138fe526eb2df609bf4c4c9561a848e2591"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "STATS_CAPS",
-          "sha256": "a375f3e8c15d6576320d2fa6244cb4e2b131f129e9327095c5631d677fb9ddcf"
+          "sha256": "a612895b54d5fa9e44b59e2b670e54f6016cf752db441e30e187a31d80b63226"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "STAT_CAP_LEVELS",
-          "sha256": "47f5b27ff1d4604c154a21421369f1b72bb7b7351d7e4bca2c3705155e31b266"
+          "sha256": "c58a5b09c6e89dcbdaaf9c2d197a98a49099a416ea85ff18efe18f08ab47558d"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "applyEvolutionStatBonus",
+          "sha256": "e656b1e053fe594bc741b2bb4fee4f16232d9742c9b909dcfe21fba7cfc6a788"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "bonusForLevel",
+          "sha256": "f0346d516fa483661f79e08108beff103ab754eca56b8bbe9bb248c0dd7007ad"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "capForLevel",
+          "sha256": "323c6f50f107c9a9487e7a8075b97d0c762093aae6593fceb2558b7ac2d3dc4f"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "clampToLimits",
-          "sha256": "b723fea7fa1bbab66ec39838659709e84943cc303c87f125f47ab6ab8e99d2ea"
+          "sha256": "de2736313f7985116785d83270cf1c68416167918e7b095811e0c09e40a67280"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "evolutionHpBonusForLevel",
+          "sha256": "a4afe53871b10965131ad384b1ce767dea3d2807a89e702c8ae219fa9ebc7912"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "evolutionPowerBonusForLevel",
+          "sha256": "e774ab810f7626171c58d8dfce92bb9d7178a42c3c0b57bd8c431a0ff7039a7f"
+        },
+        {
+          "source": "app/data/stat-tables.js",
+          "declaration": "evolutionStatsBonusForLevel",
+          "sha256": "ba99b092285b3963bf9220f7ce466417ebc7f35368a3c5ad3f659c6238ec5403"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -5948,7 +6028,7 @@
         {
           "source": "app/data/stat-tables.js",
           "declaration": "maxHpForLevel",
-          "sha256": "a969d5dbf9bacc52eaa931c09fcbabc9eed158425e525d6037a09e0473ca9936"
+          "sha256": "47cf1d46da5618e7a26b753106482ac7175381640c0988ec6e6681604465e0a0"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -5958,7 +6038,7 @@
         {
           "source": "app/data/stat-tables.js",
           "declaration": "maxPowerForLevel",
-          "sha256": "2e25a6c3af2d45543517c74e823292c83127502a30ba02f6a41bab6f42390994"
+          "sha256": "bbc12774537b579bd8c4501cce4ce0231fcea317157e43de5ddd28515ed26651"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -5968,7 +6048,7 @@
         {
           "source": "app/data/stat-tables.js",
           "declaration": "maxStatsForLevel",
-          "sha256": "f49d9c6885de541df7ffd7dad4634a3b0c1d8e617bb463e168d0e8146fd4149b"
+          "sha256": "9ce09e98ef5c568dbf5bc8b888e3933150832863f62ce5c4ec77ecd0330af96b"
         },
         {
           "source": "app/data/stat-tables.js",
@@ -5977,28 +6057,18 @@
         },
         {
           "source": "app/data/stat-tables.js",
-          "declaration": "nearestTableLevel",
-          "sha256": "9350873ab6c0e20e4ae02e25c955718ec2444a83b196eab9e0a621844f3b1e71"
-        },
-        {
-          "source": "app/data/stat-tables.js",
-          "declaration": "shinyBonusForLevel",
-          "sha256": "c1e237f1c7a72ed252cf6420c5537968be3a8390f8358069fce6545fee63498b"
-        },
-        {
-          "source": "app/data/stat-tables.js",
           "declaration": "shinyHpBonusForLevel",
-          "sha256": "2ec05467661d94372f0fcea5a4d35b2b4e738ab01e59fc561b1692727f6a9897"
+          "sha256": "e7fdeff781d418017b6ec65079515335355ec021bfd4035a889b689344462bd5"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "shinyPowerBonusForLevel",
-          "sha256": "3a78840639f233ae094ee9e16f23954711983266b382ae32dc372fb92749685a"
+          "sha256": "407c7219bbf008e8c92c1607b9af5ed670291226b39c44e4a11db19aead64f0d"
         },
         {
           "source": "app/data/stat-tables.js",
           "declaration": "shinyStatsBonusForLevel",
-          "sha256": "5bcbb9ee3c5c80646053fec3c5a3a15b1332987e827b5475b06115ff53ca6071"
+          "sha256": "027d38b17de9af639da2048d42009657896c128773b693fbb69d96cec2a655a5"
         },
         {
           "source": "app/engine/battle-runtime.js",
@@ -6465,7 +6535,7 @@
     },
     "presentation": {
       "policy": "read_only",
-      "checksum": "a70adab4e8c0da055c461a30493b536bd92e138995a84671dcf5c8c5a3b32cb9",
+      "checksum": "3fffad6186fd5e325a4c8c454cd7f6615d8131cc3ae80b53de94726a1bc414ab",
       "sources": [
         {
           "source": "app/engine/battle-events.js",
@@ -6730,7 +6800,7 @@
         {
           "source": "app/i18n/it/rules.js",
           "declaration": "IT_RULES_TRANSLATIONS",
-          "sha256": "a7e9f1c3409924e1271c53c87abd90b965ac04ed165ac34d9750d4f91f27a176"
+          "sha256": "4a4e80aca7bdceefd87db5673e99468a83c687027500129b077ce4ef68e9b208"
         },
         {
           "source": "app/i18n/it/scenes.js",
@@ -6860,7 +6930,7 @@
         {
           "source": "app/styles/player-directory.css",
           "declaration": "preamble",
-          "sha256": "4cdd873b7e3d0ea1ba27cfa2b717a7e99ef8f69710a5a4b947f682af91f23134"
+          "sha256": "286798bfb0155ea8f71d19a59e85080fb1780cb34fcc865ad2b2083dacb81eeb"
         },
         {
           "source": "app/styles/pokefan.css",
@@ -8193,8 +8263,8 @@
     },
     {
       "source": "app/data/stat-tables.js",
-      "sha256": "a26b75b99c90408518bc9431f12bed2ecee5a22a7891aff50f56912176c0bf49",
-      "bytes": 6712
+      "sha256": "787347a676c2870f871637adcf7b0eb66485aa5b7469353e320606aa9b002a12",
+      "bytes": 10032
     },
     {
       "source": "app/data/team-composition.js",

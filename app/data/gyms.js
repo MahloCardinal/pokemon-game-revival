@@ -64,29 +64,29 @@ function buildGymPokemon(config) {
 
 export var KANTO_GYM_LEADERS = {
   pewter_city: { name: "Brock", sprite: "brock.webp", team: [
-    gymPokemon("74", 12, 62, [gymMove(25, 28, 2), gymMove(245, 29, 2), gymMove(98, 30, 2), gymMove(266, 31, 2)]),
-    gymPokemon("95", 14, 68, [gymMove(25, 32, 2), gymMove(307, 33, 2), gymMove(266, 35, 2), gymMove(159, 34, 2)])
+    gymPokemon("74", 12, 40, [gymMove(25, 12, 2), gymMove(245, 12, 2), gymMove(98, 12, 2), gymMove(266, 12, 2)]),
+    gymPokemon("95", 14, 46, [gymMove(25, 17, 2), gymMove(307, 17, 2), gymMove(266, 17, 2), gymMove(159, 17, 2)])
   ], extraLimits: [] },
   cerulean_city: { name: "Misty", sprite: "misty.webp", team: [
-    gymPokemon("116", 20, 86, [gymMove(31, 64, 4), gymMove(190, 66, 4), gymMove(123, 68, 4)]),
-    gymPokemon("120", 20, 86, [gymMove(217, 64, 4), gymMove(242, 65, 4), gymMove(255, 66, 4), gymMove(47, 67, 4)]),
-    gymPokemon("121", 22, 92, [gymMove(217, 68, 7), gymMove(255, 69, 7), gymMove(61, 71, 7), gymMove(242, 70, 7)])
+    gymPokemon("116", 20, 64, [gymMove(31, 32, 4), gymMove(190, 32, 4), gymMove(123, 32, 4)]),
+    gymPokemon("120", 20, 64, [gymMove(217, 32, 4), gymMove(242, 32, 4), gymMove(255, 32, 4), gymMove(47, 32, 4)]),
+    gymPokemon("121", 22, 70, [gymMove(217, 37, 7), gymMove(255, 37, 7), gymMove(61, 37, 7), gymMove(242, 37, 7)])
   ], extraLimits: [] },
   vermilion_city: { name: "Lt. Surge", sprite: "lt_surge.webp", team: [
-    gymPokemon("25", 28, 110, [gymMove(21, 80, 19), gymMove(85, 81, 19), gymMove(270, 82, 19), gymMove(122, 83, 19)]),
-    gymPokemon("100", 31, 119, [gymMove(307, 106, 26), gymMove(289, 107, 26), gymMove(272, 108, 26), gymMove(23, 109, 26)]),
-    gymPokemon("26", 34, 128, [gymMove(328, 114, 29), gymMove(57, 113, 29), gymMove(21, 112, 29), gymMove(122, 115, 29)])
+    gymPokemon("25", 28, 95, [gymMove(21, 57, 13), gymMove(85, 57, 13), gymMove(270, 57, 13), gymMove(122, 57, 13)]),
+    gymPokemon("100", 31, 108, [gymMove(307, 69, 18), gymMove(289, 69, 18), gymMove(272, 69, 18), gymMove(23, 69, 18)]),
+    gymPokemon("26", 34, 120, [gymMove(328, 81, 22), gymMove(57, 81, 22), gymMove(21, 81, 22), gymMove(122, 81, 22)])
   ], extraLimits: [] },
   celadon_city: { name: "Erika", sprite: "erika.webp", team: [
-    gymPokemon("71", 39, 143, [gymMove(120, 122, 34), gymMove(290, 123, 34), gymMove(222, 124, 34), gymMove(113, 125, 34)]),
-    gymPokemon("114", 40, 161, [gymMove(159, 144, 34), gymMove(178, 147, 34), gymMove(207, 146, 34), gymMove(270, 145, 34)]),
-    gymPokemon("45", 43, 170, [gymMove(319, 150, 38), gymMove(15, 151, 38), gymMove(207, 152, 38), gymMove(178, 153, 38)])
+    gymPokemon("71", 39, 143, [gymMove(120, 101, 34), gymMove(290, 101, 34), gymMove(222, 101, 34), gymMove(113, 101, 34)]),
+    gymPokemon("114", 40, 148, [gymMove(159, 107, 34), gymMove(178, 107, 34), gymMove(207, 107, 34), gymMove(270, 107, 34)]),
+    gymPokemon("45", 43, 170, [gymMove(319, 123, 38), gymMove(15, 123, 38), gymMove(207, 123, 38), gymMove(178, 123, 38)])
   ], extraLimits: [] },
   saffron_city: { name: "Sabrina", sprite: "sabrina.webp", team: [
-    gymPokemon("64", 48, 185, [gymMove(255, 160, 54), gymMove(79, 161, 56), gymMove(226, 162, 58), gymMove(228, 163, 60)]),
-    gymPokemon("122", 50, 226, [gymMove(239, 174, 58), gymMove(226, 177, 60), gymMove(228, 174, 62), gymMove(264, 177, 64)]),
-    gymPokemon("49", 50, 226, [gymMove(207, 174, 58), gymMove(236, 175, 60), gymMove(228, 177, 62), gymMove(290, 177, 64)]),
-    gymPokemon("65", 53, 235, [gymMove(79, 180, 64), gymMove(46, 181, 66), gymMove(226, 182, 68), gymMove(150, 183, 70)])
+    gymPokemon("64", 48, 185, [gymMove(255, 148, 54), gymMove(79, 148, 49), gymMove(226, 148, 49), gymMove(228, 148, 49)]),
+    gymPokemon("122", 50, 202, [gymMove(239, 160, 58), gymMove(226, 160, 60), gymMove(228, 160, 54), gymMove(264, 160, 54)]),
+    gymPokemon("49", 50, 202, [gymMove(207, 160, 58), gymMove(236, 160, 60), gymMove(228, 160, 54), gymMove(290, 160, 54)]),
+    gymPokemon("65", 53, 221, [gymMove(79, 180, 64), gymMove(46, 181, 66), gymMove(226, 182, 68), gymMove(150, 183, 62)])
   ], extraLimits: [] },
   fuchsia_city: { name: "Koga", sprite: "koga.webp", team: [
     gymPokemon("109", 55, 241, [gymMove(100, 184, 68), gymMove(91, 185, 70), gymMove(128, 186, 72), gymMove(180, 187, 74)]),

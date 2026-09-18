@@ -6,7 +6,7 @@
   ],
   "checksumAlgorithm": "sha256",
   "sourceNormalization": "lf",
-  "bundleChecksum": "d1aa37c2c9e4867a72bf55b2198df39583dbd0aaadec0076981150e88a3a2d0e",
+  "bundleChecksum": "ce02aa6dbfda2f0f48f52bedcd0c9b2fde116c038481939585e42876f289b813",
   "snapshotVersion": 3,
   "components": {
     "encounters": {
@@ -6174,7 +6174,7 @@
     },
     "opponents_rewards": {
       "policy": "next_activity",
-      "checksum": "1960d2d6718f312e8f672a9c91e378a131099d44a6b82c93a8c67e104fb37d2c",
+      "checksum": "1ad3c7d711a7e4c1db262740e5e5c3d14d489b6e43cb9649ea30971ec8adbd76",
       "sources": [
         {
           "source": "app/data/authoritative-npc-items.js",
@@ -6264,7 +6264,7 @@
         {
           "source": "app/data/gyms.js",
           "declaration": "KANTO_GYM_LEADERS",
-          "sha256": "91fa69c528675aa7e659718cb17b7ed5cdf94872d971fe85e775c46a30c8ac26"
+          "sha256": "d103ee3ed18905fc3d13b4eace6534ebe2e0bf1ccc3421471b0853b9ba26dfc3"
         },
         {
           "source": "app/data/gyms.js",
@@ -6535,7 +6535,7 @@
     },
     "presentation": {
       "policy": "read_only",
-      "checksum": "3fffad6186fd5e325a4c8c454cd7f6615d8131cc3ae80b53de94726a1bc414ab",
+      "checksum": "2c14b004b7e0476645b11ea8aa0ea5943eed937995ac047a1f9320e57fdcbbe5",
       "sources": [
         {
           "source": "app/engine/battle-events.js",
@@ -6690,7 +6690,7 @@
         {
           "source": "app/i18n/en/rules.js",
           "declaration": "EN_RULES_TRANSLATIONS",
-          "sha256": "2792024a2da3efc867c2881fc1c6fead135cfef5454994876d02097719454e5b"
+          "sha256": "e2e4bfb63aba80b9c95975cb15d516f56731b80e6e77a373c24ead97d8ee2cdd"
         },
         {
           "source": "app/i18n/en/scenes.js",
@@ -6800,7 +6800,7 @@
         {
           "source": "app/i18n/it/rules.js",
           "declaration": "IT_RULES_TRANSLATIONS",
-          "sha256": "4a4e80aca7bdceefd87db5673e99468a83c687027500129b077ce4ef68e9b208"
+          "sha256": "054eb3ed53b8bcb4a829a51afd06974606daa621853fa4c4d5c40c1456943227"
         },
         {
           "source": "app/i18n/it/scenes.js",
@@ -7850,7 +7850,7 @@
         {
           "source": "app/view/rules.js",
           "declaration": "preamble",
-          "sha256": "9ffc6e49208e093246f71ac5f566bf1e6c15421e0c70ad1e4cb03cc4d1d83cbc"
+          "sha256": "6a7010c55a39b0b86f82e50f7a302f258f157382b707bafef90ec2f19e8ff86b"
         },
         {
           "source": "app/view/rules.js",
@@ -7945,7 +7945,7 @@
         {
           "source": "app/view/rules.js",
           "declaration": "renderStatCapsTable",
-          "sha256": "c38dae616ec74bbfec244ba17d4abfc856cfac780643a1743dd8b2ca748c20ef"
+          "sha256": "997c974d63817ebb407101076878ed4c453fbfdf6c1df52875627220f386dbbb"
         },
         {
           "source": "app/view/rules.js",
@@ -8218,8 +8218,8 @@
     },
     {
       "source": "app/data/gyms.js",
-      "sha256": "2d52ac185cceda6d0b016b81c904637d163dc8bbe42275062d1dd9be4a0a693b",
-      "bytes": 14149
+      "sha256": "689a91c4f518a652665ac5beff1f819e80cbafb2ccb1feed3314c3d1a76ce4b3",
+      "bytes": 14140
     },
     {
       "source": "app/data/index.js",

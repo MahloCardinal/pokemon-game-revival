@@ -870,6 +870,15 @@ if (gymDefinitionsModule.status !== "evaluated") await gymDefinitionsModule.eval
 const adminBattleDefinitionsModule = await loadEsModule(fileURLToPath(new URL("../../app/data/admin-battles.js", import.meta.url)));
 if (adminBattleDefinitionsModule.status !== "evaluated") await adminBattleDefinitionsModule.evaluate();
 const gymKeys = gymDefinitionsModule.namespace.KANTO_GYM_CITIES.map((city) => city.key);
+for (const key of gymKeys) {
+  for (const pokemon of gymDefinitionsModule.namespace.kantoGymLeaderByCity(key).team) {
+    assert.ok(pokemon.maxHp <= StatDefinitions.maxHpForPokemon(pokemon), `${key}/${pokemon.speciesKey}: HP cap`);
+    for (const move of pokemon.moves) {
+      assert.ok(move.power <= StatDefinitions.maxPowerForPokemon(pokemon), `${key}/${pokemon.speciesKey}/${move.index}: power cap`);
+      assert.ok(move.stats <= StatDefinitions.maxStatsForPokemon(pokemon), `${key}/${pokemon.speciesKey}/${move.index}: stats cap`);
+    }
+  }
+}
 const adminGymKeys = gymKeys.filter((key) => adminBattleDefinitionsModule.namespace.isAdminControlledBattleType("gym_" + key));
 const ordinaryGymAction = edge.slice(edge.indexOf('if (action === "start_gym")'), edge.indexOf('if (action === "start_admin_gym")'));
 function gymKeyValidator(actionSource) {

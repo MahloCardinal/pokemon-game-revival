@@ -456,12 +456,20 @@ function opponentRewardRows(release, opponentKey, rewards, rows, counts) {
 async function opponentStatements(release) {
   const primary = "app/data/gyms.js";
   const data = await loadSourceModule(primary);
+  const stats = await loadSourceModule("app/data/stat-tables.js");
   const progression = await loadSourceModule("app/data/progression.js");
   const rows = [];
   const counts = { catalog_opponent: 0, catalog_opponent_pokemon: 0, catalog_opponent_move: 0, catalog_opponent_reward: 0 };
   data.KANTO_GYM_CITIES.forEach((city, order) => {
     const leader = data.KANTO_GYM_LEADERS[city.key];
     if (!leader) throw new Error("Missing gym leader for " + city.key);
+    data.kantoGymLeaderByCity(city.key).team.forEach((pokemon) => {
+      if (pokemon.maxHp > stats.maxHpForPokemon(pokemon)
+        || pokemon.moves.some(move => move.power > stats.maxPowerForPokemon(pokemon)
+          || move.stats > stats.maxStatsForPokemon(pokemon))) {
+        throw new Error("Gym Pokemon exceeds its current stat caps: " + city.key + "/" + pokemon.speciesKey);
+      }
+    });
     const key = "gym_" + city.key;
     const superEffectiveMax = city.badgeIndex === 5 || city.badgeIndex === 6 ? 3 : city.badgeIndex === 7 ? 2 : null;
     rows.push(upsertJson("catalog_opponent", ["catalog_release_id", "opponent_key", "opponent_kind", "sort_order", "badge_index", "rules", "presentation"], [releaseId(release), key, "gym", order, city.badgeIndex, { unlockBadges: city.badgeIndex, maxPlayerLevel: progression.BADGE_LEVEL_LIMITS[city.badgeIndex], superEffectivePokemonMax: superEffectiveMax }, { name: leader.name, sprite: leader.sprite, cityKey: city.key, cityImage: city.image }], new Set([5, 6]), ["catalog_release_id", "opponent_key"], ["opponent_kind", "sort_order", "badge_index", "rules", "presentation"]).replace(sqlLiteral(releaseId(release)), releaseId(release)));

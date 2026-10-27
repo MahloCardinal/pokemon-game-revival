@@ -1,6 +1,8 @@
 #--------------------------------------------------------------------
 # TODO
 #--------------------------------------------------------------------
+- diminuire la trasparenza del panel delle Impostazioni
+- nella Zona Allenamento, quando c'è uno sfidante con la sua squadra, se si riduce la larghezza dello schermo le schede pokemon si sovrappongono invece di andare in più righe
 - inserire tutorial
 
 
